@@ -2,8 +2,11 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
+// *Design Imports*
+import { useToast } from "@chakra-ui/react";
+
 const PostRegister = () => {
-  const [loading, toggleLoading] = useState(true);
+  const [loading, toggleLoading] = useState(false);
   const [errorHandler, setErrorHandler] = useState({
     confirmation: false,
     emailInUse: false,
@@ -12,6 +15,7 @@ const PostRegister = () => {
     unexpected: false,
   });
   const navigate = useNavigate();
+  const toast = useToast();
 
   const handleRegister = async (
     firstName,
@@ -22,7 +26,6 @@ const PostRegister = () => {
     confirmPassword,
     phoneNum
   ) => {
-    toggleLoading(true);
     setErrorHandler({
       confirmation: false,
       emailInUse: false,
@@ -33,6 +36,7 @@ const PostRegister = () => {
 
     if (password !== confirmPassword)
       return setErrorHandler({ confirmation: true });
+    toggleLoading(true);
     try {
       const res = await axios({
         method: "POST",
@@ -50,6 +54,15 @@ const PostRegister = () => {
       console.log(res.data);
       if (res && res.status === 200) {
         navigate("/home");
+        toast({
+          description:
+            "Account was created successfully, you can now proceed to log in.",
+          status: "info",
+          duration: 9000,
+          isClosable: true,
+          position: "top",
+          variant: "solid",
+        });
       }
     } catch (error) {
       if (error.code === "auth/email-already-in-use") {

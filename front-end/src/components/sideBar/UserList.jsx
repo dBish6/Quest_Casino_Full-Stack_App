@@ -4,13 +4,16 @@ import { HStack, Text, Image, Box } from "@chakra-ui/react";
 // *API Services Imports*
 import GetAllUsers from "../../features/authentication/api_services/GetAllUsers";
 
+// *Component Imports*
+import PlayerSkeleton from "../../skeletons/PlayerSkeleton";
+
 const UserList = () => {
   const [fsUsers, notFoundErr, loading] = GetAllUsers();
 
   return (
     <Box>
       {loading ? (
-        <Text>Loading...</Text>
+        <PlayerSkeleton />
       ) : notFoundErr.length ? (
         <Text color="red">{notFoundErr}</Text>
       ) : (

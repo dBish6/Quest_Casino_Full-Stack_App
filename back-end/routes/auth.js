@@ -32,10 +32,18 @@ router.get("/api/firebase/users", async (req, res) => {
 // Get Certain User
 router.get("/api/firebase/users/:id", async (req, res) => {
   if (DEBUG) console.log("/api/firebase/users/:id req:", req.params);
-  try {
-    const fsRes = await authDal.getUserFromDb(req.params.id);
+  let fsRes;
 
-    if (fsRes === "Doesn't exist.") {
+  try {
+    if (req.query.wins && req.query.balance) {
+      console.log("yup1");
+      fsRes = await authDal.getUserWinsBalanceFromDb(req.params.id);
+    } else {
+      console.log("yup2");
+      fsRes = await authDal.getUserFromDb(req.params.id);
+    }
+
+    if (fsRes === "User doesn't exist.") {
       res.status(404).json({
         user: fsRes,
         ERROR:
@@ -181,6 +189,10 @@ router.patch("/api/firebase/update/:id", async (req, res) => {
       authRes = admin.auth().updateUser(userId, {
         phoneNumber: req.query.phoneNum,
       });
+    } else if (req.query.wins) {
+      fsRes = await authDal.updateWins(userId, req.query.wins);
+    } else if (req.query.balance) {
+      fsRes = await authDal.updateBalance(userId, req.query.balance);
     } else {
       res.status(400).json({
         ERROR: "/user/api/firebase/update was given nothing to update.",

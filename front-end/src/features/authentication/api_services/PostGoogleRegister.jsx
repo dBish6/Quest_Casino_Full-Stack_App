@@ -6,7 +6,7 @@ import axios from "axios";
 import useAuth from "../../../hooks/useAuth";
 
 const PostGoogleRegister = () => {
-  const [googleLoading, toggleLoading] = useState(true);
+  const [googleLoading, toggleLoading] = useState(false);
   const [googleSuccessMsg, setGoogleSuccessMsg] = useState("");
   const [googleUnexpectedErr, setUnexpectedErr] = useState("");
   const navigate = useNavigate();

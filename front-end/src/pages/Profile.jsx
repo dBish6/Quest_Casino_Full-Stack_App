@@ -54,7 +54,7 @@ const Profile = (props) => {
     // handlePhone,
     handleEmailVerified,
     emailSent,
-    successMsg,
+    successfulPost,
     errorHandler,
   } = UpdateProfile();
   const [fsUser, notFoundErr, loading] = GetUser(currentUser.uid);
@@ -136,10 +136,10 @@ const Profile = (props) => {
           )
         ) : (
           <>
-            {successMsg.length ? (
+            {successfulPost.email_ ? (
               <Alert status="success" variant="left-accent">
                 <AlertIcon />
-                {successMsg}
+                Email successfully updated.
               </Alert>
             ) : errorHandler.badRequest ? (
               <Alert status="error" variant="left-accent">

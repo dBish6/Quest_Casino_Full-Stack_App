@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 
 // *Design Imports*
@@ -5,67 +6,101 @@ import {
   HStack,
   Breadcrumb,
   BreadcrumbItem,
-  // BreadcrumbLink,
   Link,
   chakra,
+  Box,
+  Text,
+  useColorMode,
 } from "@chakra-ui/react";
-import { useColorMode } from "@chakra-ui/react";
 import { MdChevronRight } from "react-icons/md";
 
+// *Custom Hooks Import*
+import useAuth from "../../hooks/useAuth";
+
+// *API Services Imports*
+import GetUserWinsBalance from "../../features/authentication/api_services/GetUserWinsBalance";
+
+// *Component Imports*
+import CashInModal from "../../features/authentication/components/modals/CashInModal";
+
 const NavBar = () => {
+  const [show, setShow] = useState(false);
   const { colorMode } = useColorMode();
   const location = useLocation();
 
+  const { currentUser } = useAuth();
+  // const { fsUserData, notFoundErr, loading } = GetUserWinsBalance(
+  //   currentUser.uid
+  // );
+
+  // console.log(notFoundErr);
   return (
-    <HStack justifyContent="flex-end">
-      <Breadcrumb
-        spacing="8px"
-        separator={
-          <MdChevronRight
-            color={colorMode === "dark" ? "#FFBB00" : "#E35855"}
-            fontSize="2rem"
-          />
-        }
-        mr="2rem"
-      >
-        <BreadcrumbItem>
-          <Link
-            as={NavLink}
-            to="/games"
-            variant={
-              location.pathname === "/games" ? "navOnLocation" : "navigation"
-            }
-          >
-            Games
-          </Link>
-        </BreadcrumbItem>
-
-        <BreadcrumbItem>
-          {/* TODO: Modal */}
-          <Link as={NavLink} variant="navigation">
-            Quests
-          </Link>
-        </BreadcrumbItem>
-
-        <BreadcrumbItem isCurrentPage>
-          <Link as={NavLink} variant="navigation">
-            Cash In
-          </Link>
-        </BreadcrumbItem>
-      </Breadcrumb>
-      <chakra.h1 fontFamily="heading" fontSize="2rem" color="r500">
-        Quest{" "}
-        <chakra.span
-          fontFamily="roboto"
-          fontSize="1.4rem"
-          fontWeight="700"
-          fontStyle="italic"
-          color="p500"
+    <>
+      <HStack justifyContent="flex-end">
+        {/* {currentUser !== null && loading ? (
+          <Box>
+            <Text>Loading...</Text>
+          </Box>
+        ) : (
+          <Box backgroundColor="g300" p="6px" borderRadius="6px">
+            <Text>${fsUserData.balance}</Text>
+          </Box>
+        )} */}
+        <Breadcrumb
+          spacing="8px"
+          separator={
+            <MdChevronRight
+              color={colorMode === "dark" ? "#FFBB00" : "#E35855"}
+              fontSize="2rem"
+            />
+          }
+          mr="2rem"
         >
-          Casino
-        </chakra.span>
-      </chakra.h1>
-    </HStack>
+          <BreadcrumbItem>
+            <Link
+              as={NavLink}
+              to="/games"
+              variant={
+                location.pathname === "/games" ? "navOnLocation" : "navigation"
+              }
+            >
+              Games
+            </Link>
+          </BreadcrumbItem>
+
+          <BreadcrumbItem>
+            {/* TODO: Modal */}
+            <Link as={NavLink} variant="navigation">
+              Quests
+            </Link>
+          </BreadcrumbItem>
+
+          <BreadcrumbItem isCurrentPage>
+            <Link
+              as={NavLink}
+              variant="navigation"
+              onClick={() => setShow(true)}
+            >
+              Cash In
+            </Link>
+          </BreadcrumbItem>
+        </Breadcrumb>
+        <chakra.h1 fontFamily="heading" fontSize="2rem" color="r500">
+          Quest{" "}
+          <chakra.span
+            fontFamily="roboto"
+            fontSize="1.4rem"
+            fontWeight="700"
+            fontStyle="italic"
+            color="p500"
+          >
+            Casino
+          </chakra.span>
+        </chakra.h1>
+      </HStack>
+
+      <CashInModal show={show} setShow={setShow} />
+    </>
   );
 };
 

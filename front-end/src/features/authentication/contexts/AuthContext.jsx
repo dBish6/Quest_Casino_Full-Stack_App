@@ -6,7 +6,7 @@ import firebase, { auth } from "../utils/firebaseConfig";
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [loading, toggleLoading] = useState(true);
+  const [loadingUser, toggleLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState({});
 
   const login = (email, password) => {
@@ -59,6 +59,7 @@ export const AuthProvider = ({ children }) => {
   // Exports pretty much, for provider.
   const value = {
     currentUser,
+    loadingUser,
     login,
     signInWithGoogle,
     logout,
@@ -68,7 +69,7 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider value={value}>
-      {!loading && children}
+      {!loadingUser && children}
     </AuthContext.Provider>
   );
 };

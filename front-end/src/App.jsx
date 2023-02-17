@@ -1,13 +1,11 @@
-import React from "react";
-import {
-  BrowserRouter,
-  Routes,
-  Route,
-  // Navigate,
-  Outlet,
-} from "react-router-dom";
-import { Grid } from "@chakra-ui/react";
-import { useColorMode } from "@chakra-ui/react";
+/* Quest Casino
+
+   Author: David Bishop
+   Creation Date: February 4, 2023
+*/
+
+import { HashRouter, Routes, Route, Navigate, Outlet } from "react-router-dom";
+import { Grid, useMediaQuery } from "@chakra-ui/react";
 
 import PrivateRoute from "./features/authentication/PrivateRoute";
 
@@ -15,15 +13,15 @@ import PrivateRoute from "./features/authentication/PrivateRoute";
 import { AuthProvider } from "./features/authentication/contexts/AuthContext";
 
 // *Design Imports*
-import { chakra, Image } from "@chakra-ui/react";
+import { chakra, Image, useColorMode } from "@chakra-ui/react";
 
 // *Component Imports*
 import TabNav from "./components/sideBar";
 import NavBar from "./components/partials/NavBar";
 
 // *Feature Imports*
-import RegisterModel from "./features/authentication/components/RegisterModel";
-import PasswordResetModel from "./features/authentication/components/PasswordResetModel";
+import RegisterModel from "./features/authentication/components/modals/RegisterModel";
+import PasswordResetModel from "./features/authentication/components/modals/PasswordResetModel";
 
 // *Pages/Views*
 import Home from "./pages/Home";
@@ -40,25 +38,27 @@ import Error404 from "./pages/errors/Error404";
 import Error500 from "./pages/errors/Error500";
 
 const ShowPartials = () => {
+  const [isLargerThan1027] = useMediaQuery("(min-width: 1027px)");
   const { colorMode } = useColorMode();
+
   return (
     <>
       {/* Nested routes render out here. */}
       <Grid templateColumns="235px 1fr">
         <chakra.aside
-          bgColor={colorMode === "dark" ? "#424B5E" : "#CCD1DA"}
+          bgColor={colorMode === "dark" ? "bd700" : "bl400"}
           minH="100vh"
+          // display={!isLargerThan1027 && "none"}
+          // borderRight={
+          //   colorMode === "dark"
+          //     ? "1px solid rgba(244, 244, 244, 0.2)"
+          //     : "1px solid rgba(54, 54, 54, 0.2)"
+          // }
         >
           <TabNav />
           <Image />
         </chakra.aside>
-        <chakra.main
-          // display="grid"
-          // gridTemplateColumns="repeat(12, 1fr)"
-          // gridTemplateRows="32px 1fr"
-          // gap="4"
-          p="1.5rem 2rem"
-        >
+        <chakra.main p="1.5rem 2rem">
           <NavBar />
           <Outlet />
         </chakra.main>
@@ -70,11 +70,11 @@ const ShowPartials = () => {
 
 function App() {
   return (
-    <BrowserRouter>
+    <HashRouter>
       <AuthProvider>
         <Routes>
           <Route element={<ShowPartials />}>
-            <Route path="/" element={<Home title="Home" />} />
+            <Route path="/" element={<Navigate to="/home" />} />
             <Route path="/home" element={<Home title="Home" />} />
             <Route path="/about" element={<About title="About Us" />} />
             <Route path="/support" element={<Support title="Support" />} />
@@ -98,8 +98,7 @@ function App() {
 
             <Route path="/error404" element={<Error404 title="ERROR" />} />
             <Route path="/error500" element={<Error500 title="ERROR" />} />
-            <Route path="*" element={<Error404 title="ERROR" />} />
-            {/* <Route path="*" render={() => <Navigate to="/error404" />} /> */}
+            <Route path="*" element={<Navigate to="/error404" />} />
 
             <Route path="/register" element={<RegisterModel />} />
           </Route>
@@ -114,7 +113,7 @@ function App() {
           />
         </Routes>
       </AuthProvider>
-    </BrowserRouter>
+    </HashRouter>
   );
 }
 

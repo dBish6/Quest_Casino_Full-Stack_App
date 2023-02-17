@@ -11,13 +11,11 @@ const casinoTheme = extendTheme({
   styles: {
     global: (props) => ({
       body: {
-        bg: mode("#E0E2EA", "#323948")(props),
-        color: mode("bMain", "wMain")(props),
+        bg: mode("#E0E2EA", "bd800")(props),
+        color: mode("bMain", "dwordMain")(props),
       },
     }),
   },
-  // #323948
-  // #1a202c - default dark background.
   components: {
     Tabs: {
       baseStyle: (props) => ({
@@ -48,6 +46,7 @@ const casinoTheme = extendTheme({
     Heading: {
       baseStyle: (props) => ({
         color: mode("r500", "p400")(props),
+        fontWeight: "400",
       }),
     },
     Container: {
@@ -58,22 +57,33 @@ const casinoTheme = extendTheme({
     Link: {
       baseStyle: {
         transition: "0.3s ease",
+        _hover: {
+          textDecoration: "none",
+        },
       },
       variants: {
         navigation: (props) => ({
+          borderBottom: "1px",
+          borderColor: "transparent",
+          lineHeight: "18px",
           opacity: "0.5",
+          fontWeight: "500",
           _hover: {
             opacity: "1",
+            borderColor: mode("bMain", "dwordMain")(props),
           },
           _groupHover: {
             opacity: "1",
+            borderColor: mode("bMain", "dwordMain")(props),
           },
         }),
         navOnLocation: (props) => ({
           opacity: "1",
+          fontWeight: "500",
           color: mode("g500", "p400")(props),
-          textDecoration: "underline",
-          textDecorationColor: mode("g500", "p400")(props),
+          borderBottom: "1px",
+          borderColor: mode("g500", "p400")(props),
+          lineHeight: "18px",
         }),
       },
     },
@@ -98,34 +108,52 @@ const casinoTheme = extendTheme({
       },
     },
     // FIXME:
-    // Breadcrumb: {
-    //   BreadcrumbLink: {
-    //     baseStyle: {
-    //       opacity: "0.5",
-    //       _hover: {
-    //         opacity: "1",
-    //       },
-    //       _selected: {
-    //         color: "p500",
-    //         textDecorationColor: "p500",
-    //       },
-    //     },
-    //   },
-    // },
-    // FIXME:
-    aside: {
-      baseStyle: (props) => ({
-        bgColor: mode("#CCD1DA", "#424B5E")(props),
-      }),
-    },
-    // FIXME:
     // chakra: {
     //   aside: {
     //     baseStyle: (props) => ({
-    //       bgColor: mode("#CCD1DA", "#424B5E"),
+    //       bgColor: mode("bl400", "#424B5E")(props),
     //     }),
     //   },
     // },
+    // FIXME:
+    chakra: {
+      baseStyle: {
+        span: {
+          color: "blue.500",
+        },
+      },
+    },
+    FormLabel: {
+      baseStyle: {
+        mb: "6px",
+      },
+    },
+    Input: {
+      baseStyle: (props) => ({
+        field: {
+          // FIXME:
+          // borderWidth: "1px",
+          // borderColor: mode(
+          //   "rgba(54, 54, 54, 0.20) !important",
+          //   "rgba(244, 244, 244, 0.20) !important"
+          // )(props),
+          _hover: {
+            boxShadow: "lg",
+          },
+          _groupHover: {
+            boxShadow: "lg",
+          },
+          _focusVisible: {
+            outline: "none",
+          },
+          _focus: {
+            borderColor: mode("g500", "p500")(props),
+            boxShadow: "lg",
+          },
+          transition: "0.38s ease",
+        },
+      }),
+    },
     Button,
   },
   colors: {
@@ -140,6 +168,25 @@ const casinoTheme = extendTheme({
     p700: "#FD9900",
     p800: "#FE8B05",
     p900: "#FD6706",
+
+    // Background Dark
+    bd100: "#C3C9D5",
+    bd200: "#A7AEBC",
+    bd300: "#8A93A7",
+    bd400: "#778197",
+    bd500: "#616D86",
+    bd600: "#535E75",
+    bd700: "#424B5E",
+    bd800: "#323948",
+    bd900: "#202631",
+
+    // Background Light
+    bl200: "#EEF0F8",
+    bl300: "#E0E2EA",
+    bl400: "#CCD1DA",
+    bl500: "#BCBEC5",
+    bl600: "#9EA0A7",
+    bl700: "#75777D",
 
     // Accent 1
     g50: "#D4EEDA",
@@ -170,6 +217,8 @@ const casinoTheme = extendTheme({
 
     // Blacks
     bMain: "#363636",
+
+    dwordMain: "#E0E2EA",
   },
   fonts: {
     body: "Hind Siliguri, sans-serif",

@@ -12,8 +12,8 @@ const GetUser = (id) => {
   // Gets stored user in Firestore DB.
   useEffect(() => {
     const fetchDetails = async () => {
+      toggleLoading(true);
       try {
-        toggleLoading(true);
         const res = await axios({
           method: "GET",
           url: `http://localhost:4000/auth/api/firebase/users/${id}`,
@@ -36,7 +36,6 @@ const GetUser = (id) => {
     };
     fetchDetails();
   }, []);
-  // console.log(movieDetails);
 
   return [fsUser, notFoundErr, loading];
 };

@@ -4,7 +4,6 @@
   "description": "back-end logic for Quest Casino using Firebase.",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "server": "nodemon"
   },
   "author": "David Bishop",

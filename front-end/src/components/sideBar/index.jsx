@@ -7,16 +7,17 @@ import {
   TabPanel,
   Icon,
   Container,
+  Flex,
   Image,
+  useColorMode,
 } from "@chakra-ui/react";
 import { MdMenu, MdLockOutline } from "react-icons/md";
 import { FiSettings } from "react-icons/fi";
 import QuestCasinoLogoDARK from "../../assets/QuestCasinoLogo-Dark-FreeLogoDesign.png";
 import QuestCasinoLogoLIGHT from "../../assets/QuestCasinoLogo-Light-FreeLogoDesign.png";
-import { useColorMode } from "@chakra-ui/react";
 
 // *Component Imports*
-import Header from "./Header";
+import Header from "../Header";
 import Navigation from "./Navigation";
 import Settings from "./Settings";
 // import UserList from "./UserList";
@@ -44,12 +45,10 @@ const Nav = () => {
 
         <TabPanels>
           <TabPanel
-            // h="100vh"
-            display="flex"
-            flexDir="column"
-            // justifyContent="space-between"
+          // h="100vh"
+          // justifyContent="space-between"
           >
-            <Header text="Navigation" />
+            <Header fontSize="28px" text="Navigation" mb="1rem" />
             <Container
               display="flex"
               flexDir="column"
@@ -66,21 +65,36 @@ const Nav = () => {
               alignItems="center"
               minH="452.6px"
             >
-              <Header text="Players" mt="1rem" />
+              <Header fontSize="28px" text="Players" mt="1rem" mb="1rem" />
               {/* <UserList /> */}
             </Container>
-            <Image
-              src={
-                colorMode === "dark"
-                  ? QuestCasinoLogoDARK
-                  : QuestCasinoLogoLIGHT
-              }
-            />
+            <Flex justifyContent="center">
+              <Image
+                src={
+                  colorMode === "dark"
+                    ? QuestCasinoLogoDARK
+                    : QuestCasinoLogoLIGHT
+                }
+                maxW="203px"
+                minH="203px"
+              />
+            </Flex>
           </TabPanel>
 
           <TabPanel>
-            <Header text="Log In" />
+            <Header fontSize="28px" text="Log In" mb="1.5rem" />
             <LoginForm />
+            <Flex justifyContent="center" mt="1.5rem">
+              <Image
+                src={
+                  colorMode === "dark"
+                    ? QuestCasinoLogoDARK
+                    : QuestCasinoLogoLIGHT
+                }
+                maxW="203px"
+                minH="203px"
+              />
+            </Flex>
           </TabPanel>
 
           <TabPanel>

@@ -7,7 +7,7 @@ import useAuth from "../../../hooks/useAuth";
 import { useToast } from "@chakra-ui/react";
 
 const SaveLogin = () => {
-  const [loading, toggleLoading] = useState(true);
+  const [loading, toggleLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
   const [errorHandler, setErrorHandler] = useState({
     badRequest: false,
@@ -28,7 +28,7 @@ const SaveLogin = () => {
 
     if (currentUser !== null) {
       formRef.current.reset();
-      return toast({
+      toast({
         description: "You are already logged in.",
         status: "info",
         duration: 9000,
