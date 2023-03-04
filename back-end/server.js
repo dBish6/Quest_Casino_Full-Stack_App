@@ -14,6 +14,9 @@ const bodyParser = require("body-parser");
 // const csurf = require("csurf");
 // const rateLimit = require("express-rate-limit");
 
+const authRouter = require("./routes/auth");
+const questRouter = require("./routes/quest");
+
 global.DEBUG = true;
 
 const PORT = process.env.PORT || 4000;
@@ -61,8 +64,8 @@ app.use(
 // );
 
 // *Routers*
-const authRouter = require("./routes/auth");
 app.use("/auth", authRouter);
+app.use("/quest", questRouter);
 
 // exports.nodeAPI = functions.https.onRequest(app);
 

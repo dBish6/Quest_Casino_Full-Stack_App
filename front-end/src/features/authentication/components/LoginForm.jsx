@@ -37,7 +37,7 @@ import PostGoogleRegister from "../api_services/PostGoogleRegister";
 import PasswordResetModel from "./modals/PasswordResetModel";
 import RegisterModel from "./modals/RegisterModel";
 
-const LoginForm = () => {
+const LoginForm = (props) => {
   const [visible, toggleVisibility] = useState(false);
   const [focused, setFocused] = useState(false);
   const { colorMode } = useColorMode();
@@ -65,7 +65,7 @@ const LoginForm = () => {
     googleLoading,
   } = PostGoogleRegister();
 
-  const { currentUser, loadingUser } = useAuth();
+  const { currentUser } = useAuth();
 
   // console.log(watch());
   return (
@@ -79,8 +79,6 @@ const LoginForm = () => {
         display="flex"
         flexDir="column"
         gap="1rem"
-        // TODO:
-        // style={currentUser !== null && { pointerEvents: "none" }}
       >
         {successMsg.length ? (
           <Alert status="success" variant="left-accent" mb="0.5rem">
@@ -96,10 +94,8 @@ const LoginForm = () => {
           <Alert status="error" variant="left-accent" mb="0.5rem">
             <AlertIcon />
             <Box>
-              <AlertTitle>Unexpected Error!</AlertTitle>
-              <AlertDescription>
-                Failed to log in, please try again.
-              </AlertDescription>
+              <AlertTitle>Server Error 500</AlertTitle>
+              <AlertDescription>Failed to log in.</AlertDescription>
             </Box>
           </Alert>
         ) : errorHandler.maxRequests ? (
@@ -110,7 +106,9 @@ const LoginForm = () => {
         ) : undefined}
 
         <FormControl isInvalid={errors.email || errorHandler.notFound}>
-          <FormLabel htmlFor="email">Email</FormLabel>
+          <FormLabel htmlFor="email" opacity={currentUser !== null && "0.4"}>
+            Email
+          </FormLabel>
           <Input
             {...register("email", {
               required: "Email is required.",
@@ -121,7 +119,11 @@ const LoginForm = () => {
             })}
             name="email"
             autoComplete="off"
+            // Disables the input if the user is logged in.
+            isDisabled={currentUser !== null}
             h="48px"
+            variant="primary"
+            cursor={currentUser !== null && "not-allowed"}
           />
           <ErrorMessage
             errors={errors}
@@ -136,7 +138,9 @@ const LoginForm = () => {
             errors.password || errorHandler.badRequest || errorHandler.notFound
           }
         >
-          <FormLabel htmlFor="password">Password</FormLabel>
+          <FormLabel htmlFor="password" opacity={currentUser !== null && "0.4"}>
+            Password
+          </FormLabel>
           <HStack data-group>
             <Input
               {...register("password", {
@@ -146,8 +150,11 @@ const LoginForm = () => {
               onBlur={() => setFocused(false)}
               name="password"
               type={visible ? "text" : "password"}
+              isDisabled={currentUser !== null}
+              variant="primary"
               h="48px"
               paddingInline="1rem 2.5rem"
+              cursor={currentUser !== null && "not-allowed"}
             />
             {visible ? (
               <Icon
@@ -156,7 +163,7 @@ const LoginForm = () => {
                 position="absolute"
                 right="0.875rem"
                 cursor="pointer"
-                zIndex="1"
+                zIndex={currentUser !== null ? "hide" : "1"}
                 color={focused && (colorMode === "dark" ? "p500" : "g500")}
               />
             ) : (
@@ -166,7 +173,7 @@ const LoginForm = () => {
                 position="absolute"
                 right="0.875rem"
                 cursor="pointer"
-                zIndex="1"
+                zIndex={currentUser !== null ? "hide" : "1"}
                 color={focused && (colorMode === "dark" ? "p500" : "g500")}
               />
             )}
@@ -183,17 +190,24 @@ const LoginForm = () => {
           ) : undefined}
           <Box mt="6px">
             <Link
-              onClick={() => setShow({ passwordReset: true })}
+              onClick={() =>
+                currentUser === null && setShow({ passwordReset: true })
+              }
               position="relative"
-              opacity="0.75"
-              _hover={{
-                opacity: "1",
-                textDecoration: "underline",
-                textDecorationColor: colorMode === "dark" ? "p500" : "r500",
-              }}
-              _active={{
-                top: "1.5px",
-              }}
+              opacity={currentUser !== null ? "0.4" : "0.75"}
+              _hover={
+                currentUser === null && {
+                  opacity: "1",
+                  textDecoration: "underline",
+                  textDecorationColor: colorMode === "dark" ? "p500" : "r500",
+                }
+              }
+              _active={
+                currentUser === null && {
+                  top: "1.5px",
+                }
+              }
+              cursor={currentUser !== null ? "not-allowed" : "pointer"}
             >
               Forgot your password?
             </Link>
@@ -205,30 +219,48 @@ const LoginForm = () => {
           type="submit"
           variant="primary"
           zIndex="1"
+          isDisabled={currentUser !== null}
+          cursor={currentUser !== null && "not-allowed"}
+          _hover={
+            currentUser === null && {
+              bgColor: colorMode === "dark" ? "bd300" : "wMain",
+              color: colorMode === "dark" ? "wMain" : "#000000",
+              boxShadow: "lg",
+            }
+          }
+          _active={
+            currentUser === null && {
+              bgColor: colorMode === "dark" ? "g500" : "g300",
+            }
+          }
         >
           Login
         </Button>
       </chakra.form>
-      <VStack
-        mt="1rem"
-        style={
-          currentUser !== null
-            ? {
-                pointerEvents: "none",
-                cursor: "not-allowed",
-              }
-            : undefined
-        }
-      >
+      <VStack mt="1rem !important">
         <Divider />
         <Box
-          bgColor={colorMode === "dark" ? "bd700" : "bl400"}
+          bgColor={
+            colorMode === "dark"
+              ? !props.mobile
+                ? "bd700"
+                : "transparent"
+              : !props.mobile
+              ? "bl400"
+              : "transparent"
+          }
+          color={currentUser !== null && "rgba(224, 226, 234, 0.4)"}
           p="0 0.5rem"
           position="relative"
           bottom="21px"
           width="fit-content"
         >
-          <Text>or</Text>
+          <Text
+            color={colorMode === "dark" ? "dwordMain" : "bMain"}
+            opacity={currentUser !== null ? "0.4" : "1"}
+          >
+            or
+          </Text>
         </Box>
 
         <Button
@@ -240,13 +272,19 @@ const LoginForm = () => {
           variant="primary"
           position="relative"
           bottom="24px"
-          style={
-            currentUser !== null
-              ? {
-                  cursor: "not-allowed",
-                  pointerEvents: "none",
-                }
-              : undefined
+          isDisabled={currentUser !== null}
+          cursor={currentUser !== null && "not-allowed"}
+          _hover={
+            currentUser === null && {
+              bgColor: colorMode === "dark" ? "bd300" : "wMain",
+              color: colorMode === "dark" ? "wMain" : "#000000",
+              boxShadow: "lg",
+            }
+          }
+          _active={
+            currentUser === null && {
+              bgColor: colorMode === "dark" ? "g500" : "g300",
+            }
           }
         >
           <Icon
@@ -263,19 +301,7 @@ const LoginForm = () => {
 
       <Text>
         Don't have account?{" "}
-        <Link
-          onClick={() => setShow({ register: true })}
-          position="relative"
-          opacity="0.75"
-          _hover={{
-            opacity: "1",
-            textDecoration: "underline",
-            textDecorationColor: colorMode === "dark" ? "p500" : "r500",
-          }}
-          _active={{
-            top: "1.5px",
-          }}
-        >
+        <Link onClick={() => setShow({ register: true })} variant="simple">
           Sign Up
         </Link>
         !

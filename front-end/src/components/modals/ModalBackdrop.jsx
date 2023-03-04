@@ -30,7 +30,7 @@ const ModalBackdrop = (props) => {
       exit="hidden"
       key="backdrop"
       onClick={() => {
-        props.type
+        props.type && props.type.length
           ? props.setShow({ [props.type]: false })
           : props.setShow(false);
       }}
@@ -43,6 +43,7 @@ const ModalBackdrop = (props) => {
       backgroundColor="rgb(0, 0, 0, 0.4)"
       backdropBlur="2px"
       zIndex="overlay"
+      pointerEvents={props.loading && "none"}
     />
   );
 };

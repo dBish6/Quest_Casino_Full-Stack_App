@@ -22,9 +22,10 @@ import GetUserWinsBalance from "../../features/authentication/api_services/GetUs
 
 // *Component Imports*
 import CashInModal from "../../features/authentication/components/modals/CashInModal";
+import QuestsModal from "../../features/quests/components/modals/QuestsModal";
 
 const NavBar = () => {
-  const [show, setShow] = useState(false);
+  const [show, setShow] = useState({ quests: false, cashIn: false });
   const { colorMode } = useColorMode();
   const location = useLocation();
 
@@ -69,17 +70,20 @@ const NavBar = () => {
           </BreadcrumbItem>
 
           <BreadcrumbItem>
-            {/* TODO: Modal */}
-            <Link as={NavLink} variant="navigation">
+            <Link
+              as={NavLink}
+              variant={show.quests ? "navOnLocation" : "navigation"}
+              onClick={() => setShow({ quests: true })}
+            >
               Quests
             </Link>
           </BreadcrumbItem>
 
-          <BreadcrumbItem isCurrentPage>
+          <BreadcrumbItem>
             <Link
               as={NavLink}
-              variant="navigation"
-              onClick={() => setShow(true)}
+              variant={show.cashIn ? "navOnLocation" : "navigation"}
+              onClick={() => setShow({ cashIn: true })}
             >
               Cash In
             </Link>
@@ -99,7 +103,8 @@ const NavBar = () => {
         </chakra.h1>
       </HStack>
 
-      <CashInModal show={show} setShow={setShow} />
+      <CashInModal show={show.cashIn} setShow={setShow} />
+      <QuestsModal show={show.quests} setShow={setShow} />
     </>
   );
 };

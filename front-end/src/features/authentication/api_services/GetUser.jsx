@@ -1,18 +1,20 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
 const GetUser = (id) => {
   const [fsUser, setFsUser] = useState([]);
   const [notFoundErr, setNotFoundErr] = useState("");
-  const [loading, toggleLoading] = useState(true);
+  const [loadingUser, toggleLoadingUser] = useState(true);
   const navigate = useNavigate();
+
+  const cachedUser = useMemo(() => fsUser, [fsUser]);
 
   // Gets stored user in Firestore DB.
   useEffect(() => {
     const fetchDetails = async () => {
-      toggleLoading(true);
+      toggleLoadingUser(true);
       try {
         const res = await axios({
           method: "GET",
@@ -31,13 +33,13 @@ const GetUser = (id) => {
         console.error(error);
         navigate("/error500");
       } finally {
-        toggleLoading(false);
+        toggleLoadingUser(false);
       }
     };
     fetchDetails();
-  }, []);
+  }, [!cachedUser.length]);
 
-  return [fsUser, notFoundErr, loading];
+  return [cachedUser, notFoundErr, loadingUser];
 };
 
 export default GetUser;

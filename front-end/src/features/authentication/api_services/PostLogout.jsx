@@ -16,8 +16,9 @@ const PostLogout = () => {
       const res = await logout();
       if (res) {
         navigate("/home");
-        document.location.pathname === "/home" &&
-          alert("User session timed out.");
+        // FIXME:
+        // document.location.pathname === "/home" &&
+        alert("User session timed out.");
       }
     } catch (error) {
       setUnexpectedErr("Failed to log out.");

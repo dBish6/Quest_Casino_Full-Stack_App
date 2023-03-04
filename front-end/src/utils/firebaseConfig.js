@@ -1,4 +1,5 @@
 import firebase from "firebase/compat/app";
+import { getStorage } from "firebase/storage";
 import "firebase/compat/auth";
 
 const firebaseConfig = firebase.initializeApp({
@@ -11,4 +12,6 @@ const firebaseConfig = firebase.initializeApp({
 });
 
 export const auth = firebaseConfig.auth();
-export default firebase;
+// TODO: Change
+export const storage = getStorage(firebaseConfig);
+export default firebaseConfig;

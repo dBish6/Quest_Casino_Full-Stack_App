@@ -19,18 +19,16 @@ import QuestCasinoLogoLIGHT from "../../assets/QuestCasinoLogo-Light-FreeLogoDes
 // *Component Imports*
 import Header from "../Header";
 import Navigation from "./Navigation";
+import LoginForm from "../../features/authentication/components/LoginForm";
 import Settings from "./Settings";
 // import UserList from "./UserList";
 
-// *Feature Import*
-import LoginForm from "../../features/authentication/components/LoginForm";
-
-const Nav = () => {
+const DesktopIndex = () => {
   const { colorMode } = useColorMode();
 
   return (
     <>
-      <Tabs>
+      <Tabs variant="navigation">
         <TabList justifyContent="space-evenly">
           <Tab flexGrow="1">
             <Icon as={MdMenu} fontSize="1.3125rem" />
@@ -44,17 +42,14 @@ const Nav = () => {
         </TabList>
 
         <TabPanels>
-          <TabPanel
-          // h="100vh"
-          // justifyContent="space-between"
-          >
+          <TabPanel>
             <Header fontSize="28px" text="Navigation" mb="1rem" />
             <Container
               display="flex"
               flexDir="column"
               alignItems="center"
               position="relative"
-              right="12px"
+              right="10px"
             >
               <Navigation />
             </Container>
@@ -106,4 +101,4 @@ const Nav = () => {
   );
 };
 
-export default Nav;
+export default DesktopIndex;

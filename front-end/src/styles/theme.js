@@ -2,8 +2,12 @@ import { extendTheme } from "@chakra-ui/react";
 import { mode } from "@chakra-ui/theme-tools";
 
 // *Component Imports*
-import { tabsStyles as Tabs } from "./components/tabsStyles";
 import { buttonStyles as Button } from "./components/buttonStyles";
+import { tabsStyles as Tabs } from "./components/tabsStyles";
+import { linkStyles as Link } from "./components/linkStyles";
+import { iconStyles as Icon } from "./components/iconStyles";
+import { inputStyles as Input } from "./components/inputStyles";
+import { cardStyles as Card } from "./components/cardStyles";
 
 // Main App Theme
 const casinoTheme = extendTheme({
@@ -11,33 +15,12 @@ const casinoTheme = extendTheme({
   styles: {
     global: (props) => ({
       body: {
-        bg: mode("#E0E2EA", "bd800")(props),
+        bg: mode("bl300", "bd800")(props),
         color: mode("bMain", "dwordMain")(props),
       },
     }),
   },
   components: {
-    Tabs: {
-      baseStyle: (props) => ({
-        tab: {
-          color: mode("bMain", "wMain")(props),
-          opacity: "0.7",
-          _hover: {
-            bgColor: mode("rgb(244, 244, 244, 0.4)", "rgb(244, 244, 244, 0.2)"),
-          },
-          _active: {
-            bgColor: mode(
-              "rgb(244, 244, 244, 0.6)",
-              "rgb(244, 244, 244, 0.5)"
-            )(props),
-          },
-          _selected: {
-            color: mode("r500", "p500")(props),
-            opacity: "1",
-          },
-        },
-      }),
-    },
     Text: {
       baseStyle: {
         wordBreak: "keep-all",
@@ -54,59 +37,27 @@ const casinoTheme = extendTheme({
         padding: "0",
       },
     },
-    Link: {
+    Tooltip: {
+      baseStyle: (props) => ({
+        color: mode("wMain", "bMain")(props),
+      }),
+    },
+    FormLabel: {
       baseStyle: {
-        transition: "0.3s ease",
-        _hover: {
-          textDecoration: "none",
-        },
-      },
-      variants: {
-        navigation: (props) => ({
-          borderBottom: "1px",
-          borderColor: "transparent",
-          lineHeight: "18px",
-          opacity: "0.5",
-          fontWeight: "500",
-          _hover: {
-            opacity: "1",
-            borderColor: mode("bMain", "dwordMain")(props),
-          },
-          _groupHover: {
-            opacity: "1",
-            borderColor: mode("bMain", "dwordMain")(props),
-          },
-        }),
-        navOnLocation: (props) => ({
-          opacity: "1",
-          fontWeight: "500",
-          color: mode("g500", "p400")(props),
-          borderBottom: "1px",
-          borderColor: mode("g500", "p400")(props),
-          lineHeight: "18px",
-        }),
+        mb: "6px",
       },
     },
-    Icon: {
-      baseStyle: {
-        transition: "0.3s ease",
-      },
-      variants: {
-        navigation: (props) => ({
-          color: mode("bMain", "wMain")(props),
-          fontSize: "28px",
-          opacity: "0.5",
-          _groupHover: {
-            opacity: "1",
-          },
-        }),
-        navOnLocation: (props) => ({
-          color: mode("g500", "p400")(props),
-          fontSize: "28px",
-          opacity: "1",
-        }),
-      },
+    Divider: {
+      baseStyle: (props) => ({
+        color: mode("borderL", "borderD")(props),
+      }),
     },
+    Button,
+    Tabs,
+    Link,
+    Icon,
+    Input,
+    Card,
     // FIXME:
     // chakra: {
     //   aside: {
@@ -115,46 +66,6 @@ const casinoTheme = extendTheme({
     //     }),
     //   },
     // },
-    // FIXME:
-    chakra: {
-      baseStyle: {
-        span: {
-          color: "blue.500",
-        },
-      },
-    },
-    FormLabel: {
-      baseStyle: {
-        mb: "6px",
-      },
-    },
-    Input: {
-      baseStyle: (props) => ({
-        field: {
-          // FIXME:
-          // borderWidth: "1px",
-          // borderColor: mode(
-          //   "rgba(54, 54, 54, 0.20) !important",
-          //   "rgba(244, 244, 244, 0.20) !important"
-          // )(props),
-          _hover: {
-            boxShadow: "lg",
-          },
-          _groupHover: {
-            boxShadow: "lg",
-          },
-          _focusVisible: {
-            outline: "none",
-          },
-          _focus: {
-            borderColor: mode("g500", "p500")(props),
-            boxShadow: "lg",
-          },
-          transition: "0.38s ease",
-        },
-      }),
-    },
-    Button,
   },
   colors: {
     // Primary Colours
@@ -219,6 +130,12 @@ const casinoTheme = extendTheme({
     bMain: "#363636",
 
     dwordMain: "#E0E2EA",
+
+    borderD: "rgba(244, 244, 244, 0.2)",
+    borderL: "rgba(54, 54, 54, 0.2)",
+    fadeD: "linear-gradient(180deg, #424B5E 40.79%, rgba(66, 75, 94, 0) 100%)",
+    fadeL:
+      "linear-gradient(179.81deg, #CCD1DA 40.79%, rgba(204, 209, 218, 0) 100%)",
   },
   fonts: {
     body: "Hind Siliguri, sans-serif",

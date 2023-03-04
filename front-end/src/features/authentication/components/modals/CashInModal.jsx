@@ -19,7 +19,6 @@ import {
   AlertDescription,
   Box,
   Icon,
-  Heading,
   Button,
   HStack,
   useColorMode,
@@ -32,6 +31,7 @@ import UpdateProfile from "../../api_services/UpdateProfile";
 
 // *Component Imports*
 import ModalBackdrop from "../../../../components/modals/ModalBackdrop";
+import Header from "../../../../components/Header";
 
 // *Animations*
 const model = {
@@ -69,7 +69,7 @@ const CashInModal = (props) => {
       cash: "",
     },
   });
-  const { handleUpdateBalance, successfulPost, errorHandler } = UpdateProfile();
+  const { handleUpdateBalance, loadingUpdate, errorHandler } = UpdateProfile();
   const formRef = useRef(null);
 
   useEffect(() => {
@@ -87,7 +87,11 @@ const CashInModal = (props) => {
       <AnimatePresence initial={false}>
         {props.show && (
           <>
-            <ModalBackdrop show={props.show} setShow={props.setShow} />
+            <ModalBackdrop
+              show={props.show}
+              setShow={props.setShow}
+              type={typeof props.setShow === "object" ? "cashIn" : ""}
+            />
 
             <Container
               as={motion.div}
@@ -97,7 +101,6 @@ const CashInModal = (props) => {
               exit="hidden"
               key="modal"
               zIndex="modal"
-              display="grid"
               position="fixed"
               top="50%"
               left="50%"
@@ -105,26 +108,24 @@ const CashInModal = (props) => {
               maxW="325px"
               backgroundColor={colorMode === "dark" ? "bd700" : "bl400"}
               borderWidth="1px"
-              borderColor={
-                colorMode === "dark"
-                  ? "rgba(244, 244, 244, 0.2)"
-                  : "rgba(54, 54, 54, 0.2)"
-              }
+              borderColor={colorMode === "dark" ? "borderD" : "borderL"}
               borderRadius="6px"
             >
               <Button
-                className="closeBtn"
-                onClick={() => props.setShow(false)}
+                onClick={() =>
+                  typeof props.setShow === "object"
+                    ? props.setShow({ cashIn: false })
+                    : props.setShow(false)
+                }
                 variant="exit"
                 position="absolute"
-                top="0"
-                right="0"
+                top="-8px"
+                right="-8px"
               >
                 &#10005;
               </Button>
-              <Heading fontSize="1.5rem" mb="4" textAlign="center">
-                Cash In
-              </Heading>
+              <Header fontSize="2rem" mb="1.5rem" text="Cash In" />
+
               <chakra.form
                 onSubmit={handleSubmit(() =>
                   handleUpdateBalance(formRef, currentUser.uid, watch("cash"))
@@ -135,10 +136,8 @@ const CashInModal = (props) => {
                   <Alert status="error" variant="left-accent">
                     <AlertIcon />
                     <Box>
-                      <AlertTitle>Unexpected Error!</AlertTitle>
-                      <AlertDescription>
-                        Failed to send cash, please try again.
-                      </AlertDescription>
+                      <AlertTitle>Server Error 500</AlertTitle>
+                      <AlertDescription>Failed to send cash.</AlertDescription>
                     </Box>
                   </Alert>
                 ) : undefined}
@@ -168,6 +167,7 @@ const CashInModal = (props) => {
                       })}
                       name="cash"
                       autoComplete="off"
+                      variant="primary"
                       h="52px"
                       marginInlineStart="0px !important"
                       paddingInline="1.5rem 1rem"
@@ -183,7 +183,7 @@ const CashInModal = (props) => {
                 </FormControl>
 
                 <Button
-                  isLoading={successfulPost.loading ? true : false}
+                  isLoading={loadingUpdate.balance ? true : false}
                   type="submit"
                   variant="primary"
                   mt="1.5rem"

@@ -16,12 +16,21 @@ const LogoutBtn = () => {
 
   return (
     <>
-      <Button onClick={() => handleLogout()}>Logout</Button>
+      <Button
+        onClick={() => handleLogout()}
+        variant="primary"
+        justifySelf="center"
+        w="100%"
+        maxW="243px"
+      >
+        Logout
+      </Button>
+      {/* FIXME: CHANGE to toast in function. */}
       {unexpectedErr.length ? (
         <Alert status="error" variant="left-accent">
           <AlertIcon />
           <Box>
-            <AlertTitle>Server Error</AlertTitle>
+            <AlertTitle>Server Error 500</AlertTitle>
             <AlertDescription>{unexpectedErr}</AlertDescription>
           </Box>
         </Alert>

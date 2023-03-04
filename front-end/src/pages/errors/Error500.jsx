@@ -1,15 +1,19 @@
 // *Custom Hooks Import*
 import useDocumentTitle from "../../hooks/useDocumentTitle";
 
+// *Design Imports*
+import { Text, chakra } from "@chakra-ui/react";
+
 const Error500 = (props) => {
   useDocumentTitle(`${props.title} | Quest Casino`);
 
   return (
-    <div className="errorContainer">
-      <p>
-        <span>Error 500:</span> Unexpected server error.
-      </p>
-    </div>
+    <Text fontSize="18px" mt="2rem">
+      <chakra.span fontSize="1.5rem" fontWeight="600" color="r500">
+        Error 500:
+      </chakra.span>{" "}
+      Unexpected server error.
+    </Text>
   );
 };
 

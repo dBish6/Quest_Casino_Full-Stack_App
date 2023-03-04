@@ -4,6 +4,7 @@
    Creation Date: February 4, 2023
 */
 
+import { useState } from "react";
 import { HashRouter, Routes, Route, Navigate, Outlet } from "react-router-dom";
 import { Grid, useMediaQuery } from "@chakra-ui/react";
 
@@ -16,7 +17,8 @@ import { AuthProvider } from "./features/authentication/contexts/AuthContext";
 import { chakra, Image, useColorMode } from "@chakra-ui/react";
 
 // *Component Imports*
-import TabNav from "./components/sideBar";
+import DesktopSidebar from "./components/sideBar";
+import MobileSidebar from "./components/sideBar/mobile";
 import NavBar from "./components/partials/NavBar";
 
 // *Feature Imports*
@@ -30,7 +32,6 @@ import Support from "./pages/Support";
 import Profile from "./pages/Profile";
 
 import GamesHome from "./pages/games/GamesHome";
-import Favorites from "./pages/games/Favorites";
 import Blackjack from "./pages/games/Blackjack";
 import BlackjackTest from "./features/games/blackjack/test";
 
@@ -39,26 +40,39 @@ import Error500 from "./pages/errors/Error500";
 
 const ShowPartials = () => {
   const [isLargerThan1027] = useMediaQuery("(min-width: 1027px)");
+  const [showSideBar, setShowSideBar] = useState(true);
   const { colorMode } = useColorMode();
 
   return (
     <>
       {/* Nested routes render out here. */}
-      <Grid templateColumns="235px 1fr">
-        <chakra.aside
-          bgColor={colorMode === "dark" ? "bd700" : "bl400"}
-          minH="100vh"
-          // display={!isLargerThan1027 && "none"}
-          // borderRight={
-          //   colorMode === "dark"
-          //     ? "1px solid rgba(244, 244, 244, 0.2)"
-          //     : "1px solid rgba(54, 54, 54, 0.2)"
-          // }
+      <Grid
+        templateColumns={isLargerThan1027 ? "235px 1fr" : "max-content 1fr"}
+      >
+        {isLargerThan1027 ? (
+          <chakra.aside
+            bgColor={colorMode === "dark" ? "bd700" : "bl400"}
+            minH="100vh"
+            // borderRight={
+            //   colorMode === "dark"
+            //     ? "1px solid borderD"
+            //     : "1px solid borderL"
+            // }
+          >
+            <DesktopSidebar />
+          </chakra.aside>
+        ) : (
+          <MobileSidebar
+            showSideBar={showSideBar}
+            setShowSideBar={setShowSideBar}
+          />
+        )}
+
+        {/* FIXME: overflow */}
+        <chakra.main
+          p={{ base: "1.5rem 1rem", md: "1.5rem 2rem", xl: "1.5rem 2rem" }}
+          overflowX="hidden"
         >
-          <TabNav />
-          <Image />
-        </chakra.aside>
-        <chakra.main p="1.5rem 2rem">
           <NavBar />
           <Outlet />
         </chakra.main>
@@ -91,10 +105,6 @@ function App() {
               element={<PasswordResetModel title="Forgot" />}
             />
             <Route path="/games" element={<GamesHome title="Games" />} />
-            <Route
-              path="/games/favorites"
-              element={<Favorites title="Favorites" />}
-            />
 
             <Route path="/error404" element={<Error404 title="ERROR" />} />
             <Route path="/error500" element={<Error500 title="ERROR" />} />

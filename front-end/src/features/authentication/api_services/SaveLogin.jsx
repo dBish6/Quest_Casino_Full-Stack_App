@@ -36,6 +36,7 @@ const SaveLogin = () => {
         position: "top",
         variant: "solid",
       });
+      return;
     }
     try {
       const res = await login(email, password);

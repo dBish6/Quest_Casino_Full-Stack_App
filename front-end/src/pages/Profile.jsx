@@ -1,7 +1,4 @@
 import { useState } from "react";
-import { Link as ReactRouterLink } from "react-router-dom";
-import { useForm } from "react-hook-form";
-import { ErrorMessage } from "@hookform/error-message";
 
 // *Custom Hooks Import*
 import useAuth from "../hooks/useAuth";
@@ -9,55 +6,57 @@ import useDocumentTitle from "../hooks/useDocumentTitle";
 
 // *Design Imports*
 import {
-  Button,
   VStack,
   Text,
+  Tabs,
+  TabList,
+  TabPanels,
+  Tab,
+  TabPanel,
   chakra,
   Heading,
-  FormControl,
-  Input,
-  FormErrorMessage,
   Alert,
   AlertIcon,
   AlertTitle,
   AlertDescription,
   Box,
   Link,
+  useColorMode,
+  HStack,
+  Icon,
+  Flex,
+  CircularProgress,
 } from "@chakra-ui/react";
+import { RiMedalLine } from "react-icons/ri";
 
 // *API Services Imports*
 import GetUser from "../features/authentication/api_services/GetUser";
 import UpdateProfile from "../features/authentication/api_services/UpdateProfile";
 
-// *Feature Import*
+// *Component Imports*
+import Header from "../components/Header";
+import EditableFields from "../features/authentication/components/profile/EditableFields";
 import LogoutBtn from "../features/authentication/components/profile/LogoutBtn";
+import PasswordResetModel from "../features/authentication/components/modals/PasswordResetModel";
+import ChangePicture from "../features/authentication/components/profile/ChangePicture";
 
 const Profile = (props) => {
-  const [update, toggleUpdate] = useState(false);
+  const { colorMode } = useColorMode();
   const { currentUser } = useAuth();
+
   const {
-    register,
-    formState: { errors },
-    handleSubmit,
-    watch,
-  } = useForm({
-    defaultValues: {
-      username: "",
-      name: "",
-      email: "",
-      password: "",
-      phone: "",
-    },
-  });
-  const {
+    handleUsername,
+    handleFullName,
     handleEmail,
-    // handlePhone,
     handleEmailVerified,
+    handlePhone,
+    handleProfilePicture,
     emailSent,
-    successfulPost,
+    loadingUpdate,
     errorHandler,
   } = UpdateProfile();
-  const [fsUser, notFoundErr, loading] = GetUser(currentUser.uid);
+  const [fsUser, notFoundErr, loadingUser] = GetUser(currentUser.uid);
+  const [show, setShow] = useState(false);
 
   useDocumentTitle(`${props.title} | Quest Casino`);
 
@@ -68,7 +67,7 @@ const Profile = (props) => {
           <Alert status="error" variant="left-accent">
             <AlertIcon />
             <Box>
-              <AlertTitle>Max Requests!</AlertTitle>
+              <AlertTitle>Max Requests</AlertTitle>
               <AlertDescription>
                 Great job, you broke it. Please try again later.
               </AlertDescription>
@@ -78,7 +77,7 @@ const Profile = (props) => {
           <Alert status="warning" variant="left-accent">
             <AlertIcon />
             <AlertDescription>
-              Please verify your email by clicking the link,{" "}
+              Please verify your email by clicking the link;{" "}
               <Link onClick={() => handleEmailVerified()} color="blue.300">
                 Verify Here
               </Link>
@@ -93,109 +92,204 @@ const Profile = (props) => {
           </Alert>
         )
       ) : undefined}
-      <VStack>
-        <Heading>Profile</Heading>
-        {!update ? (
-          !loading ? (
-            // This will probably never happen.
-            notFoundErr.length ? (
-              <Alert status="error" variant="left-accent">
-                <AlertIcon />
-                <Box>
-                  <AlertTitle>Not Found Error!</AlertTitle>
-                  <AlertDescription>{notFoundErr}</AlertDescription>
-                </Box>
-              </Alert>
-            ) : (
-              <>
-                <Box>
-                  <Heading>User Details</Heading>
-                  <Text>
-                    <strong>Username:</strong> {fsUser.user.username}
-                  </Text>
-                  <Text>
-                    <strong>Name:</strong> {fsUser.user.full_name}
-                  </Text>
-                  <Text>
-                    <strong>Email:</strong> {fsUser.user.email}
-                  </Text>
-                  {fsUser.user.phone_number && (
-                    <Text>
-                      <strong>Phone:</strong> {fsUser.user.phone_number}
-                    </Text>
-                  )}
-                  <Link as={ReactRouterLink} to="/user/forgotPassword">
-                    Change Password
-                  </Link>
-                </Box>
-                <Link as={ReactRouterLink}>Quests</Link>
-              </>
-            )
+
+      <VStack mt="4rem">
+        {!loadingUser ? (
+          notFoundErr.length ? (
+            <Alert status="error" variant="left-accent">
+              <AlertIcon />
+              <Box>
+                <AlertTitle>Not Found Error!</AlertTitle>
+                <AlertDescription>{notFoundErr}</AlertDescription>
+              </Box>
+            </Alert>
           ) : (
-            <Text>Loading...</Text>
+            <>
+              <Box
+                bg={colorMode === "dark" ? "fadeD" : "fadeL"}
+                borderTopLeftRadius="1rem"
+                borderTopRightRadius="1rem"
+                p="1rem 1.5rem 3rem 1.5rem"
+              >
+                <VStack>
+                  <Heading
+                    fontSize="64px"
+                    textShadow={colorMode === "light" && "1px 1px 0px #363636"}
+                  >
+                    {fsUser.user.username}
+                  </Heading>
+                  <Text as="small" textAlign="center" mt="0 !important">
+                    Edit your profile or change your profile picture!
+                  </Text>
+                </VStack>
+                <Tabs
+                  variant="enclosed"
+                  borderColor={colorMode === "dark" ? "borderD" : "borderL"}
+                  mt="0.5rem"
+                >
+                  <TabList display="flex" justifyContent="center">
+                    <Tab
+                      _selected={{
+                        borderWidth: "1px",
+                        borderColor:
+                          colorMode === "dark" ? "borderD" : "borderL",
+                        borderBottomColor:
+                          colorMode === "dark"
+                            ? "p500 !important"
+                            : "r500 !important",
+                        color: colorMode === "dark" ? "p300" : "r500",
+                        fontWeight: "500",
+                      }}
+                      isDisabled={
+                        loadingUpdate.username ||
+                        loadingUpdate.name ||
+                        loadingUpdate.email ||
+                        loadingUpdate.phone ||
+                        loadingUpdate.profilePic
+                      }
+                    >
+                      General
+                    </Tab>
+                    <Tab
+                      _selected={{
+                        borderWidth: "1px",
+                        borderColor:
+                          colorMode === "dark" ? "borderD" : "borderL",
+                        borderBottomColor:
+                          colorMode === "dark"
+                            ? "p500 !important"
+                            : "r500 !important",
+                        color: colorMode === "dark" ? "p300" : "r500",
+                        fontWeight: "500",
+                      }}
+                      isDisabled={
+                        loadingUpdate.username ||
+                        loadingUpdate.name ||
+                        loadingUpdate.email ||
+                        loadingUpdate.phone ||
+                        loadingUpdate.profilePic
+                      }
+                    >
+                      Picture
+                    </Tab>
+                  </TabList>
+
+                  <TabPanels>
+                    <TabPanel
+                      display="grid"
+                      gap="0.5rem"
+                      // maxW="243.283px"
+                      maxW="550px"
+                    >
+                      {errorHandler.unexpected ? (
+                        <Alert status="error" variant="left-accent" mb="1rem">
+                          <AlertIcon />
+                          <Box>
+                            <AlertTitle>Server Error 500</AlertTitle>
+                            <AlertDescription>
+                              Failed to update profile.
+                            </AlertDescription>
+                          </Box>
+                        </Alert>
+                      ) : errorHandler.maxRequests ? (
+                        <Alert status="error" variant="left-accent" mb="1rem">
+                          <AlertIcon />
+                          <Box>
+                            <AlertTitle>Max Requests</AlertTitle>
+                            <AlertDescription>
+                              Great job, you broke it. Please try again later.
+                            </AlertDescription>
+                          </Box>
+                        </Alert>
+                      ) : undefined}
+                      <HStack>
+                        <Icon
+                          as={RiMedalLine}
+                          variant="primary"
+                          fontSize={{ base: "20px", md: "24px", xl: "24px" }}
+                        />
+                        <Text
+                          fontSize={{ base: "16px", md: "18px", xl: "18px" }}
+                        >
+                          Wins:{" "}
+                          <chakra.span
+                            color={fsUser.user.wins > 0 ? "g500" : "r500"}
+                          >
+                            {fsUser.user.wins}
+                          </chakra.span>
+                        </Text>
+                      </HStack>
+                      <EditableFields
+                        handleUsername={handleUsername}
+                        handleFullName={handleFullName}
+                        handleEmail={handleEmail}
+                        handlePhone={handlePhone}
+                        loadingUpdate={loadingUpdate}
+                        fsUser={fsUser}
+                        currentUser={currentUser}
+                      />
+
+                      <Link
+                        onClick={() => setShow({ passwordReset: true })}
+                        variant="simple"
+                        justifySelf="center"
+                        fontSize={{ base: "14px", md: "16px", xl: "16px" }}
+                        mt="1rem"
+                      >
+                        Reset Password
+                      </Link>
+
+                      <LogoutBtn />
+                    </TabPanel>
+
+                    <TabPanel>
+                      <Text textAlign="center" fontWeight="500" fontSize="21px">
+                        Select a picture below!
+                      </Text>
+                      {errorHandler.unexpected ? (
+                        <Alert status="error" variant="left-accent" mb="1rem">
+                          <AlertIcon />
+                          <Box>
+                            <AlertTitle>Server Error 500</AlertTitle>
+                            <AlertDescription>
+                              Failed to update profile.
+                            </AlertDescription>
+                          </Box>
+                        </Alert>
+                      ) : errorHandler.maxRequests ? (
+                        <Alert status="error" variant="left-accent" mb="1rem">
+                          <AlertIcon />
+                          <Box>
+                            <AlertTitle>Max Requests</AlertTitle>
+                            <AlertDescription>
+                              Great job, you broke it. Please try again later.
+                            </AlertDescription>
+                          </Box>
+                        </Alert>
+                      ) : undefined}
+                      <ChangePicture
+                        handleProfilePicture={handleProfilePicture}
+                        loadingUpdate={loadingUpdate}
+                        currentUser={currentUser}
+                      />
+                    </TabPanel>
+                  </TabPanels>
+                </Tabs>
+              </Box>
+            </>
           )
         ) : (
-          <>
-            {successfulPost.email_ ? (
-              <Alert status="success" variant="left-accent">
-                <AlertIcon />
-                Email successfully updated.
-              </Alert>
-            ) : errorHandler.badRequest ? (
-              <Alert status="error" variant="left-accent">
-                <AlertIcon />
-                Entry already exists for user.
-              </Alert>
-            ) : errorHandler.unexpected ? (
-              <Alert status="error" variant="left-accent">
-                <AlertIcon />
-                <Box>
-                  <AlertTitle>Server Error</AlertTitle>
-                  <AlertDescription>Failed to update profile.</AlertDescription>
-                </Box>
-              </Alert>
-            ) : undefined}
-
-            <chakra.form
-              onSubmit={handleSubmit(() =>
-                handleEmail(currentUser.uid, watch("email"))
-              )}
-              display="flex"
-            >
-              <FormControl isInvalid={errors.email}>
-                <Input
-                  {...register("email", {
-                    pattern: {
-                      value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                      message: "Invalid email address.",
-                    },
-                  })}
-                  name="email"
-                  autoComplete="off"
-                  placeholder="Email"
-                  h="42px"
-                />
-                <ErrorMessage
-                  errors={errors}
-                  name="email"
-                  render={({ message }) => (
-                    <FormErrorMessage>{message}</FormErrorMessage>
-                  )}
-                />
-              </FormControl>
-              <Button type="submit">Submit</Button>
-            </chakra.form>
-          </>
+          <Flex>
+            <CircularProgress
+              isIndeterminate
+              color={colorMode === "dark" ? "p300" : "r500"}
+              borderColor={colorMode === "light" && "bMain"}
+            />
+          </Flex>
         )}
-
-        <LogoutBtn />
-        <Button
-          type={update ? "submit" : "button"}
-          onClick={() => toggleUpdate(!update)}
-        >
-          {!update ? "Update Profile?" : "Stop Updating"}
-        </Button>
       </VStack>
+
+      <PasswordResetModel show={show} setShow={setShow} />
     </>
   );
 };

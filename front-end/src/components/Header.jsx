@@ -5,8 +5,8 @@ const Header = (props) => {
   const { colorMode } = useColorMode();
 
   return (
-    <Flex justifyContent="center" {...props}>
-      <Heading fontSize={props.fontSize} textAlign="center">
+    <Flex justifyContent="center">
+      <Heading fontSize={props.fontSize} textAlign="center" {...props}>
         {props.text}
         <Divider
           mt="2px"

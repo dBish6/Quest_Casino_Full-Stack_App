@@ -1,5 +1,5 @@
 // *Design Imports*
-import { HStack, Text, Image, Box } from "@chakra-ui/react";
+import { HStack, Text, Avatar, Box } from "@chakra-ui/react";
 
 // *API Services Imports*
 import GetAllUsers from "../../features/authentication/api_services/GetAllUsers";
@@ -20,18 +20,13 @@ const UserList = () => {
         fsUsers.map((details, i) => {
           return (
             <HStack key={i}>
-              <Box
-                w="2rem"
-                maxW="552px"
-                h="2rem"
-                borderRadius="50%"
-                bgColor="wMain"
-              >
-                <Image
+              <Box w="2rem" h="2rem" borderRadius="50%" bgColor="wMain">
+                <Avatar
                   src={details.photoURL}
                   //   alt="https://i.ibb.co/YXgGLwq/profile-stock.png"
                   objectFit="contain"
-                  borderRadius="50%"
+                  w="2rem"
+                  h="2rem"
                 />
               </Box>
               <Box>

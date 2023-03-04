@@ -1,7 +1,8 @@
 import { createContext, useState, useEffect } from "react";
+import { GoogleAuthProvider } from "firebase/auth";
 
 // *Utility Import*
-import firebase, { auth } from "../utils/firebaseConfig";
+import { auth } from "../../../utils/firebaseConfig";
 
 export const AuthContext = createContext();
 
@@ -13,7 +14,7 @@ export const AuthProvider = ({ children }) => {
     return auth.signInWithEmailAndPassword(email, password);
   };
 
-  const googleProvider = new firebase.auth.GoogleAuthProvider();
+  const googleProvider = new GoogleAuthProvider();
   const signInWithGoogle = () => {
     return auth.signInWithPopup(googleProvider);
   };

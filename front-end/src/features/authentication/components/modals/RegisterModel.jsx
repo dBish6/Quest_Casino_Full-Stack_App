@@ -18,6 +18,7 @@ import {
   Icon,
   Button,
   HStack,
+  Text,
   Link,
   useColorMode,
 } from "@chakra-ui/react";
@@ -98,7 +99,7 @@ const RegisterModel = (props) => {
   }, [props.show]);
 
   return (
-    <AnimatePresence initial={false}>
+    <AnimatePresence>
       {props.show && (
         <>
           <ModalBackdrop
@@ -121,20 +122,15 @@ const RegisterModel = (props) => {
             maxW="522px"
             backgroundColor={colorMode === "dark" ? "bd700" : "bl400"}
             borderWidth="1px"
-            borderColor={
-              colorMode === "dark"
-                ? "rgba(244, 244, 244, 0.2)"
-                : "rgba(54, 54, 54, 0.2)"
-            }
+            borderColor={colorMode === "dark" ? "borderD" : "borderL"}
             borderRadius="6px"
           >
             <Button
-              className="closeBtn"
               onClick={() => props.setShow({ register: false })}
               variant="exit"
               position="absolute"
-              top="0"
-              right="0"
+              top="-8px"
+              right="-8px"
             >
               &#10005;
             </Button>
@@ -157,9 +153,9 @@ const RegisterModel = (props) => {
                 <Alert status="error" variant="left-accent">
                   <AlertIcon />
                   <Box>
-                    <AlertTitle>Unexpected Error!</AlertTitle>
+                    <AlertTitle>Server Error 500</AlertTitle>
                     <AlertDescription>
-                      Failed to create account, please try again.
+                      Failed to create account.
                     </AlertDescription>
                   </Box>
                 </Alert>
@@ -182,6 +178,7 @@ const RegisterModel = (props) => {
                     })}
                     name="firstName"
                     autoComplete="off"
+                    variant="primary"
                     h="42px"
                   />
                   <ErrorMessage
@@ -203,6 +200,7 @@ const RegisterModel = (props) => {
                     })}
                     name="lastName"
                     autoComplete="off"
+                    variant="primary"
                     h="42px"
                   />
                   <ErrorMessage
@@ -227,12 +225,13 @@ const RegisterModel = (props) => {
                       message: "Username can be no more then 24 characters.",
                     },
                     minLength: {
-                      value: 2,
+                      value: 3,
                       message: "You can make a better username then that...",
                     },
                   })}
                   name="username"
                   autoComplete="off"
+                  variant="primary"
                   h="42px"
                 />
                 <ErrorMessage
@@ -261,6 +260,7 @@ const RegisterModel = (props) => {
                   })}
                   name="email"
                   autoComplete="off"
+                  variant="primary"
                   h="42px"
                 />
                 <ErrorMessage
@@ -272,7 +272,7 @@ const RegisterModel = (props) => {
                 />
                 {errorHandler.emailInUse ? (
                   <FormErrorMessage>
-                    Email is already used by a Quest user.
+                    Email is already being used by a Quest user.
                   </FormErrorMessage>
                 ) : undefined}
               </FormControl>
@@ -295,6 +295,7 @@ const RegisterModel = (props) => {
                       onBlur={() => setFocused({ password: false })}
                       name="password"
                       type={visible.password ? "text" : "password"}
+                      variant="primary"
                       paddingInline="1rem 2.5rem"
                       h="42px"
                     />
@@ -354,6 +355,7 @@ const RegisterModel = (props) => {
                       onBlur={() => setFocused({ confirm: false })}
                       name="conPassword"
                       type={visible.confirm ? "text" : "password"}
+                      variant="primary"
                       paddingInline="1rem 2.5rem"
                       h="42px"
                     />
@@ -407,6 +409,7 @@ const RegisterModel = (props) => {
                   })}
                   name="phone"
                   autoComplete="off"
+                  variant="primary"
                   h="42px"
                 />
                 <ErrorMessage
@@ -433,9 +436,13 @@ const RegisterModel = (props) => {
                 Sign Up
               </Button>
             </chakra.form>
-            <chakra.small textAlign="center" mt="12px">
+            <Text as="small" textAlign="center" mt="12px">
               By clicking on{" "}
-              <chakra.span fontWeight="500" color="p500">
+              <chakra.span
+                fontWeight="500"
+                color="p500"
+                textShadow={colorMode === "light" && "1px 1px 0px #363636"}
+              >
                 "Sign Up"
               </chakra.span>
               , you agree to the Quest Casino's{" "}
@@ -465,7 +472,7 @@ const RegisterModel = (props) => {
                 privacy policy
               </Link>
               .
-            </chakra.small>
+            </Text>
           </Container>
         </>
       )}

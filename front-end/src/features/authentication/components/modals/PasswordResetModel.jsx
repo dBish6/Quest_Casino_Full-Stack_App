@@ -90,7 +90,7 @@ const PasswordResetModel = (props) => {
           <ModalBackdrop
             show={props.show}
             setShow={props.setShow}
-            type="passwordReset"
+            type={typeof props.setShow === "object" ? "passwordReset" : ""}
           />
 
           <Container
@@ -108,13 +108,22 @@ const PasswordResetModel = (props) => {
             maxW="325px"
             backgroundColor={colorMode === "dark" ? "bd700" : "bl400"}
             borderWidth="1px"
-            borderColor={
-              colorMode === "dark"
-                ? "rgba(244, 244, 244, 0.2)"
-                : "rgba(54, 54, 54, 0.2)"
-            }
+            borderColor={colorMode === "dark" ? "borderD" : "borderL"}
             borderRadius="6px"
           >
+            <Button
+              onClick={() =>
+                typeof props.setShow === "object"
+                  ? props.setShow({ passwordReset: false })
+                  : props.setShow(false)
+              }
+              variant="exit"
+              position="absolute"
+              top="-8px"
+              right="-8px"
+            >
+              &#10005;
+            </Button>
             <Header fontSize="32px" mb="1.5rem" text="Reset Password" />
 
             <chakra.form
@@ -128,7 +137,7 @@ const PasswordResetModel = (props) => {
                 <Alert status="error" variant="left-accent" mb="0.5rem">
                   <AlertIcon />
                   <Box>
-                    <AlertTitle>Unexpected Error!</AlertTitle>
+                    <AlertTitle>Server Error 500</AlertTitle>
                     <AlertDescription>Failed to reset email.</AlertDescription>
                   </Box>
                 </Alert>
@@ -146,6 +155,7 @@ const PasswordResetModel = (props) => {
                   })}
                   name="email"
                   autoComplete="off"
+                  variant="primary"
                   h="42px"
                 />
                 <ErrorMessage

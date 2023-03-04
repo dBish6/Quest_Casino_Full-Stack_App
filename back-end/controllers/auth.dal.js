@@ -7,7 +7,7 @@ const getAllUsersFromDb = async () => {
     const collection = await db.collection("users").get();
     const response = collection.docs.map((doc) => documents.push(doc.data()));
     if (response) {
-      documents.sort(() => Math.random() * documents.length);
+      documents.sort(() => Math.random() - 0.5);
       documents = documents.slice(0, 8);
       return documents;
     }
@@ -84,20 +84,19 @@ const confirmUserDocument = async (id) => {
 // };
 
 // TODO: Unique DisplayNames.
-// const getUsernameFromDb = async () => {
-//   let response;
-//   try {
-//     const document = await db.collection("users").doc(id).get();
-//     if (!document.exists) {
-//       return (response = "User doesn't exist.");
-//     } else {
-//       return (response = document.data());
-//     }
-//   } catch (error) {
-//     console.error(error);
-//     if (DEBUG) console.error("DEBUGGER: auth.dal error: getUsernameFromDb");
-//   }
-// };
+const getUsernameFromDb = async (id) => {
+  try {
+    const document = await db.collection("users").doc().get("username");
+    if (!document.exists) {
+      return "User doesn't exist.";
+    } else {
+      return document.data();
+    }
+  } catch (error) {
+    console.error(error);
+    if (DEBUG) console.error("DEBUGGER: auth.dal error: getUsernameFromDb");
+  }
+};
 
 const addUserToDb = async (
   id,
@@ -121,9 +120,11 @@ const addUserToDb = async (
         password: password,
         phone_number: phoneNum,
         photoURL: profilePic,
-        wins: 0,
+        wins: { blackjack: 0 },
         balance: "$0",
         favorites: [],
+        // TODO:
+        quests_completed: [],
         creation_date: moment().format(),
       });
 
@@ -159,6 +160,7 @@ const addGoogleUserToDb = async (
         wins: 0,
         balance: "$0",
         favorites: [],
+        quests_completed: [],
         creation_date: moment().format(),
       });
     return response;
@@ -204,22 +206,22 @@ const updateEmail = async (id, email) => {
   }
 };
 
-// const updatePassword = async (id, password) => {
-//   try {
-//     const response = await db.collection("users").doc(id).update({
-//       password: password,
-//     });
-//     return response;
-//   } catch (error) {
-//     console.error(error);
-//     if (DEBUG) console.error("DEBUGGER: auth.dal error: updatePassword");
-//   }
-// };
-
 const updatePhoneNumber = async (id, phoneNum) => {
   try {
     const response = await db.collection("users").doc(id).update({
       phone_number: phoneNum,
+    });
+    return response;
+  } catch (error) {
+    console.error(error);
+    if (DEBUG) console.error("DEBUGGER: auth.dal error: updatePhoneNumber");
+  }
+};
+
+const updateProfilePicture = async (id, photoURL) => {
+  try {
+    const response = await db.collection("users").doc(id).update({
+      photoURL: photoURL,
     });
     return response;
   } catch (error) {
@@ -258,7 +260,7 @@ const updateBalance = async (id, balance) => {
 const updateFavorites = async (id, favorite) => {
   try {
     const response = await db.collection("users").doc(id).update({
-      // Pass the new array.
+      // TODO: Pass the new array.
       favorites: favorite,
     });
     return response;
@@ -286,12 +288,14 @@ module.exports = {
   getUserFromDb,
   getUserWinsBalanceFromDb,
   confirmUserDocument,
+  getUsernameFromDb,
   addUserToDb,
   addGoogleUserToDb,
   updateRealName,
   updateUsername,
   updateEmail,
   updatePhoneNumber,
+  updateProfilePicture,
   updateWins,
   updateBalance,
   deleteUserFromDb,

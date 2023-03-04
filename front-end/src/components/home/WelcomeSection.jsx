@@ -15,6 +15,7 @@ import {
   Icon,
   useColorMode,
   Grid,
+  useMediaQuery,
 } from "@chakra-ui/react";
 import { motion, useScroll } from "framer-motion";
 import cardsImg from "../../assets/cards-pngwing.com.png";
@@ -22,22 +23,10 @@ import { CgCardSpades } from "react-icons/cg";
 import { AiOutlineTrophy, AiOutlineSafety } from "react-icons/ai";
 
 const WelcomeSection = () => {
-  const [isAnimationComplete, setIsAnimationComplete] = useState({
-    welcomeContainer: false,
-  });
   const { colorMode } = useColorMode();
-
   const { scrollYProgress } = useScroll();
-
-  // style={{
-  //   position: "absolute",
-  //   left: "72.5%",
-  //   top: "9.5%",
-  //   transform: "rotate(18.58deg)",
-  //   maxWidth: "297px",
-  //   minHeight: "306px",
-  //   zIndex: -1,
-  // }}
+  const [isSmallerThan600] = useMediaQuery("(max-width: 600px)");
+  const [isSmallerThan378] = useMediaQuery("(max-width: 378px)");
 
   return (
     <>
@@ -51,7 +40,7 @@ const WelcomeSection = () => {
           opacity: 1,
           transition: {
             //  duration: 0.28,
-            delay: 0.87,
+            delay: 0.95,
             opacity: { duration: 0.2 },
           },
         }}
@@ -67,14 +56,11 @@ const WelcomeSection = () => {
       <Container
         as={motion.div}
         initial={{ height: 0, opacity: 0, y: "50%" }}
-        // This don't work.
-        // onStart={() => setIsAnimationComplete(false)}
         whileInView={{
           minHeight: "543px",
           opacity: 1,
           y: "0",
           transition: { duration: 1 },
-          transitionEnd: () => setIsAnimationComplete(true),
         }}
         viewport={{ width: window.innerWidth, height: window.innerHeight }}
         progress={scrollYProgress}
@@ -82,49 +68,49 @@ const WelcomeSection = () => {
         // minH="543px"
         mt="164px"
         p="1.5rem 2rem"
-        bg={
-          colorMode === "dark"
-            ? "linear-gradient(180deg, #424B5E 40.79%, rgba(66, 75, 94, 0) 100%)"
-            : "linear-gradient(179.81deg, #CCD1DA 40.79%, rgba(204, 209, 218, 0) 100%)"
-        }
+        bg={colorMode === "dark" ? "fadeD" : "fadeL"}
         borderTopLeftRadius="64px"
         borderTopRightRadius="64px"
       >
         <VStack justifyContent="center">
           <VStack mb="18px">
-            <Box>
-              <Heading
-                as="h1"
-                fontFamily="roboto"
-                fontStyle="italic"
-                fontWeight="700"
-                fontSize="50px"
-                color="p500"
+            {/* <Box> */}
+            <Heading
+              as="h1"
+              display="inline-block"
+              fontFamily="roboto"
+              fontStyle="italic"
+              fontWeight="700"
+              fontSize={isSmallerThan600 ? "34px" : "50px"}
+              color="p500"
+              textAlign="center"
+              maxW={isSmallerThan378 && "120px"}
+            >
+              <chakra.span
+                fontFamily="heading"
+                fontStyle="normal"
+                fontSize={isSmallerThan600 ? "48px" : "64px"}
+                color="r500"
               >
-                <chakra.span
-                  fontFamily="heading"
-                  fontStyle="normal"
-                  fontSize="64px"
-                  color="r500"
-                >
-                  Quest
-                </chakra.span>{" "}
-                Casino
-                <chakra.hr
-                  position="relative"
-                  bottom="6px"
-                  h="7.5px"
-                  bg="linear-gradient(90.03deg, #E35855 0%, #FFBB00 65.91%, #FFBB00 100.98%)"
-                  borderRadius="2rem"
-                  border="0px"
-                />
-              </Heading>
-            </Box>
+                Quest
+              </chakra.span>{" "}
+              Casino
+              <chakra.hr
+                position="relative"
+                bottom="6px"
+                h={isSmallerThan600 ? "4.5px" : "7.5px"}
+                bg="linear-gradient(90.03deg, #E35855 0%, #FFBB00 65.91%, #FFBB00 100.98%)"
+                borderRadius="2rem"
+                border="0px"
+              />
+            </Heading>
+            {/* </Box> */}
             <Heading
               fontFamily="body"
-              fontSize="48px"
+              fontSize={isSmallerThan600 ? "32px" : "48px"}
               fontWeight="400"
               color={colorMode === "dark" ? "dwordMain" : "bMain"}
+              textAlign="center"
               mt="2px !important"
             >
               Home of{" "}
@@ -141,7 +127,11 @@ const WelcomeSection = () => {
                   right="0"
                   h="4px"
                   w="96%"
-                  bg="linear-gradient(90deg, rgba(244, 244, 244, 0) 14.73%, #F4F4F4 100.98%)"
+                  bg={
+                    colorMode === "dark"
+                      ? "linear-gradient(90deg, rgba(244, 244, 244, 0) 14.73%, #F4F4F4 100.98%)"
+                      : "linear-gradient(90deg, rgba(54, 54, 54, 0) 14.73%, #363636 100.98%)"
+                  }
                   borderRadius="2rem"
                   border="0px"
                 />
@@ -162,6 +152,7 @@ const WelcomeSection = () => {
             w="100%"
             maxW="732px"
             templateColumns="repeat(3, 1fr)"
+            gap="1rem"
             justifyItems="center"
           >
             <VStack maxW="180px">

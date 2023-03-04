@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 
 // *Design Imports*
@@ -5,40 +6,38 @@ import { HStack, Box, Link, Icon } from "@chakra-ui/react";
 import {
   MdOutlineHome,
   MdOutlineAccountCircle,
-  // MdSearch,
-  MdOutlineFavoriteBorder,
   MdInfoOutline,
   MdSupportAgent,
 } from "react-icons/md";
-import { GiPerspectiveDiceSixFacesThree } from "react-icons/gi";
+import { GiPerspectiveDiceSixFacesThree, GiChest } from "react-icons/gi";
+
+// *Component Imports*
+import QuestsModal from "../../features/quests/components/modals/QuestsModal";
 
 const Nav = () => {
+  const [show, setShow] = useState(false);
   const location = useLocation();
 
   return (
-    <Box display="flex" flexDir="column" gap="0.5rem">
-      <HStack gap="2" data-group>
+    <Box display="flex" flexDir="column" rowGap="0.5rem">
+      <HStack data-group>
         <Icon
           as={MdOutlineHome}
           variant={
-            location.pathname === "/" || location.pathname === "/home"
-              ? "navOnLocation"
-              : "navigation"
+            location.pathname === "/home" ? "navOnLocation" : "navigation"
           }
         />
         <Link
           as={NavLink}
           to="/home"
           variant={
-            location.pathname === "/" || location.pathname === "/home"
-              ? "navOnLocation"
-              : "navigation"
+            location.pathname === "/home" ? "navOnLocation" : "navigation"
           }
         >
           Home
         </Link>
       </HStack>
-      <HStack gap="2" data-group>
+      <HStack data-group>
         <Icon
           as={GiPerspectiveDiceSixFacesThree}
           variant={
@@ -55,7 +54,7 @@ const Nav = () => {
           Games
         </Link>
       </HStack>
-      <HStack gap="2" data-group>
+      <HStack data-group>
         <Icon
           as={MdOutlineAccountCircle}
           variant={
@@ -76,32 +75,17 @@ const Nav = () => {
           Profile
         </Link>
       </HStack>
-      {/* <HStack gap="2" data-group>
-        <Icon as={MdSearch} />
-        <Link as={NavLink}>Search</Link>
-      </HStack> */}
-      <HStack gap="2" data-group>
-        <Icon
-          as={MdOutlineFavoriteBorder}
-          variant={
-            location.pathname === "/games/favorites"
-              ? "navOnLocation"
-              : "navigation"
-          }
-        />
+      <HStack data-group>
+        <Icon as={GiChest} variant={show ? "navOnLocation" : "navigation"} />
         <Link
           as={NavLink}
-          to="/games/favorites"
-          variant={
-            location.pathname === "/games/favorites"
-              ? "navOnLocation"
-              : "navigation"
-          }
+          onClick={() => setShow(true)}
+          variant={show ? "navOnLocation" : "navigation"}
         >
-          Favorites
+          Quests
         </Link>
       </HStack>
-      <HStack gap="2" data-group>
+      <HStack data-group>
         <Icon
           as={MdInfoOutline}
           variant={
@@ -118,7 +102,7 @@ const Nav = () => {
           About Us
         </Link>
       </HStack>
-      <HStack gap="2" data-group>
+      <HStack data-group>
         <Icon
           as={MdSupportAgent}
           variant={
@@ -135,6 +119,8 @@ const Nav = () => {
           Support
         </Link>
       </HStack>
+
+      <QuestsModal show={show} setShow={setShow} />
     </Box>
   );
 };
