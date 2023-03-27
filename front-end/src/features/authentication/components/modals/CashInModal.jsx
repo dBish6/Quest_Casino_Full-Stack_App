@@ -87,11 +87,7 @@ const CashInModal = (props) => {
       <AnimatePresence initial={false}>
         {props.show && (
           <>
-            <ModalBackdrop
-              show={props.show}
-              setShow={props.setShow}
-              type={typeof props.setShow === "object" ? "cashIn" : ""}
-            />
+            <ModalBackdrop show={props.show} setShow={props.setShow} />
 
             <Container
               as={motion.div}
@@ -165,6 +161,7 @@ const CashInModal = (props) => {
                           message: "Please enter a number.",
                         },
                       })}
+                      id="cash"
                       name="cash"
                       autoComplete="off"
                       variant="primary"

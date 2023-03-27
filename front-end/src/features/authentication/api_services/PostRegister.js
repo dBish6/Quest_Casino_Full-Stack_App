@@ -18,6 +18,7 @@ const PostRegister = () => {
   const toast = useToast();
 
   const handleRegister = async (
+    formRef,
     firstName,
     lastName,
     username,
@@ -36,6 +37,7 @@ const PostRegister = () => {
 
     if (password !== confirmPassword)
       return setErrorHandler({ confirmation: true });
+
     toggleLoading(true);
     try {
       const res = await axios({
@@ -53,6 +55,7 @@ const PostRegister = () => {
       });
       console.log(res.data);
       if (res && res.status === 200) {
+        formRef.current.reset();
         navigate("/home");
         toast({
           description:

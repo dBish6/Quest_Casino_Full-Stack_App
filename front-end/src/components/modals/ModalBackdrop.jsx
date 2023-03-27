@@ -30,9 +30,11 @@ const ModalBackdrop = (props) => {
       exit="hidden"
       key="backdrop"
       onClick={() => {
-        props.type && props.type.length
-          ? props.setShow({ [props.type]: false })
-          : props.setShow(false);
+        if (props.type === "gameStart") {
+          return;
+        } else {
+          props.setShow(false);
+        }
       }}
       position="fixed"
       top="50%"

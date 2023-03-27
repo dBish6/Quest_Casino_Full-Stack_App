@@ -36,7 +36,7 @@ import UpdateProfile from "../features/authentication/api_services/UpdateProfile
 // *Component Imports*
 import Header from "../components/Header";
 import EditableFields from "../features/authentication/components/profile/EditableFields";
-import LogoutBtn from "../features/authentication/components/profile/LogoutBtn";
+import LogoutBtn from "../features/authentication/components/LogoutBtn";
 import PasswordResetModel from "../features/authentication/components/modals/PasswordResetModel";
 import ChangePicture from "../features/authentication/components/profile/ChangePicture";
 
@@ -99,7 +99,7 @@ const Profile = (props) => {
             <Alert status="error" variant="left-accent">
               <AlertIcon />
               <Box>
-                <AlertTitle>Not Found Error!</AlertTitle>
+                <AlertTitle>Server Error 404</AlertTitle>
                 <AlertDescription>{notFoundErr}</AlertDescription>
               </Box>
             </Alert>
@@ -116,7 +116,7 @@ const Profile = (props) => {
                     fontSize="64px"
                     textShadow={colorMode === "light" && "1px 1px 0px #363636"}
                   >
-                    {fsUser.user.username}
+                    {fsUser.username}
                   </Heading>
                   <Text as="small" textAlign="center" mt="0 !important">
                     Edit your profile or change your profile picture!
@@ -213,9 +213,9 @@ const Profile = (props) => {
                         >
                           Wins:{" "}
                           <chakra.span
-                            color={fsUser.user.wins > 0 ? "g500" : "r500"}
+                            color={fsUser.wins.total > 0 ? "g500" : "r600"}
                           >
-                            {fsUser.user.wins}
+                            {fsUser.wins.total}
                           </chakra.span>
                         </Text>
                       </HStack>

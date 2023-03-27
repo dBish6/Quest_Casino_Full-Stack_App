@@ -25,12 +25,27 @@ const casinoTheme = extendTheme({
       baseStyle: {
         wordBreak: "keep-all",
       },
+      variants: {
+        blackjack: (props) => ({
+          color: "wMain",
+          // color: "g50",
+          textShadow: "2px 1px 0px #000000",
+        }),
+      },
     },
     Heading: {
       baseStyle: (props) => ({
+        fontFamily: `'Lobster', cursive`,
         color: mode("r500", "p400")(props),
         fontWeight: "400",
       }),
+      variants: {
+        blackjack: (props) => ({
+          color: "wMain",
+          // color: "g50",
+          textShadow: "2px 1px 0px #000000",
+        }),
+      },
     },
     Container: {
       baseStyle: {
@@ -138,9 +153,10 @@ const casinoTheme = extendTheme({
       "linear-gradient(179.81deg, #CCD1DA 40.79%, rgba(204, 209, 218, 0) 100%)",
   },
   fonts: {
-    body: "Hind Siliguri, sans-serif",
-    heading: "Lobster, cursive",
-    roboto: "Roboto, sans-serif",
+    body: `'Hind Siliguri', sans-serif`,
+    heading: `'Lobster', cursive`,
+    roboto: `'Roboto', sans-serif`,
+    fugaz: `'Fugaz One', cursive`,
   },
   config: {
     initialColorMode: "dark",

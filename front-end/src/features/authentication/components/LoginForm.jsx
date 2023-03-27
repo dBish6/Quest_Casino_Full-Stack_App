@@ -35,6 +35,7 @@ import PostGoogleRegister from "../api_services/PostGoogleRegister";
 
 // *Component Imports*
 import PasswordResetModel from "./modals/PasswordResetModel";
+import LogoutBtn from "./LogoutBtn";
 import RegisterModel from "./modals/RegisterModel";
 
 const LoginForm = (props) => {
@@ -88,7 +89,10 @@ const LoginForm = (props) => {
         ) : errorHandler.notFound ? (
           <Alert status="error" variant="left-accent" mb="0.5rem">
             <AlertIcon />
-            Quest user was not found.
+            <Box>
+              <AlertTitle>Server Error 404</AlertTitle>
+              <AlertDescription>Quest user was not found.</AlertDescription>
+            </Box>
           </Alert>
         ) : errorHandler.unexpected ? (
           <Alert status="error" variant="left-accent" mb="0.5rem">
@@ -117,6 +121,7 @@ const LoginForm = (props) => {
                 message: "Invalid email address.",
               },
             })}
+            id="email"
             name="email"
             autoComplete="off"
             // Disables the input if the user is logged in.
@@ -148,6 +153,7 @@ const LoginForm = (props) => {
               })}
               onFocus={() => setFocused(true)}
               onBlur={() => setFocused(false)}
+              id="password"
               name="password"
               type={visible ? "text" : "password"}
               isDisabled={currentUser !== null}
@@ -214,28 +220,32 @@ const LoginForm = (props) => {
           </Box>
         </FormControl>
 
-        <Button
-          isLoading={loading ? true : false}
-          type="submit"
-          variant="primary"
-          zIndex="1"
-          isDisabled={currentUser !== null}
-          cursor={currentUser !== null && "not-allowed"}
-          _hover={
-            currentUser === null && {
-              bgColor: colorMode === "dark" ? "bd300" : "wMain",
-              color: colorMode === "dark" ? "wMain" : "#000000",
-              boxShadow: "lg",
+        {currentUser === null ? (
+          <Button
+            isLoading={loading ? true : false}
+            type="submit"
+            variant="primary"
+            zIndex="1"
+            isDisabled={currentUser !== null}
+            cursor={currentUser !== null && "not-allowed"}
+            _hover={
+              currentUser === null && {
+                bgColor: colorMode === "dark" ? "bd300" : "wMain",
+                color: colorMode === "dark" ? "wMain" : "#000000",
+                boxShadow: "lg",
+              }
             }
-          }
-          _active={
-            currentUser === null && {
-              bgColor: colorMode === "dark" ? "g500" : "g300",
+            _active={
+              currentUser === null && {
+                bgColor: colorMode === "dark" ? "g500" : "g300",
+              }
             }
-          }
-        >
-          Login
-        </Button>
+          >
+            Login
+          </Button>
+        ) : (
+          <LogoutBtn />
+        )}
       </chakra.form>
       <VStack mt="1rem !important">
         <Divider />

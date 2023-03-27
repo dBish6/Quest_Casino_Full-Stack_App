@@ -39,8 +39,12 @@ const ChangePicture = (props) => {
     const getFirebaseImages = async () => {
       const res = await listAll(ref(storage, "images/defaultProfilePics/"));
       const urls = await Promise.all(
-        res.items.map((img) => getDownloadURL(img))
+        res.items.map(async (img) => {
+          const url = await getDownloadURL(img);
+          return { name: img.name, url: url };
+        })
       );
+      console.log(urls);
       setDefaultPictures(urls);
     };
     getFirebaseImages();
@@ -54,19 +58,19 @@ const ChangePicture = (props) => {
             <DefaultPicsSkeleton />
           </>
         ) : (
-          defaultPictures.map((profilePic, i) => {
+          defaultPictures.map((profilePic) => {
             // So it can update in real time.
             let initialCurrent =
-              props.currentUser.photoURL === profilePic &&
+              props.currentUser.photoURL === profilePic.url &&
               selectedPicture === "";
             let isCurrent =
-              selectedPicture.length && selectedPicture === profilePic;
+              selectedPicture.length && selectedPicture === profilePic.url;
 
             return (
               <>
                 <WrapItem
                   // FIXME: ???
-                  key={i}
+                  key={profilePic.name}
                   maxW="115px"
                   minH="115px"
                   cursor={
@@ -77,7 +81,7 @@ const ChangePicture = (props) => {
                     if (initialCurrent || isCurrent) {
                       return;
                     } else {
-                      setToBeSelectedPicture(profilePic);
+                      setToBeSelectedPicture(profilePic.url);
                       setShow({ areYouSure: true });
                     }
                   }}
@@ -99,7 +103,7 @@ const ChangePicture = (props) => {
                     </Text>
                   ) : undefined}
                   <Image
-                    src={profilePic}
+                    src={profilePic.url}
                     objectFit="contain"
                     borderRadius="50%"
                     bgColor={colorMode === "dark" ? "bd100" : "wMain"}
@@ -108,7 +112,8 @@ const ChangePicture = (props) => {
                     }}
                     _active={{
                       bgColor:
-                        props.currentUser.photoURL === profilePic || isCurrent
+                        props.currentUser.photoURL === profilePic.url ||
+                        isCurrent
                           ? "r500"
                           : "g400",
                     }}

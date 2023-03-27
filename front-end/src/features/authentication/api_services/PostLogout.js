@@ -13,13 +13,11 @@ const PostLogout = () => {
     try {
       setUnexpectedErr("");
 
-      const res = await logout();
-      if (res) {
-        navigate("/home");
-        // FIXME:
-        // document.location.pathname === "/home" &&
+      await logout();
+      navigate("/home");
+      setTimeout(() => {
         alert("User session timed out.");
-      }
+      }, 1000);
     } catch (error) {
       setUnexpectedErr("Failed to log out.");
       console.error(error);

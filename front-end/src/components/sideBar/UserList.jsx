@@ -1,5 +1,5 @@
 // *Design Imports*
-import { HStack, Text, Avatar, Box } from "@chakra-ui/react";
+import { HStack, Text, Avatar, Box, chakra } from "@chakra-ui/react";
 
 // *API Services Imports*
 import GetAllUsers from "../../features/authentication/api_services/GetAllUsers";
@@ -39,7 +39,28 @@ const UserList = () => {
                   {details.username}
                 </Text>
                 <Text color="g500" fontWeight="500">
-                  {details.wins ? details.wins : "Wins: 0"}
+                  {details.wins ? (
+                    typeof details.wins === "object" ? (
+                      <>
+                        Wins:{" "}
+                        <chakra.span color={details.wins.total < 1 && "r600"}>
+                          {details.wins.total}
+                        </chakra.span>
+                      </>
+                    ) : (
+                      <>
+                        Wins:{" "}
+                        <chakra.span color={details.wins < 1 && "r600"}>
+                          {details.wins}
+                        </chakra.span>
+                      </>
+                    )
+                  ) : (
+                    // Don't need in production.
+                    <>
+                      Wins: <chakra.span color="r600">0</chakra.span>
+                    </>
+                  )}
                 </Text>
               </Box>
             </HStack>

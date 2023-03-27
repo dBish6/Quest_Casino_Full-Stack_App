@@ -13,8 +13,7 @@ import {
 } from "@chakra-ui/react";
 
 // *Component Imports*
-import Header from "../../components/Header";
-import GameDisplay from "../../features/games/home/components/gamesDisplay";
+import GameDisplay from "../../features/games/general/components/gamesDisplay";
 
 const GamesHome = (props) => {
   const [isBiggerThan600] = useMediaQuery("(min-width: 600px)");

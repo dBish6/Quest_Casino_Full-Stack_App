@@ -58,7 +58,7 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   // Exports pretty much, for provider.
-  const value = {
+  const functions = {
     currentUser,
     loadingUser,
     login,
@@ -69,7 +69,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider value={functions}>
       {!loadingUser && children}
     </AuthContext.Provider>
   );

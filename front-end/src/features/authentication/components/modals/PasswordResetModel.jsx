@@ -87,11 +87,7 @@ const PasswordResetModel = (props) => {
     <AnimatePresence initial={false}>
       {props.show && (
         <>
-          <ModalBackdrop
-            show={props.show}
-            setShow={props.setShow}
-            type={typeof props.setShow === "object" ? "passwordReset" : ""}
-          />
+          <ModalBackdrop show={props.show} setShow={props.setShow} />
 
           <Container
             as={motion.div}
@@ -153,6 +149,7 @@ const PasswordResetModel = (props) => {
                       message: "Invalid email address.",
                     },
                   })}
+                  id="email"
                   name="email"
                   autoComplete="off"
                   variant="primary"

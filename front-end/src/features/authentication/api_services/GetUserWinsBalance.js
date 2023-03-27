@@ -6,7 +6,7 @@ import axios from "axios";
 const GetUserWinsBalance = (id) => {
   const [fsUserData, setFsUserData] = useState([]);
   const [notFoundErr, setNotFoundErr] = useState("");
-  const [loading, toggleLoading] = useState(true);
+  const [loading, toggleLoading] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {

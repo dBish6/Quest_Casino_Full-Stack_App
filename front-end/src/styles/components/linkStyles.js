@@ -10,7 +10,7 @@ export const linkStyles = defineStyleConfig({
   },
   variants: {
     navigation: (props) => ({
-      borderBottom: "1px",
+      borderBottomWidth: "1px",
       borderColor: "transparent",
       lineHeight: "18px",
       opacity: "0.5",
@@ -28,7 +28,7 @@ export const linkStyles = defineStyleConfig({
       opacity: "1",
       fontWeight: "500",
       color: mode("g500", "p400")(props),
-      borderBottom: "1px",
+      borderBottomWidth: "1px",
       borderColor: mode("g500", "p400")(props),
       lineHeight: "18px",
     }),

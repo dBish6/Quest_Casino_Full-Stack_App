@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { ErrorMessage } from "@hookform/error-message";
 
@@ -85,6 +85,7 @@ const RegisterModel = (props) => {
       phone: "",
     },
   });
+  const formRef = useRef(null);
   const { handleRegister, errorHandler, setErrorHandler, loading } =
     PostRegister();
 
@@ -98,15 +99,12 @@ const RegisterModel = (props) => {
     }
   }, [props.show]);
 
+  // TODO: Password strength indicator.
   return (
     <AnimatePresence>
       {props.show && (
         <>
-          <ModalBackdrop
-            show={props.show}
-            setShow={props.setShow}
-            type="register"
-          />
+          <ModalBackdrop show={props.show} setShow={props.setShow} />
           <Container
             as={motion.div}
             variants={model}
@@ -139,6 +137,7 @@ const RegisterModel = (props) => {
             <chakra.form
               onSubmit={handleSubmit(() =>
                 handleRegister(
+                  formRef,
                   watch("firstName"),
                   watch("lastName"),
                   watch("username"),
@@ -148,6 +147,7 @@ const RegisterModel = (props) => {
                   watch("phone")
                 )
               )}
+              ref={formRef}
             >
               {errorHandler.unexpected ? (
                 <Alert status="error" variant="left-accent">
@@ -174,8 +174,12 @@ const RegisterModel = (props) => {
                   <Input
                     {...register("firstName", {
                       required: "First name is required.",
-                      maxLength: 50,
+                      maxLength: {
+                        value: 50,
+                        message: "Max of 50 characters exceeded.",
+                      },
                     })}
+                    id="firstName"
                     name="firstName"
                     autoComplete="off"
                     variant="primary"
@@ -196,8 +200,12 @@ const RegisterModel = (props) => {
                   <Input
                     {...register("lastName", {
                       required: "Last name is required.",
-                      maxLength: 50,
+                      maxLength: {
+                        value: 80,
+                        message: "Max of 80 characters exceeded.",
+                      },
                     })}
+                    id="lastName"
                     name="lastName"
                     autoComplete="off"
                     variant="primary"
@@ -229,6 +237,7 @@ const RegisterModel = (props) => {
                       message: "You can make a better username then that...",
                     },
                   })}
+                  id="username"
                   name="username"
                   autoComplete="off"
                   variant="primary"
@@ -257,7 +266,12 @@ const RegisterModel = (props) => {
                       value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
                       message: "Invalid email address.",
                     },
+                    maxLength: {
+                      value: 254,
+                      message: "This can't be your actual email, holy crap!.",
+                    },
                   })}
+                  id="email"
                   name="email"
                   autoComplete="off"
                   variant="primary"
@@ -290,9 +304,14 @@ const RegisterModel = (props) => {
                           value: 6,
                           message: "Password must be at least 6 characters.",
                         },
+                        maxLength: {
+                          value: 128,
+                          message: "Max of 128 characters exceeded.",
+                        },
                       })}
                       onFocus={() => setFocused({ password: true })}
                       onBlur={() => setFocused({ password: false })}
+                      id="password"
                       name="password"
                       type={visible.password ? "text" : "password"}
                       variant="primary"
@@ -346,6 +365,10 @@ const RegisterModel = (props) => {
                     <Input
                       {...register("conPassword", {
                         required: "Please confirm your password.",
+                        maxLength: {
+                          value: 128,
+                          message: "Max of 128 characters exceeded.",
+                        },
                         onChange: (e) => {
                           if (e.target.value === watch("password"))
                             setErrorHandler({ confirmation: false });
@@ -353,6 +376,7 @@ const RegisterModel = (props) => {
                       })}
                       onFocus={() => setFocused({ confirm: true })}
                       onBlur={() => setFocused({ confirm: false })}
+                      id="conPassword"
                       name="conPassword"
                       type={visible.confirm ? "text" : "password"}
                       variant="primary"
@@ -400,13 +424,18 @@ const RegisterModel = (props) => {
                 </FormControl>
               </HStack>
 
-              {/* TODO: Phone format. */}
+              {/* TODO: Country codes. */}
               <FormControl isInvalid={errorHandler.phoneInUse}>
                 <FormLabel htmlFor="phone">Phone</FormLabel>
                 <Input
                   {...register("phone", {
                     required: false,
+                    maxLength: {
+                      value: 15,
+                      message: "Max of 15 characters exceeded.",
+                    },
                   })}
+                  id="phone"
                   name="phone"
                   autoComplete="off"
                   variant="primary"

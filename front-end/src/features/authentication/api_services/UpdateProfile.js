@@ -309,9 +309,12 @@ const UpdateProfile = () => {
 
         // If the user use one of the default images.
       } else {
+        console.log("photoURL", photoURL);
+        const encodedURL = encodeURIComponent(photoURL);
+        console.log("encodedURL", encodedURL);
         const res = await axios({
           method: "PATCH",
-          url: `http://localhost:4000/auth/api/firebase/update/${id}?profilePic=${photoURL}`,
+          url: `http://localhost:4000/auth/api/firebase/update/${id}?profilePic=${encodedURL}`,
         });
         console.log(res.data);
 
@@ -339,40 +342,41 @@ const UpdateProfile = () => {
     }
   };
 
-  const handleUpdateWins = async (id, wins) => {
-    setErrorHandler({ unexpected: false, maxRequests: false });
+  // const handleUpdateWins = async (id, wins) => {
+  //   setErrorHandler({ unexpected: false, maxRequests: false });
 
-    try {
-      const res = await axios({
-        method: "PATCH",
-        url: `http://localhost:4000/auth/api/firebase/update/${id}?wins=${wins}`,
-      });
-      if (res && res.status === 200) console.log(res.data);
-    } catch (error) {
-      if (error.code === "auth/too-many-requests") {
-        toast({
-          description: "Max request exceeded! Please try again later.",
-          status: "error",
-          isClosable: true,
-          position: "top",
-          variant: "solid",
-        });
-      } else {
-        toast({
-          description: "Server Error 500: Failed to update profile.",
-          status: "error",
-          isClosable: true,
-          position: "top",
-          variant: "solid",
-        });
-      }
-      console.error(error);
-    }
-  };
+  //   try {
+  //     const res = await axios({
+  //       method: "PATCH",
+  //       url: `http://localhost:4000/auth/api/firebase/update/${id}?wins=${wins}`,
+  //     });
+  //     if (res && res.status === 200) console.log(res.data);
+  //   } catch (error) {
+  //     if (error.code === "auth/too-many-requests") {
+  //       toast({
+  //         description: "Max request exceeded! Please try again later.",
+  //         status: "error",
+  //         isClosable: true,
+  //         position: "top",
+  //         variant: "solid",
+  //       });
+  //     } else {
+  //       toast({
+  //         description: "Server Error 500: Failed to update profile.",
+  //         status: "error",
+  //         isClosable: true,
+  //         position: "top",
+  //         variant: "solid",
+  //       });
+  //     }
+  //     console.error(error);
+  //   }
+  // };
 
   const handleUpdateBalance = async (formRef, id, balance) => {
     setErrorHandler({ unexpected: false });
     toggleLoadingUpdate({ balance: true });
+    console.log("handleUpdateBalance");
 
     try {
       const res = await axios({
@@ -381,7 +385,8 @@ const UpdateProfile = () => {
       });
       console.log(res.data);
       if (res && res.status === 200) {
-        toggleLoadingUpdate({ balance: false });
+        // toggleLoadingUpdate({ balance: false });
+        // if (formRef !== null) {
         formRef.current.reset();
         toast({
           description: "Funds successfully added.",
@@ -391,10 +396,13 @@ const UpdateProfile = () => {
           position: "top",
           variant: "solid",
         });
+        // }
       }
     } catch (error) {
       setErrorHandler({ unexpected: true });
       console.error(error);
+    } finally {
+      toggleLoadingUpdate({ balance: false });
     }
   };
 
@@ -405,7 +413,7 @@ const UpdateProfile = () => {
     handleEmailVerified,
     handlePhone,
     handleProfilePicture,
-    handleUpdateWins,
+    // handleUpdateWins,
     handleUpdateBalance,
     emailSent,
     // successfulPost,

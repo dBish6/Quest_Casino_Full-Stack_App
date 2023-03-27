@@ -72,11 +72,7 @@ const QuestsModal = (props) => {
       <AnimatePresence initial={false}>
         {props.show && (
           <>
-            <ModalBackdrop
-              show={props.show}
-              setShow={props.setShow}
-              type={typeof props.setShow === "object" ? "quests" : ""}
-            />
+            <ModalBackdrop show={props.show} setShow={props.setShow} />
 
             <Container
               as={motion.div}

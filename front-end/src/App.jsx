@@ -4,8 +4,15 @@
    Creation Date: February 4, 2023
 */
 
-import { useState } from "react";
-import { HashRouter, Routes, Route, Navigate, Outlet } from "react-router-dom";
+import { useState, useEffect } from "react";
+import {
+  HashRouter,
+  Routes,
+  Route,
+  Navigate,
+  Outlet,
+  useLocation,
+} from "react-router-dom";
 import { Grid, useMediaQuery } from "@chakra-ui/react";
 
 import PrivateRoute from "./features/authentication/PrivateRoute";
@@ -14,7 +21,7 @@ import PrivateRoute from "./features/authentication/PrivateRoute";
 import { AuthProvider } from "./features/authentication/contexts/AuthContext";
 
 // *Design Imports*
-import { chakra, Image, useColorMode } from "@chakra-ui/react";
+import { chakra, useColorMode } from "@chakra-ui/react";
 
 // *Component Imports*
 import DesktopSidebar from "./components/sideBar";
@@ -23,7 +30,6 @@ import NavBar from "./components/partials/NavBar";
 
 // *Feature Imports*
 import RegisterModel from "./features/authentication/components/modals/RegisterModel";
-import PasswordResetModel from "./features/authentication/components/modals/PasswordResetModel";
 
 // *Pages/Views*
 import Home from "./pages/Home";
@@ -33,15 +39,31 @@ import Profile from "./pages/Profile";
 
 import GamesHome from "./pages/games/GamesHome";
 import Blackjack from "./pages/games/Blackjack";
-import BlackjackTest from "./features/games/blackjack/test";
 
 import Error404 from "./pages/errors/Error404";
 import Error500 from "./pages/errors/Error500";
+
+// *Redux Imports*
+import { useDispatch, useSelector } from "react-redux";
+import { CLEAR_GAME } from "./features/games/blackjack/redux/blackjackSlice";
+import { selectGameType } from "./features/games/blackjack/redux/blackjackSelectors";
 
 const ShowPartials = () => {
   const [isLargerThan1027] = useMediaQuery("(min-width: 1027px)");
   const [showSideBar, setShowSideBar] = useState(true);
   const { colorMode } = useColorMode();
+  const location = useLocation();
+
+  const gameType = useSelector(selectGameType);
+  const dispatch = useDispatch();
+
+  // Ensures no game is running if the player leaves the page.
+  useEffect(() => {
+    console.log("gameType2", gameType);
+    if (location.pathname !== "/games/blackjack" && gameType) {
+      dispatch(CLEAR_GAME());
+    }
+  }, [location, dispatch, gameType]);
 
   return (
     <>
@@ -68,10 +90,8 @@ const ShowPartials = () => {
           />
         )}
 
-        {/* FIXME: overflow */}
         <chakra.main
           p={{ base: "1.5rem 1rem", md: "1.5rem 2rem", xl: "1.5rem 2rem" }}
-          overflowX="hidden"
         >
           <NavBar />
           <Outlet />
@@ -100,10 +120,6 @@ function App() {
                 </PrivateRoute>
               }
             />
-            <Route
-              path="/user/forgotPassword"
-              element={<PasswordResetModel title="Forgot" />}
-            />
             <Route path="/games" element={<GamesHome title="Games" />} />
 
             <Route path="/error404" element={<Error404 title="ERROR" />} />
@@ -115,11 +131,11 @@ function App() {
 
           <Route
             path="/games/blackjack"
-            element={<Blackjack title="Blackjack" />}
-          />
-          <Route
-            path="/games/blackjack/test"
-            element={<BlackjackTest title="Blackjack Test" />}
+            element={
+              <PrivateRoute>
+                <Blackjack title="Blackjack" />
+              </PrivateRoute>
+            }
           />
         </Routes>
       </AuthProvider>

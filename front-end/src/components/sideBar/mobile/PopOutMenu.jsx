@@ -36,12 +36,15 @@ const PopOutMenu = (props) => {
           marginInlineStart="0 !important"
           zIndex="dropdown"
           bgColor={
-            colorMode === "dark"
-              ? "rgba(66, 75, 94, 0.7)"
-              : "rgba(117, 119, 125, 0.7)"
+            // colorMode === "dark"
+            //   ? "rgba(66, 75, 94, 0.7)"
+            //   : "rgba(117, 119, 125, 0.7)"
+            colorMode === "dark" ? "bd700" : "bl400"
           }
           borderLeftWidth="2px"
-          borderLeftColor={colorMode === "dark" ? "borderD" : "borderL"}
+          borderRightWidth={colorMode === "light" && "1px"}
+          borderBottomWidth={colorMode === "light" && "1px"}
+          borderColor={colorMode === "dark" ? "borderD" : "borderL"}
           borderBottomEndRadius="6px"
         >
           <VStack
@@ -145,12 +148,15 @@ const PopOutMenu = (props) => {
           marginInlineStart="0 !important"
           zIndex="dropdown"
           bgColor={
-            colorMode === "dark"
-              ? "rgba(66, 75, 94, 0.7)"
-              : "rgba(117, 119, 125, 0.7)"
+            // colorMode === "dark"
+            //   ? "rgba(66, 75, 94, 0.7)"
+            //   : "rgba(117, 119, 125, 0.7)"
+            colorMode === "dark" ? "bd700" : "bl400"
           }
           borderLeftWidth="2px"
-          borderLeftColor={colorMode === "dark" ? "borderD" : "borderL"}
+          borderRightWidth={colorMode === "light" && "1px"}
+          borderBottomWidth={colorMode === "light" && "1px"}
+          borderColor={colorMode === "dark" ? "borderD" : "borderL"}
           borderBottomEndRadius="6px"
         >
           <VStack
@@ -188,12 +194,15 @@ const PopOutMenu = (props) => {
           marginInlineStart="0 !important"
           zIndex="dropdown"
           bgColor={
-            colorMode === "dark"
-              ? "rgba(66, 75, 94, 0.7)"
-              : "rgba(117, 119, 125, 0.7)"
+            // colorMode === "dark"
+            //   ? "rgba(66, 75, 94, 0.7)"
+            //   : "rgba(117, 119, 125, 0.7)"
+            colorMode === "dark" ? "bd700" : "bl400"
           }
           borderLeftWidth="2px"
-          borderLeftColor={colorMode === "dark" ? "borderD" : "borderL"}
+          borderRightWidth={colorMode === "light" && "1px"}
+          borderBottomWidth={colorMode === "light" && "1px"}
+          borderColor={colorMode === "dark" ? "borderD" : "borderL"}
           borderBottomEndRadius="6px"
         >
           <VStack

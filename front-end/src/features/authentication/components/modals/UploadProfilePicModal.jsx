@@ -45,7 +45,6 @@ const model = {
 };
 
 const UploadProfilePicModal = (props) => {
-  console.log(props);
   const { colorMode } = useColorMode();
 
   useEffect(() => {

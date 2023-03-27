@@ -68,7 +68,7 @@ const EditableFields = (props) => {
             fontSize={{ base: "20px", md: "24px", xl: "24px" }}
           />
           <Text fontSize={{ base: "16px", md: "18px", xl: "18px" }}>
-            {props.fsUser.user.full_name}
+            {props.fsUser.full_name}
           </Text>
           <Tooltip hasArrow label="Edit" variant="primary">
             <IconButton
@@ -120,7 +120,7 @@ const EditableFields = (props) => {
                 onBlur={() => setFocused({ name: false })}
                 name="name"
                 autoComplete="off"
-                placeholder={props.fsUser.user.full_name}
+                placeholder={props.fsUser.full_name}
                 variant="primary"
                 paddingInline="2.25rem 1rem"
                 marginInlineStart="0px !important"
@@ -169,7 +169,7 @@ const EditableFields = (props) => {
             fontSize={{ base: "20px", md: "24px", xl: "24px" }}
           />
           <Text fontSize={{ base: "16px", md: "18px", xl: "18px" }}>
-            {props.fsUser.user.username}
+            {props.fsUser.username}
           </Text>
           <Tooltip hasArrow label="Edit" variant="primary">
             <IconButton
@@ -231,7 +231,7 @@ const EditableFields = (props) => {
                 onBlur={() => setFocused({ username: false })}
                 name="username"
                 autoComplete="off"
-                placeholder={props.fsUser.user.username}
+                placeholder={props.fsUser.username}
                 variant="primary"
                 paddingInline="2.25rem 1rem"
                 marginInlineStart="0px !important"
@@ -280,7 +280,7 @@ const EditableFields = (props) => {
             fontSize={{ base: "20px", md: "24px", xl: "24px" }}
           />
           <Text fontSize={{ base: "16px", md: "18px", xl: "18px" }}>
-            {props.fsUser.user.email}
+            {props.fsUser.email}
           </Text>
           <Tooltip hasArrow label="Edit" variant="primary">
             <IconButton
@@ -338,7 +338,7 @@ const EditableFields = (props) => {
                 onBlur={() => setFocused({ email: false })}
                 name="email"
                 autoComplete="off"
-                placeholder={props.fsUser.user.email}
+                placeholder={props.fsUser.email}
                 variant="primary"
                 paddingInline="2.25rem 1rem"
                 marginInlineStart="0px !important"
@@ -387,11 +387,9 @@ const EditableFields = (props) => {
             fontSize={{ base: "20px", md: "24px", xl: "24px" }}
           />
           <Text fontSize={{ base: "16px", md: "18px", xl: "18px" }}>
-            {props.fsUser.user.phone_number
-              ? props.fsUser.user.phone_number
-              : "None"}
+            {props.fsUser.phone_number ? props.fsUser.phone_number : "None"}
           </Text>
-          {props.fsUser.user.phone_number ? (
+          {props.fsUser.phone_number ? (
             <Tooltip hasArrow label="Edit" variant="primary">
               <IconButton
                 icon={
@@ -447,7 +445,7 @@ const EditableFields = (props) => {
                 onBlur={() => setFocused({ phone: false })}
                 name="phone"
                 autoComplete="off"
-                placeholder={props.fsUser.user.phone_number}
+                placeholder={props.fsUser.phone_number}
                 variant="primary"
                 paddingInline="2.25rem 1rem"
                 marginInlineStart="0px !important"

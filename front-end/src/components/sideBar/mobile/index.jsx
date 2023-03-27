@@ -2,8 +2,6 @@ import { useState } from "react";
 
 // *Design Imports*
 import {
-  HStack,
-  Box,
   VStack,
   Icon,
   Image,
