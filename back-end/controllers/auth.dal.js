@@ -17,7 +17,6 @@ const getAllUsersFromDb = async () => {
   }
 };
 
-// Get details you need for sidebar and call full user in profile.
 const getUserFromDb = async (id) => {
   try {
     const document = await db.collection("users").doc(id).get();
@@ -29,6 +28,18 @@ const getUserFromDb = async (id) => {
   } catch (error) {
     console.error(error);
     if (DEBUG) console.error("DEBUGGER: auth.dal error: getUserFromDb");
+  }
+};
+
+// TODO: Unique DisplayNames.
+const getAllUsernamesFromDb = async () => {
+  try {
+    const collection = await db.collection("users").get({ fields: "username" });
+    const documents = collection.docs.map((doc) => doc.data());
+    if (documents.length) return documents;
+  } catch (error) {
+    console.error(error);
+    if (DEBUG) console.error("DEBUGGER: auth.dal error: getUsernameFromDb");
   }
 };
 
@@ -55,6 +66,62 @@ const getUserWinsBalanceFromDb = async (id) => {
   }
 };
 
+const getUserWinsFromDb = async (id) => {
+  try {
+    const document = await db.collection("users").doc(id).get({
+      fields: "wins",
+    });
+    if (!document.exists) {
+      return "User doesn't exist.";
+    } else {
+      return await document.get("wins");
+    }
+  } catch (error) {
+    console.error(error);
+    if (DEBUG) console.error("DEBUGGER: auth.dal error: getUserWinsFromDb");
+  }
+};
+
+const getUserBalanceFromDb = async (id) => {
+  try {
+    const document = await db.collection("users").doc(id).get({
+      fields: "balance",
+    });
+    if (!document.exists) {
+      return "User doesn't exist.";
+    } else {
+      return await document.get("balance");
+    }
+  } catch (error) {
+    console.error(error);
+    if (DEBUG) console.error("DEBUGGER: auth.dal error: getUserBalanceFromDb");
+  }
+};
+
+const getLeaderBoardFromDb = async () => {
+  try {
+    const documents = await db
+      .collection("users")
+      .orderBy("wins.total", "desc")
+      .limit(10)
+      .get();
+    const leaderboard = documents.docs.map((doc) => {
+      const wins = doc.get("wins");
+      const usernames = doc.get("username");
+      const totalWins = Object.values(wins).reduce((acc, val) => acc + val);
+      return {
+        usernames,
+        totalWins,
+      };
+    });
+
+    if (leaderboard.length) return leaderboard;
+  } catch (error) {
+    console.error(error);
+    if (DEBUG) console.error("DEBUGGER: auth.dal error: getLeaderBoardFromDb");
+  }
+};
+
 const confirmUserDocument = async (id) => {
   try {
     const document = await db.collection("users").doc(id).get();
@@ -66,35 +133,6 @@ const confirmUserDocument = async (id) => {
   } catch (error) {
     console.error(error);
     if (DEBUG) console.error("DEBUGGER: auth.dal error: confirmUserDocument");
-  }
-};
-
-// const getWinsFromDb = async (id) => {
-//   try {
-//     const document = await db.collection("users").doc(id).get();
-//     if (!document.exists) {
-//       return false;
-//     } else {
-//       return true;
-//     }
-//   } catch (error) {
-//     console.error(error);
-//     if (DEBUG) console.error("DEBUGGER: auth.dal error: getWinsFromDb");
-//   }
-// };
-
-// TODO: Unique DisplayNames.
-const getUsernameFromDb = async (id) => {
-  try {
-    const document = await db.collection("users").doc().get("username");
-    if (!document.exists) {
-      return "User doesn't exist.";
-    } else {
-      return document.data();
-    }
-  } catch (error) {
-    console.error(error);
-    if (DEBUG) console.error("DEBUGGER: auth.dal error: getUsernameFromDb");
   }
 };
 
@@ -120,7 +158,7 @@ const addUserToDb = async (
         password: password,
         phone_number: phoneNum,
         photoURL: profilePic,
-        wins: { blackjack: 0 },
+        wins: { total: 0, blackjack: 0, slots: 0 },
         balance: "$0",
         favorites: [],
         // TODO:
@@ -158,7 +196,7 @@ const addGoogleUserToDb = async (
         phone_number: phoneNum,
         photoURL: profilePic,
         wins: 0,
-        balance: "$0",
+        balance: 0,
         favorites: [],
         quests_completed: [],
         creation_date: moment().format(),
@@ -230,12 +268,47 @@ const updateProfilePicture = async (id, photoURL) => {
   }
 };
 
-const updateWins = async (id, wins) => {
+const updateWins = async (id, win) => {
+  if (!win) {
+    throw new Error(
+      "The wins wasn't updated successfully! You must of forgot to pass the type as the req.query.win."
+    );
+  }
+
   try {
-    const response = await db.collection("users").doc(id).update({
-      wins: wins,
+    const document = await db.collection("users").doc(id).get({
+      fields: "wins",
     });
-    return response;
+
+    if (!document.exists) {
+      return "User doesn't exist.";
+    } else {
+      const currentWins = await document.get("wins");
+
+      const response = await db
+        .collection("users")
+        .doc(id)
+        .update(
+          win === "blackjack"
+            ? {
+                wins: {
+                  ...currentWins,
+                  blackjack: currentWins.blackjack + 1,
+                  total: currentWins.total + 1,
+                },
+              }
+            : win === "Slots"
+            ? {
+                wins: {
+                  ...currentWins,
+                  slots: currentWins.slots + 1,
+                  total: currentWins.total + 1,
+                },
+              }
+            : { wins: {} }
+        );
+      return response;
+    }
   } catch (error) {
     console.error(error);
     if (DEBUG) console.error("DEBUGGER: auth.dal error: updateWins");
@@ -244,12 +317,9 @@ const updateWins = async (id, wins) => {
 
 const updateBalance = async (id, balance) => {
   try {
-    const response = await db
-      .collection("users")
-      .doc(id)
-      .update({
-        balance: "$" + balance,
-      });
+    const response = await db.collection("users").doc(id).update({
+      balance: balance,
+    });
     return response;
   } catch (error) {
     console.error(error);
@@ -270,10 +340,11 @@ const updateFavorites = async (id, favorite) => {
   }
 };
 
+// FIXME:
 const deleteUserFromDb = async (id) => {
   try {
     const document = await db.collection("users").doc(id).get();
-    if (document.exists()) {
+    if (document.exists) {
       const response = await document.ref.delete();
       return response;
     }
@@ -286,9 +357,12 @@ const deleteUserFromDb = async (id) => {
 module.exports = {
   getAllUsersFromDb,
   getUserFromDb,
+  getAllUsernamesFromDb,
   getUserWinsBalanceFromDb,
+  getUserWinsFromDb,
+  getUserBalanceFromDb,
+  getLeaderBoardFromDb,
   confirmUserDocument,
-  getUsernameFromDb,
   addUserToDb,
   addGoogleUserToDb,
   updateRealName,

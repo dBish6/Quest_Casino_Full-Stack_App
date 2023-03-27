@@ -9,8 +9,15 @@ const authDal = require("../controllers/auth.dal");
 // Get All Users
 router.get("/api/firebase/users", async (req, res) => {
   if (DEBUG) console.log("/auth/api/firebase/users");
+  let fsRes;
+
   try {
-    const fsRes = await authDal.getAllUsersFromDb();
+    if (req.query.leaderboard) {
+      fsRes = await authDal.getLeaderBoardFromDb();
+    } else {
+      fsRes = await authDal.getAllUsersFromDb();
+    }
+
     if (!fsRes.length) {
       res.status(404).json({
         firestoreRes: fsRes,
@@ -31,13 +38,20 @@ router.get("/api/firebase/users", async (req, res) => {
 
 // Get Certain User or Certain Details
 router.get("/api/firebase/users/:id", async (req, res) => {
-  if (DEBUG) console.log("/auth/api/firebase/users/:id req:", req.params);
+  if (DEBUG)
+    console.log("/auth/api/firebase/users/:id req:", req.params, req.query);
   let fsRes;
 
   try {
     if (req.query.wins && req.query.balance) {
       fsRes = await authDal.getUserWinsBalanceFromDb(req.params.id);
+    } else if (req.query.wins) {
+      fsRes = await authDal.getUserWinsFromDb(req.params.id);
+    } else if (req.query.balance) {
+      console.log("confirmed1");
+      fsRes = await authDal.getUserBalanceFromDb(req.params.id);
     } else {
+      console.log("confirmed2");
       fsRes = await authDal.getUserFromDb(req.params.id);
     }
 
@@ -48,8 +62,11 @@ router.get("/api/firebase/users/:id", async (req, res) => {
           "/auth/api/firebase/users/:id failed to find the document of the requested user.",
       });
     } else if (fsRes) {
-      res.json({ user: fsRes });
-      if (DEBUG) console.log("DEBUGGER: User was sent to client.");
+      res.json(fsRes);
+      if (DEBUG)
+        console.log(
+          "DEBUGGER: User or desired user credential was sent to client."
+        );
     }
   } catch (error) {
     console.error(error);
@@ -163,6 +180,8 @@ router.patch("/api/firebase/update/:id", async (req, res) => {
     console.log("/auth/api/firebase/update/:id req:", req.params, req.query);
   let fsRes;
   let authRes;
+  let winsRes;
+  let balanceRes;
   const userId = req.params.id;
 
   try {
@@ -188,22 +207,47 @@ router.patch("/api/firebase/update/:id", async (req, res) => {
       authRes = admin.auth().updateUser(userId, {
         photoURL: req.query.profilePic,
       });
-    } else if (req.query.wins) {
-      fsRes = await authDal.updateWins(userId, req.query.wins);
+    } else if (req.query.win && req.query.winType && req.query.balance) {
+      if (req.query.win === "true")
+        winsRes = await authDal.updateWins(userId, req.query.winType);
+
+      if (winsRes !== "User doesn't exist." || !winsRes) {
+        balanceRes = await authDal.updateBalance(
+          userId,
+          parseInt(req.query.balance)
+        );
+      } else if (winsRes === "User doesn't exist.") {
+        res.status(404).json({
+          user: winsRes,
+          ERROR:
+            "/auth/api/firebase/update/:id failed to find the document by Id to update wins and balance.",
+        });
+      }
+    } else if (req.query.win) {
+      fsRes = await authDal.updateWins(userId);
     } else if (req.query.balance) {
-      fsRes = await authDal.updateBalance(userId, req.query.balance);
+      fsRes = await authDal.updateBalance(userId, parseInt(req.query.balance));
     } else {
       res.status(400).json({
-        ERROR: "/auth/api/firebase/update was given nothing to update.",
+        ERROR: "/auth/api/firebase/update/:id was given nothing to update.",
       });
+      throw new Error(
+        "/auth/api/firebase/update/:id was given nothing to update."
+      );
     }
 
-    if (fsRes) {
-      res.json({ updated: true, firestoreRes: fsRes });
-      if (DEBUG) console.log("DEBUGGER: User was updated to database.");
-    } else if (authRes && fsRes) {
+    if (authRes && fsRes) {
       res.json({ updated: true, authRes: authRes, firestoreRes: fsRes });
-      if (DEBUG) console.log("DEBUGGER: User was updated to database.");
+      if (DEBUG) console.log("DEBUGGER: User was updated to the database.");
+    } else if (winsRes && balanceRes) {
+      res.json({ updated: true, winsRes: winsRes, balanceRes: balanceRes });
+      if (DEBUG) console.log("DEBUGGER: User was updated to the database.");
+    } else if (balanceRes) {
+      res.json({ updated: true, balanceRes: balanceRes });
+      if (DEBUG) console.log("DEBUGGER: User was updated to the database.");
+    } else if (fsRes) {
+      res.json({ updated: true, firestoreRes: fsRes });
+      if (DEBUG) console.log("DEBUGGER: User was updated to the database.");
     }
   } catch (error) {
     console.error(error);
