@@ -12,6 +12,8 @@ export const selectDealerFaceDownScore = (store) =>
 export const selectDealerScore = (store) => store.blackjack.dealerScore;
 export const selectDealerTurn = (store) => store.blackjack.dealerTurn;
 export const selectDealerStanding = (store) => store.blackjack.dealerStanding;
+export const selectDealerHasNatural = (store) =>
+  store.blackjack.dealerHasNatural;
 // Player Selectors
 export const selectPlayerCards = (store) => store.blackjack.playerCards;
 export const selectPlayerScore = (store) => store.blackjack.playerScore;
@@ -19,7 +21,7 @@ export const selectPlayerBet = (store) => store.blackjack.playerBet;
 export const selectPlayerInitialHit = (store) =>
   store.blackjack.playerInitialHit;
 export const selectPlayerStanding = (store) => store.blackjack.playerStanding;
-export const selectHasBlackjackOnFirstTurn = (store) =>
-  store.blackjack.hasBlackjackOnFirstTurn;
+export const selectPlayerHasNatural = (store) =>
+  store.blackjack.playerHasNatural;
 export const selectWallet = (store) => store.blackjack.wallet;
 export const selectWinner = (store) => store.blackjack.winner;

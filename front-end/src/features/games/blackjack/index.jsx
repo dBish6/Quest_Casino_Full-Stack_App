@@ -40,6 +40,7 @@ import {
   UPDATE_SCORE,
   DETERMINE_WINNER,
   SET_WALLET,
+  DEALER_TURN,
 } from "./redux/blackjackSlice";
 import {
   selectGameType,
@@ -48,9 +49,12 @@ import {
   selectDealerScore,
   selectDealerTurn,
   selectDealerStanding,
+  selectDealerHasNatural,
   selectPlayerCards,
   selectPlayerScore,
+  selectPlayerInitialHit,
   selectPlayerStanding,
+  selectPlayerHasNatural,
   selectWinner,
   selectWallet,
 } from "./redux/blackjackSelectors";
@@ -64,15 +68,17 @@ const BlackjackFeature = () => {
   });
   const { colorMode } = useColorMode();
   const { currentUser } = useAuth();
-  const { fetchBalance, fsUserBalance, loading, abortController } =
-    GetUserBalance(currentUser.uid, true);
+  const { fetchBalance, loading, abortController } = GetUserBalance(
+    currentUser.uid,
+    true
+  );
 
   // Dealer
   const [dealerUpdated, setDealerUpdated] = useState(null);
   const dealerTurn = useDealerTurn();
 
   // Player
-  const [playerUpdated, setPlayerUpdated] = useState(null);
+  // const [playerUpdated, setPlayerUpdated] = useState(null);
   const [showAcePrompt, setShowAcePrompt] = useState(false);
   const [wants11, setWants11] = useState(0);
 
@@ -83,9 +89,13 @@ const BlackjackFeature = () => {
   const dealerScore = useSelector(selectDealerScore);
   const isDealerTurn = useSelector(selectDealerTurn);
   const dealerStanding = useSelector(selectDealerStanding);
+  const dealerHasNatural = useSelector(selectDealerHasNatural);
+
   const playerCards = useSelector(selectPlayerCards);
   const playerScore = useSelector(selectPlayerScore);
+  const hasPlayerHit = useSelector(selectPlayerInitialHit);
   const playerStanding = useSelector(selectPlayerStanding);
+  const playerHasNatural = useSelector(selectPlayerHasNatural);
   const winner = useSelector(selectWinner);
   const wallet = useSelector(selectWallet);
   const dispatch = useDispatch();
@@ -97,7 +107,7 @@ const BlackjackFeature = () => {
     setShow({ gameStart: true, canCancel: false });
   }, []);
 
-  // Sets the wallet as the user's balance initially.
+  // Sets the wallet as the user's balance initially when gameType is Match.
   useEffect(() => {
     if (gameType === "Match" && wallet === null) {
       fetchBalance(dispatch, SET_WALLET);
@@ -105,15 +115,54 @@ const BlackjackFeature = () => {
     }
   }, [gameType]);
 
-  // Update Scores UseEffect
+  // Updates Dealer's Score
   useEffect(() => {
-    if (dealerCards.length > 1 && playerCards.length > 1) {
-      Promise.all([
-        dealerUpdated || dealerStanding === true,
-        playerUpdated || dealerStanding === true,
-      ]).then(() => {
-        // If 21, wait for the dealers turn (2500ms) to be over then DETERMINE_WINNER because the dealer can push.
-        if (playerScore === 21) {
+    if (dealerCards.length > 1) {
+      setDealerUpdated(dispatch(UPDATE_SCORE({ player: false, wants11: 11 })));
+    }
+  }, [dealerCards]);
+
+  // Updates Player's Score
+  useEffect(() => {
+    if (playerCards.length > 1) {
+      waitForAceDecision(showAcePrompt).then(() => {
+        !winner && dispatch(UPDATE_SCORE({ player: true, wants11: wants11 }));
+
+        if (wants11 > 0) setWants11(0);
+      });
+    } else {
+      // If the player starts a new game in the middle of a game and ace prompt is showing.
+      setShowAcePrompt(false);
+    }
+  }, [playerCards, showAcePrompt]);
+
+  // When the player is standing.
+  useEffect(() => {
+    if (playerStanding && !dealerStanding && !winner) {
+      setTimeout(() => {
+        setDealerUpdated(dealerTurn());
+      }, 2500);
+    }
+  }, [playerStanding, dealerStanding, dealerScore]);
+
+  // Determines the winner when it is dealers turn and when there is a update to his score.
+  useEffect(() => {
+    if (dealerCards.length > 1 && isDealerTurn) {
+      Promise.all([dealerUpdated || dealerStanding]).then(() => {
+        if (playerScore === 21 && !playerHasNatural && !dealerHasNatural) {
+          // If the player has 21 and no one has naturals, wait until the dealer is done hitting
+          // until a bust or a blackjack before determining the winner.
+          !winner &&
+            dealerScore >= 21 &&
+            dispatch(
+              DETERMINE_WINNER({
+                displayName: currentUser.displayName,
+                uid: currentUser.uid,
+              })
+            );
+        } else if (playerScore === 21 && !dealerHasNatural) {
+          // If the player has 21 and the player does have a natural, wait for the dealers turn (2500ms) to be over then
+          // DETERMINE_WINNER because Davy Blackjack is a little bit different; the one who doesn't have a natural has one chance.
           setTimeout(() => {
             !winner &&
               dispatch(
@@ -133,49 +182,40 @@ const BlackjackFeature = () => {
             );
         }
       });
-    }
-  }, [dealerUpdated, playerUpdated, dealerStanding, playerStanding]);
 
-  // Updates Dealer's Score
-  useEffect(() => {
-    if (dealerCards.length > 1) {
-      setDealerUpdated(dispatch(UPDATE_SCORE({ player: false, wants11: 11 })));
+      setDealerUpdated(null);
     }
-  }, [dealerCards]);
+  }, [dealerScore, isDealerTurn]);
 
-  // Updates Player's Score
+  // Naturals Checks
   useEffect(() => {
-    if (playerCards.length > 1) {
+    // console.log("RAN");
+    // console.log("hasPlayerHit", hasPlayerHit);
+    if (dealerHasNatural && playerHasNatural) {
+      // If the dealer and the player has natural, end the game by DEALER_TURN.
+      dispatch(DEALER_TURN(true));
+    } else if (dealerHasNatural && hasPlayerHit) {
+      // If the dealer has natural, the has one hit and could be an ace
       waitForAceDecision(showAcePrompt).then(() => {
-        !winner &&
-          setPlayerUpdated(
-            dispatch(UPDATE_SCORE({ player: true, wants11: wants11 }))
-          );
-        if (wants11 > 0) setWants11(0);
+        dispatch(DEALER_TURN(true));
       });
-    } else {
-      // If the player starts a new game in the middle of a game and ace prompt is showing.
-      setShowAcePrompt(false);
+    } else if (playerHasNatural) {
+      dispatch(DEALER_TURN(true));
+      setTimeout(() => {
+        dealerTurn();
+      }, 2500);
     }
-  }, [playerCards, showAcePrompt]);
-
-  // When the player is standing.
-  useEffect(() => {
-    if (playerStanding && !dealerStanding && winner === null) {
-      // This waitForAceDecision() is here because the player stands when they double down and could get an ace.
-      waitForAceDecision(showAcePrompt).then(() => {
-        setTimeout(() => {
-          setDealerUpdated(dealerTurn());
-        }, 2500);
-      });
-    }
-  }, [playerStanding, dealerStanding, dealerScore, showAcePrompt]);
+  }, [dealerHasNatural, playerHasNatural, showAcePrompt]);
 
   // useEffect(() => {
   //   console.log("wants11", wants11);
   //   console.log("showAcePrompt", showAcePrompt);
   //   console.log("winner", winner);
   // }, [wants11, showAcePrompt, winner]);
+
+  // useEffect(() => {
+  //   console.log("isDealerTurn", isDealerTurn);
+  // }, [isDealerTurn]);
 
   return (
     <>
@@ -247,12 +287,15 @@ const BlackjackFeature = () => {
                     <Player
                       playerCards={playerCards}
                       playerScore={playerScore}
+                      hasPlayerHit={hasPlayerHit}
                       playerStanding={playerStanding}
                       wallet={wallet}
                       showAcePrompt={showAcePrompt}
                       setShowAcePrompt={setShowAcePrompt}
                       winner={winner}
                       gameType={gameType}
+                      dealerHasNatural={dealerHasNatural}
+                      playerHasNatural={playerHasNatural}
                     />
                   </VStack>
                 </chakra.main>

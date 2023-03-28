@@ -18,13 +18,14 @@ const blackjackSlice = createSlice({
     dealerScore: 0,
     dealerTurn: false,
     dealerStanding: false,
+    dealerHasNatural: false,
 
     playerCards: [],
     playerBet: 0,
     playerScore: 0,
     playerInitialHit: false,
     playerStanding: false,
-    hasBlackjackOnFirstTurn: false,
+    playerHasNatural: false,
     wallet: null,
 
     winner: null,
@@ -55,12 +56,13 @@ const blackjackSlice = createSlice({
       state.dealerCards = [];
       state.dealerScore = 0;
       state.dealerStanding = false;
+      state.dealerHasNatural = false;
 
       state.playerCards = [];
       state.playerScore = 0;
       state.playerInitialHit = false;
       state.playerStanding = false;
-      state.hasBlackjackOnFirstTurn = false;
+      state.playerHasNatural = false;
     },
     UPDATE_SCORE: (state, action) => {
       let newFaceDownScore;
@@ -73,12 +75,12 @@ const blackjackSlice = createSlice({
           const twoAcesOnFirstTurn =
             cards[0].face === "A" && cards[1].face === "A";
           if (
-            // Automatically when the player gets a 10 card and ace in their hand, it is set to 21 for instant feedback.
+            // Automatically when the player gets a 10 card and ace in their hand.
             (["J", "Q", "K"].includes(cards[0].face) &&
               cards[1].face === "A") ||
             (cards[0].face === "A" && ["J", "Q", "K"].includes(cards[1].face))
           ) {
-            state.hasBlackjackOnFirstTurn = true;
+            state.playerHasNatural = true;
             newScore = 21;
           } else if (twoAcesOnFirstTurn) {
             state.playerScore += action.payload.wants11;
@@ -99,14 +101,24 @@ const blackjackSlice = createSlice({
       } else if (!action.payload.player) {
         cards = state.dealerCards;
         if (state.dealerCards.length === 2) {
-          // When the dealer has his second card face down.
-          newFaceDownScore = checkCard(cards[0], action.payload.wants11);
-          state.dealerFaceDownScore = newFaceDownScore;
+          if (
+            (["J", "Q", "K"].includes(cards[0].face) &&
+              cards[1].face === "A") ||
+            (cards[0].face === "A" && ["J", "Q", "K"].includes(cards[1].face))
+          ) {
+            state.dealerHasNatural = true;
+            newScore = 21;
+          } else {
+            // When the dealer has his second card face down.
+            newFaceDownScore = checkCard(cards[0], action.payload.wants11);
+            state.dealerFaceDownScore = newFaceDownScore;
+          }
         }
-        newScore = cards.reduce(
-          (total, card) => total + checkCard(card, action.payload.wants11),
-          0
-        );
+        if (newScore !== 21)
+          newScore = cards.reduce(
+            (total, card) => total + checkCard(card, action.payload.wants11),
+            0
+          );
 
         state.dealerScore = newScore;
       }

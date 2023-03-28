@@ -33,17 +33,14 @@ import {
 import {
   selectDealerTurn,
   selectPlayerBet,
-  selectPlayerInitialHit,
-  selectHasBlackjackOnFirstTurn,
 } from "../../redux/blackjackSelectors";
 
 const Player = (props) => {
   const isDealerTurn = useSelector(selectDealerTurn);
   const playerBet = useSelector(selectPlayerBet);
-  const hasPlayerHit = useSelector(selectPlayerInitialHit);
-  const hasBlackjackOnFirstTurn = useSelector(selectHasBlackjackOnFirstTurn);
   const dispatch = useDispatch();
   const dealerTurn = useDealerTurn();
+  const [showcaseRunning, toggleShowcaseRunning] = useState(false);
 
   const [prevAcesInHandLength, setPrevAcesInHandLength] = useState(-1);
   const [acesInCurrentHand, setAcesInCurrentHand] = useState([]);
@@ -94,12 +91,21 @@ const Player = (props) => {
     }
   }, [props.playerCards, prevAcesInHandLength, props.showAcePrompt]);
 
+  // Makes the dealer showcase their turn when the game is over; player busts or has blackjack.
   useEffect(() => {
-    hasBlackjackOnFirstTurn &&
-      setTimeout(() => {
-        dealerTurn();
-      }, 2500);
-  }, [hasBlackjackOnFirstTurn]);
+    if (props.playerScore >= 21 && !props.playerHasNatural) {
+      dispatch(DEALER_TURN(true));
+      if (props.playerScore !== 21) {
+        toggleShowcaseRunning(true);
+        setTimeout(() => {
+          dealerTurn();
+          toggleShowcaseRunning(false);
+        }, 2500);
+      } else if (props.playerScore === 21) {
+        dispatch(SET_PLAYER_STANDING(true));
+      }
+    }
+  }, [props.playerScore]);
 
   return (
     <>
@@ -169,17 +175,15 @@ const Player = (props) => {
 
       {props.playerCards.length && props.winner === null ? (
         <>
-          <ButtonGroup
-            isDisabled={
-              isDealerTurn || props.showAcePrompt || hasBlackjackOnFirstTurn
-            }
-            minW="255px"
-          >
+          <ButtonGroup minW="255px">
             <Button
               onClick={() => {
-                dispatch(DEALER_TURN(true));
                 dispatch(SET_PLAYER_STANDING(true));
+                dispatch(DEALER_TURN(true));
               }}
+              isDisabled={
+                props.dealerHasNatural || isDealerTurn || props.showAcePrompt
+              }
               variant="blackjackRed"
               w="100%"
             >
@@ -188,26 +192,22 @@ const Player = (props) => {
             <Button
               onClick={() => {
                 dispatch(PLAYER_HIT());
-                dispatch(DEALER_TURN(true));
-                setTimeout(() => {
-                  dealerTurn();
-                }, 2500);
               }}
+              isDisabled={isDealerTurn || props.showAcePrompt}
               variant="blackjackGreen"
               w="100%"
             >
               Hit
             </Button>
-            {!hasPlayerHit &&
+            {!props.hasPlayerHit &&
               playerBet <= props.wallet &&
               props.gameType === "Match" && (
                 <Button
                   onClick={() => {
                     dispatch(DOUBLE_DOWN());
                     dispatch(PLAYER_HIT());
-                    dispatch(SET_PLAYER_STANDING(true));
-                    dispatch(DEALER_TURN(true));
                   }}
+                  isDisabled={isDealerTurn || props.showAcePrompt}
                   variant="blackjackBlue"
                   w="100%"
                 >
@@ -236,10 +236,14 @@ const Player = (props) => {
       ) : (
         <>
           {props.gameType === "Fun" ? (
-            <DealButton isDealerTurn={isDealerTurn} />
+            <DealButton
+              isDealerTurn={isDealerTurn}
+              showcaseRunning={showcaseRunning}
+            />
           ) : (
             <BettingButtons
               isDealerTurn={isDealerTurn}
+              showcaseRunning={showcaseRunning}
               wallet={props.wallet}
               winner={props.winner}
             />

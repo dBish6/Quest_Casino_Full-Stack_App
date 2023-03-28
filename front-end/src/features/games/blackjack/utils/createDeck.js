@@ -67,11 +67,12 @@ const createDeck = () => {
     { face: "K", suit: "diamonds", image: require("../assets/images/king_of_diamonds.png") },
     { face: "K", suit: "spades", image: require("../assets/images/king_of_spades.png") },
     { face: "K", suit: "clubs", image: require("../assets/images/king_of_clubs.png") },
+    // TODO: Check naturals when animations are done.
     // { face: "A", suit: "clubs", image: require("../assets/images/ace_of_clubs.png") },
-    // { face: 2, suit: "hearts", image: require("../assets/images/2_of_hearts.png"), },
-    // { face: "A", suit: "hearts", image: require("../assets/images/ace_of_hearts.png") },
-    // { face: 2, suit: "hearts", image: require("../assets/images/2_of_hearts.png"), },
-    // { face: 2, suit: "hearts", image: require("../assets/images/2_of_hearts.png"), },
+    // { face: "A", suit: "clubs", image: require("../assets/images/ace_of_clubs.png") },
+    // { face: 4, suit: "hearts", image: require("../assets/images/4_of_hearts.png") },
+    // { face: "Q", suit: "hearts", image: require("../assets/images/queen_of_hearts.png") },
+    // { face: 4, suit: "hearts", image: require("../assets/images/4_of_hearts.png") },
   ];
 
   return deck;

@@ -4,7 +4,7 @@ const waitForAceDecision = (showAcePrompt) => {
       if (showAcePrompt === false) {
         resolve();
       } else if (showAcePrompt) {
-        setTimeout(checkAcePrompt, 100);
+        // setTimeout(checkAcePrompt, 100);
       }
     };
     checkAcePrompt();

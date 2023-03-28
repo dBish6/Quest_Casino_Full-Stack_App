@@ -8,10 +8,16 @@ import {
   Flex,
   Grid,
   Box,
-  Text,
   UnorderedList,
   ListItem,
   chakra,
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+  PopoverHeader,
+  PopoverBody,
+  PopoverArrow,
+  PopoverCloseButton,
   useColorMode,
 } from "@chakra-ui/react";
 import { Link as ReactLink } from "react-router-dom";
@@ -79,6 +85,7 @@ const RulesOverlay = (props) => {
                 justify="center"
                 w="90%"
                 pb="1.5rem"
+                maxW="1215px"
                 borderBottomWidth="1px"
                 borderColor={colorMode === "dark" ? "borderD" : "borderL"}
               >
@@ -120,15 +127,30 @@ const RulesOverlay = (props) => {
                       If the player and dealer have the{" "}
                       <chakra.span fontWeight="700">same hand</chakra.span> in
                       total, it will result in a{" "}
-                      <chakra.span fontWeight="700">"push"</chakra.span> and the
+                      <chakra.span fontWeight="700">"Push"</chakra.span> and the
                       player's bet is returned.
                     </ListItem>
                     <ListItem>
                       If either the player's or the dealer's hand{" "}
                       <chakra.span fontWeight="700">exceeds 21</chakra.span>, it
                       results in a{" "}
-                      <chakra.span fontWeight="700">"bust"</chakra.span> and the
+                      <chakra.span fontWeight="700">"Bust"</chakra.span> and the
                       respective party loses the game.
+                    </ListItem>
+                    <ListItem>
+                      In Davy Blackjack if the Player gets a{" "}
+                      <chakra.span fontWeight="700">"Natural"</chakra.span>{" "}
+                      (gets a blackjack on the initial deal), then the dealer
+                      has{" "}
+                      <chakra.span fontWeight="700">
+                        one hit for a chance of getting blackjack
+                      </chakra.span>
+                      . If the dealer gets blackjack on that one hit, it will
+                      result in a push.{" "}
+                      <chakra.span fontWeight="700">
+                        Same rules goes for the player
+                      </chakra.span>{" "}
+                      if the dealer gets a "Natural".
                     </ListItem>
                   </UnorderedList>
                 </Box>
@@ -220,9 +242,43 @@ const RulesOverlay = (props) => {
                 </UnorderedList>
               </Box>
 
-              <Text gridColumn="span 2" justifySelf="flex-end">
-                Davy Blackjack v1.0.0-alpha
-              </Text>
+              <Popover>
+                <PopoverTrigger>
+                  <Link
+                    variant="simple"
+                    gridColumn="span 2"
+                    justifySelf="flex-end"
+                    opacity="0.85"
+                  >
+                    Davy Blackjack v1.0.1-alpha
+                  </Link>
+                </PopoverTrigger>
+                <PopoverContent>
+                  <PopoverArrow />
+                  <PopoverCloseButton />
+                  <PopoverHeader>Patch Notes</PopoverHeader>
+                  <PopoverBody>
+                    <Heading textAlign="center" fontSize="24px">
+                      v1.0.2-alpha
+                    </Heading>
+                    <UnorderedList fontSize="14px">
+                      <ListItem>
+                        Fixes how blackjack was played entirely. Was a stupid
+                        mistake, in blackjack the dealer waits for the player to
+                        finish (if the player gets blackjack, stands or bust).
+                        The way I had it, the dealers turn ran when the player
+                        makes their first decision (if the player hit or stand).
+                        But now Davy Blackjack works like blackjack should.
+                      </ListItem>
+                      <ListItem>
+                        When the player gets a blackjack, the dealer now keeps
+                        doing their turn until a blackjack or a bust before
+                        determining the winner.
+                      </ListItem>
+                    </UnorderedList>
+                  </PopoverBody>
+                </PopoverContent>
+              </Popover>
             </Grid>
           </Container>
         )}

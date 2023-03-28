@@ -18,7 +18,7 @@ const DealButton = (props) => {
         startGame();
         dispatch(DEALER_DEAL());
       }}
-      isDisabled={props.isDealerTurn}
+      isDisabled={props.isDealerTurn || props.showcaseRunning}
       variant="blackjackBlue"
       w="235px"
       fontSize="18px"

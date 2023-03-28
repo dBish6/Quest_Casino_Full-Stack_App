@@ -41,7 +41,11 @@ const BettingButtons = (props) => {
   return (
     <AnimatePresence>
       <ButtonGroup
-        isDisabled={props.isDealerTurn || betText === "Updating Balance..."}
+        isDisabled={
+          props.isDealerTurn ||
+          props.showcaseRunning ||
+          betText === "Updating Balance..."
+        }
         position="relative"
         minW="255px"
       >
