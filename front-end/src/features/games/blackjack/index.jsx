@@ -104,7 +104,7 @@ const BlackjackFeature = () => {
   // TODO: +playerBet on win floating animation.
 
   useEffect(() => {
-    setShow({ gameStart: true, canCancel: false });
+    setShow({ ...show, gameStart: true, canCancel: false });
   }, []);
 
   // Sets the wallet as the user's balance initially when gameType is Match.
@@ -189,8 +189,6 @@ const BlackjackFeature = () => {
 
   // Naturals Checks
   useEffect(() => {
-    // console.log("RAN");
-    // console.log("hasPlayerHit", hasPlayerHit);
     if (dealerHasNatural && playerHasNatural) {
       // If the dealer and the player has natural, end the game by DEALER_TURN.
       dispatch(DEALER_TURN(true));
@@ -307,7 +305,7 @@ const BlackjackFeature = () => {
       </Box>
 
       <MatchOrForFunModal show={show} setShow={setShow} />
-      <CashInModal show={show.cashIn} setShow={setShow} />
+      <CashInModal show={show} setShow={setShow} />
     </>
   );
 };

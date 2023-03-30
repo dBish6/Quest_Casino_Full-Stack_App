@@ -197,7 +197,8 @@ const LoginForm = (props) => {
           <Box mt="6px">
             <Link
               onClick={() =>
-                currentUser === null && setShow({ passwordReset: true })
+                currentUser === null &&
+                setShow({ ...show, passwordReset: true })
               }
               position="relative"
               opacity={currentUser !== null ? "0.4" : "0.75"}
@@ -311,7 +312,10 @@ const LoginForm = (props) => {
 
       <Text>
         Don't have account?{" "}
-        <Link onClick={() => setShow({ register: true })} variant="simple">
+        <Link
+          onClick={() => setShow({ ...show, register: true })}
+          variant="simple"
+        >
           Sign Up
         </Link>
         !
@@ -332,8 +336,8 @@ const LoginForm = (props) => {
         </Alert>
       ) : undefined}
 
-      <PasswordResetModel show={show.passwordReset} setShow={setShow} />
-      <RegisterModel show={show.register} setShow={setShow} />
+      <PasswordResetModel show={show} setShow={setShow} />
+      <RegisterModel show={show} setShow={setShow} />
     </>
   );
 };

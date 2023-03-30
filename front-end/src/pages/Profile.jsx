@@ -230,7 +230,7 @@ const Profile = (props) => {
                       />
 
                       <Link
-                        onClick={() => setShow({ passwordReset: true })}
+                        onClick={() => setShow(true)}
                         variant="simple"
                         justifySelf="center"
                         fontSize={{ base: "14px", md: "16px", xl: "16px" }}

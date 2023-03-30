@@ -8,7 +8,7 @@ import {
   BreadcrumbItem,
   Link,
   chakra,
-  Box,
+  Divider,
   Text,
   useColorMode,
 } from "@chakra-ui/react";
@@ -17,10 +17,8 @@ import { MdChevronRight } from "react-icons/md";
 // *Custom Hooks Import*
 import useAuth from "../../hooks/useAuth";
 
-// *API Services Imports*
-import GetUserWinsBalance from "../../features/authentication/api_services/GetUserWinsBalance";
-
 // *Component Imports*
+import GetBalance from "../GetBalance";
 import CashInModal from "../../features/authentication/components/modals/CashInModal";
 import QuestsModal from "../../features/quests/components/modals/QuestsModal";
 
@@ -30,23 +28,21 @@ const NavBar = () => {
   const location = useLocation();
 
   const { currentUser } = useAuth();
-  // const { fsUserData, notFoundErr, loading } = GetUserWinsBalance(
-  //   currentUser.uid
-  // );
 
-  // console.log(notFoundErr);
   return (
     <>
-      <HStack justifyContent="flex-end">
-        {/* {currentUser !== null && loading ? (
-          <Box>
-            <Text>Loading...</Text>
-          </Box>
-        ) : (
-          <Box backgroundColor="g300" p="6px" borderRadius="6px">
-            <Text>${fsUserData.balance}</Text>
-          </Box>
-        )} */}
+      <HStack as="header" justifyContent="flex-end">
+        {currentUser !== null && (
+          <>
+            <Text
+              fontSize="18px"
+              //  backgroundColor="g300" p="6px" borderRadius="6px"
+            >
+              <GetBalance currentUser={currentUser} />
+            </Text>
+            <Divider orientation="vertical" h="2rem" ml="1rem !important" />
+          </>
+        )}
         <Breadcrumb
           spacing="8px"
           separator={
@@ -55,7 +51,7 @@ const NavBar = () => {
               fontSize="2rem"
             />
           }
-          mr="2rem"
+          marginInline="1rem 2rem !important"
         >
           <BreadcrumbItem>
             <Link
@@ -73,7 +69,7 @@ const NavBar = () => {
             <Link
               as={NavLink}
               variant={show.quests ? "navOnLocation" : "navigation"}
-              onClick={() => setShow({ quests: true })}
+              onClick={() => setShow({ ...show, quests: true })}
             >
               Quests
             </Link>
@@ -83,7 +79,7 @@ const NavBar = () => {
             <Link
               as={NavLink}
               variant={show.cashIn ? "navOnLocation" : "navigation"}
-              onClick={() => setShow({ cashIn: true })}
+              onClick={() => setShow({ ...show, cashIn: true })}
             >
               Cash In
             </Link>
@@ -103,8 +99,8 @@ const NavBar = () => {
         </chakra.h1>
       </HStack>
 
-      <CashInModal show={show.cashIn} setShow={setShow} />
-      <QuestsModal show={show.quests} setShow={setShow} />
+      <CashInModal show={show} setShow={setShow} />
+      <QuestsModal show={show} setShow={setShow} />
     </>
   );
 };

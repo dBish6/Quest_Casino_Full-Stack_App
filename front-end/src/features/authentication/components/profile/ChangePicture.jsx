@@ -82,7 +82,7 @@ const ChangePicture = (props) => {
                       return;
                     } else {
                       setToBeSelectedPicture(profilePic.url);
-                      setShow({ areYouSure: true });
+                      setShow({ ...show, areYouSure: true });
                     }
                   }}
                 >
@@ -138,7 +138,7 @@ const ChangePicture = (props) => {
           _active={{
             bgColor: "g400",
           }}
-          onClick={() => setShow({ uploadPicture: true })}
+          onClick={() => setShow({ ...show, uploadPicture: true })}
         >
           {(props.currentUser.photoURL.indexOf("userProfilePics") !== -1 &&
             selectedPicture === "") ||
@@ -184,7 +184,7 @@ const ChangePicture = (props) => {
       </Wrap>
 
       <AreYouSureModal
-        show={show.areYouSure}
+        show={show}
         setShow={setShow}
         loading={props.loadingUpdate.profilePic}
         handleProfilePicture={props.handleProfilePicture}
@@ -193,7 +193,7 @@ const ChangePicture = (props) => {
         setSelectedPicture={setSelectedPicture}
       />
       <UploadProfilePicModal
-        show={show.uploadPicture}
+        show={show}
         setShow={setShow}
         loading={props.loadingUpdate.profilePic}
         setSelectedPicture={setSelectedPicture}

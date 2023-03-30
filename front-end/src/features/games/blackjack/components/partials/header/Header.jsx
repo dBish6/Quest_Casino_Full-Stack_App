@@ -205,7 +205,11 @@ const Header = (props) => {
                   <Link
                     data-group
                     onClick={() =>
-                      props.setShow({ gameStart: true, canCancel: true })
+                      props.setShow((prev) => ({
+                        ...prev,
+                        gameStart: true,
+                        canCancel: true,
+                      }))
                     }
                     w="100%"
                     textAlign="center"
