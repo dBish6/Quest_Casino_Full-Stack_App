@@ -1,5 +1,3 @@
-import { useEffect } from "react";
-
 // *Design Imports*
 import {
   Input,
@@ -11,22 +9,16 @@ import {
   useColorMode,
 } from "@chakra-ui/react";
 
+// *Custom Hooks Imports*
+import useDisableScroll from "../../../../hooks/useDisableScroll";
+
 // *Component Imports*
 import ModalTemplate from "../../../../components/modals/ModalTemplate";
 import Header from "../../../../components/Header";
 
 const UploadProfilePicModal = (props) => {
   const { colorMode } = useColorMode();
-
-  useEffect(() => {
-    if (props.show) {
-      document.body.style.overflow = "hidden";
-    } else {
-      setTimeout(() => {
-        document.body.style.overflow = "unset";
-      }, 510);
-    }
-  }, [props.show]);
+  useDisableScroll(props.show.uploadPicture, 510);
 
   return (
     <>

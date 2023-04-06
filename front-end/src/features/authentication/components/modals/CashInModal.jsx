@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import { useForm } from "react-hook-form";
 import { ErrorMessage } from "@hookform/error-message";
 
@@ -23,14 +23,17 @@ import {
 } from "@chakra-ui/react";
 import { CgDollar } from "react-icons/cg";
 
-// *API Services Imports*
+// *Custom Hooks Imports*
+import useDisableScroll from "../../../../hooks/useDisableScroll";
+
+// *API Services Import*
 import UpdateProfile from "../../api_services/UpdateProfile";
 
 // *Component Imports*
 import ModalTemplate from "../../../../components/modals/ModalTemplate";
 import Header from "../../../../components/Header";
 
-const CashInModal = (props) => {
+const CashInModel = (props) => {
   const { currentUser } = useAuth();
 
   const {
@@ -40,21 +43,16 @@ const CashInModal = (props) => {
     watch,
   } = useForm({
     defaultValues: {
-      cash: "",
+      deposit: "",
     },
   });
   const { handleUpdateBalance, loadingUpdate, errorHandler } = UpdateProfile();
   const formRef = useRef(null);
 
-  useEffect(() => {
-    if (props.show) {
-      document.body.style.overflow = "hidden";
-    } else {
-      setTimeout(() => {
-        document.body.style.overflow = "unset";
-      }, 810);
-    }
-  }, [props.show]);
+  useDisableScroll(
+    typeof props.show === "object" ? props.show.cashIn : props.show,
+    810
+  );
 
   return (
     <ModalTemplate
@@ -81,7 +79,7 @@ const CashInModal = (props) => {
 
       <chakra.form
         onSubmit={handleSubmit(() =>
-          handleUpdateBalance(formRef, currentUser.uid, watch("cash"))
+          handleUpdateBalance(formRef, currentUser.uid, watch("deposit"))
         )}
         ref={formRef}
       >
@@ -90,13 +88,13 @@ const CashInModal = (props) => {
             <AlertIcon />
             <Box>
               <AlertTitle>Server Error 500</AlertTitle>
-              <AlertDescription>Failed to send cash.</AlertDescription>
+              <AlertDescription>Failed to send deposit.</AlertDescription>
             </Box>
           </Alert>
         ) : undefined}
 
-        <FormControl isInvalid={errors.cash}>
-          <FormLabel htmlFor="cash">
+        <FormControl isInvalid={errors.deposit}>
+          <FormLabel htmlFor="deposit">
             Amount<chakra.span color="r400"> *</chakra.span>
           </FormLabel>
           <HStack>
@@ -107,8 +105,12 @@ const CashInModal = (props) => {
               color="g500"
             />
             <Input
-              {...register("cash", {
+              {...register("deposit", {
                 required: "Enter a value of how much to deposit.",
+                min: {
+                  value: 5,
+                  message: "Please deposit at least $5.",
+                },
                 maxLength: {
                   value: 5,
                   message: "Please don't deposit more then $10,000!",
@@ -118,8 +120,8 @@ const CashInModal = (props) => {
                   message: "Please enter a number.",
                 },
               })}
-              id="cash"
-              name="cash"
+              id="deposit"
+              name="deposit"
               autoComplete="off"
               variant="primary"
               h="48px"
@@ -129,7 +131,7 @@ const CashInModal = (props) => {
           </HStack>
           <ErrorMessage
             errors={errors}
-            name="cash"
+            name="deposit"
             render={({ message }) => (
               <FormErrorMessage>{message}</FormErrorMessage>
             )}
@@ -150,4 +152,4 @@ const CashInModal = (props) => {
   );
 };
 
-export default CashInModal;
+export default CashInModel;

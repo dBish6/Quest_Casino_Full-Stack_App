@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import { useForm } from "react-hook-form";
 import { ErrorMessage } from "@hookform/error-message";
 
@@ -17,6 +17,9 @@ import {
   Button,
 } from "@chakra-ui/react";
 
+// *Custom Hooks Imports*
+import useDisableScroll from "../../../../hooks/useDisableScroll";
+
 // *Component Imports*
 import ModalTemplate from "../../../../components/modals/ModalTemplate";
 import Header from "../../../../components/Header";
@@ -24,7 +27,7 @@ import Header from "../../../../components/Header";
 // *API Services Imports*
 import PostResetPassword from "../../api_services/PostResetPassword";
 
-const PasswordResetModel = (props) => {
+const PasswordResetModal = (props) => {
   const {
     register,
     formState: { errors },
@@ -38,15 +41,10 @@ const PasswordResetModel = (props) => {
   const formRef = useRef(null);
   const { handleReset, errorHandler, loading } = PostResetPassword();
 
-  useEffect(() => {
-    if (props.show) {
-      document.body.style.overflow = "hidden";
-    } else {
-      setTimeout(() => {
-        document.body.style.overflow = "unset";
-      }, 510);
-    }
-  }, [props.show]);
+  useDisableScroll(
+    typeof props.show === "object" ? props.show.passwordReset : props.show,
+    510
+  );
 
   return (
     <ModalTemplate
@@ -132,4 +130,4 @@ const PasswordResetModel = (props) => {
   );
 };
 
-export default PasswordResetModel;
+export default PasswordResetModal;

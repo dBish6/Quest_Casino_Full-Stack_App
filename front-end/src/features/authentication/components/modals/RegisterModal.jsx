@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { ErrorMessage } from "@hookform/error-message";
 
@@ -23,14 +23,17 @@ import {
 } from "@chakra-ui/react";
 import { MdOutlineVisibilityOff, MdOutlineVisibility } from "react-icons/md";
 
-// *API Services Imports*
+// *Custom Hooks Imports*
+import useDisableScroll from "../../../../hooks/useDisableScroll";
+
+// *API Services Import*
 import PostRegister from "../../api_services/PostRegister";
 
 // *Component Imports*
 import ModalTemplate from "../../../../components/modals/ModalTemplate";
 import Header from "../../../../components/Header";
 
-const RegisterModel = (props) => {
+const RegisterModal = (props) => {
   const [visible, toggleVisibility] = useState({
     password: false,
     confirm: false,
@@ -60,15 +63,10 @@ const RegisterModel = (props) => {
   const { handleRegister, errorHandler, setErrorHandler, loading } =
     PostRegister();
 
-  useEffect(() => {
-    if (props.show) {
-      document.body.style.overflow = "hidden";
-    } else {
-      setTimeout(() => {
-        document.body.style.overflow = "unset";
-      }, 510);
-    }
-  }, [props.show]);
+  useDisableScroll(
+    typeof props.show === "object" ? props.show.register : props.show,
+    510
+  );
 
   // TODO: Password strength indicator.
   return (
@@ -461,4 +459,4 @@ const RegisterModel = (props) => {
   );
 };
 
-export default RegisterModel;
+export default RegisterModal;
