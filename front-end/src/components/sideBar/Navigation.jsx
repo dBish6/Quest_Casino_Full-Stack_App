@@ -78,7 +78,6 @@ const Nav = () => {
       <HStack data-group>
         <Icon as={GiChest} variant={show ? "navOnLocation" : "navigation"} />
         <Link
-          as={NavLink}
           onClick={() => setShow(true)}
           variant={show ? "navOnLocation" : "navigation"}
         >

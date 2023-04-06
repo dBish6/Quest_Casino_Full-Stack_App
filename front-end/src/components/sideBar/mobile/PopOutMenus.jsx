@@ -5,11 +5,11 @@ import { Box, VStack, Link, useColorMode } from "@chakra-ui/react";
 import { motion, AnimatePresence } from "framer-motion";
 
 // *Component Imports*
-import Header from "../../../components/Header";
+import Header from "../../Header";
 import LoginForm from "../../../features/authentication/components/LoginForm";
 import Settings from "../Settings";
 
-const PopOutMenu = (props) => {
+const PopOutMenus = (props) => {
   const { colorMode } = useColorMode();
   const location = useLocation();
 
@@ -20,7 +20,7 @@ const PopOutMenu = (props) => {
           as={motion.div}
           animate={{
             opacity: 1,
-            width: "fit-content",
+            width: "max-content",
             transition: { duration: 0.6, type: "spring" },
           }}
           initial={{ opacity: 0, width: 0 }}
@@ -33,8 +33,8 @@ const PopOutMenu = (props) => {
           position="absolute"
           top="0"
           left="60px"
-          marginInlineStart="0 !important"
-          zIndex="dropdown"
+          m="0 !important"
+          zIndex="sticky"
           bgColor={
             // colorMode === "dark"
             //   ? "rgba(66, 75, 94, 0.7)"
@@ -42,8 +42,8 @@ const PopOutMenu = (props) => {
             colorMode === "dark" ? "bd700" : "bl400"
           }
           borderLeftWidth="2px"
-          borderRightWidth={colorMode === "light" && "1px"}
-          borderBottomWidth={colorMode === "light" && "1px"}
+          borderRightWidth="1px"
+          borderBottomWidth="1px"
           borderColor={colorMode === "dark" ? "borderD" : "borderL"}
           borderBottomEndRadius="6px"
         >
@@ -88,16 +88,11 @@ const PopOutMenu = (props) => {
               Profile
             </Link>
             <Link
-              as={NavLink}
-              to="/games/favorites"
-              variant={
-                location.pathname === "/games/favorites"
-                  ? "navOnLocation"
-                  : "navigation"
-              }
+              onClick={() => props.setShow({ ...props.show, quests: true })}
+              variant={props.show.quests ? "navOnLocation" : "navigation"}
               mt="0.875rem !important"
             >
-              Favorites
+              Quests
             </Link>
             <Link
               as={NavLink}
@@ -130,7 +125,7 @@ const PopOutMenu = (props) => {
           as={motion.div}
           animate={{
             opacity: 1,
-            width: "fit-content",
+            width: "max-content",
             transition: { duration: 0.6, type: "spring" },
           }}
           initial={{ opacity: 0, width: 0 }}
@@ -145,8 +140,8 @@ const PopOutMenu = (props) => {
           position="absolute"
           top="0"
           left="60px"
-          marginInlineStart="0 !important"
-          zIndex="dropdown"
+          m="0 !important"
+          zIndex="sticky"
           bgColor={
             // colorMode === "dark"
             //   ? "rgba(66, 75, 94, 0.7)"
@@ -178,7 +173,7 @@ const PopOutMenu = (props) => {
           as={motion.div}
           animate={{
             opacity: 1,
-            width: "fit-content",
+            width: "max-content",
             transition: { duration: 0.6, type: "spring" },
           }}
           initial={{ opacity: 0, width: 0 }}
@@ -191,8 +186,8 @@ const PopOutMenu = (props) => {
           position="absolute"
           top="0"
           left="60px"
-          marginInlineStart="0 !important"
-          zIndex="dropdown"
+          m="0 !important"
+          zIndex="sticky"
           bgColor={
             // colorMode === "dark"
             //   ? "rgba(66, 75, 94, 0.7)"
@@ -211,6 +206,7 @@ const PopOutMenu = (props) => {
             initial={{ opacity: 0 }}
             exit={{ opacity: 0, transition: { duration: 0.22 } }}
             key="settingsContent"
+            align="flex-start"
             padding="1rem"
           >
             <Settings />
@@ -221,4 +217,4 @@ const PopOutMenu = (props) => {
   );
 };
 
-export default PopOutMenu;
+export default PopOutMenus;

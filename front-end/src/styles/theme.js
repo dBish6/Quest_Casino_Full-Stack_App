@@ -17,14 +17,16 @@ const casinoTheme = extendTheme({
       body: {
         bg: mode("bl300", "bd800")(props),
         color: mode("bMain", "dwordMain")(props),
+        overflowX: "hidden !important",
       },
     }),
   },
   components: {
     Text: {
-      baseStyle: {
+      baseStyle: (props) => ({
         wordBreak: "keep-all",
-      },
+        color: mode("bMain", "dwordMain")(props),
+      }),
       variants: {
         blackjack: (props) => ({
           color: "wMain",

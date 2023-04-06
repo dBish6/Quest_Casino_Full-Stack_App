@@ -1,5 +1,3 @@
-import { useState, useRef } from "react";
-
 // *Design Imports*
 import {
   Image,
@@ -22,58 +20,82 @@ import cardsImg from "../../assets/cards-pngwing.com.png";
 import { CgCardSpades } from "react-icons/cg";
 import { AiOutlineTrophy, AiOutlineSafety } from "react-icons/ai";
 
+// If you add to the home page. Make the view animation only happen once if it haven't yet.
+
+// TODO: Need to let content load then do the animation; need DOM loader.
 const WelcomeSection = () => {
   const { colorMode } = useColorMode();
   const { scrollYProgress } = useScroll();
-  const [isSmallerThan600] = useMediaQuery("(max-width: 600px)");
+  // 657px
+  const [isSmallerThan601] = useMediaQuery("(max-width: 601px)");
+  const [isSmallerThan410] = useMediaQuery("(max-width: 410px)");
   const [isSmallerThan378] = useMediaQuery("(max-width: 378px)");
 
   return (
     <>
-      <Image
-        src={cardsImg}
-        as={motion.img}
-        initial={{ scale: 0.8, rotate: "10.58deg", opacity: 0 }}
-        whileInView={{
-          scale: 1,
-          rotate: "18.58deg",
-          opacity: 1,
-          transition: {
-            //  duration: 0.28,
-            delay: 0.95,
-            opacity: { duration: 0.2 },
-          },
-        }}
-        viewport={{ width: window.innerWidth, height: window.innerHeight }}
-        progress={scrollYProgress}
-        position="absolute"
-        left="72.5%"
-        top="9.5%"
-        maxW="297px"
-        minH="306px"
+      <Box
+        pos="relative"
+        maxW="985px"
+        // minH="543px"
+        m="0 auto"
+        mt="164px"
         zIndex="-1"
-      />
+      >
+        <Image
+          src={cardsImg}
+          as={motion.img}
+          initial={{
+            scale: isSmallerThan601 ? 0.7 : 0.8,
+            rotate: "10.58deg",
+            opacity: 0,
+          }}
+          whileInView={{
+            scale: isSmallerThan601 ? 0.9 : 1,
+            rotate: "18.58deg",
+            opacity: 1,
+            transition: {
+              //  duration: 0.28,
+              delay: 0.95,
+              opacity: { duration: 0.2 },
+            },
+          }}
+          viewport={{ width: window.innerWidth, height: window.innerHeight }}
+          progress={scrollYProgress}
+          position="absolute"
+          // left="72.5%"
+          // top="9.5%"
+          top="-140px"
+          right="-116px"
+          maxW="297px"
+          minH="306px"
+          // scale="0.8"
+          zIndex="-2"
+        />
+      </Box>
+
       <Container
-        as={motion.div}
+        as={motion.section}
         initial={{ height: 0, opacity: 0, y: "50%" }}
         whileInView={{
-          minHeight: "543px",
+          height: "max-content",
           opacity: 1,
           y: "0",
           transition: { duration: 1 },
         }}
         viewport={{ width: window.innerWidth, height: window.innerHeight }}
         progress={scrollYProgress}
+        pos="relative"
         maxW="985px"
         // minH="543px"
         mt="164px"
-        p="1.5rem 2rem"
+        p={isSmallerThan410 ? "1.5rem 1rem 3rem 1rem" : "1.5rem 2rem 3rem 2rem"}
         bg={colorMode === "dark" ? "fadeD" : "fadeL"}
         borderTopLeftRadius="64px"
         borderTopRightRadius="64px"
+        zIndex="-1"
       >
         <VStack justifyContent="center">
-          <VStack mb="18px">
+          <VStack mb="1.5rem">
             {/* <Box> */}
             <Heading
               as="h1"
@@ -81,15 +103,24 @@ const WelcomeSection = () => {
               fontFamily="roboto"
               fontStyle="italic"
               fontWeight="700"
-              fontSize={isSmallerThan600 ? "34px" : "50px"}
+              // fontSize={isSmallerThan601 ? "34px" : "50px"}
+              fontSize={
+                isSmallerThan410 ? "32px" : isSmallerThan601 ? "40px" : "50px"
+              }
+              lineHeight="1.2"
+              // fontSize={{ base: "38px", md: "50px", xl: "50px" }}
               color="p500"
               textAlign="center"
-              maxW={isSmallerThan378 && "120px"}
+              // maxW={isSmallerThan378 && "120px"}
             >
               <chakra.span
                 fontFamily="heading"
                 fontStyle="normal"
-                fontSize={isSmallerThan600 ? "48px" : "64px"}
+                // fontSize={isSmallerThan601 ? "48px" : "64px"}
+                fontSize={
+                  isSmallerThan410 ? "46px" : isSmallerThan601 ? "54px" : "64px"
+                }
+                // fontSize={{ base: "52px", md: "64px", xl: "64px" }}
                 color="r500"
               >
                 Quest
@@ -98,7 +129,7 @@ const WelcomeSection = () => {
               <chakra.hr
                 position="relative"
                 bottom="6px"
-                h={isSmallerThan600 ? "4.5px" : "7.5px"}
+                h={isSmallerThan601 ? "4.5px" : "7.5px"}
                 bg="linear-gradient(90.03deg, #E35855 0%, #FFBB00 65.91%, #FFBB00 100.98%)"
                 borderRadius="2rem"
                 border="0px"
@@ -107,9 +138,12 @@ const WelcomeSection = () => {
             {/* </Box> */}
             <Heading
               fontFamily="body"
-              fontSize={isSmallerThan600 ? "32px" : "48px"}
+              fontSize={
+                isSmallerThan410 ? "30px" : isSmallerThan601 ? "38px" : "48px"
+              }
               fontWeight="400"
               color={colorMode === "dark" ? "dwordMain" : "bMain"}
+              lineHeight="1.2"
               textAlign="center"
               mt="2px !important"
             >
@@ -139,7 +173,12 @@ const WelcomeSection = () => {
             </Heading>
           </VStack>
 
-          <Text textAlign="center" maxW="732px" mb="3rem !important">
+          <Text
+            textAlign="center"
+            maxW="732px"
+            m="0 0 3rem 0 !important"
+            opacity="0.9"
+          >
             Welcome to Quest Casino, where the fun never stops! We offer the
             best blackjack tables, exciting slot machines, and thrilling games.
             Your safety is our top priority, and we have taken every precaution
@@ -149,52 +188,64 @@ const WelcomeSection = () => {
           </Text>
 
           <Grid
+            templateColumns={[
+              "repeat(1, 1fr)",
+              "repeat(2, 1fr)",
+              "repeat(3, 1fr)",
+            ]}
+            gap="2rem"
+            justifyItems="center"
             w="100%"
             maxW="732px"
-            templateColumns="repeat(3, 1fr)"
-            gap="1rem"
-            justifyItems="center"
+            m="0 !important"
           >
-            <VStack maxW="180px">
+            <VStack maxW="180px" maxH="127.3px">
               <Heading
                 fontFamily="body"
-                fontSize="24px"
+                fontSize={isSmallerThan601 ? "21px" : "24px"}
                 fontWeight="600"
+                lineHeight="1.2"
                 color={colorMode === "dark" ? "dwordMain" : "bMain"}
               >
                 Games
               </Heading>
-              <Text fontSize="13px" textAlign="center">
+              <Text fontSize="13px" textAlign="center" opacity="0.8">
                 Classic table games like blackjack and poker, even slot machines
                 and more!
               </Text>
               <Icon as={CgCardSpades} fontSize="1.5rem" color="g500" />
             </VStack>
-            <VStack maxW="180px">
+            <VStack maxW="180px" maxH="127.3px">
               <Heading
                 fontFamily="body"
-                fontSize="24px"
+                fontSize={isSmallerThan601 ? "21px" : "24px"}
                 fontWeight="600"
+                lineHeight="1.2"
                 color={colorMode === "dark" ? "dwordMain" : "bMain"}
               >
                 Challenges
               </Heading>
-              <Text fontSize="13px" textAlign="center">
+              <Text fontSize="13px" textAlign="center" opacity="0.8">
                 Challenges are the quests you can fulfil for some extra cash! Or
                 other special rewards.
               </Text>
               <Icon as={AiOutlineTrophy} fontSize="1.5rem" color="g500" />
             </VStack>
-            <VStack maxW="180px">
+            <VStack
+              maxW="180px"
+              maxH="127.3px"
+              gridColumn={["1", "span 2", "3"]}
+            >
               <Heading
                 fontFamily="body"
-                fontSize="24px"
+                fontSize={isSmallerThan601 ? "21px" : "24px"}
                 fontWeight="600"
+                lineHeight="1.2"
                 color={colorMode === "dark" ? "dwordMain" : "bMain"}
               >
                 Safety
               </Heading>
-              <Text fontSize="13px" textAlign="center">
+              <Text fontSize="13px" textAlign="center" opacity="0.8">
                 Our top priority is your safety and comfort even though there is
                 no danger! This is all for fun!
               </Text>

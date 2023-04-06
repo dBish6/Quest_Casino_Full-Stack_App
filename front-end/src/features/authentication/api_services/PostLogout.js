@@ -10,18 +10,20 @@ const PostLogout = () => {
   const navigate = useNavigate();
 
   const handleLogout = async () => {
+    let timeout;
     try {
       setUnexpectedErr("");
 
       await logout();
       navigate("/home");
-      setTimeout(() => {
+      timeout = setTimeout(() => {
         alert("User session timed out.");
       }, 1000);
     } catch (error) {
       setUnexpectedErr("Failed to log out.");
       console.error(error);
     }
+    return () => clearTimeout(timeout);
   };
 
   return [handleLogout, unexpectedErr];

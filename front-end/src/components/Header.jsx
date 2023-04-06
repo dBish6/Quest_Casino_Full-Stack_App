@@ -4,9 +4,15 @@ import { Flex, Heading, Divider, useColorMode } from "@chakra-ui/react";
 const Header = (props) => {
   const { colorMode } = useColorMode();
 
+  // TODO: Change name.
   return (
     <Flex justifyContent="center">
-      <Heading fontSize={props.fontSize} textAlign="center" {...props}>
+      <Heading
+        fontSize={props.fontSize}
+        lineHeight="1.2"
+        textAlign="center"
+        {...props}
+      >
         {props.text}
         <Divider
           mt="2px"

@@ -16,17 +16,18 @@ import {
 import GameDisplay from "../../features/games/general/components/gamesDisplay";
 
 const GamesHome = (props) => {
-  const [isBiggerThan600] = useMediaQuery("(min-width: 600px)");
+  const [isLargerThan600] = useMediaQuery("(min-width: 600px)");
   const { colorMode } = useColorMode();
 
   useDocumentTitle(`${props.title} | Quest Casino`);
 
   return (
     <>
-      <Box mt="3rem" marginInline={isBiggerThan600 && "2rem"}>
+      <Box mt="3rem" marginInline={isLargerThan600 && "2rem"}>
         <Heading
           fontSize="64px"
           mb="1rem"
+          lineHeight="1.2"
           // textShadow={
           //   colorMode === "dark" ? "1px 1px 0px #E0E2EA" : "1px 1px 0px #363636"
           // }
@@ -68,7 +69,7 @@ const GamesHome = (props) => {
         </Text>
       </Box>
 
-      <GameDisplay isBiggerThan600={isBiggerThan600} />
+      <GameDisplay />
     </>
   );
 };

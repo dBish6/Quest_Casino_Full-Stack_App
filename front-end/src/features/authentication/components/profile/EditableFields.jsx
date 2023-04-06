@@ -70,11 +70,12 @@ const EditableFields = (props) => {
           <Text fontSize={{ base: "16px", md: "18px", xl: "18px" }}>
             {props.fsUser.full_name}
           </Text>
-          <Tooltip hasArrow label="Edit" variant="primary">
+          <Tooltip hasArrow label="Edit">
             <IconButton
               icon={
                 <MdOutlineEdit fontSize={isSmallerThan768 ? "20px" : "24px"} />
               }
+              aria-label="edit"
               isLoading={props.loadingUpdate.name ? true : false}
               isDisabled={
                 props.loadingUpdate.username ||
@@ -171,11 +172,12 @@ const EditableFields = (props) => {
           <Text fontSize={{ base: "16px", md: "18px", xl: "18px" }}>
             {props.fsUser.username}
           </Text>
-          <Tooltip hasArrow label="Edit" variant="primary">
+          <Tooltip hasArrow label="Edit">
             <IconButton
               icon={
                 <MdOutlineEdit fontSize={isSmallerThan768 ? "20px" : "24px"} />
               }
+              aria-label="edit"
               isLoading={props.loadingUpdate.username ? true : false}
               isDisabled={
                 props.loadingUpdate.name ||
@@ -282,11 +284,12 @@ const EditableFields = (props) => {
           <Text fontSize={{ base: "16px", md: "18px", xl: "18px" }}>
             {props.fsUser.email}
           </Text>
-          <Tooltip hasArrow label="Edit" variant="primary">
+          <Tooltip hasArrow label="Edit">
             <IconButton
               icon={
                 <MdOutlineEdit fontSize={isSmallerThan768 ? "20px" : "24px"} />
               }
+              aria-label="edit"
               isLoading={props.loadingUpdate.email ? true : false}
               isDisabled={
                 props.loadingUpdate.username ||
@@ -390,13 +393,14 @@ const EditableFields = (props) => {
             {props.fsUser.phone_number ? props.fsUser.phone_number : "None"}
           </Text>
           {props.fsUser.phone_number ? (
-            <Tooltip hasArrow label="Edit" variant="primary">
+            <Tooltip hasArrow label="Edit">
               <IconButton
                 icon={
                   <MdOutlineEdit
                     fontSize={isSmallerThan768 ? "20px" : "24px"}
                   />
                 }
+                aria-label="edit"
                 isLoading={props.loadingUpdate.phone ? true : false}
                 isDisabled={
                   props.loadingUpdate.username ||

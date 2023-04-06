@@ -13,6 +13,7 @@ const PostGoogleRegister = () => {
   const { signInWithGoogle } = useAuth();
 
   const handleGoogleRegister = async () => {
+    let timeout;
     toggleLoading(true);
     setGoogleSuccessMsg("");
     setUnexpectedErr("");
@@ -43,7 +44,7 @@ const PostGoogleRegister = () => {
           navigate("/home");
           // console.warn = () => {};
           setGoogleSuccessMsg("Google account successfully registered.");
-          setTimeout(() => {
+          timeout = setTimeout(() => {
             setGoogleSuccessMsg("");
           }, 15000);
         }
@@ -54,6 +55,8 @@ const PostGoogleRegister = () => {
     } finally {
       toggleLoading(false);
     }
+
+    return () => clearTimeout(timeout);
   };
 
   return {

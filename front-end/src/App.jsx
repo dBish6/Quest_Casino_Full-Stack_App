@@ -4,7 +4,7 @@
    Creation Date: February 4, 2023
 */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import {
   HashRouter,
   Routes,
@@ -13,7 +13,7 @@ import {
   Outlet,
   useLocation,
 } from "react-router-dom";
-import { Grid, useMediaQuery } from "@chakra-ui/react";
+import { Grid, Box, Flex, useMediaQuery } from "@chakra-ui/react";
 
 import PrivateRoute from "./features/authentication/PrivateRoute";
 
@@ -29,60 +29,56 @@ import MobileSidebar from "./components/sideBar/mobile";
 import NavBar from "./components/partials/NavBar";
 
 // *Feature Imports*
-import RegisterModel from "./features/authentication/components/modals/RegisterModel";
+import RegisterModal from "./features/authentication/components/modals/RegisterModal";
 
 // *Pages/Views*
 import Home from "./pages/Home";
 import About from "./pages/About";
 import Support from "./pages/Support";
 import Profile from "./pages/Profile";
-
 import GamesHome from "./pages/games/GamesHome";
-import Blackjack from "./pages/games/Blackjack";
-
+// import Blackjack from "./pages/games/Blackjack";
 import Error404 from "./pages/errors/Error404";
 import Error500 from "./pages/errors/Error500";
+
+import DomLoader from "./components/DomLoader";
 
 // *Redux Imports*
 import { useDispatch, useSelector } from "react-redux";
 import { CLEAR_GAME } from "./features/games/blackjack/redux/blackjackSlice";
 import { selectGameType } from "./features/games/blackjack/redux/blackjackSelectors";
 
-const ShowPartials = () => {
-  const [isLargerThan1027] = useMediaQuery("(min-width: 1027px)");
+// *Game Import*
+const Blackjack = lazy(() => import("./pages/games/Blackjack"));
+
+const ShowPartials = (props) => {
   const [showSideBar, setShowSideBar] = useState(true);
   const { colorMode } = useColorMode();
-  const location = useLocation();
-
-  const gameType = useSelector(selectGameType);
-  const dispatch = useDispatch();
-
-  // Ensures no game is running if the player leaves the page.
-  useEffect(() => {
-    console.log("gameType2", gameType);
-    if (location.pathname !== "/games/blackjack" && gameType) {
-      dispatch(CLEAR_GAME());
-    }
-  }, [location, dispatch, gameType]);
 
   return (
     <>
       {/* Nested routes render out here. */}
-      <Grid
-        templateColumns={isLargerThan1027 ? "235px 1fr" : "max-content 1fr"}
+      <Box
+        display="grid"
+        gridTemplateColumns={props.isLargerThan1280 ? "235px 1fr" : "1fr"}
       >
-        {isLargerThan1027 ? (
-          <chakra.aside
-            bgColor={colorMode === "dark" ? "bd700" : "bl400"}
-            minH="100vh"
-            // borderRight={
-            //   colorMode === "dark"
-            //     ? "1px solid borderD"
-            //     : "1px solid borderL"
-            // }
-          >
-            <DesktopSidebar />
-          </chakra.aside>
+        {props.isLargerThan1280 ? (
+          <>
+            <Box />
+            <chakra.aside
+              position="fixed"
+              bgColor={colorMode === "dark" ? "bd700" : "bl400"}
+              w="235px"
+              minH="100vh"
+              // borderRight={
+              //   colorMode === "dark"
+              //     ? "1px solid borderD"
+              //     : "1px solid borderL"
+              // }
+            >
+              <DesktopSidebar />
+            </chakra.aside>
+          </>
         ) : (
           <MobileSidebar
             showSideBar={showSideBar}
@@ -92,52 +88,91 @@ const ShowPartials = () => {
 
         <chakra.main
           p={{ base: "1.5rem 1rem", md: "1.5rem 2rem", xl: "1.5rem 2rem" }}
+          minH="100vh"
         >
           <NavBar />
           <Outlet />
         </chakra.main>
-      </Grid>
-      {/* <Footer /> */}
+        {/* <Footer /> */}
+      </Box>
     </>
   );
 };
 
+const ClearGamesWhileNotOnPage = ({ children }) => {
+  const location = useLocation();
+  const gameType = useSelector(selectGameType);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    console.log(document.location.pathname);
+    if (location.pathname !== "/games/blackjack" && gameType) {
+      dispatch(CLEAR_GAME());
+    }
+  }, [location]);
+};
+
 function App() {
+  const [isLargerThan1280] = useMediaQuery("(min-width: 1280px)");
+  // const location = useLocation();
+
+  // const gameType = useSelector(selectGameType);
+  // const dispatch = useDispatch();
+
+  // Ensures no game is running if the player leaves the page.
+  // useEffect(() => {
+  //   console.log(document.location.pathname);
+  //   if (document.location.pathname !== "/games/blackjack" && gameType) {
+  //     dispatch(CLEAR_GAME());
+  //   }
+  // }, [gameType, dispatch]);
+
   return (
     <HashRouter>
       <AuthProvider>
-        <Routes>
-          <Route element={<ShowPartials />}>
-            <Route path="/" element={<Navigate to="/home" />} />
-            <Route path="/home" element={<Home title="Home" />} />
-            <Route path="/about" element={<About title="About Us" />} />
-            <Route path="/support" element={<Support title="Support" />} />
+        <Suspense fallback={<DomLoader />}>
+          <Routes>
+            {/* <Route element={<ClearGamesWhileNotOnPage />}> */}
             <Route
-              path="/user/profile"
+              element={<ShowPartials isLargerThan1280={isLargerThan1280} />}
+            >
+              <Route path="/" element={<Navigate to="/home" />} />
+              <Route path="/home" element={<Home title="Home" />} />
+              <Route path="/about" element={<About title="About Us" />} />
+              <Route path="/support" element={<Support title="Support" />} />
+              <Route
+                path="/user/profile"
+                element={
+                  <PrivateRoute>
+                    <Profile
+                      title="Profile"
+                      isLargerThan1280={isLargerThan1280}
+                    />
+                  </PrivateRoute>
+                }
+              />
+              <Route path="/games" element={<GamesHome title="Games" />} />
+
+              <Route path="/error404" element={<Error404 title="ERROR" />} />
+              <Route path="/error500" element={<Error500 title="ERROR" />} />
+              <Route path="*" element={<Navigate to="/error404" />} />
+
+              <Route path="/register" element={<RegisterModal />} />
+            </Route>
+
+            <Route path="/loading" element={<DomLoader title="Loader" />} />
+
+            <Route
+              path="/games/blackjack"
               element={
                 <PrivateRoute>
-                  <Profile title="Profile" />
+                  <Blackjack title="Blackjack" />
                 </PrivateRoute>
               }
             />
-            <Route path="/games" element={<GamesHome title="Games" />} />
-
-            <Route path="/error404" element={<Error404 title="ERROR" />} />
-            <Route path="/error500" element={<Error500 title="ERROR" />} />
-            <Route path="*" element={<Navigate to="/error404" />} />
-
-            <Route path="/register" element={<RegisterModel />} />
-          </Route>
-
-          <Route
-            path="/games/blackjack"
-            element={
-              <PrivateRoute>
-                <Blackjack title="Blackjack" />
-              </PrivateRoute>
-            }
-          />
-        </Routes>
+            {/* </Route> */}
+          </Routes>
+        </Suspense>
       </AuthProvider>
     </HashRouter>
   );

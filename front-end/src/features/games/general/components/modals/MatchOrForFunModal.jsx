@@ -1,9 +1,8 @@
-import { useEffect } from "react";
-
 // *Design Imports*
 import { VStack, Button, ButtonGroup, Text, chakra } from "@chakra-ui/react";
 
 // *Custom Hooks Imports*
+import useDisableScroll from "../../../../../hooks/useDisableScroll";
 import useStartGame from "../../../blackjack/hooks/useStartGame";
 
 // *Component Imports*
@@ -17,22 +16,14 @@ import { GAME_TYPE, START_GAME } from "../../../blackjack/redux/blackjackSlice";
 const MatchOrForFunModal = (props) => {
   const dispatch = useDispatch();
   const startGame = useStartGame();
-
-  useEffect(() => {
-    if (props.show) {
-      document.body.style.overflow = "hidden";
-    } else {
-      setTimeout(() => {
-        document.body.style.overflow = "unset";
-      }, 510);
-    }
-  }, [props.show]);
+  useDisableScroll(props.show.gameStart, 510);
 
   return (
     <ModalTemplate
       show={props.show.gameStart}
       setShow={props.setShow}
       objName="gameStart"
+      game="blackjack"
       animation={{ type: "up", y: "200%" }}
       p="1.5rem 2rem"
       maxW="fit-content"
@@ -62,7 +53,7 @@ const MatchOrForFunModal = (props) => {
             }}
             variant="primary"
           >
-            Match
+            Matches
           </Button>
           <Button
             onClick={() => {

@@ -15,7 +15,8 @@ import { MdExpandMore, MdExpandLess } from "react-icons/md";
 import { motion } from "framer-motion";
 
 // *Component Imports*
-import PopOutMenu from "./PopOutMenu";
+import PopOutMenus from "./PopOutMenus";
+import QuestsModal from "../../../features/quests/components/modals/QuestsModal";
 
 // This is the mobile sidebar for phones and tablets:)
 const MobileIndex = (props) => {
@@ -28,6 +29,7 @@ const MobileIndex = (props) => {
     navigation: false,
     login: false,
     settings: false,
+    quests: false,
   });
   const { colorMode } = useColorMode();
 
@@ -52,8 +54,14 @@ const MobileIndex = (props) => {
           opacity: 1,
           width: "60px",
         }}
-        bgColor={colorMode === "dark" ? "bd700" : "bl400"}
+        pos="fixed"
         minH="100vh"
+        bgColor={colorMode === "dark" ? "bd700" : "bl400"}
+        borderRightWidth="1px"
+        borderColor={
+          colorMode === "dark" ? "rgba(244, 244, 244, 0.1)" : "borderL"
+        }
+        zIndex="sticky"
       >
         <VStack
           as={motion.div}
@@ -80,6 +88,7 @@ const MobileIndex = (props) => {
                 settings: false,
               });
               setShow({
+                ...show,
                 navigation: !show.navigation,
                 login: false,
                 settings: false,
@@ -97,6 +106,7 @@ const MobileIndex = (props) => {
                 settings: false,
               });
               setShow({
+                ...show,
                 navigation: false,
                 login: !show.login,
                 settings: false,
@@ -114,6 +124,7 @@ const MobileIndex = (props) => {
                 settings: !iconSelected.settings,
               });
               setShow({
+                ...show,
                 navigation: false,
                 login: false,
                 settings: !show.settings,
@@ -124,14 +135,17 @@ const MobileIndex = (props) => {
             mt="0.8rem !important"
           />
         </VStack>
-        <Image src={QuestCasinoDiceDARK} w="34px" h="29px" />
+        <Image src={QuestCasinoDiceDARK} w="48px" h="42px" />
+
+        <PopOutMenus show={show} setShow={setShow} />
       </VStack>
+
       <IconButton
         as={motion.button}
         animate={
           props.showSideBar
             ? {
-                x: "35px",
+                x: "32px",
                 rotate: "90deg",
                 transition: { duration: 0.2, type: "spring" },
               }
@@ -142,7 +156,7 @@ const MobileIndex = (props) => {
               }
         }
         initial={{
-          x: "35px",
+          x: "32px",
           rotate: "90deg",
         }}
         icon={
@@ -153,13 +167,13 @@ const MobileIndex = (props) => {
           )
         }
         onClick={() => props.setShowSideBar(!props.showSideBar)}
-        position="absolute"
+        position="fixed"
         top="50%"
         size="sm"
         zIndex="sticky"
       />
 
-      <PopOutMenu show={show} setShow={setShow} />
+      <QuestsModal show={show} setShow={setShow} />
     </>
   );
 };

@@ -1,47 +1,28 @@
 // *Design Imports*
-import { chakra, useToast } from "@chakra-ui/react";
+import { Text, chakra, Skeleton } from "@chakra-ui/react";
 
-// *API Services Imports*
-import GetUserBalance from "../features/authentication/api_services/GetUserBalance";
-
-// *Redux Imports*
-import { useSelector } from "react-redux";
-import { selectWallet } from "../features/games/blackjack/redux/blackjackSelectors";
+// *Custom Hooks Import*
+import useAuth from "../hooks/useAuth";
 
 const GetBalance = (props) => {
-  const wallet = useSelector(selectWallet);
-  const { fsUserBalance, notFoundErr, loading } = GetUserBalance(
-    props.currentUser.uid,
-    false,
-    wallet
-  );
-  const toast = useToast();
+  const { balance } = useAuth();
 
   return (
     <>
-      {notFoundErr.length
-        ? toast({
-            description: `Server Error 404: ${notFoundErr}`,
-            status: "error",
-            duration: 99999999,
-            isClosable: true,
-            position: "top",
-            variant: "solid",
-          })
-        : undefined}
-      {!loading && (
-        <>
+      {balance ? (
+        <Text {...props}>
           Balance:{" "}
           <chakra.span
-            color={notFoundErr.length ? "r500" : "g500"}
+            color="g500"
             fontWeight="500"
+            textShadow={props.variant === "blackjack" && "2px 1px 0px #000000"}
           >
-            {wallet === null
-              ? `$${fsUserBalance}`
-              : notFoundErr.length
-              ? "Error"
-              : `$${wallet}`}
+            ${balance}
           </chakra.span>
+        </Text>
+      ) : (
+        <>
+          <Skeleton startColor="dwordMain" h="21px" w="96px" />
         </>
       )}
     </>

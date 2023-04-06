@@ -1,14 +1,23 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { createContext, useState, useEffect } from "react";
 import { GoogleAuthProvider } from "firebase/auth";
 
 // *Utility Import*
 import { auth } from "../../../utils/firebaseConfig";
 
+// *API Services Imports*
+import GetUserBalanceCompletedQuests from "../api_services/GetUserBalanceCompletedQuests";
+
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [loadingUser, toggleLoading] = useState(true);
-  const [currentUser, setCurrentUser] = useState({});
+  const [currentUser, setCurrentUser] = useState(null);
+
+  const [balance, setBalance] = useState(null);
+  const [completedQuests, setCompletedQuests] = useState(null);
+  const { fetchBalanceAndCompletedQuests, abortController } =
+    GetUserBalanceCompletedQuests();
 
   const login = (email, password) => {
     return auth.signInWithEmailAndPassword(email, password);
@@ -57,10 +66,31 @@ export const AuthProvider = ({ children }) => {
     };
   }, []);
 
-  // Exports pretty much, for provider.
-  const functions = {
+  useEffect(() => {
+    console.log("currentUser", currentUser);
+    if (currentUser !== null && balance === null && completedQuests === null) {
+      fetchBalanceAndCompletedQuests(
+        currentUser.uid,
+        setBalance,
+        setCompletedQuests
+      );
+
+      return () => abortController.abort();
+    }
+  }, [currentUser]);
+
+  useEffect(() => {
+    console.log("userBalance", balance);
+    console.log("completedQuests", completedQuests);
+  }, [balance, completedQuests]);
+
+  const exports = {
     currentUser,
     loadingUser,
+    balance,
+    setBalance,
+    completedQuests,
+    setCompletedQuests,
     login,
     signInWithGoogle,
     logout,
@@ -69,7 +99,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={functions}>
+    <AuthContext.Provider value={exports}>
       {!loadingUser && children}
     </AuthContext.Provider>
   );

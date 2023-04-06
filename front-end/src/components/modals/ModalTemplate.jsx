@@ -1,11 +1,8 @@
 import { Box, Container, useColorMode } from "@chakra-ui/react";
 import { motion, AnimatePresence } from "framer-motion";
-import Models from "../../utils/animations/Models";
+import ModalAnimations from "../../utils/animations/ModalAnimations";
 
-const ModalTemplate = (
-  // {animation, type, children}
-  props
-) => {
+const ModalTemplate = (props) => {
   const {
     show,
     setShow,
@@ -16,8 +13,10 @@ const ModalTemplate = (
     children,
     ...rest
   } = props;
+
   const { colorMode } = useColorMode();
-  const { modelBackdrop, modelFadeDown, modelFadeUp } = Models(animation);
+  const { modelBackdrop, modelFadeDown, modelFadeUp } =
+    ModalAnimations(animation);
 
   return (
     <AnimatePresence>

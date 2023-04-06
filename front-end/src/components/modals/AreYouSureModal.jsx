@@ -1,22 +1,18 @@
-import { useEffect } from "react";
-
 // *Design Imports*
 import { HStack, Button } from "@chakra-ui/react";
+
+// *Custom Hooks Imports*
+import useDisableScroll from "../../hooks/useDisableScroll";
 
 // *Component Imports*
 import ModalTemplate from "./ModalTemplate";
 import Header from "../Header";
 
 const AreYouSureModal = (props) => {
-  useEffect(() => {
-    if (props.show) {
-      document.body.style.overflow = "hidden";
-    } else {
-      setTimeout(() => {
-        document.body.style.overflow = "unset";
-      }, 510);
-    }
-  }, [props.show]);
+  useDisableScroll(
+    typeof props.show === "object" ? props.show.areYouSure : props.show,
+    510
+  );
 
   return (
     <ModalTemplate

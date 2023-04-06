@@ -33,6 +33,34 @@ export const buttonStyles = defineStyleConfig({
       },
       transition: "0.38s ease",
     }),
+    transparency: (props) => ({
+      bgColor: "transparent",
+      color: mode("bMain", "dwordMain")(props),
+      opacity: "0.7",
+      _hover: {
+        opacity: "0.85",
+        color: mode("#000000", "wMain")(props),
+      },
+      _active: {
+        opacity: "1",
+        // bgColor: mode("g300", "g500")(props),
+      },
+      transition: "0.38s ease",
+    }),
+
+    exit: {
+      bgColor: "r500",
+      color: "dwordMain",
+      _hover: {
+        bgColor: "r600",
+        color: "wMain",
+        boxShadow: "lg",
+      },
+      _active: {
+        opacity: 0.6,
+      },
+      transition: "0.38s ease",
+    },
 
     chipRed: (props) => ({
       position: "relative",
@@ -105,34 +133,6 @@ export const buttonStyles = defineStyleConfig({
           "0px 1.45px 0px rgba(253, 207, 73, 0.7)"
         )(props),
       },
-    }),
-
-    exit: {
-      bgColor: "r500",
-      color: "dwordMain",
-      _hover: {
-        bgColor: "r600",
-        color: "wMain",
-        boxShadow: "lg",
-      },
-      _active: {
-        opacity: 0.6,
-      },
-      transition: "0.38s ease",
-    },
-    transparency: (props) => ({
-      bgColor: "transparent",
-      color: mode("bMain", "dwordMain")(props),
-      opacity: "0.7",
-      _hover: {
-        opacity: "0.85",
-        color: mode("#000000", "wMain")(props),
-      },
-      _active: {
-        opacity: "1",
-        // bgColor: mode("g300", "g500")(props),
-      },
-      transition: "0.38s ease",
     }),
 
     blackjackBlue: {

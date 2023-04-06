@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-// *Custom Hooks Import*
+// *Custom Hooks Imports*
 import useAuth from "../hooks/useAuth";
 import useDocumentTitle from "../hooks/useDocumentTitle";
 
@@ -34,10 +34,9 @@ import GetUser from "../features/authentication/api_services/GetUser";
 import UpdateProfile from "../features/authentication/api_services/UpdateProfile";
 
 // *Component Imports*
-import Header from "../components/Header";
 import EditableFields from "../features/authentication/components/profile/EditableFields";
 import LogoutBtn from "../features/authentication/components/LogoutBtn";
-import PasswordResetModel from "../features/authentication/components/modals/PasswordResetModel";
+import PasswordResetModal from "../features/authentication/components/modals/PasswordResetModal";
 import ChangePicture from "../features/authentication/components/profile/ChangePicture";
 
 const Profile = (props) => {
@@ -114,6 +113,7 @@ const Profile = (props) => {
                 <VStack>
                   <Heading
                     fontSize="64px"
+                    lineHeight="1.2"
                     textShadow={colorMode === "light" && "1px 1px 0px #363636"}
                   >
                     {fsUser.username}
@@ -289,7 +289,7 @@ const Profile = (props) => {
         )}
       </VStack>
 
-      <PasswordResetModel show={show} setShow={setShow} />
+      <PasswordResetModal show={show} setShow={setShow} />
     </>
   );
 };

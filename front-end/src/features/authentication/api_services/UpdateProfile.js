@@ -37,7 +37,7 @@ const UpdateProfile = () => {
   const toast = useToast();
   const navigate = useNavigate();
   const [emailSent, setEmailSent] = useState(false);
-  const { currentUser, logout, verifyEmail } = useAuth();
+  const { currentUser, logout, verifyEmail, balance, setBalance } = useAuth();
 
   const handleFullName = async (id, name, setIsUpdating) => {
     setErrorHandler({ unexpected: false, maxRequests: false });
@@ -373,7 +373,7 @@ const UpdateProfile = () => {
   //   }
   // };
 
-  const handleUpdateBalance = async (formRef, id, balance) => {
+  const handleUpdateBalance = async (formRef, id, deposit) => {
     setErrorHandler({ unexpected: false });
     toggleLoadingUpdate({ balance: true });
     console.log("handleUpdateBalance");
@@ -381,12 +381,10 @@ const UpdateProfile = () => {
     try {
       const res = await axios({
         method: "PATCH",
-        url: `http://localhost:4000/auth/api/firebase/update/${id}?balance=${balance}`,
+        url: `http://localhost:4000/auth/api/firebase/update/${id}?balance=${deposit}`,
       });
       console.log(res.data);
       if (res && res.status === 200) {
-        // toggleLoadingUpdate({ balance: false });
-        // if (formRef !== null) {
         formRef.current.reset();
         toast({
           description: "Funds successfully added.",
@@ -396,7 +394,7 @@ const UpdateProfile = () => {
           position: "top",
           variant: "solid",
         });
-        // }
+        setBalance(balance + parseInt(deposit));
       }
     } catch (error) {
       setErrorHandler({ unexpected: true });

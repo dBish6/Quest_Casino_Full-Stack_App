@@ -34,9 +34,9 @@ import SaveLogin from "../api_services/SaveLogin";
 import PostGoogleRegister from "../api_services/PostGoogleRegister";
 
 // *Component Imports*
-import PasswordResetModel from "./modals/PasswordResetModel";
+import PasswordResetModal from "./modals/PasswordResetModal";
 import LogoutBtn from "./LogoutBtn";
-import RegisterModel from "./modals/RegisterModel";
+import RegisterModal from "./modals/RegisterModal";
 
 const LoginForm = (props) => {
   const [visible, toggleVisibility] = useState(false);
@@ -336,8 +336,8 @@ const LoginForm = (props) => {
         </Alert>
       ) : undefined}
 
-      <PasswordResetModel show={show} setShow={setShow} />
-      <RegisterModel show={show} setShow={setShow} />
+      <PasswordResetModal show={show} setShow={setShow} />
+      <RegisterModal show={show} setShow={setShow} />
     </>
   );
 };

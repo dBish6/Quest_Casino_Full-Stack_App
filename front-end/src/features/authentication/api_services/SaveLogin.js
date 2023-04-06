@@ -19,6 +19,7 @@ const SaveLogin = () => {
   const { currentUser, login } = useAuth();
 
   const handleLogin = async (formRef, email, password) => {
+    let timeout;
     toggleLoading(true);
     setErrorHandler({
       badRequest: false,
@@ -44,7 +45,7 @@ const SaveLogin = () => {
       if (res) {
         setSuccessMsg("Welcome back!");
         formRef.current.reset();
-        setTimeout(() => {
+        timeout = setTimeout(() => {
           setSuccessMsg("");
         }, 15000);
       }
@@ -64,6 +65,8 @@ const SaveLogin = () => {
     } finally {
       toggleLoading(false);
     }
+
+    return () => clearTimeout(timeout);
   };
 
   return { handleLogin, errorHandler, successMsg, loading };
