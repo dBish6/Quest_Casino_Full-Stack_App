@@ -1,4 +1,4 @@
-import { createSlice, current } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk, current } from "@reduxjs/toolkit";
 
 // *Utility Import*
 import createDeck from "../utils/createDeck";
@@ -6,6 +6,20 @@ import checkCard from "../utils/checkCard";
 
 // *API Services Imports*
 import updateWinsBalance from "../../general/api_services/updateWinsBalance";
+
+export const updateWinsBalanceThunk = createAsyncThunk(
+  "blackjack/updateWinsBalance",
+  async (payload, thunkAPI) => {
+    console.log("payload", payload);
+    const res = await updateWinsBalance(
+      payload.uid,
+      payload.winner !== "dealer" ? true : false,
+      payload.game,
+      payload.balance
+    );
+    if (res.status === 200) return res.data;
+  }
+);
 
 const blackjackSlice = createSlice({
   name: "blackjack",
@@ -26,7 +40,9 @@ const blackjackSlice = createSlice({
     playerInitialHit: false,
     playerStanding: false,
     playerHasNatural: false,
-    wallet: null,
+    streak: 0,
+    balanceLoading: false,
+    updatedBalance: false,
 
     winner: null,
   },
@@ -43,7 +59,6 @@ const blackjackSlice = createSlice({
       state.playerScore = 0;
       state.playerInitialHit = false;
       state.playerStanding = false;
-      state.wallet = null;
       state.winner = null;
     },
     GAME_TYPE: (state, action) => {
@@ -63,6 +78,7 @@ const blackjackSlice = createSlice({
       state.playerInitialHit = false;
       state.playerStanding = false;
       state.playerHasNatural = false;
+      state.updatedBalance = false;
     },
     UPDATE_SCORE: (state, action) => {
       let newFaceDownScore;
@@ -127,53 +143,23 @@ const blackjackSlice = createSlice({
       // *When in Play*
       if (state.dealerScore === 21 && state.playerScore === 21) {
         // If both the dealer and the player get a blackjack.
-        if (state.gameType === "match") state.wallet += state.playerBet;
         state.winner = "push";
       } else if (state.playerScore === 21) {
         // If player has blackjack.
-        if (state.gameType === "match") {
-          state.wallet += state.playerBet * 2;
-          updateWinsBalance(
-            action.payload.uid,
-            true,
-            "blackjack",
-            state.wallet
-          );
-        }
+        if (state.gameType === "match") state.streak += 1;
         state.winner = action.payload.displayName;
       } else if (state.dealerScore === 21) {
         // If dealer has blackjack.
-        if (state.gameType === "match") {
-          updateWinsBalance(
-            action.payload.uid,
-            false,
-            "blackjack",
-            state.wallet
-          );
-        }
+        if (state.gameType === "match") state.streak = 0;
+
         state.winner = "dealer";
       } else if (state.playerScore > 21) {
         // If player busts.
-        if (state.gameType === "match") {
-          updateWinsBalance(
-            action.payload.uid,
-            false,
-            "blackjack",
-            state.wallet
-          );
-        }
+        if (state.gameType === "match") state.streak = 0;
         state.winner = "dealer";
       } else if (state.dealerScore > 21) {
         // If dealer busts.
-        if (state.gameType === "match") {
-          state.wallet += state.playerBet * 2;
-          updateWinsBalance(
-            action.payload.uid,
-            true,
-            "blackjack",
-            state.wallet
-          );
-        }
+        if (state.gameType === "match") state.streak += 1;
         state.winner = action.payload.displayName;
       }
       // *When All Standing*
@@ -183,14 +169,7 @@ const blackjackSlice = createSlice({
         state.dealerScore > state.playerScore
       ) {
         // If dealer has the higher score.
-        if (state.gameType === "match") {
-          updateWinsBalance(
-            action.payload.uid,
-            false,
-            "blackjack",
-            state.wallet
-          );
-        }
+        if (state.gameType === "match") state.streak = 0;
         state.winner = "dealer";
       } else if (
         state.dealerStanding &&
@@ -198,15 +177,7 @@ const blackjackSlice = createSlice({
         state.playerScore > state.dealerScore
       ) {
         // If player has the higher score.
-        if (state.gameType === "match") {
-          state.wallet += state.playerBet * 2;
-          updateWinsBalance(
-            action.payload.uid,
-            true,
-            "blackjack",
-            state.wallet
-          );
-        }
+        if (state.gameType === "match") state.streak += 1;
         state.winner = action.payload.displayName;
       } else if (
         state.dealerStanding &&
@@ -214,7 +185,6 @@ const blackjackSlice = createSlice({
         state.dealerScore === state.playerScore
       ) {
         // If both the player and the dealer have the same score.
-        if (state.gameType === "match") state.wallet += state.playerBet;
         state.winner = "push";
       }
     },
@@ -249,7 +219,6 @@ const blackjackSlice = createSlice({
 
     // *Player*
     SET_BET: (state, action) => {
-      state.wallet -= action.payload;
       state.playerBet = action.payload;
     },
     PLAYER_HIT: (state) => {
@@ -257,15 +226,35 @@ const blackjackSlice = createSlice({
       state.playerCards.push(state.deck.pop());
     },
     DOUBLE_DOWN: (state) => {
-      state.wallet -= state.playerBet;
       state.playerBet += state.playerBet;
     },
     SET_PLAYER_STANDING: (state, action) => {
       state.playerStanding = action.payload;
     },
-    SET_WALLET: (state, action) => {
-      state.wallet = action.payload;
+    SET_COMPLETED_QUESTS: (state, action) => {
+      if (action.payload.quest) {
+        if (state.completedQuests === null) {
+          state.completedQuests = [action.payload.quest];
+        } else {
+          state.completedQuests.push(action.payload.quest);
+        }
+      } else {
+        state.completedQuests = action.payload.quests;
+      }
     },
+  },
+  extraReducers: (builder) => {
+    builder.addCase(updateWinsBalanceThunk.pending, (state) => {
+      state.balanceLoading = true;
+    });
+    builder.addCase(updateWinsBalanceThunk.fulfilled, (state) => {
+      state.balanceLoading = false;
+      state.updatedBalance = true;
+    });
+    builder.addCase(updateWinsBalanceThunk.rejected, (state, action) => {
+      state.balanceLoading = false;
+      console.error(action.error.message);
+    });
   },
 });
 
@@ -273,7 +262,7 @@ const blackjackSlice = createSlice({
 export const {
   CLEAR_GAME,
   GAME_TYPE,
-  SET_WALLET,
+  SET_COMPLETED_QUESTS,
   START_GAME,
   UPDATE_SCORE,
   DETERMINE_WINNER,
@@ -286,7 +275,6 @@ export const {
   PLAYER_HIT,
   DOUBLE_DOWN,
   SET_PLAYER_STANDING,
-  SET_HAS_BLACKJACK_ON_FIRST_TURN,
 } = blackjackSlice.actions;
 // Exports the slice's reducer.
 export default blackjackSlice.reducer;

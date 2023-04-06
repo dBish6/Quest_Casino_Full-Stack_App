@@ -16,13 +16,11 @@ import backOfCard from "./assets/images/back_of_card.png";
 
 // *Custom Hooks Imports*
 import useAuth from "../../../hooks/useAuth";
+import useOnlyDarkMode from "../general/hooks/useOnlyDarkMode";
 import useDealerTurn from "./hooks/useDealerTurn";
 
-// *Utility Import*
+// *Utility Imports*
 import waitForAceDecision from "./utils/waitForAceDecision";
-
-// *API Services Import*
-import GetUserBalance from "../../authentication/api_services/GetUserBalance";
 
 // *Component Imports*
 import MatchOrForFunModal from "../general/components/modals/MatchOrForFunModal";
@@ -32,6 +30,7 @@ import Dealer from "./components/Dealer";
 import Player from "./components/player/Player";
 import AcePrompt from "./components/AcePrompt";
 import WinnerPopup from "./components/WinnerPopup";
+import RulesOverlay from "./components/RulesOverlay";
 import Footer from "./components/partials/Footer";
 
 // *Redux Imports*
@@ -39,7 +38,6 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   UPDATE_SCORE,
   DETERMINE_WINNER,
-  SET_WALLET,
   DEALER_TURN,
 } from "./redux/blackjackSlice";
 import {
@@ -51,13 +49,14 @@ import {
   selectDealerStanding,
   selectDealerHasNatural,
   selectPlayerCards,
+  selectPlayerBet,
   selectPlayerScore,
   selectPlayerInitialHit,
   selectPlayerStanding,
   selectPlayerHasNatural,
   selectWinner,
-  selectWallet,
 } from "./redux/blackjackSelectors";
+import { updateWinsBalanceThunk } from "./redux/blackjackSlice";
 
 const BlackjackFeature = () => {
   // Other
@@ -65,25 +64,17 @@ const BlackjackFeature = () => {
     gameStart: false,
     canCancel: false,
     cashIn: false,
+    rules: false,
   });
   const { colorMode } = useColorMode();
-  const { currentUser } = useAuth();
-  const { fetchBalance, loading, abortController } = GetUserBalance(
-    currentUser.uid,
-    true
-  );
+  const { currentUser, balance, setBalance } = useAuth();
+  const dispatch = useDispatch();
+  const gameType = useSelector(selectGameType);
+  const winner = useSelector(selectWinner);
 
   // Dealer
   const [dealerUpdated, setDealerUpdated] = useState(null);
   const dealerTurn = useDealerTurn();
-
-  // Player
-  // const [playerUpdated, setPlayerUpdated] = useState(null);
-  const [showAcePrompt, setShowAcePrompt] = useState(false);
-  const [wants11, setWants11] = useState(0);
-
-  // Redux
-  const gameType = useSelector(selectGameType);
   const dealerCards = useSelector(selectDealerCards);
   const dealerFaceDownScore = useSelector(selectDealerFaceDownScore);
   const dealerScore = useSelector(selectDealerScore);
@@ -91,29 +82,24 @@ const BlackjackFeature = () => {
   const dealerStanding = useSelector(selectDealerStanding);
   const dealerHasNatural = useSelector(selectDealerHasNatural);
 
+  // Player
+  const [showAcePrompt, setShowAcePrompt] = useState(false);
+  const [wants11, setWants11] = useState(0);
   const playerCards = useSelector(selectPlayerCards);
+  const playerBet = useSelector(selectPlayerBet);
   const playerScore = useSelector(selectPlayerScore);
   const hasPlayerHit = useSelector(selectPlayerInitialHit);
   const playerStanding = useSelector(selectPlayerStanding);
   const playerHasNatural = useSelector(selectPlayerHasNatural);
-  const winner = useSelector(selectWinner);
-  const wallet = useSelector(selectWallet);
-  const dispatch = useDispatch();
 
   // TODO: Make the dealer's card animation wait for the player's card animation.
   // TODO: +playerBet on win floating animation.
 
+  useOnlyDarkMode();
+
   useEffect(() => {
     setShow({ ...show, gameStart: true, canCancel: false });
   }, []);
-
-  // Sets the wallet as the user's balance initially when gameType is Match.
-  useEffect(() => {
-    if (gameType === "Match" && wallet === null) {
-      fetchBalance(dispatch, SET_WALLET);
-      return () => abortController.abort();
-    }
-  }, [gameType]);
 
   // Updates Dealer's Score
   useEffect(() => {
@@ -139,9 +125,10 @@ const BlackjackFeature = () => {
   // When the player is standing.
   useEffect(() => {
     if (playerStanding && !dealerStanding && !winner) {
-      setTimeout(() => {
+      const turnDuration = setTimeout(() => {
         setDealerUpdated(dealerTurn());
       }, 2500);
+      return () => clearTimeout(turnDuration);
     }
   }, [playerStanding, dealerStanding, dealerScore]);
 
@@ -158,12 +145,13 @@ const BlackjackFeature = () => {
               DETERMINE_WINNER({
                 displayName: currentUser.displayName,
                 uid: currentUser.uid,
+                // completedQuest:
               })
             );
         } else if (playerScore === 21 && !dealerHasNatural) {
           // If the player has 21 and the player does have a natural, wait for the dealers turn (2500ms) to be over then
           // DETERMINE_WINNER because Davy Blackjack is a little bit different; the one who doesn't have a natural has one chance.
-          setTimeout(() => {
+          const waitForTurn = setTimeout(() => {
             !winner &&
               dispatch(
                 DETERMINE_WINNER({
@@ -172,6 +160,10 @@ const BlackjackFeature = () => {
                 })
               );
           }, 2600);
+          return () => {
+            setDealerUpdated(null);
+            clearTimeout(waitForTurn);
+          };
         } else {
           !winner &&
             dispatch(
@@ -183,9 +175,36 @@ const BlackjackFeature = () => {
         }
       });
 
-      setDealerUpdated(null);
+      return () => setDealerUpdated(null);
     }
-  }, [dealerScore, isDealerTurn]);
+  }, [dealerScore, isDealerTurn, dealerStanding]);
+
+  // Then when there is winner, update the player's wins and balance.
+  useEffect(() => {
+    if (winner && gameType === "Match") {
+      const newBalance =
+        winner === currentUser.displayName
+          ? balance + playerBet * 2
+          : winner === "push"
+          ? balance + playerBet
+          : balance;
+
+      new Promise((resolve) => {
+        setBalance(newBalance);
+        resolve();
+      }).then(() => {
+        if (winner !== "push")
+          dispatch(
+            updateWinsBalanceThunk({
+              uid: currentUser.uid,
+              winner: winner,
+              game: "blackjack",
+              balance: newBalance,
+            })
+          );
+      });
+    }
+  }, [winner]);
 
   // Naturals Checks
   useEffect(() => {
@@ -199,11 +218,12 @@ const BlackjackFeature = () => {
       });
     } else if (playerHasNatural) {
       dispatch(DEALER_TURN(true));
-      setTimeout(() => {
+      const turnDuration = setTimeout(() => {
         dealerTurn();
       }, 2500);
+      return () => clearTimeout(turnDuration);
     }
-  }, [dealerHasNatural, playerHasNatural, showAcePrompt]);
+  }, [dealerHasNatural, playerHasNatural, showAcePrompt, hasPlayerHit]);
 
   // useEffect(() => {
   //   console.log("wants11", wants11);
@@ -228,12 +248,11 @@ const BlackjackFeature = () => {
         backgroundAttachment="fixed"
         backgroundSize="cover"
       >
-        <Header gameType={gameType} setShow={setShow} wallet={wallet} />
+        <Header gameType={gameType} show={show} setShow={setShow} />
 
         {gameType && (
           <>
-            {/* Loading for getting the balance. */}
-            {loading ? (
+            {!balance ? (
               <CircularProgress
                 isIndeterminate
                 position="fixed"
@@ -284,10 +303,12 @@ const BlackjackFeature = () => {
                     />
                     <Player
                       playerCards={playerCards}
+                      playerBet={playerBet}
                       playerScore={playerScore}
                       hasPlayerHit={hasPlayerHit}
-                      playerStanding={playerStanding}
-                      wallet={wallet}
+                      currentUser={currentUser}
+                      balance={balance}
+                      setBalance={setBalance}
                       showAcePrompt={showAcePrompt}
                       setShowAcePrompt={setShowAcePrompt}
                       winner={winner}
@@ -304,8 +325,9 @@ const BlackjackFeature = () => {
         )}
       </Box>
 
-      <MatchOrForFunModal show={show} setShow={setShow} />
-      <CashInModal show={show} setShow={setShow} />
+      <MatchOrForFunModal show={show} setShow={setShow} game={true} />
+      <CashInModal show={show} setShow={setShow} game={true} />
+      <RulesOverlay show={show} setShow={setShow} />
     </>
   );
 };

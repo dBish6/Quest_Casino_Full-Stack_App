@@ -23,5 +23,9 @@ export const selectPlayerInitialHit = (store) =>
 export const selectPlayerStanding = (store) => store.blackjack.playerStanding;
 export const selectPlayerHasNatural = (store) =>
   store.blackjack.playerHasNatural;
+export const selectStreak = (store) => store.blackjack.streak;
 export const selectWallet = (store) => store.blackjack.wallet;
+export const selectBalanceLoading = (store) => store.blackjack.balanceLoading;
+export const selectUpdatedBalance = (store) => store.blackjack.updatedBalance;
+export const selectCompletedQuests = (store) => store.blackjack.completedQuests;
 export const selectWinner = (store) => store.blackjack.winner;

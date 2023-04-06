@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 // *Design Imports*
 import { ButtonGroup, Button } from "@chakra-ui/react";
@@ -19,24 +19,8 @@ const BettingButtons = (props) => {
   });
   const BET_MULTIPLIERS = [5, 10, 15, 25, 50, 100];
 
-  const [betText, setBetText] = useState(false);
-
   const dispatch = useDispatch();
   const startGame = useStartGame();
-
-  useEffect(() => {
-    const wait = () => {
-      if (props.winner !== null && bet.count === 0) {
-        setBetText("Updating Balance...");
-        setTimeout(() => {
-          setBetText(`Bet: $${bet.count}`);
-        }, 2760);
-      } else {
-        setBetText(`Bet: $${bet.count}`);
-      }
-    };
-    wait();
-  }, [props.winner, bet.count]);
 
   return (
     <AnimatePresence>
@@ -44,7 +28,9 @@ const BettingButtons = (props) => {
         isDisabled={
           props.isDealerTurn ||
           props.showcaseRunning ||
-          betText === "Updating Balance..."
+          props.balanceLoading ||
+          props.completedQuestLoading ||
+          !props.balance
         }
         position="relative"
         minW="255px"
@@ -52,7 +38,7 @@ const BettingButtons = (props) => {
         <Button
           onClick={() => {
             const newCount = bet.count + bet.multiplier;
-            const maxCount = (props.wallet / bet.multiplier) * bet.multiplier;
+            const maxCount = (props.balance / bet.multiplier) * bet.multiplier;
             newCount <= 1000
               ? setBet((prev) => ({
                   ...prev,
@@ -67,7 +53,11 @@ const BettingButtons = (props) => {
           w={bet.count > 0 ? "100%" : "154.883px"}
           zIndex="1"
         >
-          {betText}
+          {props.balanceLoading || props.completedQuestLoading
+            ? "Updating Balance..."
+            : !props.balance
+            ? "Loading Balance..."
+            : `Bet: $${bet.count}`}
         </Button>
 
         <Button
@@ -96,6 +86,8 @@ const BettingButtons = (props) => {
           <Button
             onClick={() => {
               dispatch(SET_BET(bet.count));
+              props.gameType === "Match" &&
+                props.setBalance(props.balance - bet.count);
               startGame();
               dispatch(DEALER_DEAL());
             }}

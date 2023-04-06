@@ -7,7 +7,12 @@ const WinnerPopup = (props) => {
     <AnimatePresence>
       {props.winner !== null && (
         <Box as={motion.div} justifySelf="center" alignSelf="center">
-          <Heading variant="blackjack" fontFamily="fugaz" fontSize="60px">
+          <Heading
+            variant="blackjack"
+            fontFamily="fugaz"
+            fontSize="60px"
+            lineHeight="1.2"
+          >
             {props.winner === "dealer"
               ? `Dealer Wins`
               : props.winner === "push"

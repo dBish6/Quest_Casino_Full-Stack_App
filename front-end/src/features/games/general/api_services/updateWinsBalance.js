@@ -9,11 +9,12 @@ const updateWinsBalance = async (id, win, type, balance) => {
       method: "PATCH",
       url: `http://localhost:4000/auth/api/firebase/update/${id}?win=${win}&winType=${type}&balance=${balance}`,
       validateStatus: (status) => {
-        return status === 200 || status === 404; // Resolve only if the status code is 404 or 200
+        return status === 200 || status === 404; // Resolve only if the status code is 404 or 200.
       },
     });
     console.log(res.data);
-    if (res && res.status === 404) {
+    if (res && res.status === 200) {
+    } else if (res && res.status === 404) {
       toast({
         description: "Server Error 404: " + res.data.user,
         status: "error",
@@ -23,6 +24,7 @@ const updateWinsBalance = async (id, win, type, balance) => {
         variant: "solid",
       });
     }
+    return res;
   } catch (error) {
     console.error(error);
     toast({

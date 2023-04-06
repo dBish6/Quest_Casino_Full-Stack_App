@@ -1,3 +1,5 @@
+import { Link as ReactLink } from "react-router-dom";
+
 // *Design Imports*
 import {
   Container,
@@ -16,11 +18,9 @@ import {
   PopoverContent,
   PopoverHeader,
   PopoverBody,
-  PopoverArrow,
   PopoverCloseButton,
-  useColorMode,
+  Divider,
 } from "@chakra-ui/react";
-import { Link as ReactLink } from "react-router-dom";
 import { MdClose } from "react-icons/md";
 import DiceLogo from "../../../../assets/Dice.png";
 import { motion, AnimatePresence } from "framer-motion";
@@ -28,13 +28,12 @@ import { motion, AnimatePresence } from "framer-motion";
 // *Component Import*
 import Header from "../../../../components/Header";
 
+// FIXME: Why don't this scroll!!!!
 const RulesOverlay = (props) => {
-  const { colorMode } = useColorMode();
-
   return (
     <>
       <AnimatePresence>
-        {props.showRules && (
+        {props.show.rules && (
           <Container
             as={motion.div}
             position="fixed"
@@ -43,12 +42,9 @@ const RulesOverlay = (props) => {
             minW="100vw"
             minH="100vh"
             p="1rem"
-            bgColor={
-              colorMode === "dark"
-                ? "rgba(66, 75, 94, 0.85)"
-                : "rgba(204, 209, 218, 0.85)"
-            }
+            bgColor="rgba(66, 75, 94, 0.85)"
             zIndex="overlay"
+            // overflowY="scroll"
           >
             <chakra.header
               display="grid"
@@ -59,13 +55,18 @@ const RulesOverlay = (props) => {
               <Link as={ReactLink} to="/home" ml="4rem">
                 <Image src={DiceLogo} />
               </Link>
-              <Heading variant="blackjack" fontSize="48px" color="p400">
+              <Heading
+                variant="blackjack"
+                fontSize="48px"
+                lineHeight="1.2"
+                color="p400"
+              >
                 Rules
               </Heading>
               <Box justifySelf="flex-end" mr="1rem">
                 <IconButton
                   icon={<MdClose fontSize="24px" />}
-                  onClick={() => props.setShowRules(false)}
+                  onClick={() => props.setShow({ ...props.show, rules: false })}
                   variant="exit"
                   borderRadius="50%"
                 />
@@ -87,7 +88,7 @@ const RulesOverlay = (props) => {
                 pb="1.5rem"
                 maxW="1215px"
                 borderBottomWidth="1px"
-                borderColor={colorMode === "dark" ? "borderD" : "borderL"}
+                // </Grid>borderColor="borderD"
               >
                 <Box>
                   <Header
@@ -233,7 +234,10 @@ const RulesOverlay = (props) => {
                   </ListItem>
                   <ListItem>
                     The dealer must stand on a hand total of{" "}
-                    <chakra.span fontWeight="700">17 or more</chakra.span>.
+                    <chakra.span fontWeight="700">
+                      17 or more, unless the player has blackjack.
+                    </chakra.span>
+                    .
                   </ListItem>
                   <ListItem>
                     <chakra.span fontWeight="700">Aces</chakra.span> is always
@@ -248,17 +252,62 @@ const RulesOverlay = (props) => {
                     variant="simple"
                     gridColumn="span 2"
                     justifySelf="flex-end"
-                    opacity="0.85"
                   >
                     Davy Blackjack v1.0.1-alpha
                   </Link>
                 </PopoverTrigger>
-                <PopoverContent>
-                  <PopoverArrow />
-                  <PopoverCloseButton />
-                  <PopoverHeader>Patch Notes</PopoverHeader>
+                <PopoverContent
+                  bgColor="bd700"
+                  maxH="500px"
+                  overflowY="scroll"
+                  // borderColor="borderD"
+                >
+                  <PopoverCloseButton color="dwordMain" />
+                  <PopoverHeader
+                    // color="dwordMain"
+                    textDecoration="underline"
+                    borderColor="borderD"
+                  >
+                    Patch Notes
+                  </PopoverHeader>
                   <PopoverBody>
-                    <Heading textAlign="center" fontSize="24px">
+                    <Heading
+                      textAlign="center"
+                      fontSize="24px"
+                      lineHeight="1.2"
+                      mb="4px"
+                    >
+                      v1.1.5-alpha
+                    </Heading>
+                    <UnorderedList fontSize="14px">
+                      <ListItem>
+                        Fixed missing dependency in determine winner useEffect
+                        and added clean-up functions; The game now determines
+                        the winner when both are standing.
+                      </ListItem>
+                      <ListItem>
+                        Implements new redux state, streak, to keep track of the
+                        player's wins in a row for "On a Role" quest and adds
+                        "Beginner's Luck" quest.
+                      </ListItem>
+                      <ListItem>
+                        Changes regarding how the completedQuests state and
+                        wallet state is handled is not in redux anymore and used
+                        in the authContext now, so changes was made how the
+                        balance is handled.
+                      </ListItem>
+                      <ListItem>Fixed hamburger menu animation.</ListItem>
+                    </UnorderedList>
+                    <Divider
+                      m="0.5rem 0"
+                      // borderColor="borderD"
+                    />
+                    <Heading
+                      textAlign="center"
+                      fontSize="24px"
+                      lineHeight="1.2"
+                      mb="4px"
+                    >
                       v1.0.2-alpha
                     </Heading>
                     <UnorderedList fontSize="14px">

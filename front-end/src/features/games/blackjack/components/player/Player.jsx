@@ -14,6 +14,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 // *Custom Hooks Imports*
 import useDealerTurn from "../../hooks/useDealerTurn";
+import useBlackjackQuestsCompletion from "../../../../quests/hooks/useBlackjackQuestsCompletion";
 
 // *Utility Import*
 import waitForAceDecision from "../../utils/waitForAceDecision";
@@ -32,18 +33,20 @@ import {
 } from "../../redux/blackjackSlice";
 import {
   selectDealerTurn,
-  selectPlayerBet,
+  selectBalanceLoading,
 } from "../../redux/blackjackSelectors";
 
 const Player = (props) => {
   const isDealerTurn = useSelector(selectDealerTurn);
-  const playerBet = useSelector(selectPlayerBet);
   const dispatch = useDispatch();
   const dealerTurn = useDealerTurn();
   const [showcaseRunning, toggleShowcaseRunning] = useState(false);
 
   const [prevAcesInHandLength, setPrevAcesInHandLength] = useState(-1);
   const [acesInCurrentHand, setAcesInCurrentHand] = useState([]);
+
+  const balanceLoading = useSelector(selectBalanceLoading);
+  const completedQuestLoading = useBlackjackQuestsCompletion(props.currentUser);
 
   useEffect(() => {
     props.winner
@@ -74,6 +77,7 @@ const Player = (props) => {
         props.playerCards[0].face === "A" &&
         props.playerCards[1].face === "A"
       ) {
+        // If the player gets a double ace on the first turn.
         props.setShowAcePrompt(true);
         if (props.playerScore >= 1) {
           waitForAceDecision(props.showAcePrompt).then(() => {
@@ -97,10 +101,11 @@ const Player = (props) => {
       dispatch(DEALER_TURN(true));
       if (props.playerScore !== 21) {
         toggleShowcaseRunning(true);
-        setTimeout(() => {
+        const turnDuration = setTimeout(() => {
           dealerTurn();
           toggleShowcaseRunning(false);
         }, 2500);
+        return () => clearTimeout(turnDuration);
       } else if (props.playerScore === 21) {
         dispatch(SET_PLAYER_STANDING(true));
       }
@@ -200,10 +205,12 @@ const Player = (props) => {
               Hit
             </Button>
             {!props.hasPlayerHit &&
-              playerBet <= props.wallet &&
+              props.playerBet <= props.balance &&
               props.gameType === "Match" && (
                 <Button
                   onClick={() => {
+                    props.gameType === "Match" &&
+                      props.setBalance(props.balance - props.playerBet);
                     dispatch(DOUBLE_DOWN());
                     dispatch(PLAYER_HIT());
                   }}
@@ -229,7 +236,7 @@ const Player = (props) => {
               boxShadow="md"
               paddingInline="1rem"
             >
-              ${playerBet}
+              ${props.playerBet}
             </Text>
           )}
         </>
@@ -244,8 +251,11 @@ const Player = (props) => {
             <BettingButtons
               isDealerTurn={isDealerTurn}
               showcaseRunning={showcaseRunning}
-              wallet={props.wallet}
-              winner={props.winner}
+              balance={props.balance}
+              setBalance={props.setBalance}
+              gameType={props.gameType}
+              balanceLoading={balanceLoading}
+              completedQuestLoading={completedQuestLoading}
             />
           )}
         </>
