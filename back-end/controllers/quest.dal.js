@@ -11,9 +11,9 @@ const getAllQuestsFromDb = async () => {
   }
 };
 
-const getQuestFromDb = async (id) => {
+const getQuestFromDb = async (title) => {
   try {
-    const document = await db.collection("quests").doc(id).get();
+    const document = await db.collection("quests").doc(title).get();
     if (!document.exists) {
       return "Quest doesn't exist.";
     } else {

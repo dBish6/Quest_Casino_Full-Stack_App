@@ -43,15 +43,16 @@ router.get("/api/firebase/users/:id", async (req, res) => {
   let fsRes;
 
   try {
-    if (req.query.wins && req.query.balance) {
-      fsRes = await authDal.getUserWinsBalanceFromDb(req.params.id);
+    // if (req.query.wins && req.query.balance) {
+    //   fsRes = await authDal.getUserWinsBalanceFromDb(req.params.id);
+    // }
+    if (req.query.balance && req.query.completedQuests) {
+      fsRes = await authDal.getUserBalanceCompletedQuestsFromDb(req.params.id);
     } else if (req.query.wins) {
       fsRes = await authDal.getUserWinsFromDb(req.params.id);
     } else if (req.query.balance) {
-      console.log("confirmed1");
       fsRes = await authDal.getUserBalanceFromDb(req.params.id);
     } else {
-      console.log("confirmed2");
       fsRes = await authDal.getUserFromDb(req.params.id);
     }
 
@@ -185,7 +186,23 @@ router.patch("/api/firebase/update/:id", async (req, res) => {
   const userId = req.params.id;
 
   try {
-    if (req.query.name) {
+    if (req.query.win && req.query.winType && req.query.balance) {
+      if (req.query.win === "true")
+        winsRes = await authDal.updateWins(userId, req.query.winType);
+
+      if (winsRes !== "User doesn't exist." || !winsRes) {
+        balanceRes = await authDal.updateBalance(
+          userId,
+          parseInt(req.query.balance)
+        );
+      } else if (winsRes === "User doesn't exist.") {
+        res.status(404).json({
+          user: winsRes,
+          ERROR:
+            "/auth/api/firebase/update/:id failed to find the document by Id to update wins and balance.",
+        });
+      }
+    } else if (req.query.name) {
       fsRes = await authDal.updateRealName(userId, req.query.name);
     } else if (req.query.username) {
       fsRes = await authDal.updateUsername(userId, req.query.username);
@@ -207,29 +224,31 @@ router.patch("/api/firebase/update/:id", async (req, res) => {
       authRes = admin.auth().updateUser(userId, {
         photoURL: req.query.profilePic,
       });
-    } else if (req.query.win && req.query.winType && req.query.balance) {
-      if (req.query.win === "true")
-        winsRes = await authDal.updateWins(userId, req.query.winType);
-
-      if (winsRes !== "User doesn't exist." || !winsRes) {
-        balanceRes = await authDal.updateBalance(
-          userId,
-          parseInt(req.query.balance)
-        );
-      } else if (winsRes === "User doesn't exist.") {
-        res.status(404).json({
-          user: winsRes,
-          ERROR:
-            "/auth/api/firebase/update/:id failed to find the document by Id to update wins and balance.",
-        });
-      }
     } else if (req.query.win) {
       fsRes = await authDal.updateWins(userId);
-    } else if (req.query.balance) {
-      fsRes = await authDal.updateBalance(userId, parseInt(req.query.balance));
+    } else if (
+      req.query.completedQuest &&
+      req.query.balance &&
+      req.query.reward
+    ) {
+      // console.log("Made it.");
+      fsRes = await authDal.updateCompletedQuests(
+        userId,
+        req.query.completedQuest,
+        parseInt(req.query.balance),
+        parseInt(req.query.reward)
+      );
+      // fsRes && console.log("COMPLETED");
+    } else if (req.query.deposit) {
+      fsRes = await authDal.updateBalance(
+        userId,
+        parseInt(req.query.deposit),
+        true
+      );
     } else {
       res.status(400).json({
-        ERROR: "/auth/api/firebase/update/:id was given nothing to update.",
+        ERROR:
+          "/auth/api/firebase/update/:id was given nothing to update or you missed a query.",
       });
       throw new Error(
         "/auth/api/firebase/update/:id was given nothing to update."

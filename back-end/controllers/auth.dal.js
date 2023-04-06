@@ -1,4 +1,4 @@
-const { db } = require("../model/firebase");
+const { admin, db } = require("../model/firebase");
 const moment = require("moment");
 
 const getAllUsersFromDb = async () => {
@@ -43,20 +43,20 @@ const getAllUsernamesFromDb = async () => {
   }
 };
 
-const getUserWinsBalanceFromDb = async (id) => {
+const getUserBalanceCompletedQuestsFromDb = async (id) => {
   try {
     const document = await db
       .collection("users")
       .doc(id)
       .get({
-        fields: ["wins", "balance"],
+        fields: ["balance", "completed_quests"],
       });
     if (!document.exists) {
       return "User doesn't exist.";
     } else {
       return {
-        wins: await document.get("wins"),
         balance: await document.get("balance"),
+        completedQuests: await document.get("completed_quests"),
       };
     }
   } catch (error) {
@@ -65,6 +65,29 @@ const getUserWinsBalanceFromDb = async (id) => {
       console.error("DEBUGGER: auth.dal error: getUserWinsBalanceFromDb");
   }
 };
+
+// const getUserWinsBalanceFromDb = async (id) => {
+//   try {
+//     const document = await db
+//       .collection("users")
+//       .doc(id)
+//       .get({
+//         fields: ["wins", "balance"],
+//       });
+//     if (!document.exists) {
+//       return "User doesn't exist.";
+//     } else {
+//       return {
+//         wins: await document.get("wins"),
+//         balance: await document.get("balance"),
+//       };
+//     }
+//   } catch (error) {
+//     console.error(error);
+//     if (DEBUG)
+//       console.error("DEBUGGER: auth.dal error: getUserWinsBalanceFromDb");
+//   }
+// };
 
 const getUserWinsFromDb = async (id) => {
   try {
@@ -197,8 +220,8 @@ const addGoogleUserToDb = async (
         photoURL: profilePic,
         wins: 0,
         balance: 0,
-        favorites: [],
-        quests_completed: [],
+        // favorites: [],
+        // quests_completed: [],
         creation_date: moment().format(),
       });
     return response;
@@ -276,6 +299,7 @@ const updateWins = async (id, win) => {
   }
 
   try {
+    // FIXME:
     const document = await db.collection("users").doc(id).get({
       fields: "wins",
     });
@@ -283,6 +307,7 @@ const updateWins = async (id, win) => {
     if (!document.exists) {
       return "User doesn't exist.";
     } else {
+      // TODO: When first blackjack win quest?
       const currentWins = await document.get("wins");
 
       const response = await db
@@ -315,11 +340,17 @@ const updateWins = async (id, win) => {
   }
 };
 
-const updateBalance = async (id, balance) => {
+const updateBalance = async (id, balance, isDeposit) => {
   try {
-    const response = await db.collection("users").doc(id).update({
-      balance: balance,
-    });
+    const response = await db
+      .collection("users")
+      .doc(id)
+      .update({
+        // FIXME:
+        balance: isDeposit
+          ? admin.firestore.FieldValue.increment(balance)
+          : balance,
+      });
     return response;
   } catch (error) {
     console.error(error);
@@ -337,6 +368,25 @@ const updateFavorites = async (id, favorite) => {
   } catch (error) {
     console.error(error);
     if (DEBUG) console.error("DEBUGGER: auth.dal error: updateFavorites");
+  }
+};
+
+const updateCompletedQuests = async (id, quest, currBalance, reward) => {
+  try {
+    console.log("quest", quest, "currBalance", currBalance, "reward", reward);
+    const newBalance = currBalance + reward;
+    console.log("newBalance", newBalance);
+    const response = await db
+      .collection("users")
+      .doc(id)
+      .update({
+        completed_quests: admin.firestore.FieldValue.arrayUnion(quest),
+        balance: newBalance,
+      });
+    return response;
+  } catch (error) {
+    console.error(error);
+    if (DEBUG) console.error("DEBUGGER: auth.dal error: updateCompletedQuests");
   }
 };
 
@@ -358,7 +408,8 @@ module.exports = {
   getAllUsersFromDb,
   getUserFromDb,
   getAllUsernamesFromDb,
-  getUserWinsBalanceFromDb,
+  getUserBalanceCompletedQuestsFromDb,
+  // getUserWinsBalanceFromDb,
   getUserWinsFromDb,
   getUserBalanceFromDb,
   getLeaderBoardFromDb,
@@ -372,5 +423,6 @@ module.exports = {
   updateProfilePicture,
   updateWins,
   updateBalance,
+  updateCompletedQuests,
   deleteUserFromDb,
 };

@@ -27,11 +27,11 @@ router.get("/api/firebase", async (req, res) => {
 });
 
 // Get Certain Quest
-router.get("/api/firebase/:id", async (req, res) => {
-  if (DEBUG) console.log("/quest/api/firebase/:id req:", req.params);
+router.get("/api/firebase/:title", async (req, res) => {
+  if (DEBUG) console.log("/quest/api/firebase/:title req:", req.params);
 
   try {
-    const fsRes = await questDal.getQuestFromDb(req.params.id);
+    const fsRes = await questDal.getQuestFromDb(req.params.title);
 
     if (fsRes === "Quest doesn't exist.") {
       res.status(404).json({
