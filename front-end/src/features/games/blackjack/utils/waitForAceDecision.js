@@ -1,10 +1,10 @@
 const waitForAceDecision = (showAcePrompt) => {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     const checkAcePrompt = () => {
       if (showAcePrompt === false) {
         resolve();
       } else if (showAcePrompt) {
-        // setTimeout(checkAcePrompt, 100);
+        return;
       }
     };
     checkAcePrompt();

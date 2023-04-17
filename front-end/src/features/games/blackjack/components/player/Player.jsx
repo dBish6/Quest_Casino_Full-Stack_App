@@ -9,8 +9,11 @@ import {
   Image,
   Text,
   HStack,
+  useMediaQuery,
 } from "@chakra-ui/react";
 import { motion, AnimatePresence } from "framer-motion";
+import fadeInAnimations from "../../../general/utils/animations/fadeIn";
+import cardAnimation from "../../../general/utils/animations/blackjack/cardAnimation";
 
 // *Custom Hooks Imports*
 import useDealerTurn from "../../hooks/useDealerTurn";
@@ -40,6 +43,13 @@ const Player = (props) => {
   const isDealerTurn = useSelector(selectDealerTurn);
   const dispatch = useDispatch();
   const dealerTurn = useDealerTurn();
+  const [isHeightSmallerThan910] = useMediaQuery("(max-height: 910px)");
+  const { fadeInVar2 } = fadeInAnimations(0.8);
+  const { slideCard, slideCardResponsive } = cardAnimation(
+    true,
+    props.playerViewWidthOnMoreCards,
+    isHeightSmallerThan910
+  );
   const [showcaseRunning, toggleShowcaseRunning] = useState(false);
 
   const [prevAcesInHandLength, setPrevAcesInHandLength] = useState(-1);
@@ -123,15 +133,28 @@ const Player = (props) => {
               pointerEvents="none"
             >
               <Box pos="relative">
-                <Text variant="blackjack" fontSize="48px">
+                <Text
+                  as={motion.p}
+                  variants={fadeInVar2}
+                  initial="hidden"
+                  animate="visible"
+                  exit="hidden"
+                  key="playerScore"
+                  variant="blackjack"
+                  fontSize="48px"
+                >
                   {props.playerScore}
                 </Text>
                 {props.playerScore === 21 ? (
                   <Text
+                    as={motion.p}
+                    variants={fadeInVar2}
+                    initial={["hidden", { x: "-50%", y: "-50%", left: "18%" }]}
+                    animate={["visible", { x: "-50%", y: "-50%", left: "18%" }]}
+                    exit={["hidden", { x: "-50%", y: "-50%", left: "18%" }]}
+                    key="playerBlackjack"
                     variant="blackjack"
                     pos="absolute"
-                    left="18%"
-                    transform="translate(-50%, -50%)"
                     fontSize="18px"
                     textDecoration="underline"
                     textDecorationColor="g500"
@@ -140,10 +163,14 @@ const Player = (props) => {
                   </Text>
                 ) : props.playerScore > 21 ? (
                   <Text
+                    as={motion.p}
+                    variants={fadeInVar2}
+                    initial={["hidden", { x: "-50%", y: "-50%", left: "50%" }]}
+                    animate={["visible", { x: "-50%", y: "-50%", left: "50%" }]}
+                    exit={["hidden", { x: "-50%", y: "-50%", left: "50%" }]}
+                    key="playerBust"
                     variant="blackjack"
                     pos="absolute"
-                    left="50%"
-                    transform="translate(-50%, -50%)"
                     fontSize="18px"
                     textDecoration="underline"
                     textDecorationColor="r500"
@@ -153,16 +180,20 @@ const Player = (props) => {
                 ) : undefined}
               </Box>
 
-              <Box
-                as={motion.div}
-                animate={{ y: "" }}
-                initial={{}}
-                exit={{}}
-                ml="1rem !important"
-              >
+              <Box ml="1rem !important">
                 {props.playerCards.map((card, i) => {
                   return (
                     <Image
+                      as={motion.img}
+                      variants={
+                        props.isWidthSmallerThan1429 ||
+                        props.isHeightSmallerThan844
+                          ? slideCardResponsive
+                          : slideCard
+                      }
+                      initial="fromDeck"
+                      animate="toHand"
+                      exit="giveBack"
                       display="inline-block"
                       src={card.image}
                       key={i}
@@ -187,7 +218,10 @@ const Player = (props) => {
                 dispatch(DEALER_TURN(true));
               }}
               isDisabled={
-                props.dealerHasNatural || isDealerTurn || props.showAcePrompt
+                props.playerCards.length === 1 ||
+                isDealerTurn ||
+                props.showAcePrompt ||
+                props.dealerHasNatural
               }
               variant="blackjackRed"
               w="100%"
@@ -198,7 +232,11 @@ const Player = (props) => {
               onClick={() => {
                 dispatch(PLAYER_HIT());
               }}
-              isDisabled={isDealerTurn || props.showAcePrompt}
+              isDisabled={
+                props.playerCards.length === 1 ||
+                isDealerTurn ||
+                props.showAcePrompt
+              }
               variant="blackjackGreen"
               w="100%"
             >
@@ -214,7 +252,12 @@ const Player = (props) => {
                     dispatch(DOUBLE_DOWN());
                     dispatch(PLAYER_HIT());
                   }}
-                  isDisabled={isDealerTurn || props.showAcePrompt}
+                  isDisabled={
+                    props.playerCards.length === 1 ||
+                    isDealerTurn ||
+                    props.showAcePrompt ||
+                    props.dealerHasNatural
+                  }
                   variant="blackjackBlue"
                   w="100%"
                 >
@@ -246,6 +289,7 @@ const Player = (props) => {
             <DealButton
               isDealerTurn={isDealerTurn}
               showcaseRunning={showcaseRunning}
+              playerCards={props.playerCards}
             />
           ) : (
             <BettingButtons
@@ -256,6 +300,7 @@ const Player = (props) => {
               gameType={props.gameType}
               balanceLoading={balanceLoading}
               completedQuestLoading={completedQuestLoading}
+              playerCards={props.playerCards}
             />
           )}
         </>

@@ -40,6 +40,7 @@ const useDealerTurn = () => {
       (playerScore === 21 && !playerHasNatural && dealerScore < 21)
     ) {
       !dealerStanding && dispatch(DEALER_HIT());
+
       // Dealer cannot stand if he has his face down card. Only if he has blackjack his turn can end on 2 cards.
     } else if (
       dealerCards.length !== 2 &&

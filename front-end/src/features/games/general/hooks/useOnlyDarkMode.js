@@ -11,10 +11,8 @@ const useOnlyDarkMode = () => {
       localStorage.setItem("chakra-ui-color-mode", "dark");
     }
 
-    // FIXME:
     return () => {
       const previousColorMode = localStorage.getItem("previousColorMode");
-      console.log("previousColorMode", previousColorMode);
       if (previousColorMode) {
         setColorMode(previousColorMode);
         localStorage.setItem("chakra-ui-color-mode", "light");

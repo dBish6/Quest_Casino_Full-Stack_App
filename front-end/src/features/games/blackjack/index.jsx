@@ -10,16 +10,20 @@ import {
   VStack,
   CircularProgress,
   useColorMode,
+  useMediaQuery,
 } from "@chakra-ui/react";
 import tableImg from "./assets/images/Blackjack_Table_AdobeStock.jpeg";
 import backOfCard from "./assets/images/back_of_card.png";
+import { motion } from "framer-motion";
+import fadeInAnimations from "../general/utils/animations/fadeIn";
 
 // *Custom Hooks Imports*
 import useAuth from "../../../hooks/useAuth";
 import useOnlyDarkMode from "../general/hooks/useOnlyDarkMode";
+import useCardSoundEffect from "./hooks/useCardSoundEffect";
 import useDealerTurn from "./hooks/useDealerTurn";
 
-// *Utility Imports*
+// *Utility Import*
 import waitForAceDecision from "./utils/waitForAceDecision";
 
 // *Component Imports*
@@ -60,19 +64,25 @@ import { updateWinsBalanceThunk } from "./redux/blackjackSlice";
 
 const BlackjackFeature = () => {
   // Other
+  const { fadeInVar2 } = fadeInAnimations(0.8);
   const [show, setShow] = useState({
     gameStart: false,
     canCancel: false,
     cashIn: false,
+    options: false,
     rules: false,
   });
   const { colorMode } = useColorMode();
+  const [isWidthSmallerThan1429] = useMediaQuery("(max-width: 1429px)");
+  const [isHeightSmallerThan844] = useMediaQuery("(max-height: 844px)");
   const { currentUser, balance, setBalance } = useAuth();
   const dispatch = useDispatch();
   const gameType = useSelector(selectGameType);
   const winner = useSelector(selectWinner);
 
   // Dealer
+  const [dealerViewWidthOnMoreCards, setDealerViewWidthOnMoreCards] =
+    useState("30.6vw");
   const [dealerUpdated, setDealerUpdated] = useState(null);
   const dealerTurn = useDealerTurn();
   const dealerCards = useSelector(selectDealerCards);
@@ -83,7 +93,10 @@ const BlackjackFeature = () => {
   const dealerHasNatural = useSelector(selectDealerHasNatural);
 
   // Player
+  const [playerViewWidthOnMoreCards, setPlayerViewWidthOnMoreCards] =
+    useState("30.6vw");
   const [showAcePrompt, setShowAcePrompt] = useState(false);
+  const [secureAceOnNatural, setSecureAceOnNatural] = useState(false);
   const [wants11, setWants11] = useState(0);
   const playerCards = useSelector(selectPlayerCards);
   const playerBet = useSelector(selectPlayerBet);
@@ -92,10 +105,11 @@ const BlackjackFeature = () => {
   const playerStanding = useSelector(selectPlayerStanding);
   const playerHasNatural = useSelector(selectPlayerHasNatural);
 
-  // TODO: Make the dealer's card animation wait for the player's card animation.
   // TODO: +playerBet on win floating animation.
 
   useOnlyDarkMode();
+
+  const toggleMute = useCardSoundEffect(playerCards, dealerCards);
 
   useEffect(() => {
     setShow({ ...show, gameStart: true, canCancel: false });
@@ -103,14 +117,19 @@ const BlackjackFeature = () => {
 
   // Updates Dealer's Score
   useEffect(() => {
-    if (dealerCards.length > 1) {
+    if (dealerCards.length > 0) {
+      // For slideCard variant animation.
+      setDealerViewWidthOnMoreCards(
+        parseFloat(dealerViewWidthOnMoreCards.slice(0, 4)) - 0.85 + "vw"
+      );
+
       setDealerUpdated(dispatch(UPDATE_SCORE({ player: false, wants11: 11 })));
     }
   }, [dealerCards]);
 
   // Updates Player's Score
   useEffect(() => {
-    if (playerCards.length > 1) {
+    if (playerCards.length > 0) {
       waitForAceDecision(showAcePrompt).then(() => {
         !winner && dispatch(UPDATE_SCORE({ player: true, wants11: wants11 }));
 
@@ -121,6 +140,24 @@ const BlackjackFeature = () => {
       setShowAcePrompt(false);
     }
   }, [playerCards, showAcePrompt]);
+
+  useEffect(() => {
+    if (playerCards.length > 0) {
+      // For slideCard variant animation.
+      setPlayerViewWidthOnMoreCards(
+        parseFloat(playerViewWidthOnMoreCards.slice(0, 4)) - 0.85 + "vw"
+      );
+
+      // For slideCardResponsive variant animation.
+      if (isWidthSmallerThan1429 || isHeightSmallerThan844) {
+        document.body.style.overflow = "hidden";
+        const animationDuration = setTimeout(() => {
+          document.body.style.overflow = "unset";
+        }, 1300);
+        return () => clearTimeout(animationDuration);
+      }
+    }
+  }, [playerCards]);
 
   // When the player is standing.
   useEffect(() => {
@@ -203,6 +240,9 @@ const BlackjackFeature = () => {
             })
           );
       });
+
+      setDealerViewWidthOnMoreCards("30.6vw");
+      setPlayerViewWidthOnMoreCards("30.6vw");
     }
   }, [winner]);
 
@@ -212,9 +252,21 @@ const BlackjackFeature = () => {
       // If the dealer and the player has natural, end the game by DEALER_TURN.
       dispatch(DEALER_TURN(true));
     } else if (dealerHasNatural && hasPlayerHit) {
-      // If the dealer has natural, the has one hit and could be an ace
+      // I had to put this here below because when the dealer has a natural, it just a sudden didn't work right for me.
+      // So, if the player gets a ace on their only hit, the showAcePrompt would be false on the first render; the showAcePrompt useEffect
+      // ran at the same time, which caused the waitForAceDecision() to resolve when it wasn't supposed to.
+      if (
+        playerCards[2].image.includes("ace") &&
+        !showAcePrompt &&
+        !secureAceOnNatural
+      ) {
+        setSecureAceOnNatural(true);
+        return;
+      }
+      // If the dealer has natural, player has one hit and could be an ace.
       waitForAceDecision(showAcePrompt).then(() => {
         dispatch(DEALER_TURN(true));
+        setSecureAceOnNatural(false);
       });
     } else if (playerHasNatural) {
       dispatch(DEALER_TURN(true));
@@ -238,28 +290,37 @@ const BlackjackFeature = () => {
   return (
     <>
       <Box
+        as="main"
         display="grid"
         gridTemplateRows="auto 1fr auto"
         h="100vh"
-        p="2rem 5rem"
+        p={{
+          base: "1.75rem 1.5rem 1rem 1.5rem",
+          md: "1.75rem 3rem 1rem 3rem",
+          xl: "1.75rem 5rem 1rem 5rem",
+        }}
         backgroundImage={tableImg}
         backgroundPosition="center"
         backgroundRepeat="no-repeat"
         backgroundAttachment="fixed"
         backgroundSize="cover"
       >
-        <Header gameType={gameType} show={show} setShow={setShow} />
+        <Header
+          gameType={gameType}
+          show={show}
+          setShow={setShow}
+          toggleMute={toggleMute}
+        />
 
         {gameType && (
           <>
-            {!balance ? (
+            {balance === null ? (
               <CircularProgress
                 isIndeterminate
                 position="fixed"
                 top="50%"
                 left="50%"
                 transform="translate(-50%, -50%)"
-                // TODO: 48px for phone?
                 size="68px"
                 color={colorMode === "dark" ? "p300" : "r500"}
                 borderColor={colorMode === "light" && "bMain"}
@@ -275,16 +336,27 @@ const BlackjackFeature = () => {
                   >
                     <Dealer
                       dealerCards={dealerCards}
+                      dealerViewWidthOnMoreCards={dealerViewWidthOnMoreCards}
                       dealerFaceDownScore={dealerFaceDownScore}
                       dealerScore={dealerScore}
                       backOfCard={backOfCard}
                       dealerStanding={dealerStanding}
+                      isWidthSmallerThan1429={isWidthSmallerThan1429}
+                      isHeightSmallerThan844={isHeightSmallerThan844}
                     />
                     <Image
                       src={backOfCard}
+                      as={motion.img}
+                      variants={fadeInVar2}
+                      initial={["hidden", { x: "31.55vw" }]}
+                      animate={["visible", { x: "31.55vw" }]}
+                      display={
+                        isWidthSmallerThan1429 || isHeightSmallerThan844
+                          ? "none"
+                          : "initial"
+                      }
                       position="absolute"
                       top="0"
-                      right="10%"
                       maxW="130px"
                       minH="189px"
                       filter="drop-shadow(1px 0px 0px #000000) drop-shadow(0px 1px 0px #000000)"
@@ -303,6 +375,7 @@ const BlackjackFeature = () => {
                     />
                     <Player
                       playerCards={playerCards}
+                      playerViewWidthOnMoreCards={playerViewWidthOnMoreCards}
                       playerBet={playerBet}
                       playerScore={playerScore}
                       hasPlayerHit={hasPlayerHit}
@@ -315,8 +388,12 @@ const BlackjackFeature = () => {
                       gameType={gameType}
                       dealerHasNatural={dealerHasNatural}
                       playerHasNatural={playerHasNatural}
+                      isWidthSmallerThan1429={isWidthSmallerThan1429}
+                      isHeightSmallerThan844={isHeightSmallerThan844}
                     />
                   </VStack>
+
+                  <RulesOverlay show={show} setShow={setShow} />
                 </chakra.main>
                 <Footer gameType={gameType} />
               </>
@@ -327,7 +404,6 @@ const BlackjackFeature = () => {
 
       <MatchOrForFunModal show={show} setShow={setShow} game={true} />
       <CashInModal show={show} setShow={setShow} game={true} />
-      <RulesOverlay show={show} setShow={setShow} />
     </>
   );
 };

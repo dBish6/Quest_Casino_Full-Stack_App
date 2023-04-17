@@ -5,7 +5,6 @@ export const selectGameType = (store) => {
     return gameType.charAt(0).toUpperCase() + gameType.slice(1);
 };
 // Dealer Selectors
-export const selectDeck = (store) => store.blackjack.deck;
 export const selectDealerCards = (store) => store.blackjack.dealerCards;
 export const selectDealerFaceDownScore = (store) =>
   store.blackjack.dealerFaceDownScore;

@@ -26,9 +26,8 @@ import DiceLogo from "../../../../assets/Dice.png";
 import { motion, AnimatePresence } from "framer-motion";
 
 // *Component Import*
-import Header from "../../../../components/Header";
+import MyHeading from "../../../../components/MyHeading";
 
-// FIXME: Why don't this scroll!!!!
 const RulesOverlay = (props) => {
   return (
     <>
@@ -36,7 +35,7 @@ const RulesOverlay = (props) => {
         {props.show.rules && (
           <Container
             as={motion.div}
-            position="fixed"
+            position="absolute"
             top="0"
             left="0"
             minW="100vw"
@@ -44,15 +43,26 @@ const RulesOverlay = (props) => {
             p="1rem"
             bgColor="rgba(66, 75, 94, 0.85)"
             zIndex="overlay"
-            // overflowY="scroll"
           >
             <chakra.header
               display="grid"
-              gridTemplateColumns="1fr auto 1fr"
-              // marginInline="4rem 1rem"
+              gridTemplateColumns={{
+                base: "1fr 1fr",
+                md: "1fr auto 1fr",
+                xl: "1fr auto 1fr",
+              }}
               mb="4rem"
             >
-              <Link as={ReactLink} to="/home" ml="4rem">
+              <Link
+                as={ReactLink}
+                to="/home"
+                display={{
+                  base: "none",
+                  md: "initial",
+                  xl: "initial",
+                }}
+                ml="4rem"
+              >
                 <Image src={DiceLogo} />
               </Link>
               <Heading
@@ -74,31 +84,33 @@ const RulesOverlay = (props) => {
             </chakra.header>
 
             <Grid
-              templateColumns="1fr 1fr"
-              templateRows="max-content 1fr max-content"
+              templateColumns={{ base: "1fr", md: "1fr 1fr", xl: "1fr 1fr" }}
+              templateRows={{
+                base: "",
+                md: "max-content 1fr max-content",
+                xl: "max-content 1fr max-content",
+              }}
               placeItems="center"
-              gap="1.5rem"
+              gap="1.5rem 2.5rem"
               // minH="100vh"
             >
               <Flex
                 as="section"
-                gridColumn="span 2"
+                gridColumn={{ base: "", md: "span 2", xl: "span 2" }}
                 justify="center"
-                w="90%"
+                w={{ base: "100%", md: "90%", xl: "90%" }}
                 pb="1.5rem"
                 maxW="1215px"
                 borderBottomWidth="1px"
-                // </Grid>borderColor="borderD"
               >
                 <Box>
-                  <Header
+                  <MyHeading
                     variant="blackjack"
                     text="General"
                     lineHeight="32px"
                     fontFamily="body"
                     fontSize="32px"
                     fontWeight="600"
-                    // color="p400"
                     mb="0.5rem"
                   />
                   <UnorderedList>
@@ -162,15 +174,16 @@ const RulesOverlay = (props) => {
                 justifySelf="center"
                 alignSelf="flex-start"
                 maxW="680px"
+                pb={{ base: "1.5rem", md: 0, xl: 0 }}
+                borderBottomWidth={{ base: "1px", md: 0, xl: 0 }}
               >
-                <Header
+                <MyHeading
                   variant="blackjack"
                   text="Player"
                   lineHeight="32px"
                   fontFamily="body"
                   fontSize="32px"
                   fontWeight="600"
-                  // color="p400"
                   mb="0.5rem"
                 />
                 <UnorderedList>
@@ -206,22 +219,24 @@ const RulesOverlay = (props) => {
                 alignSelf="flex-start"
                 maxW="680px"
               >
-                <Header
+                <MyHeading
                   variant="blackjack"
                   text="Dealer"
                   lineHeight="32px"
                   fontFamily="body"
                   fontSize="32px"
                   fontWeight="600"
-                  // color="p400"
                   mb="0.5rem"
                 />
                 <UnorderedList>
                   <ListItem>
-                    The dealer deals two cards to the player and two cards to
-                    himself. One of the dealer's cards is face up, and the other
-                    is <chakra.span fontWeight="700">face down</chakra.span>{" "}
-                    (the "hole" card).
+                    When the dealer deals, one card is given to the player
+                    before dealing one to himself. Then, they deal another card
+                    to the player, so the player has two up cards and then to
+                    himself again. Once the dealer has two cards, one is face
+                    up, and the other is{" "}
+                    <chakra.span fontWeight="700">face down</chakra.span> (the
+                    "hole" card).
                   </ListItem>
                   <ListItem>
                     If the dealer's hand is{" "}
@@ -250,27 +265,58 @@ const RulesOverlay = (props) => {
                 <PopoverTrigger>
                   <Link
                     variant="simple"
-                    gridColumn="span 2"
+                    gridColumn={{ base: "", md: "span 2", xl: "span 2" }}
                     justifySelf="flex-end"
                   >
-                    Davy Blackjack v1.0.1-alpha
+                    Davy Blackjack v1.1.5-alpha
                   </Link>
                 </PopoverTrigger>
-                <PopoverContent
-                  bgColor="bd700"
-                  maxH="500px"
-                  overflowY="scroll"
-                  // borderColor="borderD"
-                >
+                <PopoverContent bgColor="bd700" maxH="500px" overflowY="scroll">
                   <PopoverCloseButton color="dwordMain" />
                   <PopoverHeader
-                    // color="dwordMain"
                     textDecoration="underline"
                     borderColor="borderD"
                   >
-                    Patch Notes
+                    Change Log
                   </PopoverHeader>
                   <PopoverBody>
+                    <Heading
+                      textAlign="center"
+                      fontSize="24px"
+                      lineHeight="1.2"
+                      mb="4px"
+                    >
+                      v1.0.0
+                    </Heading>
+                    <UnorderedList fontSize="14px">
+                      <ListItem>Adds animations.</ListItem>
+                      <ListItem>
+                        When the dealer deals, the cards are displayed in the
+                        order they are dealt.
+                      </ListItem>
+                      <ListItem>
+                        Adds 3 sound variations when given cards for the player
+                        and the dealer.
+                      </ListItem>
+                      <ListItem>
+                        More responsive, so mobile devices can play.
+                      </ListItem>
+                      <ListItem>
+                        More options for the dropdown and has been refactored.
+                      </ListItem>
+                      <ListItem>
+                        Had to fix when the dealer gets a natural regarding how
+                        the showAcePrompt useEffect ran at the same time as the
+                        naturals useEffect.
+                      </ListItem>
+                      <ListItem>
+                        Fixes when the player bets and has a balance of 0 after
+                        the bet; couldn't play because the buttons gets disabled
+                        if the balance is falsy, now everything checks if the
+                        balance is null.
+                      </ListItem>
+                    </UnorderedList>
+                    <Divider m="0.5rem 0" />
                     <Heading
                       textAlign="center"
                       fontSize="24px"
@@ -298,10 +344,7 @@ const RulesOverlay = (props) => {
                       </ListItem>
                       <ListItem>Fixed hamburger menu animation.</ListItem>
                     </UnorderedList>
-                    <Divider
-                      m="0.5rem 0"
-                      // borderColor="borderD"
-                    />
+                    <Divider m="0.5rem 0" />
                     <Heading
                       textAlign="center"
                       fontSize="24px"

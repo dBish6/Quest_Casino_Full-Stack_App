@@ -9,6 +9,7 @@ const useStartGame = () => {
     dispatch(START_GAME());
     dispatch(DEALER_SHUFFLE());
   };
+
   return startGame;
 };
 

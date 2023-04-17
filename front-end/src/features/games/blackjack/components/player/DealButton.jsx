@@ -1,22 +1,35 @@
 // *Design Imports*
 import { Button } from "@chakra-ui/react";
+import { motion } from "framer-motion";
+import fadeInAnimations from "../../../general/utils/animations/fadeIn";
 
 // *Custom Hooks Imports*
 import useStartGame from "../../hooks/useStartGame";
-
-// *Redux Imports*
-import { useDispatch } from "react-redux";
-import { DEALER_DEAL } from "../../redux/blackjackSlice";
+import useDeal from "../../hooks/useDeal";
 
 const DealButton = (props) => {
-  const dispatch = useDispatch();
+  const { fadeInVar2 } = fadeInAnimations(0.9, 0.2);
   const startGame = useStartGame();
+  const deal = useDeal();
 
   return (
     <Button
+      as={motion.button}
+      variants={fadeInVar2}
+      initial="hidden"
+      animate="visible"
       onClick={() => {
-        startGame();
-        dispatch(DEALER_DEAL());
+        new Promise((resolve) => {
+          if (props.playerCards.length > 0) {
+            startGame();
+            // Waits for card exit animation.
+            setTimeout(() => {
+              resolve();
+            }, 1615);
+          } else {
+            resolve(startGame());
+          }
+        }).then(() => deal());
       }}
       isDisabled={props.isDealerTurn || props.showcaseRunning}
       variant="blackjackBlue"

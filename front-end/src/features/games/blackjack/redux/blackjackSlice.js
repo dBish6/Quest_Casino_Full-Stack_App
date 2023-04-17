@@ -1,4 +1,4 @@
-import { createSlice, createAsyncThunk, current } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
 // *Utility Import*
 import createDeck from "../utils/createDeck";
@@ -10,7 +10,6 @@ import updateWinsBalance from "../../general/api_services/updateWinsBalance";
 export const updateWinsBalanceThunk = createAsyncThunk(
   "blackjack/updateWinsBalance",
   async (payload, thunkAPI) => {
-    console.log("payload", payload);
     const res = await updateWinsBalance(
       payload.uid,
       payload.winner !== "dealer" ? true : false,
@@ -190,11 +189,10 @@ const blackjackSlice = createSlice({
     },
 
     // *Dealer*
-    DEALER_DEAL: (state) => {
-      // Deals cards to the player and dealer and ensures the cards are dealt in the right order.
-      state.playerCards = [state.deck.pop()];
-      state.dealerCards = [state.deck.pop()];
+    DEAL_A_CARD_PLAYER: (state) => {
       state.playerCards = [...state.playerCards, state.deck.pop()];
+    },
+    DEAL_A_CARD_DEALER: (state) => {
       state.dealerCards = [...state.dealerCards, state.deck.pop()];
     },
     DEALER_SHUFFLE: (state) => {
@@ -266,7 +264,8 @@ export const {
   START_GAME,
   UPDATE_SCORE,
   DETERMINE_WINNER,
-  DEALER_DEAL,
+  DEAL_A_CARD_PLAYER,
+  DEAL_A_CARD_DEALER,
   DEALER_SHUFFLE,
   DEALER_HIT,
   DEALER_TURN,

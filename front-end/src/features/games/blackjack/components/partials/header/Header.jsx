@@ -1,36 +1,48 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 // *Design Imports*
-import { chakra, Heading, Text, VStack, Box, Link } from "@chakra-ui/react";
-import { motion, AnimatePresence } from "framer-motion";
-import fadeUp from "../../../utils/animations/menuFadeUp";
+import { chakra, Heading, VStack, Box, useMediaQuery } from "@chakra-ui/react";
+import { motion } from "framer-motion";
+import fadeInAnimations from "../../../../general/utils/animations/fadeIn";
 
 // *Component Imports*
 import GetBalance from "../../../../../../components/GetBalance";
+import Dropdown from "./Dropdown";
 
 const Header = (props) => {
   const [showDropdown, setShowDropdown] = useState(false);
-  const navigate = useNavigate();
+  const [clicked, setClicked] = useState(false);
+  const [isSmallerThan491] = useMediaQuery("(max-width: 491px)");
+  const [isSmallerThan481] = useMediaQuery("(max-width: 481px)");
+  const { fadeInVar1, fadeInVar2 } = fadeInAnimations(0.8);
 
   return (
     <chakra.header
       display="flex"
-      justifyContent="space-between"
-      alignItems="flex-start"
+      justifyContent={isSmallerThan491 ? "flex-end" : "space-between"}
+      alignItems="center"
       mb="1.5rem"
     >
       <Heading
-        as="h1"
+        as={motion.h1}
+        variants={fadeInVar1}
+        initial="hidden"
+        animate="visible"
         variant="blackjack"
-        fontSize="40px"
+        display={isSmallerThan491 ? "none" : "initial"}
+        fontSize={{ base: "34px", md: "40px", xl: "40px" }}
         fontFamily="heading"
         lineHeight="1.2"
       >
         Davy Blackjack
       </Heading>
 
-      <chakra.nav display="flex" alignItems="center" gap="1rem">
+      <chakra.nav
+        display="flex"
+        alignItems="center"
+        gap="1rem"
+        mr={{ base: "1.5rem", md: 0, xl: 0 }}
+      >
         {props.gameType === "Match" && (
           <GetBalance variant="blackjack" fontSize="20px" />
         )}
@@ -39,7 +51,17 @@ const Header = (props) => {
         <VStack position="relative" w="max-content">
           <VStack
             as={motion.div}
-            onClick={() => setShowDropdown(!showDropdown)}
+            variants={fadeInVar2}
+            initial="hidden"
+            animate="visible"
+            onClick={() => {
+              setShowDropdown(!showDropdown);
+              props.show.options &&
+                props.setShow({
+                  ...props.show,
+                  options: false,
+                });
+            }}
             aria-label="Menu"
             gap={!showDropdown && "6.5px"}
             cursor="pointer"
@@ -96,136 +118,15 @@ const Header = (props) => {
               borderRadius="1rem"
             />
           </VStack>
-          <AnimatePresence>
-            {showDropdown && (
-              <VStack
-                as={motion.div}
-                variants={fadeUp}
-                animate="visible"
-                initial="hidden"
-                exit="hidden"
-                position="absolute"
-                top="1.5rem"
-                w="140px"
-                bgColor="rgba(244, 244, 244, 0.5)"
-                borderWidth="1px"
-                borderColor="rgb(0, 0, 0)"
-                borderRadius="6px"
-                zIndex="dropdown"
-              >
-                <Link
-                  data-group
-                  onClick={() => navigate(-1)}
-                  w="100%"
-                  textAlign="center"
-                  borderTopRadius="6px"
-                  p="6px 0"
-                  _hover={{
-                    bgColor: "rgba(244, 244, 244, 0.6)",
-                  }}
-                >
-                  <Text
-                    fontSize="18px"
-                    fontWeight="500"
-                    color="wMain"
-                    opacity="0.8"
-                    textShadow="1px 1px 0px #000"
-                    _groupHover={{
-                      opacity: "1",
-                      textShadow: "1px 1px 0px #000",
-                    }}
-                  >
-                    Go Back
-                  </Text>
-                </Link>
-
-                <Link
-                  data-group
-                  onClick={() => props.setShow({ ...props.show, cashIn: true })}
-                  w="100%"
-                  textAlign="center"
-                  p="6px 0"
-                  m="0 !important"
-                  _hover={{
-                    bgColor: "rgba(244, 244, 244, 0.6)",
-                  }}
-                >
-                  <Text
-                    fontSize="18px"
-                    fontWeight="500"
-                    color="wMain"
-                    opacity="0.8"
-                    textShadow="1px 1px 0px #000"
-                    _groupHover={{
-                      opacity: "1",
-                      textShadow: "1px 1px 0px #000",
-                    }}
-                  >
-                    Cash In
-                  </Text>
-                </Link>
-
-                <Link
-                  data-group
-                  onClick={() =>
-                    props.setShow({
-                      ...props.show,
-                      gameStart: true,
-                      canCancel: true,
-                    })
-                  }
-                  w="100%"
-                  textAlign="center"
-                  p="6px 0"
-                  m="0 !important"
-                  _hover={{
-                    bgColor: "rgba(244, 244, 244, 0.6)",
-                  }}
-                >
-                  <Text
-                    fontSize="18px"
-                    fontWeight="500"
-                    color="wMain"
-                    opacity="0.8"
-                    textShadow="1px 1px 0px #000"
-                    _groupHover={{
-                      opacity: "1",
-                      textShadow: "1px 1px 0px #000",
-                    }}
-                  >
-                    Change Mode
-                  </Text>
-                </Link>
-
-                <Link
-                  data-group
-                  onClick={() => props.setShow({ ...props.show, rules: true })}
-                  w="100%"
-                  textAlign="center"
-                  borderBottomRadius="6px"
-                  p="6px 0"
-                  m="0 !important"
-                  _hover={{
-                    bgColor: "rgba(244, 244, 244, 0.6)",
-                  }}
-                >
-                  <Text
-                    fontSize="18px"
-                    fontWeight="500"
-                    color="wMain"
-                    opacity="0.8"
-                    textShadow="1px 1px 0px #000"
-                    _groupHover={{
-                      opacity: "1",
-                      textShadow: "1px 1px 0px #000",
-                    }}
-                  >
-                    Rules
-                  </Text>
-                </Link>
-              </VStack>
-            )}
-          </AnimatePresence>
+          <Dropdown
+            showDropdown={showDropdown}
+            show={props.show}
+            setShow={props.setShow}
+            toggleMute={props.toggleMute}
+            clicked={clicked}
+            setClicked={setClicked}
+            isSmallerThan481={isSmallerThan481}
+          />
         </VStack>
       </chakra.nav>
     </chakra.header>

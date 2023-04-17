@@ -1,5 +1,14 @@
+import { useNavigate } from "react-router-dom";
+
 // *Design Imports*
-import { VStack, Button, ButtonGroup, Text, chakra } from "@chakra-ui/react";
+import {
+  VStack,
+  Button,
+  ButtonGroup,
+  Text,
+  Link,
+  chakra,
+} from "@chakra-ui/react";
 
 // *Custom Hooks Imports*
 import useDisableScroll from "../../../../../hooks/useDisableScroll";
@@ -7,13 +16,14 @@ import useStartGame from "../../../blackjack/hooks/useStartGame";
 
 // *Component Imports*
 import ModalTemplate from "../../../../../components/modals/ModalTemplate";
-import Header from "../../../../../components/Header";
+import MyHeading from "../../../../../components/MyHeading";
 
 // *Redux Imports*
 import { useDispatch } from "react-redux";
 import { GAME_TYPE, START_GAME } from "../../../blackjack/redux/blackjackSlice";
 
 const MatchOrForFunModal = (props) => {
+  const navigate = useNavigate();
   const dispatch = useDispatch();
   const startGame = useStartGame();
   useDisableScroll(props.show.gameStart, 510);
@@ -25,8 +35,8 @@ const MatchOrForFunModal = (props) => {
       objName="gameStart"
       game="blackjack"
       animation={{ type: "up", y: "200%" }}
-      p="1.5rem 2rem"
-      maxW="fit-content"
+      p="1.5rem 2rem 1rem 2rem"
+      maxW="max-content"
     >
       {props.show.canCancel && (
         <Button
@@ -41,7 +51,7 @@ const MatchOrForFunModal = (props) => {
           &#10005;
         </Button>
       )}
-      <Header fontSize="32px" mb="1.5rem" text="Select Game Type" />
+      <MyHeading fontSize="32px" mb="1.5rem" text="Select Game Type" />
 
       <VStack>
         <ButtonGroup>
@@ -72,6 +82,12 @@ const MatchOrForFunModal = (props) => {
           Play <chakra.span fontWeight="600">"for real"</chakra.span> or play{" "}
           <chakra.span fontWeight="600">"for fun"</chakra.span>.
         </Text>
+
+        {!props.show.canCancel && (
+          <Link onClick={() => navigate("/games")} variant="simple">
+            Go Back
+          </Link>
+        )}
       </VStack>
     </ModalTemplate>
   );

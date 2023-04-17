@@ -37,7 +37,6 @@ const useBlackjackQuestsCompletion = (currentUser) => {
   } = PostCompletedQuest(currentUser.uid);
 
   useEffect(() => {
-    console.log("updatedBalance", updatedBalance);
     if (gameType === "Match" && !completedQuestLoading && updatedBalance) {
       let questTitle = undefined;
       let questReward = undefined;
@@ -64,8 +63,6 @@ const useBlackjackQuestsCompletion = (currentUser) => {
       questTitle &&
         questTitle &&
         handleCompletedQuest(questTitle, balance, questReward).then(() => {
-          //   dispatch(SET_COMPLETED_QUESTS({ quest: questTitle }));
-          // dispatch(SET_WALLET(wallet + questReward));
           !completedQuests
             ? setCompletedQuests([questTitle])
             : setCompletedQuests([...completedQuests, questTitle]);

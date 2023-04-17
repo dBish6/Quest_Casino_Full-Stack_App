@@ -17,7 +17,7 @@ const PostCompletedQuest = (id) => {
         url: `http://localhost:4000/auth/api/firebase/update/${id}?completedQuest=${quest}&balance=${balance}&reward=${reward}`,
         signal: abortController.signal,
       });
-      console.log("questRes", res.data);
+      // console.log("questRes", res.data);
       if (res && res.status === 200) {
         toast({
           description: `"${quest}" quest was just completed, you just earned a $${reward} reward!`,
