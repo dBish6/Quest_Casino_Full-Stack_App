@@ -1,10 +1,6 @@
-// *Custom Hooks Import*
-import useDocumentTitle from "../../hooks/useDocumentTitle";
-
 // *Design Imports*
 import {
   Box,
-  VStack,
   Heading,
   Text,
   chakra,
@@ -12,30 +8,34 @@ import {
   useMediaQuery,
 } from "@chakra-ui/react";
 
+// *Custom Hooks Import*
+import useDocumentTitle from "../../hooks/useDocumentTitle";
+
 // *Component Imports*
 import GameDisplay from "../../features/games/general/components/gamesDisplay";
 
 const GamesHome = (props) => {
-  const [isLargerThan600] = useMediaQuery("(min-width: 600px)");
+  const [isLargerThan675] = useMediaQuery("(min-width: 675px)");
   const { colorMode } = useColorMode();
 
   useDocumentTitle(`${props.title} | Quest Casino`);
 
   return (
     <>
-      <Box mt="3rem" marginInline={isLargerThan600 && "2rem"}>
+      <Box mt="3rem" marginInline={isLargerThan675 && "2rem"}>
         <Heading
-          fontSize="64px"
-          mb="1rem"
+          fontSize={{ base: "48px", md: "56px", xl: "64px" }}
+          mb="0.5rem"
           lineHeight="1.2"
-          // textShadow={
-          //   colorMode === "dark" ? "1px 1px 0px #E0E2EA" : "1px 1px 0px #363636"
-          // }
           textShadow={colorMode === "light" && "1px 1px 0px #363636"}
         >
           Our Games
         </Heading>
-        <Text fontSize="24px">
+        <Text
+          fontSize={{ base: "19px", md: "21px", xl: "24px" }}
+          color={colorMode === "dark" ? "wMain" : "bMain"}
+          ml={{ base: "0.35rem", md: "0.35rem", xl: "0.5rem" }}
+        >
           Play for fun in our{" "}
           <chakra.span
             fontFamily="roboto"
@@ -69,7 +69,7 @@ const GamesHome = (props) => {
         </Text>
       </Box>
 
-      <GameDisplay />
+      <GameDisplay isLargerThan675={isLargerThan675} />
     </>
   );
 };

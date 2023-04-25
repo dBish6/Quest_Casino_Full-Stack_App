@@ -7,7 +7,6 @@ const PrivateRoute = ({ children }) => {
   const { currentUser } = useAuth();
   const toast = useToast();
 
-  // FIXME: When the user logs out.
   !currentUser &&
     toast({
       description: "You must log in to enter this page!",

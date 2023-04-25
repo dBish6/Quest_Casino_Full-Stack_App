@@ -19,11 +19,11 @@ const SaveLogin = () => {
   const { currentUser, login } = useAuth();
 
   const handleLogin = async (formRef, email, password) => {
-    let timeout;
     toggleLoading(true);
     setErrorHandler({
       badRequest: false,
       notFound: false,
+      maxRequests: false,
       unexpected: false,
     });
 
@@ -41,32 +41,28 @@ const SaveLogin = () => {
     }
     try {
       const res = await login(email, password);
-      console.log(res);
+      // console.log(res);
       if (res) {
         setSuccessMsg("Welcome back!");
         formRef.current.reset();
-        timeout = setTimeout(() => {
+        setTimeout(() => {
           setSuccessMsg("");
         }, 15000);
       }
     } catch (error) {
       if (error.code === "auth/wrong-password") {
-        setErrorHandler({ badRequest: true });
+        setErrorHandler({ ...errorHandler, badRequest: true });
       } else if (error.code === "auth/user-not-found") {
-        setErrorHandler({ notFound: true });
+        setErrorHandler({ ...errorHandler, notFound: true });
       } else if (error.code === "auth/too-many-requests") {
-        setErrorHandler({ maxRequests: true });
+        setErrorHandler({ ...errorHandler, maxRequests: true });
       } else {
-        setErrorHandler({
-          unexpected: true,
-        });
+        setErrorHandler({ ...errorHandler, unexpected: true });
       }
       console.error(error);
     } finally {
       toggleLoading(false);
     }
-
-    return () => clearTimeout(timeout);
   };
 
   return { handleLogin, errorHandler, successMsg, loading };

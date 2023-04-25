@@ -12,7 +12,7 @@ import { configureStore } from "@reduxjs/toolkit";
 // } from "redux-persist";
 // import thunk from 'redux-thunk';
 
-import blackjackSlice from "../features/games/blackjack/redux/blackjackSlice";
+import blackjackReducer from "../features/games/blackjack/redux/blackjackSlice";
 
 // const reducers = combineReducers({
 //   blackjack: blackjackSlice,
@@ -27,7 +27,7 @@ import blackjackSlice from "../features/games/blackjack/redux/blackjackSlice";
 
 const store = configureStore({
   reducer: {
-    blackjack: blackjackSlice,
+    blackjack: blackjackReducer,
   },
   // reducer: persistedReducers,
   // middleware: (getDefaultMiddleware) =>

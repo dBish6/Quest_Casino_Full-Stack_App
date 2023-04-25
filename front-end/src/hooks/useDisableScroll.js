@@ -3,10 +3,10 @@ import { useEffect } from "react";
 const useDisableScroll = (boolean, timeOnExit) => {
   useEffect(() => {
     if (boolean) {
-      document.body.style.overflow = "hidden";
+      document.body.style.overflowY = "hidden";
     } else {
       const timeout = setTimeout(() => {
-        document.body.style.overflow = "unset";
+        document.body.style.overflowY = "unset";
       }, timeOnExit);
       return () => clearTimeout(timeout);
     }

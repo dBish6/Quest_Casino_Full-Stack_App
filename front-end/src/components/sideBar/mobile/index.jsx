@@ -1,4 +1,5 @@
-import { useState } from "react";
+/* eslint-disable react-hooks/exhaustive-deps */
+import { useState, useEffect } from "react";
 
 // *Design Imports*
 import {
@@ -17,9 +18,12 @@ import { motion } from "framer-motion";
 // *Component Imports*
 import PopOutMenus from "./PopOutMenus";
 import QuestsModal from "../../../features/quests/components/modals/QuestsModal";
+import PasswordResetModal from "../../../features/authentication/components/modals/PasswordResetModal";
+import RegisterModal from "../../../features/authentication/components/modals/RegisterModal";
 
 // This is the mobile sidebar for phones and tablets:)
-const MobileIndex = (props) => {
+const MobileIndex = () => {
+  const [showSideBar, setShowSideBar] = useState(true);
   const [iconSelected, setIconSelected] = useState({
     navigation: false,
     login: false,
@@ -27,18 +31,36 @@ const MobileIndex = (props) => {
   });
   const [show, setShow] = useState({
     navigation: false,
-    login: false,
-    settings: false,
     quests: false,
+    login: false,
+    passwordReset: false,
+    register: false,
+    settings: false,
   });
   const { colorMode } = useColorMode();
+
+  useEffect(() => {
+    if (!showSideBar) {
+      setShow({
+        ...show,
+        navigation: false,
+        login: false,
+        settings: false,
+      });
+      setIconSelected({
+        navigation: false,
+        login: false,
+        settings: false,
+      });
+    }
+  }, [showSideBar]);
 
   return (
     <>
       <VStack
-        as={motion.div}
+        as={motion.aside}
         animate={
-          props.showSideBar
+          showSideBar
             ? {
                 opacity: 1,
                 width: "60px",
@@ -66,7 +88,7 @@ const MobileIndex = (props) => {
         <VStack
           as={motion.div}
           animate={
-            props.showSideBar
+            showSideBar
               ? {
                   opacity: 1,
                   transition: { duration: 0.6 },
@@ -135,15 +157,25 @@ const MobileIndex = (props) => {
             mt="0.8rem !important"
           />
         </VStack>
-        <Image src={QuestCasinoDiceDARK} w="48px" h="42px" />
+        <Image
+          src={QuestCasinoDiceDARK}
+          alt="Quest Casino Small Logo"
+          w="48px"
+          h="42px"
+        />
 
-        <PopOutMenus show={show} setShow={setShow} />
+        <PopOutMenus
+          showSideBar={showSideBar}
+          setShowSideBar={setShowSideBar}
+          show={show}
+          setShow={setShow}
+        />
       </VStack>
 
       <IconButton
         as={motion.button}
         animate={
-          props.showSideBar
+          showSideBar
             ? {
                 x: "32px",
                 rotate: "90deg",
@@ -160,13 +192,15 @@ const MobileIndex = (props) => {
           rotate: "90deg",
         }}
         icon={
-          props.showSideBar ? (
+          showSideBar ? (
             <MdExpandMore fontSize="52px" />
           ) : (
             <MdExpandLess fontSize="52px" />
           )
         }
-        onClick={() => props.setShowSideBar(!props.showSideBar)}
+        onClick={() => {
+          setShowSideBar(!showSideBar);
+        }}
         position="fixed"
         top="50%"
         size="sm"
@@ -174,6 +208,8 @@ const MobileIndex = (props) => {
       />
 
       <QuestsModal show={show} setShow={setShow} />
+      <PasswordResetModal show={show} setShow={setShow} />
+      <RegisterModal show={show} setShow={setShow} />
     </>
   );
 };

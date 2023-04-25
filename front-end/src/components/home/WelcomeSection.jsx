@@ -2,12 +2,9 @@
 import {
   Image,
   Container,
-  HStack,
   Box,
   Heading,
   chakra,
-  Divider,
-  Flex,
   Text,
   VStack,
   Icon,
@@ -22,27 +19,19 @@ import { AiOutlineTrophy, AiOutlineSafety } from "react-icons/ai";
 
 // If you add to the home page. Make the view animation only happen once if it haven't yet.
 
-// TODO: Need to let content load then do the animation; need DOM loader.
 const WelcomeSection = () => {
   const { colorMode } = useColorMode();
   const { scrollYProgress } = useScroll();
   // 657px
   const [isSmallerThan601] = useMediaQuery("(max-width: 601px)");
   const [isSmallerThan410] = useMediaQuery("(max-width: 410px)");
-  const [isSmallerThan378] = useMediaQuery("(max-width: 378px)");
 
   return (
     <>
-      <Box
-        pos="relative"
-        maxW="985px"
-        // minH="543px"
-        m="0 auto"
-        mt="164px"
-        zIndex="-1"
-      >
+      <Box pos="relative" maxW="985px" m="0 auto" mt="164px">
         <Image
           src={cardsImg}
+          alt="Cards Image"
           as={motion.img}
           initial={{
             scale: isSmallerThan601 ? 0.7 : 0.8,
@@ -54,7 +43,6 @@ const WelcomeSection = () => {
             rotate: "18.58deg",
             opacity: 1,
             transition: {
-              //  duration: 0.28,
               delay: 0.95,
               opacity: { duration: 0.2 },
             },
@@ -62,14 +50,10 @@ const WelcomeSection = () => {
           viewport={{ width: window.innerWidth, height: window.innerHeight }}
           progress={scrollYProgress}
           position="absolute"
-          // left="72.5%"
-          // top="9.5%"
           top="-140px"
           right="-116px"
           maxW="297px"
           minH="306px"
-          // scale="0.8"
-          zIndex="-2"
         />
       </Box>
 
@@ -86,41 +70,34 @@ const WelcomeSection = () => {
         progress={scrollYProgress}
         pos="relative"
         maxW="985px"
-        // minH="543px"
         mt="164px"
         p={isSmallerThan410 ? "1.5rem 1rem 3rem 1rem" : "1.5rem 2rem 3rem 2rem"}
         bg={colorMode === "dark" ? "fadeD" : "fadeL"}
         borderTopLeftRadius="64px"
         borderTopRightRadius="64px"
-        zIndex="-1"
+        zIndex="1"
       >
         <VStack justifyContent="center">
           <VStack mb="1.5rem">
-            {/* <Box> */}
             <Heading
               as="h1"
               display="inline-block"
               fontFamily="roboto"
               fontStyle="italic"
               fontWeight="700"
-              // fontSize={isSmallerThan601 ? "34px" : "50px"}
               fontSize={
                 isSmallerThan410 ? "32px" : isSmallerThan601 ? "40px" : "50px"
               }
               lineHeight="1.2"
-              // fontSize={{ base: "38px", md: "50px", xl: "50px" }}
               color="p500"
               textAlign="center"
-              // maxW={isSmallerThan378 && "120px"}
             >
               <chakra.span
                 fontFamily="heading"
                 fontStyle="normal"
-                // fontSize={isSmallerThan601 ? "48px" : "64px"}
                 fontSize={
                   isSmallerThan410 ? "46px" : isSmallerThan601 ? "54px" : "64px"
                 }
-                // fontSize={{ base: "52px", md: "64px", xl: "64px" }}
                 color="r500"
               >
                 Quest
@@ -135,7 +112,6 @@ const WelcomeSection = () => {
                 border="0px"
               />
             </Heading>
-            {/* </Box> */}
             <Heading
               fontFamily="body"
               fontSize={
@@ -157,7 +133,6 @@ const WelcomeSection = () => {
                 <chakra.hr
                   position="relative"
                   justifySelf="flex-end"
-                  // bottom="6px"
                   right="0"
                   h="4px"
                   w="96%"

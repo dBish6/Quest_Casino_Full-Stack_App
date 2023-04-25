@@ -20,24 +20,21 @@ const PostResetPassword = () => {
     setErrorHandler({ notFound: false, unexpected: false });
 
     try {
-      const res = await resetPassword(email);
-      console.log(res);
-      if (res) {
-        formRef.current.reset();
-        toast({
-          description: "Check your email inbox for further instructions.",
-          status: "success",
-          duration: 9000,
-          isClosable: true,
-          position: "top",
-          variant: "solid",
-        });
-      }
+      await resetPassword(email);
+      formRef.current.reset();
+      toast({
+        description: "Check your email inbox for further instructions.",
+        status: "success",
+        duration: 9000,
+        isClosable: true,
+        position: "top",
+        variant: "solid",
+      });
     } catch (error) {
       if (error.code === "auth/user-not-found") {
-        setErrorHandler({ notFound: true });
+        setErrorHandler({ ...errorHandler, notFound: true });
       } else {
-        setErrorHandler({ unexpected: true });
+        setErrorHandler({ ...errorHandler, unexpected: true });
       }
       console.error(error);
     } finally {

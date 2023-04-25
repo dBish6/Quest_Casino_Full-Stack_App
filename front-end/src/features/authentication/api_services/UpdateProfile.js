@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { v4 } from "uuid";
@@ -14,6 +14,8 @@ import { storage } from "../../../utils/firebaseConfig";
 // Firebase Imports...
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
+// NOTE: I know I could of just used the data object with axios and then
+// use req.body on the back-end, but that's it now... I used query strings.
 const UpdateProfile = () => {
   const [loadingUpdate, toggleLoadingUpdate] = useState({
     name: false,
@@ -23,12 +25,6 @@ const UpdateProfile = () => {
     profilePic: false,
     balance: false,
   });
-  // const [successfulPost, setSuccessfulPost] = useState({
-  //   email: false,
-  //   phone: false,
-  //   balance: false,
-  //   loading: false,
-  // });
   const [errorHandler, setErrorHandler] = useState({
     unexpected: false,
     maxRequests: false,
@@ -38,29 +34,40 @@ const UpdateProfile = () => {
   const navigate = useNavigate();
   const [emailSent, setEmailSent] = useState(false);
   const { currentUser, logout, verifyEmail, balance, setBalance } = useAuth();
+  const abortController = new AbortController();
 
   const handleFullName = async (id, name, setIsUpdating) => {
     setErrorHandler({ unexpected: false, maxRequests: false });
 
     try {
       if (currentUser.name !== name) {
-        toggleLoadingUpdate({ name: true });
+        toggleLoadingUpdate({ ...loadingUpdate, name: true });
         const res = await axios({
           method: "PATCH",
           url: `http://localhost:4000/auth/api/firebase/update/${id}?name=${name}`,
+          signal: abortController.signal,
+          validateStatus: (status) => {
+            return status === 200 || status === 429;
+          },
         });
-        console.log(res.data);
-        if (res && res.status === 200) {
-          toggleLoadingUpdate({ name: false });
-          setIsUpdating({ name: false });
-          toast({
-            description: "Real name successfully updated!",
-            status: "success",
-            duration: 9000,
-            isClosable: true,
-            position: "top",
-            variant: "solid",
-          });
+        // console.log(res.data);
+        if (res) {
+          if (res.status === 200) {
+            setIsUpdating((prev) => ({ ...prev, name: false }));
+            toast({
+              description: "Real name successfully updated!",
+              status: "success",
+              duration: 9000,
+              isClosable: true,
+              position: "top",
+              variant: "solid",
+            });
+          } else if (
+            res.status === 429 &&
+            res.data.code === "auth/too-many-requests"
+          ) {
+            setErrorHandler({ ...errorHandler, maxRequests: true });
+          }
         }
       } else {
         toast({
@@ -73,12 +80,14 @@ const UpdateProfile = () => {
         });
       }
     } catch (error) {
-      if (error.code === "auth/too-many-requests") {
-        setErrorHandler({ maxRequests: true });
+      if (error.code === "ECONNABORTED" || error.message === "canceled") {
+        console.warn("Request was aborted.");
       } else {
-        setErrorHandler({ unexpected: true });
+        setErrorHandler({ ...errorHandler, unexpected: true });
       }
       console.error(error);
+    } finally {
+      toggleLoadingUpdate({ ...loadingUpdate, name: false });
     }
   };
 
@@ -87,23 +96,33 @@ const UpdateProfile = () => {
 
     try {
       if (currentUser.username !== username) {
-        toggleLoadingUpdate({ username: true });
+        toggleLoadingUpdate({ ...loadingUpdate, username: true });
         const res = await axios({
           method: "PATCH",
           url: `http://localhost:4000/auth/api/firebase/update/${id}?username=${username}`,
+          signal: abortController.signal,
+          validateStatus: (status) => {
+            return status === 200 || status === 429;
+          },
         });
-        console.log(res.data);
-        if (res && res.status === 200) {
-          toggleLoadingUpdate({ username: false });
-          setIsUpdating({ username: false });
-          toast({
-            description: "Username successfully updated!",
-            status: "success",
-            duration: 9000,
-            isClosable: true,
-            position: "top",
-            variant: "solid",
-          });
+        // console.log(res.data);
+        if (res) {
+          if (res.status === 200) {
+            setIsUpdating((prev) => ({ ...prev, username: false }));
+            toast({
+              description: "Username successfully updated!",
+              status: "success",
+              duration: 9000,
+              isClosable: true,
+              position: "top",
+              variant: "solid",
+            });
+          } else if (
+            res.status === 429 &&
+            res.data.code === "auth/too-many-requests"
+          ) {
+            setErrorHandler({ ...errorHandler, maxRequests: true });
+          }
         }
       } else {
         toast({
@@ -116,12 +135,14 @@ const UpdateProfile = () => {
         });
       }
     } catch (error) {
-      if (error.code === "auth/too-many-requests") {
-        setErrorHandler({ maxRequests: true });
+      if (error.code === "ECONNABORTED" || error.message === "canceled") {
+        console.warn("Request was aborted.");
       } else {
-        setErrorHandler({ unexpected: true });
+        setErrorHandler({ ...errorHandler, unexpected: true });
       }
       console.error(error);
+    } finally {
+      toggleLoadingUpdate({ ...loadingUpdate, username: false });
     }
   };
 
@@ -130,25 +151,49 @@ const UpdateProfile = () => {
 
     try {
       if (currentUser.email !== email) {
-        toggleLoadingUpdate({ email: true });
+        toggleLoadingUpdate({ ...loadingUpdate, email: true });
         const res = await axios({
           method: "PATCH",
           url: `http://localhost:4000/auth/api/firebase/update/${id}?email=${email}`,
+          signal: abortController.signal,
+          validateStatus: (status) => {
+            return status === 200 || status === 400 || status === 429;
+          },
         });
-        console.log(res.data);
-        if (res && res.status === 200) {
-          toggleLoadingUpdate({ email: false });
-          setIsUpdating({ email: false });
-          toast({
-            description:
-              "Email successfully updated, you must now log in again.",
-            status: "success",
-            duration: 9000,
-            isClosable: true,
-            position: "top",
-            variant: "solid",
-          });
-          navigate("/home") && logout();
+        // console.log(res.data);
+        if (res) {
+          if (res && res.status === 200) {
+            setIsUpdating((prev) => ({ ...prev, email: false }));
+            toast({
+              description:
+                "Email successfully updated, you must now log in again.",
+              status: "success",
+              duration: 9000,
+              isClosable: true,
+              position: "top",
+              variant: "solid",
+            });
+            new Promise((resolve) => {
+              resolve(navigate("/home"));
+            }).then(() => logout());
+          } else if (
+            res.status === 400 &&
+            res.data.code === "auth/email-already-exists"
+          ) {
+            toast({
+              description: "Email is already being used by a Quest user.",
+              status: "error",
+              duration: 9000,
+              isClosable: true,
+              position: "top",
+              variant: "solid",
+            });
+          } else if (
+            res.status === 429 &&
+            res.data.code === "auth/too-many-requests"
+          ) {
+            setErrorHandler({ ...errorHandler, maxRequests: true });
+          }
         }
       } else {
         toast({
@@ -161,62 +206,78 @@ const UpdateProfile = () => {
         });
       }
     } catch (error) {
-      if (error.code === "auth/email-already-in-use") {
-        toast({
-          description: "Email is already being used by a Quest user.",
-          status: "error",
-          duration: 9000,
-          isClosable: true,
-          position: "top",
-          variant: "solid",
-        });
-      } else if (error.code === "auth/too-many-requests") {
-        setErrorHandler({ maxRequests: true });
+      if (error.code === "ECONNABORTED" || error.message === "canceled") {
+        console.warn("Request was aborted.");
       } else {
-        setErrorHandler({ unexpected: true });
+        setErrorHandler({ ...errorHandler, unexpected: true });
       }
       console.error(error);
+    } finally {
+      toggleLoadingUpdate({ ...loadingUpdate, email: false });
     }
   };
 
   const handleEmailVerified = async () => {
     setEmailSent(false);
-    setErrorHandler({ maxRequests: false });
+    setErrorHandler({ ...errorHandler, maxRequests: false });
     try {
-      const authEmailVerification = await verifyEmail();
-      console.log(authEmailVerification);
-      if (authEmailVerification) setEmailSent(true);
-      console.log(emailSent);
+      await verifyEmail();
+      setEmailSent(true);
     } catch (error) {
       if (error.code === "auth/too-many-requests")
-        setErrorHandler({ maxRequests: true });
+        setErrorHandler({ ...errorHandler, maxRequests: true });
       console.error(error);
     }
   };
 
-  const handlePhone = async (id, phoneNum, setIsUpdating) => {
+  const handlePhone = async (id, callingCode, phoneNum, setIsUpdating) => {
     setErrorHandler({ unexpected: false, maxRequests: false });
-    // TODO: Change.
-    const changingPhoneNum = "+1" + phoneNum;
+
     try {
-      if (currentUser.phoneNumber !== changingPhoneNum) {
-        toggleLoadingUpdate({ phone: true });
+      const phoneNumUpdate = callingCode + phoneNum.replace(/[()\-\s]/g, "");
+      if (currentUser.phoneNumber !== phoneNumUpdate) {
+        toggleLoadingUpdate({ ...loadingUpdate, phone: true });
         const res = await axios({
           method: "PATCH",
-          url: `http://localhost:4000/auth/api/firebase/update/${id}?phoneNum=${changingPhoneNum}`,
+          url: `http://localhost:4000/auth/api/firebase/update/${id}?phoneNum=${encodeURIComponent(
+            phoneNumUpdate
+          )}`,
+          signal: abortController.signal,
+          validateStatus: (status) => {
+            return status === 200 || status === 400 || status === 429;
+          },
         });
-        console.log(res.data);
-        if (res && res.status === 200) {
-          toggleLoadingUpdate({ phone: false });
-          setIsUpdating({ phone: false });
-          toast({
-            description: "Phone number successfully updated!",
-            status: "success",
-            duration: 9000,
-            isClosable: true,
-            position: "top",
-            variant: "solid",
-          });
+        // console.log(res.data);
+        if (res) {
+          if (res.status === 200) {
+            setIsUpdating((prev) => ({ ...prev, phone: false }));
+            toast({
+              description: "Phone number successfully updated!",
+              status: "success",
+              duration: 9000,
+              isClosable: true,
+              position: "top",
+              variant: "solid",
+            });
+          } else if (
+            res.status === 400 &&
+            res.data.code === "auth/phone-number-already-exists"
+          ) {
+            toast({
+              description:
+                "Phone number is already being used by a Quest user.",
+              status: "error",
+              duration: 9000,
+              isClosable: true,
+              position: "top",
+              variant: "solid",
+            });
+          } else if (
+            res.status === 429 &&
+            res.data.code === "auth/too-many-requests"
+          ) {
+            setErrorHandler({ ...errorHandler, maxRequests: true });
+          }
         }
       } else {
         toast({
@@ -229,21 +290,14 @@ const UpdateProfile = () => {
         });
       }
     } catch (error) {
-      if (error.code === "auth/phone-number-already-exists") {
-        toast({
-          description: "Phone number is already being used by a Quest user.",
-          status: "error",
-          duration: 9000,
-          isClosable: true,
-          position: "top",
-          variant: "solid",
-        });
-      } else if (error.code === "auth/too-many-requests") {
-        setErrorHandler({ maxRequests: true });
+      if (error.code === "ECONNABORTED" || error.message === "canceled") {
+        console.warn("Request was aborted.");
       } else {
-        setErrorHandler({ unexpected: true });
+        setErrorHandler({ ...errorHandler, unexpected: true });
       }
       console.error(error);
+    } finally {
+      toggleLoadingUpdate({ ...loadingUpdate, phone: false });
     }
   };
 
@@ -254,7 +308,7 @@ const UpdateProfile = () => {
     custom
   ) => {
     setErrorHandler({ unexpected: false, maxRequests: false });
-    toggleLoadingUpdate({ profilePic: true });
+    toggleLoadingUpdate({ ...loadingUpdate, profilePic: true });
 
     try {
       // If the user passes a custom image.
@@ -282,18 +336,29 @@ const UpdateProfile = () => {
             const res = await axios({
               method: "PATCH",
               url: `http://localhost:4000/auth/api/firebase/update/${id}?profilePic=${encodedURL}`,
+              signal: abortController.signal,
+              validateStatus: (status) => {
+                return status === 200 || status === 429;
+              },
             });
-            console.log(res.data);
-            if (res && res.status === 200) {
-              setSelectedPicture(downloadURL.toString());
-              toast({
-                description: "Profile picture successfully updated!",
-                status: "success",
-                duration: 9000,
-                isClosable: true,
-                position: "top",
-                variant: "solid",
-              });
+            // console.log(res.data);
+            if (res) {
+              if (res.status === 200) {
+                setSelectedPicture(downloadURL.toString());
+                toast({
+                  description: "Profile picture successfully updated!",
+                  status: "success",
+                  duration: 9000,
+                  isClosable: true,
+                  position: "top",
+                  variant: "solid",
+                });
+              } else if (
+                res.status === 429 &&
+                res.data.code === "auth/too-many-requests"
+              ) {
+                setErrorHandler({ ...errorHandler, maxRequests: true });
+              }
             }
           }
         } else {
@@ -309,81 +374,58 @@ const UpdateProfile = () => {
 
         // If the user use one of the default images.
       } else {
-        console.log("photoURL", photoURL);
         const encodedURL = encodeURIComponent(photoURL);
-        console.log("encodedURL", encodedURL);
         const res = await axios({
           method: "PATCH",
           url: `http://localhost:4000/auth/api/firebase/update/${id}?profilePic=${encodedURL}`,
+          signal: abortController.signal,
+          validateStatus: (status) => {
+            return status === 200 || status === 429;
+          },
         });
-        console.log(res.data);
-
-        if (res && res.status === 200) {
-          setSelectedPicture(photoURL);
-          toast({
-            description: "Profile picture successfully updated!",
-            status: "success",
-            duration: 9000,
-            isClosable: true,
-            position: "top",
-            variant: "solid",
-          });
+        // console.log(res.data);
+        if (res) {
+          if (res.status === 200) {
+            setSelectedPicture(photoURL);
+            toast({
+              description: "Profile picture successfully updated!",
+              status: "success",
+              duration: 9000,
+              isClosable: true,
+              position: "top",
+              variant: "solid",
+            });
+          } else if (
+            res.status === 429 &&
+            res.data.code === "auth/too-many-requests"
+          ) {
+            setErrorHandler({ ...errorHandler, maxRequests: true });
+          }
         }
       }
     } catch (error) {
-      if (error.code === "auth/too-many-requests") {
-        setErrorHandler({ maxRequests: true });
+      if (error.code === "ECONNABORTED" || error.message === "canceled") {
+        console.warn("Request was aborted.");
       } else {
-        setErrorHandler({ unexpected: true });
+        setErrorHandler({ ...errorHandler, unexpected: true });
       }
       console.error(error);
     } finally {
-      toggleLoadingUpdate({ profilePic: false });
+      toggleLoadingUpdate({ ...loadingUpdate, profilePic: false });
     }
   };
 
-  // const handleUpdateWins = async (id, wins) => {
-  //   setErrorHandler({ unexpected: false, maxRequests: false });
-
-  //   try {
-  //     const res = await axios({
-  //       method: "PATCH",
-  //       url: `http://localhost:4000/auth/api/firebase/update/${id}?wins=${wins}`,
-  //     });
-  //     if (res && res.status === 200) console.log(res.data);
-  //   } catch (error) {
-  //     if (error.code === "auth/too-many-requests") {
-  //       toast({
-  //         description: "Max request exceeded! Please try again later.",
-  //         status: "error",
-  //         isClosable: true,
-  //         position: "top",
-  //         variant: "solid",
-  //       });
-  //     } else {
-  //       toast({
-  //         description: "Server Error 500: Failed to update profile.",
-  //         status: "error",
-  //         isClosable: true,
-  //         position: "top",
-  //         variant: "solid",
-  //       });
-  //     }
-  //     console.error(error);
-  //   }
-  // };
-
   const handleUpdateBalance = async (formRef, id, deposit) => {
-    setErrorHandler({ unexpected: false });
-    toggleLoadingUpdate({ balance: true });
-    console.log("handleUpdateBalance");
+    setErrorHandler({ ...errorHandler, unexpected: false });
+    toggleLoadingUpdate({ ...loadingUpdate, balance: true });
 
     try {
       const res = await axios({
         method: "PATCH",
-        url: `http://localhost:4000/auth/api/firebase/update/${id}?balance=${deposit}`,
+        url: `http://localhost:4000/auth/api/firebase/update/${id}?deposit=${deposit}`,
+        signal: abortController.signal,
       });
-      console.log(res.data);
+      // console.log(res.data);
       if (res && res.status === 200) {
         formRef.current.reset();
         toast({
@@ -397,10 +439,14 @@ const UpdateProfile = () => {
         setBalance(balance + parseInt(deposit));
       }
     } catch (error) {
-      setErrorHandler({ unexpected: true });
+      if (error.code === "ECONNABORTED" || error.message === "canceled") {
+        console.warn("Request was aborted.");
+      } else {
+        setErrorHandler({ ...errorHandler, unexpected: true });
+      }
       console.error(error);
     } finally {
-      toggleLoadingUpdate({ balance: false });
+      toggleLoadingUpdate({ ...loadingUpdate, balance: false });
     }
   };
 
@@ -411,10 +457,8 @@ const UpdateProfile = () => {
     handleEmailVerified,
     handlePhone,
     handleProfilePicture,
-    // handleUpdateWins,
     handleUpdateBalance,
     emailSent,
-    // successfulPost,
     loadingUpdate,
     errorHandler,
   };

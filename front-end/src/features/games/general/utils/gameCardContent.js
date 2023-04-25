@@ -2,7 +2,7 @@ const content = [
   {
     title: "Davy Blackjack",
     description:
-      "Classic blackjack! Play against the dealer, whoever has the highest total number without exceeding 21, wins. It's a game of skill and techniques, so bring your best strategy.",
+      "Our famous blackjack! Play against the dealer, whoever has the highest total number without exceeding 21 wins. It's a game of skill and techniques, so bring your best strategy.",
     url: "/games/blackjack",
     tag: "cards",
   },

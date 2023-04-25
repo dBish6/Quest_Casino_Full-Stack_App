@@ -1,20 +1,16 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 // *Design Imports*
 import {
   Box,
   HStack,
   Flex,
-  Heading,
-  Divider,
   ButtonGroup,
   Button,
-  Grid,
   Input,
   Link,
   IconButton,
-  Tooltip,
-  chakra,
   useColorMode,
   useMediaQuery,
 } from "@chakra-ui/react";
@@ -26,20 +22,21 @@ import { MdVideogameAsset, MdOutlineLeaderboard } from "react-icons/md";
 import useButtonFilter from "../../hooks/useButtonFilter";
 import useSearchFilter from "../../hooks/useSearchFilter";
 
-// *Utility Imports*
+// *Utility Import*
 import content from "../../utils/gameCardContent";
 
 // *Component Imports*
 import GameCard from "./GameCard";
+import MyTooltip from "../../../../../components/MyTooltip";
 
 const GamesDisplayIndex = (props) => {
   const [gameCardContent, setGameCardContent] = useState([]);
   const [filterContent, selectedBtn] = useButtonFilter();
   const searchFilter = useSearchFilter();
 
+  const navigate = useNavigate();
   const { colorMode } = useColorMode();
   const [isSmallerThan802] = useMediaQuery("(max-width: 802px)");
-  const [isLargerThan675] = useMediaQuery("(min-width: 675px)");
   const [isLargerThan615] = useMediaQuery("(min-width: 615px)");
   const [isLargerThan526] = useMediaQuery("(min-width: 526px)");
   const [isSmallerThan522] = useMediaQuery("(max-width: 522px)");
@@ -53,17 +50,7 @@ const GamesDisplayIndex = (props) => {
     <Box
       display="block"
       mt="3rem"
-      marginInline={isLargerThan675 && "2rem"}
-      // p={{
-      //   base: "1.5rem 1rem 3rem 1rem",
-      //   md: "1.5rem 1rem 3rem 1rem",
-      //   xl: "1.5rem 2rem 3rem 2rem",
-      // }}
-      // p={
-      //   props.isBiggerThan600
-      //     ? "1.5rem 2rem 3rem 2rem"
-      //     : "1.5rem 1rem 3rem 1rem"
-      // }
+      marginInline={props.isLargerThan675 && "2rem"}
       p={{
         base: "1.5rem 1rem 3rem 1rem",
         md: "1.5rem 2rem 3rem 2rem",
@@ -80,7 +67,6 @@ const GamesDisplayIndex = (props) => {
           md: "0",
           xl: "1rem",
         }}
-        // justify={!isSmallerThan475 && "space-between"}
         justify="space-between"
         align={isLargerThan615 ? "center" : "flex-start"}
       >
@@ -150,18 +136,24 @@ const GamesDisplayIndex = (props) => {
             onChange={(e) => setGameCardContent(searchFilter(e, content))}
           />
           {isSmallerThan802 ? (
-            <Tooltip hasArrow label="Leaderboard">
+            <MyTooltip label="Leaderboard">
               <IconButton
                 icon={<MdOutlineLeaderboard size="28px" />}
-                aria-label="leaderboard"
+                onClick={() => navigate("/games/leaderboard")}
+                aria-label="Leaderboard"
                 variant="transparency"
                 position={isSmallerThan475 && "absolute"}
                 top={isSmallerThan475 && "-4rem"}
                 right={isSmallerThan475 && "0"}
               />
-            </Tooltip>
+            </MyTooltip>
           ) : (
-            <Link variant="simple">Leaderboard</Link>
+            <Link
+              onClick={() => navigate("/games/leaderboard")}
+              variant="simple"
+            >
+              Leaderboard
+            </Link>
           )}
         </Flex>
       </HStack>

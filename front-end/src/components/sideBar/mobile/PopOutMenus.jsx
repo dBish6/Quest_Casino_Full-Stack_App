@@ -5,7 +5,7 @@ import { Box, VStack, Link, useColorMode } from "@chakra-ui/react";
 import { motion, AnimatePresence } from "framer-motion";
 
 // *Component Imports*
-import Header from "../../Header";
+import MyHeading from "../../MyHeading";
 import LoginForm from "../../../features/authentication/components/LoginForm";
 import Settings from "../Settings";
 
@@ -35,13 +35,8 @@ const PopOutMenus = (props) => {
           left="60px"
           m="0 !important"
           zIndex="sticky"
-          bgColor={
-            // colorMode === "dark"
-            //   ? "rgba(66, 75, 94, 0.7)"
-            //   : "rgba(117, 119, 125, 0.7)"
-            colorMode === "dark" ? "bd700" : "bl400"
-          }
-          borderLeftWidth="2px"
+          bgColor={colorMode === "dark" ? "bd700" : "bl400"}
+          borderLeftWidth="1px"
           borderRightWidth="1px"
           borderBottomWidth="1px"
           borderColor={colorMode === "dark" ? "borderD" : "borderL"}
@@ -55,13 +50,19 @@ const PopOutMenus = (props) => {
             key="navContent"
             padding="1rem"
           >
-            <Header fontSize="24px" text="Navigation" mb="0.5rem" />
+            <MyHeading
+              fontSize="24px"
+              text="Navigation"
+              whiteSpace="nowrap"
+              mb="0.5rem"
+            />
             <Link
               as={NavLink}
               to="/home"
               variant={
                 location.pathname === "/home" ? "navOnLocation" : "navigation"
               }
+              whiteSpace="nowrap"
             >
               Home
             </Link>
@@ -71,6 +72,7 @@ const PopOutMenus = (props) => {
               variant={
                 location.pathname === "/games" ? "navOnLocation" : "navigation"
               }
+              whiteSpace="nowrap"
               mt="0.875rem !important"
             >
               Games
@@ -83,6 +85,7 @@ const PopOutMenus = (props) => {
                   ? "navOnLocation"
                   : "navigation"
               }
+              whiteSpace="nowrap"
               mt="0.875rem !important"
             >
               Profile
@@ -90,6 +93,7 @@ const PopOutMenus = (props) => {
             <Link
               onClick={() => props.setShow({ ...props.show, quests: true })}
               variant={props.show.quests ? "navOnLocation" : "navigation"}
+              whiteSpace="nowrap"
               mt="0.875rem !important"
             >
               Quests
@@ -100,6 +104,7 @@ const PopOutMenus = (props) => {
               variant={
                 location.pathname === "/about" ? "navOnLocation" : "navigation"
               }
+              whiteSpace="nowrap"
               mt="0.875rem !important"
             >
               About Us
@@ -112,6 +117,7 @@ const PopOutMenus = (props) => {
                   ? "navOnLocation"
                   : "navigation"
               }
+              whiteSpace="nowrap"
               mt="0.875rem !important"
             >
               Support
@@ -125,15 +131,13 @@ const PopOutMenus = (props) => {
           as={motion.div}
           animate={{
             opacity: 1,
-            width: "max-content",
+            width: "fit-content",
             transition: { duration: 0.6, type: "spring" },
           }}
           initial={{ opacity: 0, width: 0 }}
-          // FIXME:
           exit={{
             opacity: 0,
             width: 0,
-            // overflow: "none",
             transition: { duration: 0.7, type: "tween" },
           }}
           key="login"
@@ -142,15 +146,10 @@ const PopOutMenus = (props) => {
           left="60px"
           m="0 !important"
           zIndex="sticky"
-          bgColor={
-            // colorMode === "dark"
-            //   ? "rgba(66, 75, 94, 0.7)"
-            //   : "rgba(117, 119, 125, 0.7)"
-            colorMode === "dark" ? "bd700" : "bl400"
-          }
-          borderLeftWidth="2px"
-          borderRightWidth={colorMode === "light" && "1px"}
-          borderBottomWidth={colorMode === "light" && "1px"}
+          bgColor={colorMode === "dark" ? "bd700" : "bl400"}
+          borderLeftWidth="1px"
+          borderRightWidth="1px"
+          borderBottomWidth="1px"
           borderColor={colorMode === "dark" ? "borderD" : "borderL"}
           borderBottomEndRadius="6px"
         >
@@ -162,8 +161,17 @@ const PopOutMenus = (props) => {
             key="loginContent"
             padding="1rem"
           >
-            <Header fontSize="28px" text="Log In" mb="1.5rem" />
-            <LoginForm mobile={true} />
+            <MyHeading
+              fontSize="28px"
+              text="Log In"
+              whiteSpace="nowrap"
+              mb="1.5rem"
+            />
+            <LoginForm
+              show={props.show}
+              setShow={props.setShow}
+              mobile={true}
+            />
           </VStack>
         </Box>
       )}
@@ -188,13 +196,8 @@ const PopOutMenus = (props) => {
           left="60px"
           m="0 !important"
           zIndex="sticky"
-          bgColor={
-            // colorMode === "dark"
-            //   ? "rgba(66, 75, 94, 0.7)"
-            //   : "rgba(117, 119, 125, 0.7)"
-            colorMode === "dark" ? "bd700" : "bl400"
-          }
-          borderLeftWidth="2px"
+          bgColor={colorMode === "dark" ? "bd700" : "bl400"}
+          borderLeftWidth="1px"
           borderRightWidth={colorMode === "light" && "1px"}
           borderBottomWidth={colorMode === "light" && "1px"}
           borderColor={colorMode === "dark" ? "borderD" : "borderL"}

@@ -7,9 +7,10 @@ import { tabsStyles as Tabs } from "./components/tabsStyles";
 import { linkStyles as Link } from "./components/linkStyles";
 import { iconStyles as Icon } from "./components/iconStyles";
 import { inputStyles as Input } from "./components/inputStyles";
+import { selectStyles as Select } from "./components/selectStyles";
 import { cardStyles as Card } from "./components/cardStyles";
 
-// Main App Theme
+// App Theme
 const casinoTheme = extendTheme({
   // Global Overrides
   styles: {
@@ -17,36 +18,31 @@ const casinoTheme = extendTheme({
       body: {
         bg: mode("bl300", "bd800")(props),
         color: mode("bMain", "dwordMain")(props),
-        overflowX: "hidden !important",
       },
     }),
   },
   components: {
     Text: {
-      baseStyle: (props) => ({
+      baseStyle: {
         wordBreak: "keep-all",
-        color: mode("bMain", "dwordMain")(props),
-      }),
+      },
       variants: {
-        blackjack: (props) => ({
+        blackjack: {
           color: "wMain",
-          // color: "g50",
           textShadow: "2px 1px 0px #000000",
-        }),
+        },
       },
     },
     Heading: {
       baseStyle: (props) => ({
-        fontFamily: `'Lobster', cursive`,
         color: mode("r500", "p400")(props),
         fontWeight: "400",
       }),
       variants: {
-        blackjack: (props) => ({
+        blackjack: {
           color: "wMain",
-          // color: "g50",
           textShadow: "2px 1px 0px #000000",
-        }),
+        },
       },
     },
     Container: {
@@ -66,23 +62,30 @@ const casinoTheme = extendTheme({
     },
     Divider: {
       baseStyle: (props) => ({
-        color: mode("borderL", "borderD")(props),
+        border: mode("1px solid borderL", "1px solid borderD")(props),
       }),
+    },
+    Progress: {
+      variants: {
+        lowStrength: {
+          filledTrack: {
+            bg: "r600",
+          },
+        },
+        highStrength: {
+          filledTrack: {
+            bg: "g500",
+          },
+        },
+      },
     },
     Button,
     Tabs,
     Link,
     Icon,
     Input,
+    Select,
     Card,
-    // FIXME:
-    // chakra: {
-    //   aside: {
-    //     baseStyle: (props) => ({
-    //       bgColor: mode("bl400", "#424B5E")(props),
-    //     }),
-    //   },
-    // },
   },
   colors: {
     // Primary Colours

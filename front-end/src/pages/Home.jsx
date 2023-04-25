@@ -1,14 +1,3 @@
-// *Design Imports*
-// import {
-//   Container,
-//   VStack,
-//   Stack,
-//   Box,
-//   chakra,
-//   Text,
-//   Image,
-// } from "@chakra-ui/react";
-
 // *Custom Hooks Import*
 import useDocumentTitle from "../hooks/useDocumentTitle";
 

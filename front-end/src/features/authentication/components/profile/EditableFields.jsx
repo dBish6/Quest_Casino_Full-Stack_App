@@ -4,17 +4,16 @@ import { ErrorMessage } from "@hookform/error-message";
 
 // *Design Imports*
 import {
-  Input,
   IconButton,
   ButtonGroup,
   HStack,
   Icon,
-  Tooltip,
   Text,
+  Input,
+  Select,
   FormControl,
   FormErrorMessage,
   chakra,
-  useMediaQuery,
   useColorMode,
 } from "@chakra-ui/react";
 import { RiUser3Line, RiFileUserLine } from "react-icons/ri";
@@ -26,9 +25,16 @@ import {
   MdOutlineEdit,
 } from "react-icons/md";
 
-const EditableFields = (props) => {
-  const [isSmallerThan768] = useMediaQuery("(max-width: 768px)");
+// *Custom Hooks Import*
+import usePhoneFormat from "../../hooks/usePhoneFormat";
 
+// *Utility Import*
+import COUNTRIES from "../../utils/COUNTRIES";
+
+// *Component Import*
+import MyTooltip from "../../../../components/MyTooltip";
+
+const EditableFields = (props) => {
   const [isUpdating, setIsUpdating] = useState({
     name: false,
     username: false,
@@ -42,6 +48,8 @@ const EditableFields = (props) => {
     phone: false,
   });
   const { colorMode } = useColorMode();
+  const { handlePhoneFormat, inputValue, handlePhoneErrorMsg, errorMsg } =
+    usePhoneFormat();
 
   const {
     register,
@@ -53,6 +61,7 @@ const EditableFields = (props) => {
       name: "",
       username: "",
       email: "",
+      callingCode: "",
       phone: "",
     },
   });
@@ -62,19 +71,11 @@ const EditableFields = (props) => {
       {/* Full Name */}
       {!isUpdating.name ? (
         <HStack>
-          <Icon
-            as={RiFileUserLine}
-            variant="primary"
-            fontSize={{ base: "20px", md: "24px", xl: "24px" }}
-          />
-          <Text fontSize={{ base: "16px", md: "18px", xl: "18px" }}>
-            {props.fsUser.full_name}
-          </Text>
-          <Tooltip hasArrow label="Edit">
+          <Icon as={RiFileUserLine} variant="primary" fontSize="24px" />
+          <Text fontSize="18px">{props.fsUser.full_name}</Text>
+          <MyTooltip label="Edit">
             <IconButton
-              icon={
-                <MdOutlineEdit fontSize={isSmallerThan768 ? "20px" : "24px"} />
-              }
+              icon={<MdOutlineEdit fontSize="24px" />}
               aria-label="edit"
               isLoading={props.loadingUpdate.name ? true : false}
               isDisabled={
@@ -82,13 +83,13 @@ const EditableFields = (props) => {
                 props.loadingUpdate.email ||
                 props.loadingUpdate.phone
               }
-              onClick={() => setIsUpdating({ name: true })}
+              onClick={() => setIsUpdating({ ...isUpdating, name: true })}
               variant="transparency"
-              size={isSmallerThan768 ? "xs" : "sm"}
+              size="sm"
               marginInlineStart="0 !important"
               color={props.loadingUpdate.name && "g500"}
             />
-          </Tooltip>
+          </MyTooltip>
         </HStack>
       ) : (
         <chakra.form
@@ -108,7 +109,7 @@ const EditableFields = (props) => {
                 variant="primary"
                 position="absolute"
                 left="0.5rem"
-                fontSize={{ base: "20px", md: "24px", xl: "24px" }}
+                fontSize="24px"
                 opacity={!focused.name && "0.2"}
                 _groupHover={{ opacity: 1 }}
                 color={focused.name && (colorMode === "dark" ? "p500" : "g500")}
@@ -117,8 +118,9 @@ const EditableFields = (props) => {
                 {...register("name", {
                   required: "Name is required.",
                 })}
-                onFocus={() => setFocused({ name: true })}
-                onBlur={() => setFocused({ name: false })}
+                onFocus={() => setFocused({ ...focused, name: true })}
+                onBlur={() => setFocused({ ...focused, name: false })}
+                id="name"
                 name="name"
                 autoComplete="off"
                 placeholder={props.fsUser.full_name}
@@ -133,7 +135,6 @@ const EditableFields = (props) => {
                   type="submit"
                   isLoading={props.loadingUpdate.name ? true : false}
                   variant="secondary"
-                  size={isSmallerThan768 ? "xs" : "sm"}
                   color="g500"
                   _hover={{ color: "g500" }}
                   _active={{ bgColor: "rgb(244, 244, 244, 0.2)" }}
@@ -141,9 +142,8 @@ const EditableFields = (props) => {
                 <IconButton
                   icon={<MdClose />}
                   isDisabled={props.loadingUpdate.name ? true : false}
-                  onClick={() => setIsUpdating({ name: false })}
+                  onClick={() => setIsUpdating({ ...isUpdating, name: false })}
                   variant="secondary"
-                  size={isSmallerThan768 ? "xs" : "sm"}
                   color="r500"
                   _hover={{ color: "r500" }}
                   _active={{ bgColor: "rgb(244, 244, 244, 0.2)" }}
@@ -164,19 +164,11 @@ const EditableFields = (props) => {
       {/* Username */}
       {!isUpdating.username ? (
         <HStack>
-          <Icon
-            as={RiUser3Line}
-            variant="primary"
-            fontSize={{ base: "20px", md: "24px", xl: "24px" }}
-          />
-          <Text fontSize={{ base: "16px", md: "18px", xl: "18px" }}>
-            {props.fsUser.username}
-          </Text>
-          <Tooltip hasArrow label="Edit">
+          <Icon as={RiUser3Line} variant="primary" fontSize="24px" />
+          <Text fontSize="18px">{props.fsUser.username}</Text>
+          <MyTooltip label="Edit">
             <IconButton
-              icon={
-                <MdOutlineEdit fontSize={isSmallerThan768 ? "20px" : "24px"} />
-              }
+              icon={<MdOutlineEdit fontSize="24px" />}
               aria-label="edit"
               isLoading={props.loadingUpdate.username ? true : false}
               isDisabled={
@@ -184,13 +176,13 @@ const EditableFields = (props) => {
                 props.loadingUpdate.email ||
                 props.loadingUpdate.phone
               }
-              onClick={() => setIsUpdating({ username: true })}
+              onClick={() => setIsUpdating({ ...isUpdating, username: true })}
               variant="transparency"
-              size={isSmallerThan768 ? "xs" : "sm"}
+              size="sm"
               marginInlineStart="0 !important"
               color={props.loadingUpdate.username && "g500"}
             />
-          </Tooltip>
+          </MyTooltip>
         </HStack>
       ) : (
         <chakra.form
@@ -210,7 +202,7 @@ const EditableFields = (props) => {
                 variant="primary"
                 position="absolute"
                 left="0.5rem"
-                fontSize={{ base: "20px", md: "24px", xl: "24px" }}
+                fontSize="24px"
                 opacity={!focused.username && "0.2"}
                 _groupHover={{ opacity: 1 }}
                 color={
@@ -229,8 +221,9 @@ const EditableFields = (props) => {
                     message: "You can make a better username then that...",
                   },
                 })}
-                onFocus={() => setFocused({ username: true })}
-                onBlur={() => setFocused({ username: false })}
+                onFocus={() => setFocused({ ...focused, username: true })}
+                onBlur={() => setFocused({ ...focused, username: false })}
+                id="username"
                 name="username"
                 autoComplete="off"
                 placeholder={props.fsUser.username}
@@ -245,7 +238,6 @@ const EditableFields = (props) => {
                   type="submit"
                   isLoading={props.loadingUpdate.username ? true : false}
                   variant="secondary"
-                  size={isSmallerThan768 ? "xs" : "sm"}
                   color="g500"
                   _hover={{ color: "g500" }}
                   _active={{ bgColor: "rgb(244, 244, 244, 0.2)" }}
@@ -253,9 +245,10 @@ const EditableFields = (props) => {
                 <IconButton
                   icon={<MdClose />}
                   isDisabled={props.loadingUpdate.username ? true : false}
-                  onClick={() => setIsUpdating({ username: false })}
+                  onClick={() =>
+                    setIsUpdating({ ...isUpdating, username: false })
+                  }
                   variant="secondary"
-                  size={isSmallerThan768 ? "xs" : "sm"}
                   color="r500"
                   _hover={{ color: "r500" }}
                   _active={{ bgColor: "rgb(244, 244, 244, 0.2)" }}
@@ -276,19 +269,11 @@ const EditableFields = (props) => {
       {/* Email Address */}
       {!isUpdating.email ? (
         <HStack>
-          <Icon
-            as={MdOutlineEmail}
-            variant="primary"
-            fontSize={{ base: "20px", md: "24px", xl: "24px" }}
-          />
-          <Text fontSize={{ base: "16px", md: "18px", xl: "18px" }}>
-            {props.fsUser.email}
-          </Text>
-          <Tooltip hasArrow label="Edit">
+          <Icon as={MdOutlineEmail} variant="primary" fontSize="24px" />
+          <Text fontSize="18px">{props.fsUser.email}</Text>
+          <MyTooltip label="Edit">
             <IconButton
-              icon={
-                <MdOutlineEdit fontSize={isSmallerThan768 ? "20px" : "24px"} />
-              }
+              icon={<MdOutlineEdit fontSize="24px" />}
               aria-label="edit"
               isLoading={props.loadingUpdate.email ? true : false}
               isDisabled={
@@ -296,13 +281,13 @@ const EditableFields = (props) => {
                 props.loadingUpdate.name ||
                 props.loadingUpdate.phone
               }
-              onClick={() => setIsUpdating({ email: true })}
+              onClick={() => setIsUpdating({ ...isUpdating, email: true })}
               variant="transparency"
-              size={isSmallerThan768 ? "xs" : "sm"}
+              size="sm"
               marginInlineStart="0 !important"
               color={props.loadingUpdate.email && "g500"}
             />
-          </Tooltip>
+          </MyTooltip>
         </HStack>
       ) : (
         <chakra.form
@@ -322,7 +307,7 @@ const EditableFields = (props) => {
                 variant="primary"
                 position="absolute"
                 left="0.5rem"
-                fontSize={{ base: "20px", md: "24px", xl: "24px" }}
+                fontSize="24px"
                 opacity={!focused.email && "0.2"}
                 _groupHover={{ opacity: 1 }}
                 color={
@@ -337,8 +322,9 @@ const EditableFields = (props) => {
                     message: "Invalid email address.",
                   },
                 })}
-                onFocus={() => setFocused({ email: true })}
-                onBlur={() => setFocused({ email: false })}
+                onFocus={() => setFocused({ ...focused, email: true })}
+                onBlur={() => setFocused({ ...focused, email: false })}
+                id="email"
                 name="email"
                 autoComplete="off"
                 placeholder={props.fsUser.email}
@@ -353,7 +339,6 @@ const EditableFields = (props) => {
                   type="submit"
                   isLoading={props.loadingUpdate.email ? true : false}
                   variant="secondary"
-                  size={isSmallerThan768 ? "xs" : "sm"}
                   color="g500"
                   _hover={{ color: "g500" }}
                   _active={{ bgColor: "rgb(244, 244, 244, 0.2)" }}
@@ -361,9 +346,8 @@ const EditableFields = (props) => {
                 <IconButton
                   icon={<MdClose />}
                   isDisabled={props.loadingUpdate.email ? true : false}
-                  onClick={() => setIsUpdating({ email: false })}
+                  onClick={() => setIsUpdating({ ...isUpdating, email: false })}
                   variant="secondary"
-                  size={isSmallerThan768 ? "xs" : "sm"}
                   color="r500"
                   _hover={{ color: "r500" }}
                   _active={{ bgColor: "rgb(244, 244, 244, 0.2)" }}
@@ -384,57 +368,67 @@ const EditableFields = (props) => {
       {/* Phone Number */}
       {!isUpdating.phone ? (
         <HStack>
-          <Icon
-            as={MdOutlinePhone}
-            variant="primary"
-            fontSize={{ base: "20px", md: "24px", xl: "24px" }}
-          />
-          <Text fontSize={{ base: "16px", md: "18px", xl: "18px" }}>
+          <Icon as={MdOutlinePhone} variant="primary" fontSize="24px" />
+          <Text fontSize="18px">
             {props.fsUser.phone_number ? props.fsUser.phone_number : "None"}
           </Text>
-          {props.fsUser.phone_number ? (
-            <Tooltip hasArrow label="Edit">
-              <IconButton
-                icon={
-                  <MdOutlineEdit
-                    fontSize={isSmallerThan768 ? "20px" : "24px"}
-                  />
-                }
-                aria-label="edit"
-                isLoading={props.loadingUpdate.phone ? true : false}
-                isDisabled={
-                  props.loadingUpdate.username ||
-                  props.loadingUpdate.name ||
-                  props.loadingUpdate.email
-                }
-                onClick={() => setIsUpdating({ phone: true })}
-                variant="transparency"
-                size={isSmallerThan768 ? "xs" : "sm"}
-                marginInlineStart="0 !important"
-                color={props.loadingUpdate.phone && "g500"}
-              />
-            </Tooltip>
-          ) : undefined}
+          <MyTooltip label="Edit">
+            <IconButton
+              icon={<MdOutlineEdit fontSize="24px" />}
+              aria-label="edit"
+              isLoading={props.loadingUpdate.phone ? true : false}
+              isDisabled={
+                props.loadingUpdate.username ||
+                props.loadingUpdate.name ||
+                props.loadingUpdate.email
+              }
+              onClick={() => setIsUpdating({ ...isUpdating, phone: true })}
+              variant="transparency"
+              size="sm"
+              marginInlineStart="0 !important"
+              color={props.loadingUpdate.phone && "g500"}
+            />
+          </MyTooltip>
         </HStack>
       ) : (
         <chakra.form
           onSubmit={handleSubmit(() =>
             props.handlePhone(
               props.currentUser.uid,
+              watch("callingCode"),
               watch("phone"),
               setIsUpdating
             )
           )}
           display="flex"
         >
-          <FormControl isInvalid={errors.phone}>
+          <FormControl isInvalid={errors.phone || errorMsg}>
             <HStack data-group>
+              <Select
+                {...register("callingCode", {
+                  required: true,
+                })}
+                onFocus={() => setFocused({ ...focused, phone: true })}
+                onBlur={() => setFocused({ ...focused, phone: false })}
+                id="callingCode"
+                name="callingCode"
+                variant="primary"
+                maxW="110px"
+                borderRightRadius="0"
+                h="42px"
+              >
+                {COUNTRIES.map((detail, i) => (
+                  <option key={i} value={detail.callingCode}>
+                    {detail.code}: {detail.callingCode}
+                  </option>
+                ))}
+              </Select>
               <Icon
                 as={RiFileUserLine}
                 variant="primary"
                 position="absolute"
-                left="0.5rem"
-                fontSize={{ base: "20px", md: "24px", xl: "24px" }}
+                left="calc(0.5rem + 100px)"
+                fontSize="24px"
                 opacity={!focused.phone && "0.2"}
                 _groupHover={{ opacity: 1 }}
                 color={
@@ -444,16 +438,28 @@ const EditableFields = (props) => {
               <Input
                 {...register("phone", {
                   required: "Number is required.",
+                  minLength: {
+                    value: 14,
+                    message: "Must be at least 10 digits long.",
+                  },
+                  onChange: (e) => {
+                    handlePhoneFormat(e);
+                    handlePhoneErrorMsg(e);
+                  },
                 })}
-                onFocus={() => setFocused({ phone: true })}
-                onBlur={() => setFocused({ phone: false })}
+                onFocus={() => setFocused({ ...focused, phone: true })}
+                onBlur={() => setFocused({ ...focused, phone: false })}
+                value={inputValue}
+                id="phone"
                 name="phone"
+                maxLength="14"
                 autoComplete="off"
                 placeholder={props.fsUser.phone_number}
                 variant="primary"
                 paddingInline="2.25rem 1rem"
                 marginInlineStart="0px !important"
                 h="42px"
+                maxW="175px"
               />
               <ButtonGroup size="sm">
                 <IconButton
@@ -461,7 +467,6 @@ const EditableFields = (props) => {
                   type="submit"
                   isLoading={props.loadingUpdate.phone ? true : false}
                   variant="secondary"
-                  size={isSmallerThan768 ? "xs" : "sm"}
                   color="g500"
                   _hover={{ color: "g500" }}
                   _active={{ bgColor: "rgb(244, 244, 244, 0.2)" }}
@@ -469,9 +474,8 @@ const EditableFields = (props) => {
                 <IconButton
                   icon={<MdClose />}
                   isDisabled={props.loadingUpdate.phone ? true : false}
-                  onClick={() => setIsUpdating({ phone: false })}
+                  onClick={() => setIsUpdating({ ...isUpdating, phone: false })}
                   variant="secondary"
-                  size={isSmallerThan768 ? "xs" : "sm"}
                   color="r500"
                   _hover={{ color: "r500" }}
                   _active={{ bgColor: "rgb(244, 244, 244, 0.2)" }}
@@ -485,6 +489,9 @@ const EditableFields = (props) => {
                 <FormErrorMessage>{message}</FormErrorMessage>
               )}
             />
+            {errorMsg.length ? (
+              <FormErrorMessage>{errorMsg}</FormErrorMessage>
+            ) : undefined}
           </FormControl>
         </chakra.form>
       )}

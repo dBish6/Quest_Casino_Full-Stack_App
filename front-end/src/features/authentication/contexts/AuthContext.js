@@ -1,6 +1,13 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { createContext, useState, useEffect } from "react";
-import { GoogleAuthProvider } from "firebase/auth";
+import {
+  signInWithEmailAndPassword,
+  GoogleAuthProvider,
+  signInWithPopup,
+  signOut,
+  sendPasswordResetEmail,
+  sendEmailVerification,
+} from "firebase/auth";
 
 // *Utility Import*
 import { auth } from "../../../utils/firebaseConfig";
@@ -20,24 +27,24 @@ export const AuthProvider = ({ children }) => {
     GetUserBalanceCompletedQuests();
 
   const login = (email, password) => {
-    return auth.signInWithEmailAndPassword(email, password);
+    return signInWithEmailAndPassword(auth, email, password);
   };
 
   const googleProvider = new GoogleAuthProvider();
   const signInWithGoogle = () => {
-    return auth.signInWithPopup(googleProvider);
+    return signInWithPopup(auth, googleProvider);
   };
 
   const logout = () => {
-    return auth.signOut();
+    return signOut(auth);
   };
 
   const resetPassword = (email) => {
-    return auth.sendPasswordResetEmail(email);
+    return sendPasswordResetEmail(auth, email);
   };
 
   const verifyEmail = () => {
-    return currentUser.sendEmailVerification();
+    return sendEmailVerification(currentUser);
   };
 
   // Sets current user.
@@ -67,7 +74,6 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   useEffect(() => {
-    console.log("currentUser", currentUser);
     if (currentUser !== null && balance === null && completedQuests === null) {
       fetchBalanceAndCompletedQuests(
         currentUser.uid,
@@ -78,11 +84,6 @@ export const AuthProvider = ({ children }) => {
       return () => abortController.abort();
     }
   }, [currentUser]);
-
-  useEffect(() => {
-    console.log("userBalance", balance);
-    console.log("completedQuests", completedQuests);
-  }, [balance, completedQuests]);
 
   const exports = {
     currentUser,

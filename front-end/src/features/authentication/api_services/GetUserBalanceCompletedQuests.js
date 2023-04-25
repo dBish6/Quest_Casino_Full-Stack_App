@@ -1,5 +1,4 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useToast } from "@chakra-ui/react";
@@ -24,11 +23,12 @@ const GetUserBalanceCompletedQuests = () => {
           return status === 200 || status === 404; // Resolve only if the status code is 404 or 200.
         },
       });
-      console.log(res.data);
+      // console.log(res.data);
       if (res && res.status === 200) {
         setBalance(res.data.balance);
-        res.data.completedQuests &&
+        if (res.data.completedQuests) {
           setCompletedQuests(res.data.completedQuests);
+        }
       } else if (res && res.status === 404) {
         toast({
           description: `Server Error 404: balance and quests wasn't received because ${res.data.user}`,

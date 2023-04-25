@@ -19,6 +19,7 @@ const DomLoader = () => {
           y: ["0%", "100%"],
           transition: {
             duration: 0.75,
+            type: "tween",
             ease: "easeInOut",
             repeat: Infinity,
             repeatType: "reverse",
@@ -37,6 +38,7 @@ const DomLoader = () => {
           y: ["100%", "0%"],
           transition: {
             duration: 0.75,
+            type: "tween",
             ease: "easeInOut",
             repeat: Infinity,
             repeatType: "reverse",

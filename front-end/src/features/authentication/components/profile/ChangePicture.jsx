@@ -13,7 +13,7 @@ import {
 import { MdUploadFile } from "react-icons/md";
 
 // *Component Imports*
-import DefaultPicsSkeleton from "../../skeletons/DefaultPicsSkeleton";
+import DefaultPicsSkeleton from "../skeletons/DefaultPicsSkeleton";
 import AreYouSureModal from "../../../../components/modals/AreYouSureModal";
 import UploadProfilePicModal from "../modals/UploadProfilePicModal";
 
@@ -30,11 +30,6 @@ const ChangePicture = (props) => {
   const [selectedPicture, setSelectedPicture] = useState("");
   const [toBeSelectedPicture, setToBeSelectedPicture] = useState("");
 
-  // useEffect(() => {
-  //   console.log("selectedPicture", selectedPicture);
-  //   console.log("defaultPictures", defaultPictures);
-  // }, [selectedPicture, defaultPictures]);
-
   useEffect(() => {
     const getFirebaseImages = async () => {
       const res = await listAll(ref(storage, "images/defaultProfilePics/"));
@@ -44,7 +39,6 @@ const ChangePicture = (props) => {
           return { name: img.name, url: url };
         })
       );
-      console.log(urls);
       setDefaultPictures(urls);
     };
     getFirebaseImages();
@@ -58,7 +52,7 @@ const ChangePicture = (props) => {
             <DefaultPicsSkeleton />
           </>
         ) : (
-          defaultPictures.map((profilePic) => {
+          defaultPictures.map((profilePic, i) => {
             // So it can update in real time.
             let initialCurrent =
               props.currentUser.photoURL === profilePic.url &&
@@ -67,60 +61,57 @@ const ChangePicture = (props) => {
               selectedPicture.length && selectedPicture === profilePic.url;
 
             return (
-              <>
-                <WrapItem
-                  // FIXME: ???
-                  key={profilePic.name}
-                  maxW="115px"
-                  minH="115px"
-                  cursor={
-                    props.loadingUpdate.profilePic ? "not-allowed" : "pointer"
+              <WrapItem
+                key={profilePic.name}
+                maxW="115px"
+                minH="115px"
+                cursor={
+                  props.loadingUpdate.profilePic ? "not-allowed" : "pointer"
+                }
+                pointerEvents={props.loadingUpdate.profilePic && "none"}
+                onClick={() => {
+                  if (initialCurrent || isCurrent) {
+                    return;
+                  } else {
+                    setToBeSelectedPicture(profilePic.url);
+                    setShow({ ...show, areYouSure: true });
                   }
-                  pointerEvents={props.loadingUpdate.profilePic && "none"}
-                  onClick={() => {
-                    if (initialCurrent || isCurrent) {
-                      return;
-                    } else {
-                      setToBeSelectedPicture(profilePic.url);
-                      setShow({ ...show, areYouSure: true });
-                    }
+                }}
+              >
+                {initialCurrent || isCurrent ? (
+                  <Text
+                    position="absolute"
+                    bgColor={colorMode === "dark" ? "p500" : "r500"}
+                    color={colorMode === "dark" ? "bMain" : "wMain"}
+                    fontWeight="500"
+                    fontStyle="italic"
+                    textAlign="center"
+                    borderRadius="32px"
+                    pointerEvents="none"
+                    w="100%"
+                    maxW="115px"
+                  >
+                    Current
+                  </Text>
+                ) : undefined}
+                <Image
+                  src={profilePic.url}
+                  alt={`Profile Picture ${i}`}
+                  objectFit="contain"
+                  borderRadius="50%"
+                  bgColor={colorMode === "dark" ? "bd100" : "wMain"}
+                  _hover={{
+                    bgColor: colorMode === "dark" ? "wMain" : "#E0E2EA",
                   }}
-                >
-                  {initialCurrent || isCurrent ? (
-                    <Text
-                      position="absolute"
-                      bgColor={colorMode === "dark" ? "p500" : "r500"}
-                      color={colorMode === "dark" ? "bMain" : "wMain"}
-                      fontWeight="500"
-                      fontStyle="italic"
-                      textAlign="center"
-                      borderRadius="32px"
-                      pointerEvents="none"
-                      w="100%"
-                      maxW="115px"
-                    >
-                      Current
-                    </Text>
-                  ) : undefined}
-                  <Image
-                    src={profilePic.url}
-                    objectFit="contain"
-                    borderRadius="50%"
-                    bgColor={colorMode === "dark" ? "bd100" : "wMain"}
-                    _hover={{
-                      bgColor: colorMode === "dark" ? "wMain" : "#E0E2EA",
-                    }}
-                    _active={{
-                      bgColor:
-                        props.currentUser.photoURL === profilePic.url ||
-                        isCurrent
-                          ? "r500"
-                          : "g400",
-                    }}
-                    transition="0.2s ease"
-                  />
-                </WrapItem>
-              </>
+                  _active={{
+                    bgColor:
+                      props.currentUser.photoURL === profilePic.url || isCurrent
+                        ? "r500"
+                        : "g400",
+                  }}
+                  transition="0.2s ease"
+                />
+              </WrapItem>
             );
           })
         )}
@@ -172,12 +163,10 @@ const ChangePicture = (props) => {
                   ? selectedPicture
                   : props.currentUser.photoURL
               }
-              // FIXME:
+              alt="Upload Profile Picture"
               objectFit="cover"
               objectPosition="center center"
-              // borderRadius="50%"
-              maxW="100%"
-              maxH="100%"
+              borderRadius="50%"
             />
           ) : undefined}
         </WrapItem>

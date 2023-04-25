@@ -22,7 +22,7 @@ import useDisableScroll from "../../../../hooks/useDisableScroll";
 
 // *Component Imports*
 import ModalTemplate from "../../../../components/modals/ModalTemplate";
-import Header from "../../../../components/Header";
+import MyHeading from "../../../../components/MyHeading";
 
 // *API Services Imports*
 import PostResetPassword from "../../api_services/PostResetPassword";
@@ -69,7 +69,7 @@ const PasswordResetModal = (props) => {
       >
         &#10005;
       </Button>
-      <Header fontSize="32px" mb="1.5rem" text="Reset Password" />
+      <MyHeading fontSize="32px" mb="1.5rem" text="Reset Password" />
 
       <chakra.form
         onSubmit={handleSubmit(() => handleReset(formRef, watch("email")))}

@@ -28,14 +28,13 @@ const NavBar = () => {
   const location = useLocation();
   const { currentUser } = useAuth();
   const [isLargerThan622] = useMediaQuery("(min-width: 622px)");
-  const [isSmallerThan323] = useMediaQuery("(max-width: 323px)");
 
   return (
     <>
       <HStack as="header" justifyContent="flex-end">
         {currentUser !== null && (
           <>
-            <GetBalance fontSize={isSmallerThan323 ? "16px" : "18px"} />
+            <GetBalance fontSize="18px" />
             <Divider
               orientation="vertical"
               bgColor={colorMode === "dark" ? "wMain" : "bMain"}
@@ -43,7 +42,9 @@ const NavBar = () => {
               w={colorMode === "dark" ? "0.5px" : "1px"}
               h="2rem"
               marginInline={
-                isSmallerThan323 ? "0.5rem !important" : "1rem !important"
+                !isLargerThan622
+                  ? "0.95rem 0.5rem !important"
+                  : "1rem !important"
               }
             />
           </>
@@ -96,7 +97,12 @@ const NavBar = () => {
         )}
 
         <Link as={NavLink} to="/home">
-          <chakra.h1 fontFamily="heading" fontSize="2rem" color="r500">
+          <chakra.h1
+            fontFamily="heading"
+            fontSize="2rem"
+            color="r500"
+            textShadow={colorMode === "light" && "1px 1px 0px #363636"}
+          >
             Quest{" "}
             <chakra.span
               fontFamily="roboto"

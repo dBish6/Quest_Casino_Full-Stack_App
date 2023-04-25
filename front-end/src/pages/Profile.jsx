@@ -13,7 +13,6 @@ import {
   TabPanels,
   Tab,
   TabPanel,
-  chakra,
   Heading,
   Alert,
   AlertIcon,
@@ -21,11 +20,10 @@ import {
   AlertDescription,
   Box,
   Link,
-  useColorMode,
   HStack,
   Icon,
-  Flex,
   CircularProgress,
+  useColorMode,
 } from "@chakra-ui/react";
 import { RiMedalLine } from "react-icons/ri";
 
@@ -40,6 +38,7 @@ import PasswordResetModal from "../features/authentication/components/modals/Pas
 import ChangePicture from "../features/authentication/components/profile/ChangePicture";
 
 const Profile = (props) => {
+  const [show, setShow] = useState(false);
   const { colorMode } = useColorMode();
   const { currentUser } = useAuth();
 
@@ -54,8 +53,7 @@ const Profile = (props) => {
     loadingUpdate,
     errorHandler,
   } = UpdateProfile();
-  const [fsUser, notFoundErr, loadingUser] = GetUser(currentUser.uid);
-  const [show, setShow] = useState(false);
+  const [fsUser, notFoundErr] = GetUser(currentUser.uid);
 
   useDocumentTitle(`${props.title} | Quest Casino`);
 
@@ -84,16 +82,14 @@ const Profile = (props) => {
             </AlertDescription>
           </Alert>
         ) : (
-          // FIXME:
-          <Alert status="info" variant="left-accent">
+          <Alert status="success" variant="left-accent">
             <AlertIcon />
             Email sent! Check your email for instructions.
           </Alert>
         )
       ) : undefined}
-
-      <VStack mt="4rem">
-        {!loadingUser ? (
+      <VStack mt={currentUser.emailVerified ? "calc(5rem + 48px)" : "5rem"}>
+        {fsUser && Object.keys(fsUser).length > 0 ? (
           notFoundErr.length ? (
             <Alert status="error" variant="left-accent">
               <AlertIcon />
@@ -118,14 +114,19 @@ const Profile = (props) => {
                   >
                     {fsUser.username}
                   </Heading>
-                  <Text as="small" textAlign="center" mt="0 !important">
+                  <Text
+                    as="small"
+                    color={colorMode === "dark" ? "wMain" : "bMain"}
+                    textAlign="center"
+                    // mt="0 !important"
+                  >
                     Edit your profile or change your profile picture!
                   </Text>
                 </VStack>
                 <Tabs
                   variant="enclosed"
                   borderColor={colorMode === "dark" ? "borderD" : "borderL"}
-                  mt="0.5rem"
+                  mt="1rem"
                 >
                   <TabList display="flex" justifyContent="center">
                     <Tab
@@ -175,12 +176,7 @@ const Profile = (props) => {
                   </TabList>
 
                   <TabPanels>
-                    <TabPanel
-                      display="grid"
-                      gap="0.5rem"
-                      // maxW="243.283px"
-                      maxW="550px"
-                    >
+                    <TabPanel display="grid" gap="0.5rem" maxW="550px">
                       {errorHandler.unexpected ? (
                         <Alert status="error" variant="left-accent" mb="1rem">
                           <AlertIcon />
@@ -206,17 +202,13 @@ const Profile = (props) => {
                         <Icon
                           as={RiMedalLine}
                           variant="primary"
-                          fontSize={{ base: "20px", md: "24px", xl: "24px" }}
+                          fontSize="24px"
                         />
                         <Text
-                          fontSize={{ base: "16px", md: "18px", xl: "18px" }}
+                          fontSize="18px"
+                          color={fsUser.wins.total > 0 ? "g500" : "r600"}
                         >
-                          Wins:{" "}
-                          <chakra.span
-                            color={fsUser.wins.total > 0 ? "g500" : "r600"}
-                          >
-                            {fsUser.wins.total}
-                          </chakra.span>
+                          {fsUser.wins.total}
                         </Text>
                       </HStack>
                       <EditableFields
@@ -233,7 +225,6 @@ const Profile = (props) => {
                         onClick={() => setShow(true)}
                         variant="simple"
                         justifySelf="center"
-                        fontSize={{ base: "14px", md: "16px", xl: "16px" }}
                         mt="1rem"
                       >
                         Reset Password
@@ -279,13 +270,20 @@ const Profile = (props) => {
             </>
           )
         ) : (
-          <Flex>
-            <CircularProgress
-              isIndeterminate
-              color={colorMode === "dark" ? "p300" : "r500"}
-              borderColor={colorMode === "light" && "bMain"}
-            />
-          </Flex>
+          <CircularProgress
+            isIndeterminate
+            position="absolute"
+            top="50%"
+            left="50%"
+            transform={
+              props.isLargerThan1280
+                ? "translate(130%, -50%)"
+                : "translate(-50%, -50%)"
+            }
+            size="68px"
+            color={colorMode === "dark" ? "p300" : "r500"}
+            borderColor={colorMode === "light" && "bMain"}
+          />
         )}
       </VStack>
 

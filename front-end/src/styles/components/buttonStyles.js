@@ -4,7 +4,7 @@ import { mode } from "@chakra-ui/theme-tools";
 export const buttonStyles = defineStyleConfig({
   variants: {
     primary: (props) => ({
-      bgColor: mode("bl200", "bd400")(props), // TODO: Play around with light theme button.
+      bgColor: mode("bl200", "bd400")(props),
       color: mode("bMain", "dwordMain")(props),
       boxShadow: "md",
       _hover: {
@@ -15,7 +15,7 @@ export const buttonStyles = defineStyleConfig({
       _active: {
         bgColor: mode("g300", "g500")(props),
       },
-      transition: "0.38s ease",
+      transition: "0.28s ease",
     }),
     secondary: (props) => ({
       bgColor: "transparent",
@@ -31,7 +31,7 @@ export const buttonStyles = defineStyleConfig({
       _active: {
         bgColor: mode("g300", "g500")(props),
       },
-      transition: "0.38s ease",
+      transition: "0.28s ease",
     }),
     transparency: (props) => ({
       bgColor: "transparent",
@@ -43,9 +43,8 @@ export const buttonStyles = defineStyleConfig({
       },
       _active: {
         opacity: "1",
-        // bgColor: mode("g300", "g500")(props),
       },
-      transition: "0.38s ease",
+      transition: "0.28s ease",
     }),
 
     exit: {
@@ -57,9 +56,9 @@ export const buttonStyles = defineStyleConfig({
         boxShadow: "lg",
       },
       _active: {
-        opacity: 0.6,
+        bgColor: "r400",
       },
-      transition: "0.38s ease",
+      transition: "0.28s ease",
     },
 
     chipRed: (props) => ({

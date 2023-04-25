@@ -1,18 +1,18 @@
 // *Design Imports*
 import { HStack, Text, Avatar, Box, chakra } from "@chakra-ui/react";
 
-// *API Services Imports*
+// *API Services Import*
 import GetAllUsers from "../../features/authentication/api_services/GetAllUsers";
 
-// *Component Imports*
-import PlayerSkeleton from "../../skeletons/PlayerSkeleton";
+// *Component Import*
+import PlayerSkeleton from "../skeletons/PlayerSkeleton";
 
 const UserList = () => {
-  const [fsUsers, notFoundErr, loading] = GetAllUsers();
+  const [fsUsers, notFoundErr] = GetAllUsers();
 
   return (
     <Box>
-      {loading ? (
+      {!fsUsers ? (
         <PlayerSkeleton />
       ) : notFoundErr.length ? (
         <Text color="red">{notFoundErr}</Text>
@@ -23,7 +23,7 @@ const UserList = () => {
               <Box w="2rem" h="2rem" borderRadius="50%" bgColor="wMain">
                 <Avatar
                   src={details.photoURL}
-                  //   alt="https://i.ibb.co/YXgGLwq/profile-stock.png"
+                  alt={`${details.username}'s Profile Picture`}
                   objectFit="contain"
                   w="2rem"
                   h="2rem"
@@ -56,7 +56,7 @@ const UserList = () => {
                       </>
                     )
                   ) : (
-                    // Don't need in production.
+                    // TODO: Don't need in production.
                     <>
                       Wins: <chakra.span color="r600">0</chakra.span>
                     </>

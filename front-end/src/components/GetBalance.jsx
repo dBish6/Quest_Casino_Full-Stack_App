@@ -9,20 +9,21 @@ const GetBalance = (props) => {
 
   return (
     <>
-      {balance ? (
-        <Text {...props}>
+      {balance !== null ? (
+        <Text aria-label="Balance" {...props}>
           Balance:{" "}
-          <chakra.span
-            color="g500"
-            fontWeight="500"
-            textShadow={props.variant === "blackjack" && "2px 1px 0px #000000"}
-          >
+          <chakra.span color={balance === 0 ? "r500" : "g500"} fontWeight="500">
             ${balance}
           </chakra.span>
         </Text>
       ) : (
         <>
-          <Skeleton startColor="dwordMain" h="21px" w="96px" />
+          <Skeleton
+            startColor="dwordMain"
+            borderRadius="4px"
+            h="21px"
+            w="96px"
+          />
         </>
       )}
     </>

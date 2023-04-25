@@ -4,25 +4,27 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
 // *Custom Hooks Import*
-import useCache from "../../../hooks/useCache";
+import useCache from "../../../../hooks/useCache";
 
-const GetUser = (id) => {
-  const [notFoundErr, setNotFoundErr] = useState("");
+const GetLeaderboard = () => {
+  const [notFoundErr, setNotFoundErr] = useState(false);
   const { cache, setCache } = useCache();
   const navigate = useNavigate();
 
-  // Gets stored user in Firestore DB.
+  // Gets the top users from Firestore DB.
   useEffect(() => {
     let abortController;
 
-    const fetchDetails = async () => {
+    const fetchLeaderboard = async () => {
+      setNotFoundErr("");
+
       try {
-        if (cache.userProfile === null) {
+        if (cache.topPlayers === null) {
           abortController = new AbortController();
-          setNotFoundErr("");
+
           const res = await axios({
             method: "GET",
-            url: `http://localhost:4000/auth/api/firebase/users/${id}`,
+            url: `http://localhost:4000/auth/api/firebase/users?leaderboard=${true}`,
             signal: abortController.signal,
             validateStatus: (status) => {
               return status === 200 || status === 404; // Resolve only if the status code is 404 or 200.
@@ -31,9 +33,9 @@ const GetUser = (id) => {
           // console.log(res.data);
 
           if (res && res.status === 200) {
-            setCache((prev) => ({ ...prev, userProfile: res.data }));
+            setCache((prev) => ({ ...prev, topPlayers: res.data }));
           } else if (res && res.status === 404) {
-            setNotFoundErr(res.data.user);
+            setNotFoundErr("");
           }
         }
       } catch (error) {
@@ -45,14 +47,14 @@ const GetUser = (id) => {
         }
       }
     };
-    fetchDetails();
+    fetchLeaderboard();
 
     return () => {
       if (abortController) abortController.abort();
     };
   }, []);
 
-  return [cache.userProfile, notFoundErr];
+  return { topUsers: cache.topPlayers, notFoundErr };
 };
 
-export default GetUser;
+export default GetLeaderboard;

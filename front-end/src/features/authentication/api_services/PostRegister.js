@@ -17,6 +17,8 @@ const PostRegister = () => {
   const navigate = useNavigate();
   const toast = useToast();
 
+  const abortController = new AbortController();
+
   const handleRegister = async (
     formRef,
     firstName,
@@ -25,6 +27,7 @@ const PostRegister = () => {
     email,
     password,
     confirmPassword,
+    callingCode,
     phoneNum
   ) => {
     setErrorHandler({
@@ -36,7 +39,7 @@ const PostRegister = () => {
     });
 
     if (password !== confirmPassword)
-      return setErrorHandler({ confirmation: true });
+      return setErrorHandler({ ...errorHandler, confirmation: true });
 
     toggleLoading(true);
     try {
@@ -49,35 +52,52 @@ const PostRegister = () => {
           username: username,
           email: email,
           password: password,
-          phoneNum: phoneNum,
-          profilePic: "https://i.ibb.co/YXgGLwq/profile-stock.png",
+          phoneNum: callingCode + phoneNum.replace(/[()\-\s]/g, ""),
+        },
+        signal: abortController.signal,
+        validateStatus: (status) => {
+          return status === 200 || status === 400 || status === 429;
         },
       });
-      console.log(res.data);
-      if (res && res.status === 200) {
-        formRef.current.reset();
-        navigate("/home");
-        toast({
-          description:
-            "Account was created successfully, you can now proceed to log in.",
-          status: "info",
-          duration: 9000,
-          isClosable: true,
-          position: "top",
-          variant: "solid",
-        });
+      // console.log(res);
+      if (res) {
+        if (res.status === 200) {
+          formRef.current.reset();
+          navigate("/home");
+          toast({
+            description:
+              "Account was created successfully, you can now proceed to log in.",
+            status: "success",
+            duration: 9000,
+            isClosable: true,
+            position: "top",
+            variant: "solid",
+          });
+        } else if (
+          res.status === 400 &&
+          res.data.code === "auth/email-already-exists"
+        ) {
+          setErrorHandler({ ...errorHandler, emailInUse: true });
+        } else if (
+          res.status === 400 &&
+          res.data.code === "auth/phone-number-already-exists"
+        ) {
+          setErrorHandler({ ...errorHandler, phoneInUse: true });
+        } else if (
+          res.status === 429 &&
+          res.data.code === "auth/too-many-requests"
+        ) {
+          setErrorHandler({ ...errorHandler, maxRequests: true });
+        }
       }
     } catch (error) {
-      if (error.code === "auth/email-already-in-use") {
-        setErrorHandler({ emailInUse: true });
-      } else if (error.code === "auth/phone-number-already-exists") {
-        setErrorHandler({ phoneInUse: true });
-      } else if (error.code === "auth/too-many-requests") {
-        setErrorHandler({ maxRequests: true });
+      if (error.code === "ECONNABORTED" || error.message === "canceled") {
+        console.warn("Request was aborted.");
       } else {
-        setErrorHandler({ unexpected: true });
+        setErrorHandler({ ...errorHandler, unexpected: true });
       }
-      console.error(error);
+      console.error("error", error);
+      abortController.abort();
     } finally {
       toggleLoading(false);
     }

@@ -1,4 +1,5 @@
-import { useState, useRef } from "react";
+/* eslint-disable react-hooks/exhaustive-deps */
+import { useState, useRef, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { ErrorMessage } from "@hookform/error-message";
 
@@ -7,6 +8,8 @@ import {
   FormControl,
   FormLabel,
   Input,
+  Progress,
+  Select,
   FormErrorMessage,
   chakra,
   Alert,
@@ -23,15 +26,20 @@ import {
 } from "@chakra-ui/react";
 import { MdOutlineVisibilityOff, MdOutlineVisibility } from "react-icons/md";
 
-// *Custom Hooks Imports*
+// *Custom Hooks Import*
 import useDisableScroll from "../../../../hooks/useDisableScroll";
+import usePhoneFormat from "../../hooks/usePhoneFormat";
+
+// *Utility Imports*
+import COUNTRIES from "../../utils/COUNTRIES";
+import calculatePasswordStrength from "../../utils/calculatePasswordStrength";
 
 // *API Services Import*
 import PostRegister from "../../api_services/PostRegister";
 
 // *Component Imports*
 import ModalTemplate from "../../../../components/modals/ModalTemplate";
-import Header from "../../../../components/Header";
+import MyHeading from "../../../../components/MyHeading";
 
 const RegisterModal = (props) => {
   const [visible, toggleVisibility] = useState({
@@ -42,12 +50,21 @@ const RegisterModal = (props) => {
     password: false,
     confirm: false,
   });
+  const [passwordStrength, setPasswordStrength] = useState(0);
+  const showRef = useRef(null);
+  const formRef = useRef(null);
   const { colorMode } = useColorMode();
+
+  const { handleRegister, errorHandler, setErrorHandler, loading } =
+    PostRegister();
+  const { handlePhoneFormat, inputValue, handlePhoneErrorMsg, errorMsg } =
+    usePhoneFormat();
   const {
     register,
     formState: { errors },
     handleSubmit,
     watch,
+    setValue,
   } = useForm({
     defaultValues: {
       firstName: "",
@@ -56,19 +73,33 @@ const RegisterModal = (props) => {
       email: "",
       password: "",
       conPassword: "",
+      callingCode: "",
       phone: "",
     },
   });
-  const formRef = useRef(null);
-  const { handleRegister, errorHandler, setErrorHandler, loading } =
-    PostRegister();
 
-  useDisableScroll(
-    typeof props.show === "object" ? props.show.register : props.show,
-    510
-  );
+  const show =
+    typeof props.show === "object"
+      ? (showRef.current = props.show.register)
+      : (showRef.current = props.show);
 
-  // TODO: Password strength indicator.
+  useDisableScroll(show, 510);
+
+  useEffect(() => {
+    const strength = calculatePasswordStrength(watch("password"));
+    setPasswordStrength(strength);
+  }, [watch("password")]);
+
+  useEffect(() => {
+    if (props.show === false) showRef.current = false;
+  }, [props.show]);
+
+  useEffect(() => {
+    if (!watch("phone").length && show) {
+      setValue("callingCode", "");
+    }
+  }, [watch("phone")]);
+
   return (
     <ModalTemplate
       show={typeof props.show === "object" ? props.show.register : props.show}
@@ -91,7 +122,7 @@ const RegisterModal = (props) => {
       >
         &#10005;
       </Button>
-      <Header fontSize="32px" mb="2rem" text="Register" />
+      <MyHeading fontSize="32px" mb="2rem" text="Register" />
 
       <chakra.form
         onSubmit={handleSubmit(() =>
@@ -103,13 +134,14 @@ const RegisterModal = (props) => {
             watch("email"),
             watch("password"),
             watch("conPassword"),
+            watch("callingCode"),
             watch("phone")
           )
         )}
         ref={formRef}
       >
         {errorHandler.unexpected ? (
-          <Alert status="error" variant="left-accent">
+          <Alert status="error" variant="left-accent" mb="0.5rem">
             <AlertIcon />
             <Box>
               <AlertTitle>Server Error 500</AlertTitle>
@@ -117,7 +149,7 @@ const RegisterModal = (props) => {
             </Box>
           </Alert>
         ) : errorHandler.maxRequests ? (
-          <Alert status="error" variant="left-accent">
+          <Alert status="error" variant="left-accent" mb="0.5rem">
             <AlertIcon />
             Max request reached, please try again later.
           </Alert>
@@ -125,7 +157,11 @@ const RegisterModal = (props) => {
 
         <HStack mb="1rem">
           <FormControl isInvalid={errors.firstName}>
-            <FormLabel htmlFor="firstName">
+            <FormLabel
+              htmlFor="firstName"
+              fontSize={{ base: "14px", md: "16px", xl: "16px" }}
+              fontWeight={{ base: "600", md: "500", xl: "500" }}
+            >
               First Name<chakra.span color="r400"> *</chakra.span>
             </FormLabel>
             <Input
@@ -151,7 +187,11 @@ const RegisterModal = (props) => {
             />
           </FormControl>
           <FormControl isInvalid={errors.lastName}>
-            <FormLabel htmlFor="lastName">
+            <FormLabel
+              htmlFor="lastName"
+              fontSize={{ base: "14px", md: "16px", xl: "16px" }}
+              fontWeight={{ base: "600", md: "500", xl: "500" }}
+            >
               Last Name<chakra.span color="r400"> *</chakra.span>
             </FormLabel>
             <Input
@@ -179,7 +219,11 @@ const RegisterModal = (props) => {
         </HStack>
 
         <FormControl isInvalid={errors.username} mb="1rem">
-          <FormLabel htmlFor="username">
+          <FormLabel
+            htmlFor="username"
+            fontSize={{ base: "14px", md: "16px", xl: "16px" }}
+            fontWeight={{ base: "600", md: "500", xl: "500" }}
+          >
             Username<chakra.span color="r400"> *</chakra.span>
           </FormLabel>
           <Input
@@ -213,7 +257,11 @@ const RegisterModal = (props) => {
           isInvalid={errors.email || errorHandler.emailInUse}
           mb="1rem"
         >
-          <FormLabel htmlFor="email">
+          <FormLabel
+            htmlFor="email"
+            fontSize={{ base: "14px", md: "16px", xl: "16px" }}
+            fontWeight={{ base: "600", md: "500", xl: "500" }}
+          >
             Email<chakra.span color="r400"> *</chakra.span>
           </FormLabel>
           <Input
@@ -248,9 +296,13 @@ const RegisterModal = (props) => {
           ) : undefined}
         </FormControl>
 
-        <HStack mb="1rem">
+        <HStack mb="10px">
           <FormControl isInvalid={errors.password}>
-            <FormLabel htmlFor="password">
+            <FormLabel
+              htmlFor="password"
+              fontSize={{ base: "14px", md: "16px", xl: "16px" }}
+              fontWeight={{ base: "600", md: "500", xl: "500" }}
+            >
               Password<chakra.span color="r400"> *</chakra.span>
             </FormLabel>
             <HStack>
@@ -266,10 +318,11 @@ const RegisterModal = (props) => {
                     message: "Max of 128 characters exceeded.",
                   },
                 })}
-                onFocus={() => setFocused({ password: true })}
-                onBlur={() => setFocused({ password: false })}
+                onFocus={() => setFocused({ ...focused, password: true })}
+                onBlur={() => setFocused({ ...focused, password: false })}
                 id="password"
                 name="password"
+                autoComplete="off"
                 type={visible.password ? "text" : "password"}
                 variant="primary"
                 paddingInline="1rem 2.5rem"
@@ -278,7 +331,9 @@ const RegisterModal = (props) => {
               {visible.password ? (
                 <Icon
                   as={MdOutlineVisibilityOff}
-                  onClick={() => toggleVisibility({ password: false })}
+                  onClick={() =>
+                    toggleVisibility({ ...focused, password: false })
+                  }
                   position="absolute"
                   right="0.875rem"
                   cursor="pointer"
@@ -290,7 +345,9 @@ const RegisterModal = (props) => {
               ) : (
                 <Icon
                   as={MdOutlineVisibility}
-                  onClick={() => toggleVisibility({ password: true })}
+                  onClick={() =>
+                    toggleVisibility({ ...focused, password: true })
+                  }
                   position="absolute"
                   right="0.875rem"
                   cursor="pointer"
@@ -301,6 +358,13 @@ const RegisterModal = (props) => {
                 />
               )}
             </HStack>
+            <Progress
+              variant={passwordStrength >= 80 ? "highStrength" : "lowStrength"}
+              mt="6px"
+              size="xs"
+              borderRadius="1rem"
+              value={passwordStrength}
+            />
             <ErrorMessage
               errors={errors}
               name="password"
@@ -311,8 +375,13 @@ const RegisterModal = (props) => {
           </FormControl>
           <FormControl
             isInvalid={errors.conPassword || errorHandler.confirmation}
+            mb="10px !important"
           >
-            <FormLabel htmlFor="conPassword">
+            <FormLabel
+              htmlFor="conPassword"
+              fontSize={{ base: "14px", md: "16px", xl: "16px" }}
+              fontWeight={{ base: "600", md: "500", xl: "500" }}
+            >
               Confirm Password
               <chakra.span color="r400"> *</chakra.span>
             </FormLabel>
@@ -326,13 +395,14 @@ const RegisterModal = (props) => {
                   },
                   onChange: (e) => {
                     if (e.target.value === watch("password"))
-                      setErrorHandler({ confirmation: false });
+                      setErrorHandler({ ...errorHandler, confirmation: false });
                   },
                 })}
-                onFocus={() => setFocused({ confirm: true })}
-                onBlur={() => setFocused({ confirm: false })}
+                onFocus={() => setFocused({ ...focused, confirm: true })}
+                onBlur={() => setFocused({ ...focused, confirm: false })}
                 id="conPassword"
                 name="conPassword"
+                autoComplete="off"
                 type={visible.confirm ? "text" : "password"}
                 variant="primary"
                 paddingInline="1rem 2.5rem"
@@ -341,7 +411,9 @@ const RegisterModal = (props) => {
               {visible.confirm ? (
                 <Icon
                   as={MdOutlineVisibilityOff}
-                  onClick={() => toggleVisibility({ confirm: false })}
+                  onClick={() =>
+                    toggleVisibility({ ...focused, confirm: false })
+                  }
                   position="absolute"
                   right="0.875rem"
                   cursor="pointer"
@@ -353,7 +425,9 @@ const RegisterModal = (props) => {
               ) : (
                 <Icon
                   as={MdOutlineVisibility}
-                  onClick={() => toggleVisibility({ confirm: true })}
+                  onClick={() =>
+                    toggleVisibility({ ...focused, confirm: true })
+                  }
                   position="absolute"
                   right="0.875rem"
                   cursor="pointer"
@@ -377,23 +451,55 @@ const RegisterModal = (props) => {
           </FormControl>
         </HStack>
 
-        {/* TODO: Country codes. */}
         <FormControl isInvalid={errorHandler.phoneInUse}>
-          <FormLabel htmlFor="phone">Phone</FormLabel>
-          <Input
-            {...register("phone", {
-              required: false,
-              maxLength: {
-                value: 15,
-                message: "Max of 15 characters exceeded.",
-              },
-            })}
-            id="phone"
-            name="phone"
-            autoComplete="off"
-            variant="primary"
-            h="42px"
-          />
+          <FormLabel
+            htmlFor="phone"
+            fontSize={{ base: "14px", md: "16px", xl: "16px" }}
+            fontWeight={{ base: "600", md: "500", xl: "500" }}
+          >
+            Phone
+          </FormLabel>
+          <HStack>
+            <Select
+              {...register("callingCode", {
+                required: watch("phone").length ? true : false,
+              })}
+              id="callingCode"
+              name="callingCode"
+              variant="primary"
+              maxW="117px"
+              borderRightRadius="0"
+              h="42px"
+            >
+              {COUNTRIES.map((detail, i) => (
+                <option key={i} value={detail.callingCode}>
+                  {detail.code}: {detail.callingCode}
+                </option>
+              ))}
+            </Select>
+            <Input
+              {...register("phone", {
+                required: false,
+                maxLength: {
+                  value: 15,
+                  message: "Max of 15 characters exceeded.",
+                },
+                onChange: (e) => {
+                  handlePhoneFormat(e);
+                  handlePhoneErrorMsg(e);
+                },
+              })}
+              value={inputValue}
+              id="phone"
+              name="phone"
+              maxLength="14"
+              autoComplete="off"
+              variant="primary"
+              m="0 !important"
+              borderLeftRadius="0"
+              h="42px"
+            />
+          </HStack>
           <ErrorMessage
             errors={errors}
             name="phone"
@@ -405,6 +511,9 @@ const RegisterModal = (props) => {
             <FormErrorMessage>
               Phone number is already used by a Quest user.
             </FormErrorMessage>
+          ) : undefined}
+          {errorMsg.length ? (
+            <FormErrorMessage>{errorMsg}</FormErrorMessage>
           ) : undefined}
         </FormControl>
 

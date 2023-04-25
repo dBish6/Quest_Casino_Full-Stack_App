@@ -12,8 +12,9 @@ const PostGoogleRegister = () => {
   const navigate = useNavigate();
   const { signInWithGoogle } = useAuth();
 
+  const abortController = new AbortController();
+
   const handleGoogleRegister = async () => {
-    let timeout;
     toggleLoading(true);
     setGoogleSuccessMsg("");
     setUnexpectedErr("");
@@ -36,27 +37,33 @@ const PostGoogleRegister = () => {
             phoneNum: signInRes.user.phoneNumber,
             profilePic: signInRes.user.photoURL,
           },
+          signal: abortController.signal,
         });
-        console.log(serverRes.data);
+        // console.log(serverRes.data);
         if (serverRes.data.registered) {
           setGoogleSuccessMsg("Welcome back!");
+          setTimeout(() => {
+            setGoogleSuccessMsg("");
+          }, 15000);
         } else if (serverRes) {
           navigate("/home");
-          // console.warn = () => {};
           setGoogleSuccessMsg("Google account successfully registered.");
-          timeout = setTimeout(() => {
+          setTimeout(() => {
             setGoogleSuccessMsg("");
           }, 15000);
         }
       }
     } catch (error) {
-      setUnexpectedErr("Failed to sign in with Google.");
-      console.error(error);
+      if (error.code === "ECONNABORTED" || error.message === "canceled") {
+        console.warn("Request was aborted.");
+      } else {
+        setUnexpectedErr("Failed to sign in with Google.");
+        console.error(error);
+      }
+      abortController.abort();
     } finally {
       toggleLoading(false);
     }
-
-    return () => clearTimeout(timeout);
   };
 
   return {

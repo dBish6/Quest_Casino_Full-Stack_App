@@ -1,47 +1,37 @@
-import { useEffect } from "react";
-
 // *Design Imports*
 import {
-  Box,
   Heading,
   Button,
   HStack,
   Text,
   chakra,
-  Flex,
-  Alert,
-  AlertIcon,
-  AlertTitle,
-  AlertDescription,
   Card,
   CardHeader,
   CardBody,
   CardFooter,
-  CircularProgress,
   useColorMode,
   Divider,
 } from "@chakra-ui/react";
 
-// *API Services Imports*
-import GetAllQuests from "../../api_services/GetAllQuests";
+// *Custom Hooks Import*
+import useAuth from "../../../../hooks/useAuth";
+import useDisableScroll from "../../../../hooks/useDisableScroll";
+
+// *Utility Imports*
+import quests from "../../staticQuests";
 
 // *Component Imports*
 import ModalTemplate from "../../../../components/modals/ModalTemplate";
-import Header from "../../../../components/Header";
+import MyHeading from "../../../../components/MyHeading";
 
 const QuestsModal = (props) => {
   const { colorMode } = useColorMode();
-  const { quests, errorHandler, loading } = GetAllQuests(props.show);
+  const { completedQuests } = useAuth();
 
-  useEffect(() => {
-    if (props.show) {
-      document.body.style.overflow = "hidden";
-    } else {
-      setTimeout(() => {
-        document.body.style.overflow = "unset";
-      }, 810);
-    }
-  }, [props.show]);
+  useDisableScroll(
+    typeof props.show === "object" ? props.show.quests : props.show,
+    810
+  );
 
   return (
     <ModalTemplate
@@ -49,6 +39,7 @@ const QuestsModal = (props) => {
       setShow={props.setShow}
       objName={typeof props.show === "object" && "quests"}
       animation={{ type: "up", y: "200%" }}
+      maxW="max-content"
     >
       <Button
         onClick={() =>
@@ -63,88 +54,87 @@ const QuestsModal = (props) => {
       >
         &#10005;
       </Button>
-      <Header fontSize="2rem" text="Quests" mb="4px" />
+      <MyHeading fontSize="2rem" text="Quests" mb="0.5rem" />
       <Text textAlign="center" mb="1.5rem">
         Here are the featured quests for you to complete, if you desire, to earn
         some extra cash!
       </Text>
 
-      {loading ? (
-        <Flex justify="center">
-          <CircularProgress
-            isIndeterminate
-            color={colorMode === "dark" ? "p300" : "r500"}
-            borderColor={colorMode === "light" && "bMain"}
-          />
-        </Flex>
-      ) : (
-        <>
-          {errorHandler.unexpected ? (
-            <Alert status="error" variant="left-accent" mb="0.5rem">
-              <AlertIcon />
-              <Box>
-                <AlertTitle>Server Error 500</AlertTitle>
-                <AlertDescription>Unexpected server error.</AlertDescription>
-              </Box>
-            </Alert>
-          ) : errorHandler.notFound ? (
-            <Alert status="error" variant="left-accent" mb="0.5rem">
-              <AlertIcon />
-              <Box>
-                <AlertTitle>Server Error 404</AlertTitle>
-                <AlertDescription>
-                  The server couldn't find any quests.
-                </AlertDescription>
-              </Box>
-            </Alert>
-          ) : undefined}
-          <HStack
-            justify="center"
-            align="flex-start"
-            // FIXME: Why does it wrap initially!
-            // flexWrap="wrap"
-            gap="1rem 1.5rem"
-            maxW="1000px"
-          >
-            {quests.map((quest, i) => {
-              return (
-                <Card key={i} variant="primary" maxW="225px">
-                  <CardHeader>
-                    <Heading
-                      fontFamily="roboto"
-                      // fontSize="26px"
-                      fontSize="24px"
-                      fontWeight="600"
-                      fontStyle="italic"
-                      // color={
-                      //   colorMode === "dark" ? "dwordMain" : "bMain"
-                      // }
-                    >
-                      {quest.title}
-                    </Heading>
-                  </CardHeader>
-                  <Divider />
-                  <CardBody>
-                    <Text>{quest.description}</Text>
-                  </CardBody>
-                  <CardFooter>
-                    <Text fontSize="18px" fontWeight="500">
-                      Reward:{" "}
-                      <chakra.span
-                        fontSize="16px"
-                        fontWeight="600"
-                        color="g500"
-                      >
-                        ${quest.reward}
-                      </chakra.span>
-                    </Text>
-                  </CardFooter>
-                </Card>
-              );
-            })}
-          </HStack>
-        </>
-      )}
+      <HStack
+        justify="center"
+        align="flex-start"
+        flexWrap="wrap"
+        gap="1rem 1.5rem"
+      >
+        {Object.entries(quests).map(([quest, detail]) => {
+          const isCompleted =
+            completedQuests &&
+            completedQuests.some(
+              (q) =>
+                q.toLowerCase().replace(/(\s|')/g, "") ===
+                quest.toLowerCase().replace(/(\s|')/g, "")
+            );
+
+          return (
+            <Card
+              key={quest}
+              variant="primary"
+              maxW="225px"
+              bg={!isCompleted && "transparent"}
+              bgColor={
+                isCompleted && (colorMode === "dark" ? "bd500" : "bl200")
+              }
+            >
+              {/* TODO: Make better. */}
+              {isCompleted && (
+                <Text
+                  pos="absolute"
+                  top="50%"
+                  left="50%"
+                  transform="translate(-50%, -50%) rotate(45deg)"
+                  p="0 0.5rem"
+                  fontFamily="roboto"
+                  fontSize="26px"
+                  fontWeight="600"
+                  letterSpacing="4pt"
+                  color="g600"
+                  bgColor="g200"
+                  opacity="0.65"
+                  borderWidth="1px"
+                  borderColor="g600"
+                  borderRadius="6px"
+                  zIndex="1"
+                >
+                  Completed
+                </Text>
+              )}
+              <CardHeader>
+                <Heading
+                  fontFamily="roboto"
+                  fontSize="24px"
+                  fontWeight="600"
+                  fontStyle="italic"
+                  lineHeight="1.2"
+                >
+                  {detail.title}
+                </Heading>
+              </CardHeader>
+              <Divider />
+              <CardBody>
+                <Text opacity="0.9">{detail.description}</Text>
+              </CardBody>
+              <CardFooter>
+                <Text fontSize="18px" fontWeight="500">
+                  Reward:{" "}
+                  <chakra.span fontSize="16px" fontWeight="600" color="g500">
+                    ${detail.reward}
+                  </chakra.span>
+                </Text>
+              </CardFooter>
+            </Card>
+          );
+        })}
+      </HStack>
     </ModalTemplate>
   );
 };

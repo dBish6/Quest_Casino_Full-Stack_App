@@ -34,18 +34,13 @@ import SaveLogin from "../api_services/SaveLogin";
 import PostGoogleRegister from "../api_services/PostGoogleRegister";
 
 // *Component Imports*
-import PasswordResetModal from "./modals/PasswordResetModal";
 import LogoutBtn from "./LogoutBtn";
-import RegisterModal from "./modals/RegisterModal";
 
 const LoginForm = (props) => {
   const [visible, toggleVisibility] = useState(false);
   const [focused, setFocused] = useState(false);
   const { colorMode } = useColorMode();
-  const [show, setShow] = useState({
-    passwordReset: false,
-    register: false,
-  });
+
   const {
     register,
     formState: { errors },
@@ -68,7 +63,6 @@ const LoginForm = (props) => {
 
   const { currentUser } = useAuth();
 
-  // console.log(watch());
   return (
     <>
       <chakra.form
@@ -155,6 +149,7 @@ const LoginForm = (props) => {
               onBlur={() => setFocused(false)}
               id="password"
               name="password"
+              autoComplete="off"
               type={visible ? "text" : "password"}
               isDisabled={currentUser !== null}
               variant="primary"
@@ -198,9 +193,10 @@ const LoginForm = (props) => {
             <Link
               onClick={() =>
                 currentUser === null &&
-                setShow({ ...show, passwordReset: true })
+                props.setShow({ ...props.show, passwordReset: true })
               }
               position="relative"
+              whiteSpace="nowrap"
               opacity={currentUser !== null ? "0.4" : "0.75"}
               _hover={
                 currentUser === null && {
@@ -226,6 +222,7 @@ const LoginForm = (props) => {
             isLoading={loading ? true : false}
             type="submit"
             variant="primary"
+            m="0 auto"
             zIndex="1"
             isDisabled={currentUser !== null}
             cursor={currentUser !== null && "not-allowed"}
@@ -245,21 +242,13 @@ const LoginForm = (props) => {
             Login
           </Button>
         ) : (
-          <LogoutBtn />
+          <LogoutBtn m="0 auto" zIndex="1" />
         )}
       </chakra.form>
-      <VStack mt="1rem !important">
+      <VStack m="1rem auto 0 auto !important" w="97%">
         <Divider />
         <Box
-          bgColor={
-            colorMode === "dark"
-              ? !props.mobile
-                ? "bd700"
-                : "transparent"
-              : !props.mobile
-              ? "bl400"
-              : "transparent"
-          }
+          bgColor={colorMode === "dark" ? "bd700" : "bl400"}
           color={currentUser !== null && "rgba(224, 226, 234, 0.4)"}
           p="0 0.5rem"
           position="relative"
@@ -276,10 +265,7 @@ const LoginForm = (props) => {
 
         <Button
           isLoading={googleLoading ? true : false}
-          onClick={() => {
-            handleGoogleRegister();
-            console.log("click");
-          }}
+          onClick={() => handleGoogleRegister()}
           variant="primary"
           position="relative"
           bottom="24px"
@@ -310,10 +296,10 @@ const LoginForm = (props) => {
         </Button>
       </VStack>
 
-      <Text>
+      <Text whiteSpace="nowrap">
         Don't have account?{" "}
         <Link
-          onClick={() => setShow({ ...show, register: true })}
+          onClick={() => props.setShow({ ...props.show, register: true })}
           variant="simple"
         >
           Sign Up
@@ -330,14 +316,11 @@ const LoginForm = (props) => {
         <Alert status="error" variant="left-accent" mt="1rem">
           <AlertIcon />
           <Box>
-            <AlertTitle>Unexpected Google Error!</AlertTitle>
+            <AlertTitle>Unexpected Error!</AlertTitle>
             <AlertDescription>{googleUnexpectedErr}</AlertDescription>
           </Box>
         </Alert>
       ) : undefined}
-
-      <PasswordResetModal show={show} setShow={setShow} />
-      <RegisterModal show={show} setShow={setShow} />
     </>
   );
 };

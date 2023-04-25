@@ -8,10 +8,12 @@ import {
   VStack,
   Text,
   Badge,
-  chakra,
+  Divider,
+  Image,
   useColorMode,
 } from "@chakra-ui/react";
 import { motion, AnimatePresence } from "framer-motion";
+import davyBlackjackPreview from "../../assets/Davy-Blackjack-Screenshot.png";
 
 const GameCard = (props) => {
   const [show, setShow] = useState(-1);
@@ -47,48 +49,77 @@ const GameCard = (props) => {
                 New!
               </Badge>
             )}
-            <VStack
-              position="relative"
-              minH="200px"
-              p="0.5rem"
-              overflow="hidden"
-            >
-              {/* <chakra.video src=""></chakra.video> */}
+            <VStack position="relative" minH="235px" overflow="hidden">
+              <Text
+                as="h4"
+                mt="0.5rem !important"
+                fontSize="18px"
+                fontWeight="500"
+                fontStyle="italic"
+                zIndex="1"
+              >
+                {detail.title}
+              </Text>
+              <Divider />
+              {i === 0 && (
+                <Box w="198px" h="190px" m="0 !important">
+                  <Image
+                    src={davyBlackjackPreview}
+                    objectFit="cover"
+                    h="100%"
+                    borderBottomRadius="6px"
+                  />
+                </Box>
+              )}
 
-              <Text mt="0 !important">{detail.title}</Text>
               <AnimatePresence>
                 {show === i && (
                   <Box
                     as={motion.div}
-                    animate={{
-                      // FIXME:
-                      opacity: 0.7,
-                      // y: 0,
-                      maxHeight: "163px",
-                      transition: { duration: 0.5, type: "tween" },
-                    }}
                     initial={{
                       opacity: 0,
-                      // y: "200px",
-                      // maxHeight: "0",
+                      backgroundColor: colorMode === "dark" ? "bd300" : "bl400",
+                      maxHeight: 0,
+                    }}
+                    animate={{
+                      opacity: 1,
+                      backgroundColor:
+                        colorMode === "dark"
+                          ? "rgb(138, 147, 167, 0.7)"
+                          : "rgb(204, 209, 218, 0.7)",
+                      maxHeight: "163px",
+                      transition: {
+                        duration: 0.5,
+                        type: "tween",
+                        ease: "easeOut",
+                      },
                     }}
                     exit={{
                       opacity: 0,
-                      // y: "200px",
-                      // maxHeight: "0",
-                      transition: { duration: 0.5, type: "tween" },
+
+                      maxHeight: 0,
+                      transition: {
+                        duration: 0.5,
+                        type: "tween",
+                        ease: "easeIn",
+                      },
                     }}
+                    key="description"
                     position="absolute"
                     bottom="0"
                     w="100%"
-                    // maxH="163px"
-                    // maxH="100%"
                     padding="0.5rem 1rem"
-                    bgColor={colorMode === "dark" ? "bd300" : "bl400"}
                     borderBottomRadius="6px"
                     pointerEvents="none"
+                    zIndex="1"
                   >
-                    <Text fontSize="14px">{detail.description}</Text>
+                    <Text
+                      fontSize="14px"
+                      color={colorMode === "dark" ? "wMain" : "bMain"}
+                      opacity="0.9"
+                    >
+                      {detail.description}
+                    </Text>
                   </Box>
                 )}
               </AnimatePresence>

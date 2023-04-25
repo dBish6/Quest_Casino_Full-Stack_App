@@ -4,7 +4,7 @@ import { Button, useToast } from "@chakra-ui/react";
 // *API Services Import*
 import PostLogout from "../api_services/PostLogout";
 
-const LogoutBtn = () => {
+const LogoutBtn = (props) => {
   const [handleLogout, unexpectedErr] = PostLogout();
   const toast = useToast();
 
@@ -27,6 +27,7 @@ const LogoutBtn = () => {
         justifySelf="center"
         w="100%"
         maxW="243px"
+        {...props}
       >
         Logout
       </Button>

@@ -23,7 +23,7 @@ import {
 } from "@chakra-ui/react";
 import { CgDollar } from "react-icons/cg";
 
-// *Custom Hooks Imports*
+// *Custom Hooks Import*
 import useDisableScroll from "../../../../hooks/useDisableScroll";
 
 // *API Services Import*
@@ -31,7 +31,7 @@ import UpdateProfile from "../../api_services/UpdateProfile";
 
 // *Component Imports*
 import ModalTemplate from "../../../../components/modals/ModalTemplate";
-import Header from "../../../../components/Header";
+import MyHeading from "../../../../components/MyHeading";
 
 const CashInModel = (props) => {
   const { currentUser } = useAuth();
@@ -75,7 +75,7 @@ const CashInModel = (props) => {
       >
         &#10005;
       </Button>
-      <Header fontSize="2rem" mb="1.5rem" text="Cash In" />
+      <MyHeading fontSize="2rem" mb="1.5rem" text="Cash In" />
 
       <chakra.form
         onSubmit={handleSubmit(() =>

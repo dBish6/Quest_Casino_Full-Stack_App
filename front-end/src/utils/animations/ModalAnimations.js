@@ -1,4 +1,4 @@
-const ModalAnimations = (animation) => {
+const modalAnimations = (animation) => {
   return {
     modelBackdrop: {
       visible: {
@@ -67,4 +67,4 @@ const ModalAnimations = (animation) => {
   };
 };
 
-export default ModalAnimations;
+export default modalAnimations;

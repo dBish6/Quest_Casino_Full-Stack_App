@@ -3,27 +3,28 @@ import { useNavigate } from "react-router-dom";
 
 // *Custom Hooks Import*
 import useAuth from "../../../hooks/useAuth";
+import useCache from "../../../hooks/useCache";
 
 const PostLogout = () => {
   const [unexpectedErr, setUnexpectedErr] = useState("");
   const { logout } = useAuth();
+  const { cache, setCache } = useCache();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
-    let timeout;
     try {
       setUnexpectedErr("");
 
       await logout();
       navigate("/home");
-      timeout = setTimeout(() => {
+      setTimeout(() => {
         alert("User session timed out.");
       }, 1000);
+      cache.userProfile && setCache((prev) => ({ ...prev, userProfile: null }));
     } catch (error) {
       setUnexpectedErr("Failed to log out.");
       console.error(error);
     }
-    return () => clearTimeout(timeout);
   };
 
   return [handleLogout, unexpectedErr];

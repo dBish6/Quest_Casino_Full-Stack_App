@@ -6,7 +6,7 @@ import useDisableScroll from "../../hooks/useDisableScroll";
 
 // *Component Imports*
 import ModalTemplate from "./ModalTemplate";
-import Header from "../Header";
+import MyHeading from "../MyHeading";
 
 const AreYouSureModal = (props) => {
   useDisableScroll(
@@ -36,11 +36,11 @@ const AreYouSureModal = (props) => {
       >
         &#10005;
       </Button>
-      <Header fontSize="32px" mb="1.5rem" text="Are you Sure?" />
+      <MyHeading fontSize="32px" mb="1.5rem" text="Are you Sure?" />
 
       <HStack>
         <Button
-          isLoading={props.loading ? true : false}
+          isDisabled={props.loading}
           onClick={() => {
             if (props.handleProfilePicture) {
               props.handleProfilePicture(

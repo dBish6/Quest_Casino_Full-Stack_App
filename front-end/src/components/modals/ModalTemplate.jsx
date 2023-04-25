@@ -1,6 +1,6 @@
 import { Box, Container, useColorMode } from "@chakra-ui/react";
 import { motion, AnimatePresence } from "framer-motion";
-import ModalAnimations from "../../utils/animations/ModalAnimations";
+import ModalAnimations from "../../utils/animations/modalAnimations";
 
 const ModalTemplate = (props) => {
   const {
@@ -9,6 +9,7 @@ const ModalTemplate = (props) => {
     animation,
     objName,
     game,
+    confirmAge,
     loading,
     children,
     ...rest
@@ -31,7 +32,7 @@ const ModalTemplate = (props) => {
             exit={modelBackdrop.hidden}
             key="backdrop"
             onClick={() => {
-              if (game === "blackjack") {
+              if (game === "blackjack" || confirmAge) {
                 return;
               } else {
                 objName

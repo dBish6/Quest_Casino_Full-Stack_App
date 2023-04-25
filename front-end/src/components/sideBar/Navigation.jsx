@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 
 // *Design Imports*
@@ -11,11 +10,7 @@ import {
 } from "react-icons/md";
 import { GiPerspectiveDiceSixFacesThree, GiChest } from "react-icons/gi";
 
-// *Component Imports*
-import QuestsModal from "../../features/quests/components/modals/QuestsModal";
-
-const Nav = () => {
-  const [show, setShow] = useState(false);
+const Nav = (props) => {
   const location = useLocation();
 
   return (
@@ -76,10 +71,13 @@ const Nav = () => {
         </Link>
       </HStack>
       <HStack data-group>
-        <Icon as={GiChest} variant={show ? "navOnLocation" : "navigation"} />
+        <Icon
+          as={GiChest}
+          variant={props.show.quests ? "navOnLocation" : "navigation"}
+        />
         <Link
-          onClick={() => setShow(true)}
-          variant={show ? "navOnLocation" : "navigation"}
+          onClick={() => props.setShow({ ...props.show, quests: true })}
+          variant={props.show.quests ? "navOnLocation" : "navigation"}
         >
           Quests
         </Link>
@@ -118,8 +116,6 @@ const Nav = () => {
           Support
         </Link>
       </HStack>
-
-      <QuestsModal show={show} setShow={setShow} />
     </Box>
   );
 };
