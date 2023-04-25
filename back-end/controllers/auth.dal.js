@@ -66,29 +66,6 @@ const getUserBalanceCompletedQuestsFromDb = async (id) => {
   }
 };
 
-// const getUserWinsBalanceFromDb = async (id) => {
-//   try {
-//     const document = await db
-//       .collection("users")
-//       .doc(id)
-//       .get({
-//         fields: ["wins", "balance"],
-//       });
-//     if (!document.exists) {
-//       return "User doesn't exist.";
-//     } else {
-//       return {
-//         wins: await document.get("wins"),
-//         balance: await document.get("balance"),
-//       };
-//     }
-//   } catch (error) {
-//     console.error(error);
-//     if (DEBUG)
-//       console.error("DEBUGGER: auth.dal error: getUserWinsBalanceFromDb");
-//   }
-// };
-
 const getUserWinsFromDb = async (id) => {
   try {
     const document = await db.collection("users").doc(id).get({
@@ -129,12 +106,9 @@ const getLeaderBoardFromDb = async () => {
       .limit(10)
       .get();
     const leaderboard = documents.docs.map((doc) => {
-      const wins = doc.get("wins");
-      const usernames = doc.get("username");
-      const totalWins = Object.values(wins).reduce((acc, val) => acc + val);
       return {
-        usernames,
-        totalWins,
+        username: doc.get("username"),
+        totalWins: doc.get("wins.total"),
       };
     });
 
@@ -166,8 +140,7 @@ const addUserToDb = async (
   username,
   email,
   password,
-  phoneNum,
-  profilePic
+  phoneNum
 ) => {
   try {
     const response = await db
@@ -180,11 +153,10 @@ const addUserToDb = async (
         email: email,
         password: password,
         phone_number: phoneNum,
-        photoURL: profilePic,
+        photoURL: "",
         wins: { total: 0, blackjack: 0, slots: 0 },
-        balance: "$0",
+        balance: 0,
         favorites: [],
-        // TODO:
         quests_completed: [],
         creation_date: moment().format(),
       });
@@ -218,10 +190,10 @@ const addGoogleUserToDb = async (
         password: password,
         phone_number: phoneNum,
         photoURL: profilePic,
-        wins: 0,
+        wins: { total: 0, blackjack: 0, slots: 0 },
         balance: 0,
-        // favorites: [],
-        // quests_completed: [],
+        favorites: [],
+        quests_completed: [],
         creation_date: moment().format(),
       });
     return response;
@@ -409,7 +381,6 @@ module.exports = {
   getUserFromDb,
   getAllUsernamesFromDb,
   getUserBalanceCompletedQuestsFromDb,
-  // getUserWinsBalanceFromDb,
   getUserWinsFromDb,
   getUserBalanceFromDb,
   getLeaderBoardFromDb,

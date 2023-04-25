@@ -8,14 +8,12 @@ const cors = require("cors");
 const morgan = require("morgan");
 
 const bodyParser = require("body-parser");
-// const cookieParser = require("cookie-parser");
 // const helmet = require("helmet");
 // const hpp = require("hpp");
 // const csurf = require("csurf");
 // const rateLimit = require("express-rate-limit");
 
 const authRouter = require("./routes/auth");
-const questRouter = require("./routes/quest");
 
 global.DEBUG = true;
 
@@ -33,19 +31,8 @@ app.use(bodyParser.json());
 app.use(
   cors({
     origin: "http://localhost:3000", // Location of client side; react app.
-    // credentials: true, // Allows the server to read cookies for different domains.
   })
 );
-// app.use((req, res, next) => {
-//   res.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
-//   res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
-//   res.setHeader(
-//     "Access-Control-Allow-Headers",
-//     "Content-Type, Access-Control-Allow-Headers"
-//   );
-//   res.setHeader("Access-Control-Allow-Credentials", true); // For cookie.
-//   next();
-// });
 
 // Security Configs
 // app.use(helmet()); // Protects various HTTP headers that can help defend against common web hacks.
@@ -65,7 +52,6 @@ app.use(
 
 // *Routers*
 app.use("/auth", authRouter);
-app.use("/quest", questRouter);
 
 // exports.nodeAPI = functions.https.onRequest(app);
 

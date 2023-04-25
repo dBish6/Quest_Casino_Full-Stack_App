@@ -90,19 +90,15 @@ router.post("/api/firebase/register", async (req, res) => {
         displayName: req.body.username,
         email: req.body.email,
         password: req.body.password,
-        photoURL: req.body.profilePic,
         emailVerified: false,
         disabled: false,
       });
     } else {
-      // TODO: Change.
-      const phoneNum = "+1" + req.body.phoneNum;
       authRes = await admin.auth().createUser({
         displayName: req.body.username,
         email: req.body.email,
         password: req.body.password,
-        phoneNumber: phoneNum,
-        photoURL: req.body.profilePic,
+        phoneNumber: req.body.phoneNum,
         emailVerified: false,
         disabled: false,
       });
@@ -119,8 +115,7 @@ router.post("/api/firebase/register", async (req, res) => {
         req.body.username,
         req.body.email,
         hashedPassword,
-        !req.body.phoneNum.length ? null : req.body.phoneNum,
-        req.body.profilePic
+        !req.body.phoneNum.length ? null : req.body.phoneNum
       );
 
       if (fsRes) {
@@ -131,10 +126,18 @@ router.post("/api/firebase/register", async (req, res) => {
     }
   } catch (error) {
     console.error(error);
-    res.status(500).json({
-      registered: false,
-      ERROR: "/auth/api/firebase/register failed to send data.",
-    });
+    if (error.code === "auth/email-already-exists") {
+      res.status(400).json(error);
+    } else if (error.code === "auth/phone-number-already-exists") {
+      res.status(400).json(error);
+    } else if (error.code === "auth/too-many-requests") {
+      res.status(429).json(error);
+    } else {
+      res.status(500).json({
+        registered: false,
+        ERROR: "/auth/api/firebase/register failed to send data.",
+      });
+    }
   }
 });
 
@@ -205,25 +208,25 @@ router.patch("/api/firebase/update/:id", async (req, res) => {
     } else if (req.query.name) {
       fsRes = await authDal.updateRealName(userId, req.query.name);
     } else if (req.query.username) {
-      fsRes = await authDal.updateUsername(userId, req.query.username);
-      authRes = admin.auth().updateUser(userId, {
+      authRes = await admin.auth().updateUser(userId, {
         displayName: req.query.username,
       });
+      fsRes = await authDal.updateUsername(userId, req.query.username);
     } else if (req.query.email) {
-      fsRes = await authDal.updateEmail(userId, req.query.email);
-      authRes = admin.auth().updateUser(userId, {
+      authRes = await admin.auth().updateUser(userId, {
         email: req.query.email,
       });
+      fsRes = await authDal.updateEmail(userId, req.query.email);
     } else if (req.query.phoneNum) {
-      fsRes = await authDal.updatePhoneNumber(userId, req.query.phoneNum);
-      authRes = admin.auth().updateUser(userId, {
+      authRes = await admin.auth().updateUser(userId, {
         phoneNumber: req.query.phoneNum,
       });
+      fsRes = await authDal.updatePhoneNumber(userId, req.query.phoneNum);
     } else if (req.query.profilePic) {
-      fsRes = await authDal.updateProfilePicture(userId, req.query.profilePic);
-      authRes = admin.auth().updateUser(userId, {
+      authRes = await admin.auth().updateUser(userId, {
         photoURL: req.query.profilePic,
       });
+      fsRes = await authDal.updateProfilePicture(userId, req.query.profilePic);
     } else if (req.query.win) {
       fsRes = await authDal.updateWins(userId);
     } else if (
@@ -231,14 +234,12 @@ router.patch("/api/firebase/update/:id", async (req, res) => {
       req.query.balance &&
       req.query.reward
     ) {
-      // console.log("Made it.");
       fsRes = await authDal.updateCompletedQuests(
         userId,
         req.query.completedQuest,
         parseInt(req.query.balance),
         parseInt(req.query.reward)
       );
-      // fsRes && console.log("COMPLETED");
     } else if (req.query.deposit) {
       fsRes = await authDal.updateBalance(
         userId,
@@ -270,10 +271,18 @@ router.patch("/api/firebase/update/:id", async (req, res) => {
     }
   } catch (error) {
     console.error(error);
-    res.status(500).json({
-      updated: false,
-      ERROR: "/auth/api/firebase/update/:id failed to send data.",
-    });
+    if (error.code === "auth/email-already-exists") {
+      res.status(400).json(error);
+    } else if (error.code === "auth/phone-number-already-exists") {
+      res.status(400).json(error);
+    } else if (error.code === "auth/too-many-requests") {
+      res.status(429).json(error);
+    } else {
+      res.status(500).json({
+        updated: false,
+        ERROR: "/auth/api/firebase/update/:id failed to send data.",
+      });
+    }
   }
 });
 
