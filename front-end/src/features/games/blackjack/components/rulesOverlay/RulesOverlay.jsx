@@ -12,21 +12,16 @@ import {
   Box,
   UnorderedList,
   ListItem,
+  Text,
   chakra,
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
-  PopoverHeader,
-  PopoverBody,
-  PopoverCloseButton,
-  Divider,
 } from "@chakra-ui/react";
 import { MdClose } from "react-icons/md";
-import DiceLogo from "../../../../assets/Dice.png";
+import DiceLogo from "../../../../../assets/Dice.png";
 import { motion, AnimatePresence } from "framer-motion";
 
-// *Component Import*
-import MyHeading from "../../../../components/MyHeading";
+// *Component Imports*
+import MyHeading from "../../../../../components/MyHeading";
+import ChangeLog from "./ChangeLog";
 
 const RulesOverlay = (props) => {
   return (
@@ -63,7 +58,7 @@ const RulesOverlay = (props) => {
                 }}
                 ml="4rem"
               >
-                <Image src={DiceLogo} />
+                <Image src={DiceLogo} alt="Quest Casino Small Logo" />
               </Link>
               <Heading
                 variant="blackjack"
@@ -92,7 +87,6 @@ const RulesOverlay = (props) => {
               }}
               placeItems="center"
               gap="1.5rem 2.5rem"
-              // minH="100vh"
             >
               <Flex
                 as="section"
@@ -133,7 +127,7 @@ const RulesOverlay = (props) => {
                       A <chakra.span fontWeight="700">"blackjack"</chakra.span>{" "}
                       is a hand that includes an Ace and a ten-point card (10,
                       J, Q, K). It is an automatic win for the player, unless
-                      the dealer also has a blackjack, in which case it is a
+                      the dealer also has a blackjack, in that case it is a
                       push.
                     </ListItem>
                     <ListItem>
@@ -199,8 +193,8 @@ const RulesOverlay = (props) => {
                     The player can also{" "}
                     <chakra.span fontWeight="700">double down</chakra.span> by
                     doubling their current bet, but only if the player{" "}
-                    <chakra.span fontWeight="700">haven't hit yet</chakra.span>{" "}
-                    and when doubling they will receive a card and{" "}
+                    <chakra.span fontWeight="700">hasn't hit yet</chakra.span>.{" "}
+                    When doubling down, the player will receive a card and{" "}
                     <chakra.span fontWeight="700">
                       will not be able to hit again.
                     </chakra.span>
@@ -230,11 +224,19 @@ const RulesOverlay = (props) => {
                 />
                 <UnorderedList>
                   <ListItem>
-                    When the dealer deals, one card is given to the player
-                    before dealing one to himself. Then, they deal another card
-                    to the player, so the player has two up cards and then to
-                    himself again. Once the dealer has two cards, one is face
-                    up, and the other is{" "}
+                    When the dealer deals,{" "}
+                    <chakra.span fontWeight="700">one card</chakra.span> is
+                    given to the player{" "}
+                    <chakra.span fontWeight="700">before</chakra.span> dealing
+                    one to himself. Then, they deal{" "}
+                    <chakra.span fontWeight="700">another card</chakra.span> to
+                    the player, so the player has two{" "}
+                    <chakra.span fontWeight="700">up cards</chakra.span> and
+                    then to{" "}
+                    <chakra.span fontWeight="700">himself again</chakra.span>.
+                    Once the dealer has two cards,{" "}
+                    <chakra.span fontWeight="700">one</chakra.span> is face up,
+                    and the other is{" "}
                     <chakra.span fontWeight="700">face down</chakra.span> (the
                     "hole" card).
                   </ListItem>
@@ -261,116 +263,21 @@ const RulesOverlay = (props) => {
                 </UnorderedList>
               </Box>
 
-              <Popover>
-                <PopoverTrigger>
-                  <Link
-                    variant="simple"
-                    gridColumn={{ base: "", md: "span 2", xl: "span 2" }}
-                    justifySelf="flex-end"
-                  >
-                    Davy Blackjack v1.1.5-alpha
-                  </Link>
-                </PopoverTrigger>
-                <PopoverContent bgColor="bd700" maxH="500px" overflowY="scroll">
-                  <PopoverCloseButton color="dwordMain" />
-                  <PopoverHeader
-                    textDecoration="underline"
-                    borderColor="borderD"
-                  >
-                    Change Log
-                  </PopoverHeader>
-                  <PopoverBody>
-                    <Heading
-                      textAlign="center"
-                      fontSize="24px"
-                      lineHeight="1.2"
-                      mb="4px"
-                    >
-                      v1.0.0
-                    </Heading>
-                    <UnorderedList fontSize="14px">
-                      <ListItem>Adds animations.</ListItem>
-                      <ListItem>
-                        When the dealer deals, the cards are displayed in the
-                        order they are dealt.
-                      </ListItem>
-                      <ListItem>
-                        Adds 3 sound variations when given cards for the player
-                        and the dealer.
-                      </ListItem>
-                      <ListItem>
-                        More responsive, so mobile devices can play.
-                      </ListItem>
-                      <ListItem>
-                        More options for the dropdown and has been refactored.
-                      </ListItem>
-                      <ListItem>
-                        Had to fix when the dealer gets a natural regarding how
-                        the showAcePrompt useEffect ran at the same time as the
-                        naturals useEffect.
-                      </ListItem>
-                      <ListItem>
-                        Fixes when the player bets and has a balance of 0 after
-                        the bet; couldn't play because the buttons gets disabled
-                        if the balance is falsy, now everything checks if the
-                        balance is null.
-                      </ListItem>
-                    </UnorderedList>
-                    <Divider m="0.5rem 0" />
-                    <Heading
-                      textAlign="center"
-                      fontSize="24px"
-                      lineHeight="1.2"
-                      mb="4px"
-                    >
-                      v1.1.5-alpha
-                    </Heading>
-                    <UnorderedList fontSize="14px">
-                      <ListItem>
-                        Fixed missing dependency in determine winner useEffect
-                        and added clean-up functions; The game now determines
-                        the winner when both are standing.
-                      </ListItem>
-                      <ListItem>
-                        Implements new redux state, streak, to keep track of the
-                        player's wins in a row for "On a Role" quest and adds
-                        "Beginner's Luck" quest.
-                      </ListItem>
-                      <ListItem>
-                        Changes regarding how the completedQuests state and
-                        wallet state is handled is not in redux anymore and used
-                        in the authContext now, so changes was made how the
-                        balance is handled.
-                      </ListItem>
-                      <ListItem>Fixed hamburger menu animation.</ListItem>
-                    </UnorderedList>
-                    <Divider m="0.5rem 0" />
-                    <Heading
-                      textAlign="center"
-                      fontSize="24px"
-                      lineHeight="1.2"
-                      mb="4px"
-                    >
-                      v1.0.2-alpha
-                    </Heading>
-                    <UnorderedList fontSize="14px">
-                      <ListItem>
-                        Fixes how blackjack was played entirely. Was a stupid
-                        mistake, in blackjack the dealer waits for the player to
-                        finish (if the player gets blackjack, stands or bust).
-                        The way I had it, the dealers turn ran when the player
-                        makes their first decision (if the player hit or stand).
-                        But now Davy Blackjack works like blackjack should.
-                      </ListItem>
-                      <ListItem>
-                        When the player gets a blackjack, the dealer now keeps
-                        doing their turn until a blackjack or a bust before
-                        determining the winner.
-                      </ListItem>
-                    </UnorderedList>
-                  </PopoverBody>
-                </PopoverContent>
-              </Popover>
+              <Flex
+                gridColumn={{ base: "", md: "span 2", xl: "span 2" }}
+                justify="space-between"
+                align="center"
+                flexWrap="wrap-reverse"
+                gap="0.5rem 1.5rem"
+                w="100%"
+              >
+                <Text>
+                  <chakra.span fontWeight="600">Developer:</chakra.span> David
+                  Bishop
+                </Text>
+
+                <ChangeLog />
+              </Flex>
             </Grid>
           </Container>
         )}

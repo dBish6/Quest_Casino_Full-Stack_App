@@ -34,7 +34,7 @@ import Dealer from "./components/Dealer";
 import Player from "./components/player/Player";
 import AcePrompt from "./components/AcePrompt";
 import WinnerPopup from "./components/WinnerPopup";
-import RulesOverlay from "./components/RulesOverlay";
+import RulesOverlay from "./components/rulesOverlay/RulesOverlay";
 import Footer from "./components/partials/Footer";
 
 // *Redux Imports*
@@ -64,7 +64,6 @@ import { updateWinsBalanceThunk } from "./redux/blackjackSlice";
 
 const BlackjackFeature = () => {
   // Other
-  const { fadeInVar2 } = fadeInAnimations(0.8);
   const [show, setShow] = useState({
     gameStart: false,
     canCancel: false,
@@ -72,6 +71,7 @@ const BlackjackFeature = () => {
     options: false,
     rules: false,
   });
+  const { fadeInVar2 } = fadeInAnimations(0.8);
   const { colorMode } = useColorMode();
   const [isWidthSmallerThan1429] = useMediaQuery("(max-width: 1429px)");
   const [isHeightSmallerThan844] = useMediaQuery("(max-height: 844px)");
@@ -96,6 +96,7 @@ const BlackjackFeature = () => {
   const [playerViewWidthOnMoreCards, setPlayerViewWidthOnMoreCards] =
     useState("30.6vw");
   const [showAcePrompt, setShowAcePrompt] = useState(false);
+  const [madeAceDecision, setMadeAceDecision] = useState(false);
   const [secureAceOnNatural, setSecureAceOnNatural] = useState(false);
   const [wants11, setWants11] = useState(0);
   const playerCards = useSelector(selectPlayerCards);
@@ -130,11 +131,20 @@ const BlackjackFeature = () => {
   // Updates Player's Score
   useEffect(() => {
     if (playerCards.length > 0) {
-      waitForAceDecision(showAcePrompt).then(() => {
-        !winner && dispatch(UPDATE_SCORE({ player: true, wants11: wants11 }));
+      if (
+        playerCards[0].face === "A" &&
+        !playerHasNatural &&
+        !madeAceDecision
+      ) {
+        // To not update the score for the ace, but update for the second card.
+        dispatch(UPDATE_SCORE({ player: true, wants11: 0 }));
+      } else {
+        waitForAceDecision(showAcePrompt).then(() => {
+          !winner && dispatch(UPDATE_SCORE({ player: true, wants11: wants11 }));
 
-        if (wants11 > 0) setWants11(0);
-      });
+          if (wants11 > 0) setWants11(0);
+        });
+      }
     } else {
       // If the player starts a new game in the middle of a game and ace prompt is showing.
       setShowAcePrompt(false);
@@ -181,8 +191,6 @@ const BlackjackFeature = () => {
             dispatch(
               DETERMINE_WINNER({
                 displayName: currentUser.displayName,
-                uid: currentUser.uid,
-                // completedQuest:
               })
             );
         } else if (playerScore === 21 && !dealerHasNatural) {
@@ -193,7 +201,6 @@ const BlackjackFeature = () => {
               dispatch(
                 DETERMINE_WINNER({
                   displayName: currentUser.displayName,
-                  uid: currentUser.uid,
                 })
               );
           }, 2600);
@@ -206,7 +213,6 @@ const BlackjackFeature = () => {
             dispatch(
               DETERMINE_WINNER({
                 displayName: currentUser.displayName,
-                uid: currentUser.uid,
               })
             );
         }
@@ -240,9 +246,11 @@ const BlackjackFeature = () => {
             })
           );
       });
-
+    }
+    if (winner !== null) {
       setDealerViewWidthOnMoreCards("30.6vw");
       setPlayerViewWidthOnMoreCards("30.6vw");
+      setMadeAceDecision(false);
     }
   }, [winner]);
 
@@ -277,20 +285,10 @@ const BlackjackFeature = () => {
     }
   }, [dealerHasNatural, playerHasNatural, showAcePrompt, hasPlayerHit]);
 
-  // useEffect(() => {
-  //   console.log("wants11", wants11);
-  //   console.log("showAcePrompt", showAcePrompt);
-  //   console.log("winner", winner);
-  // }, [wants11, showAcePrompt, winner]);
-
-  // useEffect(() => {
-  //   console.log("isDealerTurn", isDealerTurn);
-  // }, [isDealerTurn]);
-
   return (
     <>
       <Box
-        as="main"
+        aria-label="Structure"
         display="grid"
         gridTemplateRows="auto 1fr auto"
         h="100vh"
@@ -327,7 +325,11 @@ const BlackjackFeature = () => {
               />
             ) : (
               <>
-                <chakra.main display="grid" gridAutoRows="auto 1fr auto">
+                <chakra.main
+                  aria-label="Playing Area"
+                  display="grid"
+                  gridAutoRows="auto 1fr auto"
+                >
                   <Flex
                     position="relative"
                     alignSelf="flex-start"
@@ -346,6 +348,7 @@ const BlackjackFeature = () => {
                     />
                     <Image
                       src={backOfCard}
+                      alt="Card Deck"
                       as={motion.img}
                       variants={fadeInVar2}
                       initial={["hidden", { x: "31.55vw" }]}
@@ -368,6 +371,7 @@ const BlackjackFeature = () => {
                   <VStack alignSelf="flex-end" justify="center" align="center">
                     <AcePrompt
                       showAcePrompt={showAcePrompt}
+                      setMadeAceDecision={setMadeAceDecision}
                       winner={winner}
                       setShowAcePrompt={setShowAcePrompt}
                       setWants11={setWants11}
@@ -402,8 +406,14 @@ const BlackjackFeature = () => {
         )}
       </Box>
 
-      <MatchOrForFunModal show={show} setShow={setShow} game={true} />
-      <CashInModal show={show} setShow={setShow} game={true} />
+      <MatchOrForFunModal
+        show={show}
+        setShow={setShow}
+        gameType={gameType}
+        winner={winner}
+        playerCards={playerCards}
+      />
+      <CashInModal show={show} setShow={setShow} />
     </>
   );
 };

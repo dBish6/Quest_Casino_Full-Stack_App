@@ -21,7 +21,7 @@ const cardAnimation = (player, viewWith, isHeightSmallerThan910) => {
         x: "0vw",
         rotate: !player ? "75deg" : "180deg",
         transition: {
-          duration: !player ? 1 : 1.5,
+          duration: !player ? 0.6 : 1.1,
           type: "tween",
           ease: "easeIn",
         },
@@ -49,7 +49,7 @@ const cardAnimation = (player, viewWith, isHeightSmallerThan910) => {
         x: "0vw",
         rotate: !player ? "75deg" : "180deg",
         transition: {
-          duration: !player ? 1 : 1.5,
+          duration: !player ? 0.6 : 1.1,
           type: "tween",
           ease: "easeIn",
         },

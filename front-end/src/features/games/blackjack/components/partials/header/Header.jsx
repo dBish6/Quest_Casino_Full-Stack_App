@@ -18,6 +18,7 @@ const Header = (props) => {
 
   return (
     <chakra.header
+      aria-label="Header"
       display="flex"
       justifyContent={isSmallerThan491 ? "flex-end" : "space-between"}
       alignItems="center"
@@ -38,6 +39,7 @@ const Header = (props) => {
       </Heading>
 
       <chakra.nav
+        aria-label="Navigation"
         display="flex"
         alignItems="center"
         gap="1rem"
@@ -71,7 +73,7 @@ const Header = (props) => {
               as={motion.div}
               animate={{
                 rotate: showDropdown ? "40deg" : 0,
-                translateY: showDropdown ? 3 : 0,
+                translateY: showDropdown ? 4 : 0,
                 transition: {
                   type: "spring",
                   duration: 0.5,
@@ -86,7 +88,6 @@ const Header = (props) => {
             />
             <Box
               as={motion.div}
-              initial={{ opacity: 1, scale: 1 }}
               animate={{
                 opacity: showDropdown ? 0 : 1,
                 scale: showDropdown ? 0.2 : 1,
@@ -100,7 +101,6 @@ const Header = (props) => {
             />
             <Box
               as={motion.div}
-              initial={{ opacity: 1, scale: 1 }}
               animate={{
                 rotate: showDropdown ? "-40deg" : 0,
                 translateY: showDropdown ? -4 : 0,

@@ -18,8 +18,8 @@ const Dropdown = (props) => {
           <VStack
             as={motion.div}
             variants={fadeUp}
-            animate="visible"
             initial="hidden"
+            animate="visible"
             exit="hidden"
             position="absolute"
             top="1.5rem"

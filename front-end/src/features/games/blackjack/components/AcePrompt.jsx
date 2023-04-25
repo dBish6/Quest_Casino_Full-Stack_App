@@ -16,6 +16,7 @@ const AcePrompt = (props) => {
               onClick={() => {
                 props.setWants11(11);
                 props.setShowAcePrompt(false);
+                props.setMadeAceDecision(true);
               }}
               variant="blackjackWhite"
             >
@@ -25,6 +26,7 @@ const AcePrompt = (props) => {
               onClick={() => {
                 props.setWants11(1);
                 props.setShowAcePrompt(false);
+                props.setMadeAceDecision(true);
               }}
               variant="blackjackWhite"
             >

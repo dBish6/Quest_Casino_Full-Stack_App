@@ -65,7 +65,7 @@ const Player = (props) => {
   }, [acesInCurrentHand, props.winner]);
 
   useEffect(() => {
-    props.winner && setAcesInCurrentHand([]);
+    if (props.winner) setAcesInCurrentHand([]);
   }, [props.winner]);
 
   // Checks if any aces are in the players hand.
@@ -94,14 +94,16 @@ const Player = (props) => {
             props.setShowAcePrompt(false);
           });
         }
+        setAcesInCurrentHand(currentAces);
       } else if (
         // If a new ace is found, show the ace prompt.
         currentAces.length > prevAcesInHandLength &&
-        currentAces.length > 0
+        currentAces.length > 0 &&
+        props.playerCards.length >= 2
       ) {
         props.setShowAcePrompt(true);
+        setAcesInCurrentHand(currentAces);
       }
-      setAcesInCurrentHand(currentAces);
     }
   }, [props.playerCards, prevAcesInHandLength, props.showAcePrompt]);
 
@@ -180,10 +182,12 @@ const Player = (props) => {
                 ) : undefined}
               </Box>
 
-              <Box ml="1rem !important">
+              <Box aria-label="Player Cards" ml="1rem !important">
                 {props.playerCards.map((card, i) => {
                   return (
                     <Image
+                      src={card.image}
+                      alt={`Player Card ${i}`}
                       as={motion.img}
                       variants={
                         props.isWidthSmallerThan1429 ||
@@ -195,7 +199,6 @@ const Player = (props) => {
                       animate="toHand"
                       exit="giveBack"
                       display="inline-block"
-                      src={card.image}
                       key={i}
                       maxW="130px"
                       h="188px"
@@ -242,28 +245,26 @@ const Player = (props) => {
             >
               Hit
             </Button>
-            {!props.hasPlayerHit &&
-              props.playerBet <= props.balance &&
-              props.gameType === "Match" && (
-                <Button
-                  onClick={() => {
-                    props.gameType === "Match" &&
-                      props.setBalance(props.balance - props.playerBet);
-                    dispatch(DOUBLE_DOWN());
-                    dispatch(PLAYER_HIT());
-                  }}
-                  isDisabled={
-                    props.playerCards.length === 1 ||
-                    isDealerTurn ||
-                    props.showAcePrompt ||
-                    props.dealerHasNatural
-                  }
-                  variant="blackjackBlue"
-                  w="100%"
-                >
-                  Double
-                </Button>
-              )}
+            {!props.hasPlayerHit && props.gameType === "Match" && (
+              <Button
+                onClick={() => {
+                  props.gameType === "Match" &&
+                    props.setBalance(props.balance - props.playerBet);
+                  dispatch(DOUBLE_DOWN());
+                  dispatch(PLAYER_HIT());
+                }}
+                isDisabled={
+                  props.playerCards.length === 1 ||
+                  props.balance < props.playerBet ||
+                  isDealerTurn ||
+                  props.showAcePrompt
+                }
+                variant="blackjackBlue"
+                w="100%"
+              >
+                Double
+              </Button>
+            )}
           </ButtonGroup>
           {props.gameType === "Match" && (
             <Text

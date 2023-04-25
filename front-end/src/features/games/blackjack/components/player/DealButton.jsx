@@ -25,7 +25,7 @@ const DealButton = (props) => {
             // Waits for card exit animation.
             setTimeout(() => {
               resolve();
-            }, 1615);
+            }, 1280);
           } else {
             resolve(startGame());
           }

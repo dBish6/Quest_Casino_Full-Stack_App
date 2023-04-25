@@ -35,35 +35,9 @@ const Dealer = (props) => {
                 {props.dealerScore === 21 ? (
                   <Text
                     as={motion.p}
-                    initial={{
-                      x: "-50%",
-                      y: "-50%",
-                      left: "18%",
-                      scale: 0.8,
-                      opacity: 1,
-                    }}
-                    animate={{
-                      x: "-50%",
-                      y: "-50%",
-                      left: "18%",
-                      scale: 1,
-                      opacity: 1,
-                      transition: {
-                        duration: 0.38,
-                        type: "tween",
-                      },
-                    }}
-                    exit={{
-                      x: "-50%",
-                      y: "-50%",
-                      left: "18%",
-                      scale: 0.8,
-                      opacity: 0,
-                      transition: {
-                        duration: 0.38,
-                        type: "tween",
-                      },
-                    }}
+                    initial={["hidden", { x: "-50%", y: "-50%", left: "18%" }]}
+                    animate={["visible", { x: "-50%", y: "-50%", left: "18%" }]}
+                    exit={["hidden", { x: "-50%", y: "-50%", left: "18%" }]}
                     key="dealerBlackjack"
                     variant="blackjack"
                     pos="absolute"
@@ -76,35 +50,9 @@ const Dealer = (props) => {
                 ) : props.dealerScore > 21 ? (
                   <Text
                     as={motion.p}
-                    initial={{
-                      x: "-50%",
-                      y: "-50%",
-                      left: "50%",
-                      scale: 0.8,
-                      opacity: 1,
-                    }}
-                    animate={{
-                      x: "-50%",
-                      y: "-50%",
-                      left: "50%",
-                      scale: 1,
-                      opacity: 1,
-                      transition: {
-                        duration: 0.38,
-                        type: "tween",
-                      },
-                    }}
-                    exit={{
-                      x: "-50%",
-                      y: "-50%",
-                      left: "50%",
-                      scale: 0.8,
-                      opacity: 0,
-                      transition: {
-                        duration: 0.38,
-                        type: "tween",
-                      },
-                    }}
+                    initial={["hidden", { x: "-50%", y: "-50%", left: "50%" }]}
+                    animate={["visible", { x: "-50%", y: "-50%", left: "50%" }]}
+                    exit={["hidden", { x: "-50%", y: "-50%", left: "50%" }]}
                     key="dealerBust"
                     variant="blackjack"
                     pos="absolute"
@@ -128,6 +76,7 @@ const Dealer = (props) => {
                           ? props.backOfCard
                           : card.image
                       }
+                      alt={`Dealer Card ${i}`}
                       as={motion.img}
                       variants={
                         props.isWidthSmallerThan1429 ||
@@ -153,20 +102,19 @@ const Dealer = (props) => {
                   );
                 })}
               </Box>
-              {/* FIXME: Not in center? */}
+
               {props.dealerStanding && props.dealerScore < 21 && (
                 <Text
                   as={motion.p}
                   variants={fadeInVar2}
-                  initial="hidden"
-                  animate="visible"
-                  exit="hidden"
+                  initial={["hidden", { x: "-50%", y: "-50%" }]}
+                  animate={["visible", { x: "-50%", y: "-50%" }]}
+                  exit={["hidden", { x: "-50%", y: "-50%" }]}
                   key="dealerStanding"
                   variant="blackjack"
                   position="absolute"
                   left="50%"
-                  bottom="-3.25rem"
-                  transform="translate(-50%, -50%)"
+                  bottom="-3.5rem"
                   fontSize="20px"
                   fontWeight="500"
                   bgColor="rgba(0, 0, 0, 0.25)"

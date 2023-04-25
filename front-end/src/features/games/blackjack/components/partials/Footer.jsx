@@ -7,7 +7,13 @@ const Footer = (props) => {
   const { fadeInVar1 } = fadeInAnimations();
 
   return (
-    <chakra.footer display="flex" alignItems="center" gap="0.5rem" mt="1.5rem">
+    <chakra.footer
+      aria-label="Footer"
+      display="flex"
+      alignItems="center"
+      gap="0.5rem"
+      mt="1.5rem"
+    >
       <Flex
         as={motion.div}
         variants={fadeInVar1}

@@ -1,10 +1,10 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
-// *Utility Import*
+// *Utility Imports*
 import createDeck from "../utils/createDeck";
 import checkCard from "../utils/checkCard";
 
-// *API Services Imports*
+// *API Services Import*
 import updateWinsBalance from "../../general/api_services/updateWinsBalance";
 
 export const updateWinsBalanceThunk = createAsyncThunk(
@@ -229,17 +229,6 @@ const blackjackSlice = createSlice({
     SET_PLAYER_STANDING: (state, action) => {
       state.playerStanding = action.payload;
     },
-    SET_COMPLETED_QUESTS: (state, action) => {
-      if (action.payload.quest) {
-        if (state.completedQuests === null) {
-          state.completedQuests = [action.payload.quest];
-        } else {
-          state.completedQuests.push(action.payload.quest);
-        }
-      } else {
-        state.completedQuests = action.payload.quests;
-      }
-    },
   },
   extraReducers: (builder) => {
     builder.addCase(updateWinsBalanceThunk.pending, (state) => {
@@ -260,7 +249,6 @@ const blackjackSlice = createSlice({
 export const {
   CLEAR_GAME,
   GAME_TYPE,
-  SET_COMPLETED_QUESTS,
   START_GAME,
   UPDATE_SCORE,
   DETERMINE_WINNER,
