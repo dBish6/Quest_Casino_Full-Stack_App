@@ -31,12 +31,17 @@ const getUserFromDb = async (id) => {
   }
 };
 
-// TODO: Unique DisplayNames.
-const getAllUsernamesFromDb = async () => {
+const dbCheckUsername = async (username) => {
   try {
-    const collection = await db.collection("users").get({ fields: "username" });
-    const documents = collection.docs.map((doc) => doc.data());
-    if (documents.length) return documents;
+    const check = await db
+      .collection("users")
+      .where("username", "==", username)
+      .get();
+    if (check.empty) {
+      return true;
+    } else {
+      return false;
+    }
   } catch (error) {
     console.error(error);
     if (DEBUG) console.error("DEBUGGER: auth.dal error: getUsernameFromDb");
@@ -107,6 +112,7 @@ const getLeaderBoardFromDb = async () => {
       .get();
     const leaderboard = documents.docs.map((doc) => {
       return {
+        photoURL: doc.get("photoURL"),
         username: doc.get("username"),
         totalWins: doc.get("wins.total"),
       };
@@ -156,7 +162,6 @@ const addUserToDb = async (
         photoURL: "",
         wins: { total: 0, blackjack: 0, slots: 0 },
         balance: 0,
-        favorites: [],
         quests_completed: [],
         creation_date: moment().format(),
       });
@@ -192,7 +197,6 @@ const addGoogleUserToDb = async (
         photoURL: profilePic,
         wins: { total: 0, blackjack: 0, slots: 0 },
         balance: 0,
-        favorites: [],
         quests_completed: [],
         creation_date: moment().format(),
       });
@@ -271,7 +275,6 @@ const updateWins = async (id, win) => {
   }
 
   try {
-    // FIXME:
     const document = await db.collection("users").doc(id).get({
       fields: "wins",
     });
@@ -279,7 +282,6 @@ const updateWins = async (id, win) => {
     if (!document.exists) {
       return "User doesn't exist.";
     } else {
-      // TODO: When first blackjack win quest?
       const currentWins = await document.get("wins");
 
       const response = await db
@@ -318,7 +320,6 @@ const updateBalance = async (id, balance, isDeposit) => {
       .collection("users")
       .doc(id)
       .update({
-        // FIXME:
         balance: isDeposit
           ? admin.firestore.FieldValue.increment(balance)
           : balance,
@@ -327,19 +328,6 @@ const updateBalance = async (id, balance, isDeposit) => {
   } catch (error) {
     console.error(error);
     if (DEBUG) console.error("DEBUGGER: auth.dal error: updateBalance");
-  }
-};
-
-const updateFavorites = async (id, favorite) => {
-  try {
-    const response = await db.collection("users").doc(id).update({
-      // TODO: Pass the new array.
-      favorites: favorite,
-    });
-    return response;
-  } catch (error) {
-    console.error(error);
-    if (DEBUG) console.error("DEBUGGER: auth.dal error: updateFavorites");
   }
 };
 
@@ -362,14 +350,10 @@ const updateCompletedQuests = async (id, quest, currBalance, reward) => {
   }
 };
 
-// FIXME:
 const deleteUserFromDb = async (id) => {
   try {
-    const document = await db.collection("users").doc(id).get();
-    if (document.exists) {
-      const response = await document.ref.delete();
-      return response;
-    }
+    const response = await db.collection("users").doc(id).delete();
+    return response;
   } catch (error) {
     console.error(error);
     if (DEBUG) console.error("DEBUGGER: auth.dal error: updatePhoneNumber");
@@ -379,7 +363,7 @@ const deleteUserFromDb = async (id) => {
 module.exports = {
   getAllUsersFromDb,
   getUserFromDb,
-  getAllUsernamesFromDb,
+  dbCheckUsername,
   getUserBalanceCompletedQuestsFromDb,
   getUserWinsFromDb,
   getUserBalanceFromDb,

@@ -84,44 +84,56 @@ router.post("/api/firebase/register", async (req, res) => {
   let authRes;
 
   try {
-    // Adds user to auth.
-    if (!req.body.phoneNum.length) {
-      authRes = await admin.auth().createUser({
-        displayName: req.body.username,
-        email: req.body.email,
-        password: req.body.password,
-        emailVerified: false,
-        disabled: false,
-      });
+    const usernameCheck = await authDal.dbCheckUsername(req.body.username);
+
+    if (usernameCheck === false) {
+      return res
+        .status(400)
+        .json({ registered: false, ERROR: "Username is already taken." });
     } else {
-      authRes = await admin.auth().createUser({
-        displayName: req.body.username,
-        email: req.body.email,
-        password: req.body.password,
-        phoneNumber: req.body.phoneNum,
-        emailVerified: false,
-        disabled: false,
-      });
-    }
+      // Adds user to auth.
+      if (!req.body.phoneNum.length) {
+        authRes = await admin.auth().createUser({
+          displayName: req.body.username,
+          email: req.body.email,
+          password: req.body.password,
+          emailVerified: false,
+          disabled: false,
+        });
+      } else {
+        authRes = await admin.auth().createUser({
+          displayName: req.body.username,
+          email: req.body.email,
+          password: req.body.password,
+          phoneNumber: req.body.phoneNum,
+          emailVerified: false,
+          disabled: false,
+        });
+      }
 
-    if (authRes) {
-      const userId = authRes.uid;
-      const hashedPassword = await bcrypt.hash(req.body.password, 10);
-      // Adds user to Firestore DB.
-      const fsRes = await authDal.addUserToDb(
-        userId,
-        req.body.firstName,
-        req.body.lastName,
-        req.body.username,
-        req.body.email,
-        hashedPassword,
-        !req.body.phoneNum.length ? null : req.body.phoneNum
-      );
+      if (authRes) {
+        const userId = authRes.uid;
+        const hashedPassword = await bcrypt.hash(req.body.password, 10);
+        // Adds user to Firestore DB.
+        const fsRes = await authDal.addUserToDb(
+          userId,
+          req.body.firstName,
+          req.body.lastName,
+          req.body.username,
+          req.body.email,
+          hashedPassword,
+          !req.body.phoneNum.length ? null : req.body.phoneNum
+        );
 
-      if (fsRes) {
-        res.json({ registered: true, authUser: authRes, firestoreRes: fsRes });
-        if (DEBUG)
-          console.log("DEBUGGER: User was registered into the database.");
+        if (fsRes) {
+          res.json({
+            registered: true,
+            authUser: authRes,
+            firestoreRes: fsRes,
+          });
+          if (DEBUG)
+            console.log("DEBUGGER: User was registered into the database.");
+        }
       }
     }
   } catch (error) {
@@ -286,15 +298,15 @@ router.patch("/api/firebase/update/:id", async (req, res) => {
   }
 });
 
-// Delete User, FIXME: Works but never ends.
+// Delete User.
 router.delete("/api/firebase/delete/:id", async (req, res) => {
   if (DEBUG) console.log("/auth/api/firebase/delete/:id req:", req.params);
   const userId = req.params.id;
 
   try {
     // Deletes auth user.
-    const authRes = await admin.auth().deleteUser(userId);
-
+    let authRes = await admin.auth().deleteUser(userId);
+    authRes = `${userId} user was successfully deleted from firebase auth.`;
     // Deletes Firestore user.
     const fsRes = await authDal.deleteUserFromDb(userId);
 
