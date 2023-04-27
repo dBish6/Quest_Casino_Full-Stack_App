@@ -3,8 +3,10 @@ import { useRef } from "react";
 // *Design Imports*
 import {
   VStack,
+  Flex,
   Box,
   Divider,
+  Avatar,
   Text,
   Alert,
   AlertIcon,
@@ -64,15 +66,47 @@ const Leaderboard = () => {
                       sameUsernameRef.current = detail.username;
 
                     return (
-                      <Text
+                      <Flex
                         key={detail.username}
-                        fontSize={{ base: "18px", md: "19px", xl: "19px" }}
-                        fontWeight="500"
-                        color="g500"
-                        textAlign="center"
-                        mt={i !== 0 ? "1rem" : 0}
+                        pos="relative"
+                        flexDir="column"
+                        align="center"
                       >
-                        <chakra.span
+                        <Text
+                          pos="absolute"
+                          top="2%"
+                          left="4px"
+                          fontSize={{ base: "21px", md: "24px", xl: "24px" }}
+                          color={
+                            i === 0
+                              ? "p300"
+                              : i === 1
+                              ? "#A9A9A9"
+                              : i === 2
+                              ? "#977F5B"
+                              : colorMode === "dark"
+                              ? "wMain"
+                              : "bMain"
+                          }
+                          opacity="0.65"
+                        >
+                          {i + 1}.
+                        </Text>
+                        <Box
+                          w="2.5rem"
+                          h="2.5rem"
+                          borderRadius="50%"
+                          bgColor="wMain"
+                        >
+                          <Avatar
+                            src={detail.photoURL}
+                            alt={`${detail.username}'s Profile Picture`}
+                            w="2.5rem"
+                            h="2.5rem"
+                          />
+                        </Box>
+                        <Text
+                          fontSize={{ base: "17px", md: "18px", xl: "18px" }}
                           fontWeight={i <= 2 && "600"}
                           bgGradient={
                             i === 0
@@ -89,31 +123,68 @@ const Leaderboard = () => {
                               ? "dwordMain"
                               : "transparent"
                           }
+                          lineHeight="0.95"
+                          textAlign="center"
+                          mt="0.5rem"
                         >
-                          {detail.username}:
-                        </chakra.span>{" "}
-                        {detail.totalWins}
-                      </Text>
+                          {detail.username}
+                        </Text>
+                        <Text
+                          fontSize={{ base: "17px", md: "18px", xl: "18px" }}
+                          fontWeight="500"
+                          color="g500"
+                          textAlign="center"
+                        >
+                          {detail.totalWins} Wins
+                        </Text>
+                        <Divider marginBlock="1rem" />
+                      </Flex>
                     );
                   })
                 )}
 
                 {sameUsernameRef.current !== fsUser.username && (
-                  <>
-                    <Divider marginBlock="1rem" />
+                  <Flex pos="relative" flexDir="column" align="center">
                     <Text
-                      fontSize={{ base: "18px", md: "19px", xl: "19px" }}
+                      pos="absolute"
+                      top="2%"
+                      left="4px"
+                      fontSize={{ base: "18px", md: "21px", xl: "21px" }}
+                      color={colorMode === "dark" ? "wMain" : "bMain"}
+                      opacity="0.65"
+                    >
+                      You:
+                    </Text>
+                    <Box
+                      w="2.5rem"
+                      h="2.5rem"
+                      borderRadius="50%"
+                      bgColor="wMain"
+                    >
+                      <Avatar
+                        src={fsUser.photoURL}
+                        alt={`${fsUser.username}'s Profile Picture`}
+                        w="2.5rem"
+                        h="2.5rem"
+                      />
+                    </Box>
+                    <Text
+                      fontSize={{ base: "17px", md: "18px", xl: "18px" }}
+                      textAlign="center"
+                      lineHeight="0.95"
+                      mt="0.5rem"
+                    >
+                      {fsUser.username}
+                    </Text>
+                    <Text
+                      fontSize={{ base: "17px", md: "18px", xl: "18px" }}
+                      fontWeight="500"
+                      color={fsUser.wins.total > 0 ? "g500" : "r600"}
                       textAlign="center"
                     >
-                      {fsUser.username}:{" "}
-                      <chakra.span
-                        fontWeight="500"
-                        color={fsUser.wins.total > 0 ? "g500" : "r600"}
-                      >
-                        {fsUser.wins.total}
-                      </chakra.span>{" "}
+                      {fsUser.wins.total} Wins
                     </Text>
-                  </>
+                  </Flex>
                 )}
               </>
             ) : (

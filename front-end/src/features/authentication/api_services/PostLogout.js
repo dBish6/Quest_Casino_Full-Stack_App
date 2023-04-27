@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-// *Custom Hooks Import*
+// *Custom Hooks Imports*
 import useAuth from "../../../hooks/useAuth";
 import useCache from "../../../hooks/useCache";
 

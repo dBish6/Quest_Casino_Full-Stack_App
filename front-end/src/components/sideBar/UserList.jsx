@@ -17,14 +17,13 @@ const UserList = () => {
       ) : notFoundErr.length ? (
         <Text color="red">{notFoundErr}</Text>
       ) : (
-        fsUsers.map((details, i) => {
+        fsUsers.map((detail, i) => {
           return (
             <HStack key={i}>
               <Box w="2rem" h="2rem" borderRadius="50%" bgColor="wMain">
                 <Avatar
-                  src={details.photoURL}
-                  alt={`${details.username}'s Profile Picture`}
-                  objectFit="contain"
+                  src={detail.photoURL}
+                  alt={`${detail.username}'s Profile Picture`}
                   w="2rem"
                   h="2rem"
                 />
@@ -35,23 +34,27 @@ const UserList = () => {
                   fontWeight="500"
                   position="relative"
                   top="3px"
+                  maxW="100px"
+                  overflow="hidden"
+                  textOverflow="ellipsis"
+                  whiteSpace="nowrap"
                 >
-                  {details.username}
+                  {detail.username}
                 </Text>
                 <Text color="g500" fontWeight="500">
-                  {details.wins ? (
-                    typeof details.wins === "object" ? (
+                  {detail.wins ? (
+                    typeof detail.wins === "object" ? (
                       <>
                         Wins:{" "}
-                        <chakra.span color={details.wins.total < 1 && "r600"}>
-                          {details.wins.total}
+                        <chakra.span color={detail.wins.total < 1 && "r600"}>
+                          {detail.wins.total}
                         </chakra.span>
                       </>
                     ) : (
                       <>
                         Wins:{" "}
-                        <chakra.span color={details.wins < 1 && "r600"}>
-                          {details.wins}
+                        <chakra.span color={detail.wins < 1 && "r600"}>
+                          {detail.wins}
                         </chakra.span>
                       </>
                     )

@@ -222,7 +222,6 @@ const LoginForm = (props) => {
             isLoading={loading ? true : false}
             type="submit"
             variant="primary"
-            m="0 auto"
             zIndex="1"
             isDisabled={currentUser !== null}
             cursor={currentUser !== null && "not-allowed"}
@@ -242,7 +241,7 @@ const LoginForm = (props) => {
             Login
           </Button>
         ) : (
-          <LogoutBtn m="0 auto" zIndex="1" />
+          <LogoutBtn zIndex="1" />
         )}
       </chakra.form>
       <VStack m="1rem auto 0 auto !important" w="97%">

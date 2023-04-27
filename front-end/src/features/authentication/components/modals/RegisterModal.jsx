@@ -218,7 +218,10 @@ const RegisterModal = (props) => {
           </FormControl>
         </HStack>
 
-        <FormControl isInvalid={errors.username} mb="1rem">
+        <FormControl
+          isInvalid={errors.username || errorHandler.usernameInUse.length}
+          mb="1rem"
+        >
           <FormLabel
             htmlFor="username"
             fontSize={{ base: "14px", md: "16px", xl: "16px" }}
@@ -251,6 +254,9 @@ const RegisterModal = (props) => {
               <FormErrorMessage>{message}</FormErrorMessage>
             )}
           />
+          {errorHandler.usernameInUse.length ? (
+            <FormErrorMessage>{errorHandler.usernameInUse}</FormErrorMessage>
+          ) : undefined}
         </FormControl>
 
         <FormControl

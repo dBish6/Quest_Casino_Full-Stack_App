@@ -17,11 +17,13 @@ export const linkStyles = defineStyleConfig({
       fontWeight: "500",
       _hover: {
         opacity: "1",
-        borderColor: mode("bMain", "dwordMain")(props),
+        color: mode("bMain", "wMain")(props),
+        borderColor: mode("bMain", "wMain")(props),
       },
       _groupHover: {
         opacity: "1",
-        borderColor: mode("bMain", "dwordMain")(props),
+        color: mode("bMain", "wMain")(props),
+        borderColor: mode("bMain", "wMain")(props),
       },
     }),
     navOnLocation: (props) => ({
@@ -42,6 +44,7 @@ export const linkStyles = defineStyleConfig({
         textDecorationColor: mode("r500", "p500")(props),
       },
       _active: {
+        color: mode("bMain", "wMain")(props),
         top: "1.5px",
       },
     }),

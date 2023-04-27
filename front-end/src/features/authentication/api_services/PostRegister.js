@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
 // *Design Imports*
@@ -10,11 +9,11 @@ const PostRegister = () => {
   const [errorHandler, setErrorHandler] = useState({
     confirmation: false,
     emailInUse: false,
+    usernameInUse: "",
     phoneInUse: false,
     maxRequests: false,
     unexpected: false,
   });
-  const navigate = useNavigate();
   const toast = useToast();
 
   const abortController = new AbortController();
@@ -33,6 +32,7 @@ const PostRegister = () => {
     setErrorHandler({
       confirmation: false,
       emailInUse: false,
+      usernameInUse: "",
       phoneInUse: false,
       maxRequests: false,
       unexpected: false,
@@ -63,7 +63,6 @@ const PostRegister = () => {
       if (res) {
         if (res.status === 200) {
           formRef.current.reset();
-          navigate("/home");
           toast({
             description:
               "Account was created successfully, you can now proceed to log in.",
@@ -78,6 +77,11 @@ const PostRegister = () => {
           res.data.code === "auth/email-already-exists"
         ) {
           setErrorHandler({ ...errorHandler, emailInUse: true });
+        } else if (
+          res.status === 400 &&
+          res.data.ERROR === "Username is already taken."
+        ) {
+          setErrorHandler({ ...errorHandler, usernameInUse: res.data.ERROR });
         } else if (
           res.status === 400 &&
           res.data.code === "auth/phone-number-already-exists"
@@ -95,8 +99,8 @@ const PostRegister = () => {
         console.warn("Request was aborted.");
       } else {
         setErrorHandler({ ...errorHandler, unexpected: true });
+        console.error(error);
       }
-      console.error("error", error);
       abortController.abort();
     } finally {
       toggleLoading(false);

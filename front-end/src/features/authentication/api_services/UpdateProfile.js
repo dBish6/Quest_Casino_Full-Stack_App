@@ -84,8 +84,8 @@ const UpdateProfile = () => {
         console.warn("Request was aborted.");
       } else {
         setErrorHandler({ ...errorHandler, unexpected: true });
+        console.error(error);
       }
-      console.error(error);
     } finally {
       toggleLoadingUpdate({ ...loadingUpdate, name: false });
     }
@@ -139,8 +139,8 @@ const UpdateProfile = () => {
         console.warn("Request was aborted.");
       } else {
         setErrorHandler({ ...errorHandler, unexpected: true });
+        console.error(error);
       }
-      console.error(error);
     } finally {
       toggleLoadingUpdate({ ...loadingUpdate, username: false });
     }
@@ -210,8 +210,8 @@ const UpdateProfile = () => {
         console.warn("Request was aborted.");
       } else {
         setErrorHandler({ ...errorHandler, unexpected: true });
+        console.error(error);
       }
-      console.error(error);
     } finally {
       toggleLoadingUpdate({ ...loadingUpdate, email: false });
     }
@@ -294,8 +294,8 @@ const UpdateProfile = () => {
         console.warn("Request was aborted.");
       } else {
         setErrorHandler({ ...errorHandler, unexpected: true });
+        console.error(error);
       }
-      console.error(error);
     } finally {
       toggleLoadingUpdate({ ...loadingUpdate, phone: false });
     }
@@ -305,14 +305,16 @@ const UpdateProfile = () => {
     id,
     photoURL,
     setSelectedPicture,
-    custom
+    custom,
+    show,
+    setShow
   ) => {
     setErrorHandler({ unexpected: false, maxRequests: false });
     toggleLoadingUpdate({ ...loadingUpdate, profilePic: true });
 
     try {
       // If the user passes a custom image.
-      if (custom && custom !== currentUser.photoURL) {
+      if (custom) {
         // console.log("files", photoURL.target.files[0]);
         // console.log("event", photoURL.target.value);
         const file = photoURL.target.files[0];
@@ -325,40 +327,35 @@ const UpdateProfile = () => {
             storage,
             `images/userProfilePics/${file.name}_${v4()}`
           );
-          const uploaded = await uploadBytes(imageRef, file);
-          // console.log("imageRef", imageRef);
+          await uploadBytes(imageRef, file);
+          const downloadURL = await getDownloadURL(imageRef);
+          const encodedURL = encodeURIComponent(downloadURL);
 
-          if (uploaded) {
-            const downloadURL = await getDownloadURL(imageRef);
-            const encodedURL = encodeURIComponent(downloadURL);
-            // console.log("encodedURL", encodedURL);
-
-            const res = await axios({
-              method: "PATCH",
-              url: `http://localhost:4000/auth/api/firebase/update/${id}?profilePic=${encodedURL}`,
-              signal: abortController.signal,
-              validateStatus: (status) => {
-                return status === 200 || status === 429;
-              },
-            });
-            // console.log(res.data);
-            if (res) {
-              if (res.status === 200) {
-                setSelectedPicture(downloadURL.toString());
-                toast({
-                  description: "Profile picture successfully updated!",
-                  status: "success",
-                  duration: 9000,
-                  isClosable: true,
-                  position: "top",
-                  variant: "solid",
-                });
-              } else if (
-                res.status === 429 &&
-                res.data.code === "auth/too-many-requests"
-              ) {
-                setErrorHandler({ ...errorHandler, maxRequests: true });
-              }
+          const res = await axios({
+            method: "PATCH",
+            url: `http://localhost:4000/auth/api/firebase/update/${id}?profilePic=${encodedURL}`,
+            signal: abortController.signal,
+            validateStatus: (status) => {
+              return status === 200 || status === 429;
+            },
+          });
+          // console.log(res.data);
+          if (res) {
+            if (res.status === 200) {
+              setSelectedPicture(downloadURL.toString());
+              toast({
+                description: "Profile picture successfully updated!",
+                status: "success",
+                duration: 9000,
+                isClosable: true,
+                position: "top",
+                variant: "solid",
+              });
+            } else if (
+              res.status === 429 &&
+              res.data.code === "auth/too-many-requests"
+            ) {
+              setErrorHandler({ ...errorHandler, maxRequests: true });
             }
           }
         } else {
@@ -395,6 +392,7 @@ const UpdateProfile = () => {
               position: "top",
               variant: "solid",
             });
+            setShow({ ...show, areYouSure: false });
           } else if (
             res.status === 429 &&
             res.data.code === "auth/too-many-requests"
@@ -408,8 +406,8 @@ const UpdateProfile = () => {
         console.warn("Request was aborted.");
       } else {
         setErrorHandler({ ...errorHandler, unexpected: true });
+        console.error(error);
       }
-      console.error(error);
     } finally {
       toggleLoadingUpdate({ ...loadingUpdate, profilePic: false });
     }
@@ -443,8 +441,8 @@ const UpdateProfile = () => {
         console.warn("Request was aborted.");
       } else {
         setErrorHandler({ ...errorHandler, unexpected: true });
+        console.error(error);
       }
-      console.error(error);
     } finally {
       toggleLoadingUpdate({ ...loadingUpdate, balance: false });
     }

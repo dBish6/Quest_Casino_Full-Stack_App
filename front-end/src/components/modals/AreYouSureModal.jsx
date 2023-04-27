@@ -40,14 +40,19 @@ const AreYouSureModal = (props) => {
 
       <HStack>
         <Button
-          isDisabled={props.loading}
+          isLoading={props.loading}
           onClick={() => {
             if (props.handleProfilePicture) {
               props.handleProfilePicture(
                 props.userId,
                 props.profilePic,
-                props.setSelectedPicture
+                props.setSelectedPicture,
+                false,
+                props.show,
+                props.setShow
               );
+            } else if (props.handleDeleteProfile) {
+              props.handleDeleteProfile(props.userId);
             }
           }}
           type="submit"

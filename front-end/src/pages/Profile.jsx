@@ -22,6 +22,7 @@ import {
   Link,
   HStack,
   Icon,
+  Button,
   CircularProgress,
   useColorMode,
 } from "@chakra-ui/react";
@@ -30,18 +31,21 @@ import { RiMedalLine } from "react-icons/ri";
 // *API Services Imports*
 import GetUser from "../features/authentication/api_services/GetUser";
 import UpdateProfile from "../features/authentication/api_services/UpdateProfile";
+import DeleteUser from "../features/authentication/api_services/DeleteUser";
 
 // *Component Imports*
 import EditableFields from "../features/authentication/components/profile/EditableFields";
 import LogoutBtn from "../features/authentication/components/LogoutBtn";
 import PasswordResetModal from "../features/authentication/components/modals/PasswordResetModal";
+import AreYouSureModal from "../components/modals/AreYouSureModal";
 import ChangePicture from "../features/authentication/components/profile/ChangePicture";
 
 const Profile = (props) => {
-  const [show, setShow] = useState(false);
+  const [show, setShow] = useState({ passwordReset: false, areYouSure: false });
   const { colorMode } = useColorMode();
   const { currentUser } = useAuth();
 
+  const [fsUser, notFoundErr] = GetUser(currentUser.uid);
   const {
     handleUsername,
     handleFullName,
@@ -53,7 +57,11 @@ const Profile = (props) => {
     loadingUpdate,
     errorHandler,
   } = UpdateProfile();
-  const [fsUser, notFoundErr] = GetUser(currentUser.uid);
+  const {
+    handleDeleteProfile,
+    unexpectedErr: deletionUnexpectedErr,
+    loading: deletionLoading,
+  } = DeleteUser();
 
   useDocumentTitle(`${props.title} | Quest Casino`);
 
@@ -112,13 +120,12 @@ const Profile = (props) => {
                     lineHeight="1.2"
                     textShadow={colorMode === "light" && "1px 1px 0px #363636"}
                   >
-                    {fsUser.username}
+                    Profile
                   </Heading>
                   <Text
                     as="small"
                     color={colorMode === "dark" ? "wMain" : "bMain"}
                     textAlign="center"
-                    // mt="0 !important"
                   >
                     Edit your profile or change your profile picture!
                   </Text>
@@ -178,7 +185,7 @@ const Profile = (props) => {
                   <TabPanels>
                     <TabPanel display="grid" gap="0.5rem" maxW="550px">
                       {errorHandler.unexpected ? (
-                        <Alert status="error" variant="left-accent" mb="1rem">
+                        <Alert status="error" variant="left-accent" mb="0.5rem">
                           <AlertIcon />
                           <Box>
                             <AlertTitle>Server Error 500</AlertTitle>
@@ -188,12 +195,22 @@ const Profile = (props) => {
                           </Box>
                         </Alert>
                       ) : errorHandler.maxRequests ? (
-                        <Alert status="error" variant="left-accent" mb="1rem">
+                        <Alert status="error" variant="left-accent" mb="0.5rem">
                           <AlertIcon />
                           <Box>
                             <AlertTitle>Max Requests</AlertTitle>
                             <AlertDescription>
                               Great job, you broke it. Please try again later.
+                            </AlertDescription>
+                          </Box>
+                        </Alert>
+                      ) : deletionUnexpectedErr.length ? (
+                        <Alert status="error" variant="left-accent" mb="0.5rem">
+                          <AlertIcon />
+                          <Box>
+                            <AlertTitle>Server Error 500</AlertTitle>
+                            <AlertDescription>
+                              {deletionUnexpectedErr}
                             </AlertDescription>
                           </Box>
                         </Alert>
@@ -222,7 +239,9 @@ const Profile = (props) => {
                       />
 
                       <Link
-                        onClick={() => setShow(true)}
+                        onClick={() =>
+                          setShow({ ...show, passwordReset: true })
+                        }
                         variant="simple"
                         justifySelf="center"
                         mt="1rem"
@@ -230,12 +249,27 @@ const Profile = (props) => {
                         Reset Password
                       </Link>
 
-                      <LogoutBtn />
+                      <LogoutBtn w="100%" maxW="242px" justifySelf="center" />
+                      <Button
+                        onClick={() => setShow({ ...show, areYouSure: true })}
+                        variant="secondary"
+                        w="100%"
+                        maxW="242px"
+                        justifySelf="center"
+                        _hover={{
+                          bgColor: "r500",
+                          color: "wMain",
+                          boxShadow: "lg",
+                        }}
+                        _active={{ bgColor: "r600" }}
+                      >
+                        Delete Profile
+                      </Button>
                     </TabPanel>
 
                     <TabPanel>
-                      <Text textAlign="center" fontWeight="500" fontSize="21px">
-                        Select a picture below!
+                      <Text textAlign="center" fontSize="21px" fontWeight="500">
+                        Select a picture below or upload your own!
                       </Text>
                       {errorHandler.unexpected ? (
                         <Alert status="error" variant="left-accent" mb="1rem">
@@ -260,6 +294,7 @@ const Profile = (props) => {
                       ) : undefined}
                       <ChangePicture
                         handleProfilePicture={handleProfilePicture}
+                        AreYouSureModal={AreYouSureModal}
                         loadingUpdate={loadingUpdate}
                         currentUser={currentUser}
                       />
@@ -288,6 +323,13 @@ const Profile = (props) => {
       </VStack>
 
       <PasswordResetModal show={show} setShow={setShow} />
+      <AreYouSureModal
+        show={show}
+        setShow={setShow}
+        loading={deletionLoading}
+        handleDeleteProfile={handleDeleteProfile}
+        userId={currentUser.uid}
+      />
     </>
   );
 };

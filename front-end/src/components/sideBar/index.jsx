@@ -113,6 +113,8 @@ const DesktopIndex = () => {
                     : QuestCasinoLogoLIGHT
                 }
                 alt="Quest Casino Logo"
+                pos="absolute"
+                bottom="0"
                 maxW="203px"
                 minH="203px"
               />
@@ -121,6 +123,18 @@ const DesktopIndex = () => {
             <TabPanel>
               <MyHeading fontSize="28px" text="Settings" mb="1.5rem" />
               <Settings />
+              <Image
+                src={
+                  colorMode === "dark"
+                    ? QuestCasinoLogoDARK
+                    : QuestCasinoLogoLIGHT
+                }
+                alt="Quest Casino Logo"
+                pos="absolute"
+                bottom="0"
+                maxW="203px"
+                minH="203px"
+              />
             </TabPanel>
           </TabPanels>
         </Tabs>

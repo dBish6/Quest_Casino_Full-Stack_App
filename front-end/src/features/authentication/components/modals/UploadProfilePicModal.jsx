@@ -22,17 +22,7 @@ const UploadProfilePicModal = (props) => {
 
   return (
     <>
-      {props.loading && (
-        <Spinner
-          position="fixed"
-          top="50%"
-          left="49%"
-          size="lg"
-          color={colorMode === "dark" ? "p500" : "r500"}
-          zIndex="1500"
-        />
-      )}
-      <Box opacity={props.loading ? "0.9" : "1"} transition="0.38s ease">
+      <Box pos opacity={props.loading ? "0.9" : "1"} transition="0.38s ease">
         <ModalTemplate
           show={props.show.uploadPicture}
           setShow={props.setShow}
@@ -57,6 +47,16 @@ const UploadProfilePicModal = (props) => {
           </Button>
           <MyHeading fontSize="32px" mb="1.5rem" text="Upload Image" />
 
+          {props.loading && (
+            <Spinner
+              position="absolute"
+              top="50%"
+              left="45%"
+              size="lg"
+              color={colorMode === "dark" ? "p500" : "r500"}
+              zIndex="1500"
+            />
+          )}
           <Box
             borderWidth="1px"
             borderColor={colorMode === "dark" ? "borderD" : "borderL"}

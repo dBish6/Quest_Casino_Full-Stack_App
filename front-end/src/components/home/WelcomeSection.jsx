@@ -22,7 +22,6 @@ import { AiOutlineTrophy, AiOutlineSafety } from "react-icons/ai";
 const WelcomeSection = () => {
   const { colorMode } = useColorMode();
   const { scrollYProgress } = useScroll();
-  // 657px
   const [isSmallerThan601] = useMediaQuery("(max-width: 601px)");
   const [isSmallerThan410] = useMediaQuery("(max-width: 410px)");
 
@@ -118,7 +117,7 @@ const WelcomeSection = () => {
                 isSmallerThan410 ? "30px" : isSmallerThan601 ? "38px" : "48px"
               }
               fontWeight="400"
-              color={colorMode === "dark" ? "dwordMain" : "bMain"}
+              color={colorMode === "dark" ? "wMain" : "bMain"}
               lineHeight="1.2"
               textAlign="center"
               mt="2px !important"
@@ -148,12 +147,7 @@ const WelcomeSection = () => {
             </Heading>
           </VStack>
 
-          <Text
-            textAlign="center"
-            maxW="732px"
-            m="0 0 3rem 0 !important"
-            opacity="0.9"
-          >
+          <Text textAlign="center" maxW="732px" m="0 0 3rem 0 !important">
             Welcome to Quest Casino, where the fun never stops! We offer the
             best blackjack tables, exciting slot machines, and thrilling games.
             Your safety is our top priority, and we have taken every precaution
@@ -180,11 +174,11 @@ const WelcomeSection = () => {
                 fontSize={isSmallerThan601 ? "21px" : "24px"}
                 fontWeight="600"
                 lineHeight="1.2"
-                color={colorMode === "dark" ? "dwordMain" : "bMain"}
+                color={colorMode === "dark" ? "wMain" : "bMain"}
               >
                 Games
               </Heading>
-              <Text fontSize="13px" textAlign="center" opacity="0.8">
+              <Text fontSize="13px" textAlign="center" opacity="0.9">
                 Classic table games like blackjack and poker, even slot machines
                 and more!
               </Text>
@@ -196,11 +190,11 @@ const WelcomeSection = () => {
                 fontSize={isSmallerThan601 ? "21px" : "24px"}
                 fontWeight="600"
                 lineHeight="1.2"
-                color={colorMode === "dark" ? "dwordMain" : "bMain"}
+                color={colorMode === "dark" ? "wMain" : "bMain"}
               >
                 Challenges
               </Heading>
-              <Text fontSize="13px" textAlign="center" opacity="0.8">
+              <Text fontSize="13px" textAlign="center" opacity="0.9">
                 Challenges are the quests you can fulfil for some extra cash! Or
                 other special rewards.
               </Text>
@@ -216,11 +210,11 @@ const WelcomeSection = () => {
                 fontSize={isSmallerThan601 ? "21px" : "24px"}
                 fontWeight="600"
                 lineHeight="1.2"
-                color={colorMode === "dark" ? "dwordMain" : "bMain"}
+                color={colorMode === "dark" ? "wMain" : "bMain"}
               >
                 Safety
               </Heading>
-              <Text fontSize="13px" textAlign="center" opacity="0.8">
+              <Text fontSize="13px" textAlign="center" opacity="0.9">
                 Our top priority is your safety and comfort even though there is
                 no danger! This is all for fun!
               </Text>

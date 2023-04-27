@@ -14,7 +14,6 @@ import { MdUploadFile } from "react-icons/md";
 
 // *Component Imports*
 import DefaultPicsSkeleton from "../skeletons/DefaultPicsSkeleton";
-import AreYouSureModal from "../../../../components/modals/AreYouSureModal";
 import UploadProfilePicModal from "../modals/UploadProfilePicModal";
 
 // *Utility Import*
@@ -131,7 +130,8 @@ const ChangePicture = (props) => {
           }}
           onClick={() => setShow({ ...show, uploadPicture: true })}
         >
-          {(props.currentUser.photoURL.indexOf("userProfilePics") !== -1 &&
+          {(props.currentUser.photoURL &&
+            props.currentUser.photoURL.indexOf("userProfilePics") !== -1 &&
             selectedPicture === "") ||
           selectedPicture.indexOf("userProfilePics") !== -1 ? (
             <Text
@@ -154,7 +154,8 @@ const ChangePicture = (props) => {
             </Center>
           )}
 
-          {(props.currentUser.photoURL.indexOf("userProfilePics") !== -1 &&
+          {(props.currentUser.photoURL &&
+            props.currentUser.photoURL.indexOf("userProfilePics") !== -1 &&
             selectedPicture === "") ||
           selectedPicture.indexOf("userProfilePics") !== -1 ? (
             <Image
@@ -172,7 +173,7 @@ const ChangePicture = (props) => {
         </WrapItem>
       </Wrap>
 
-      <AreYouSureModal
+      <props.AreYouSureModal
         show={show}
         setShow={setShow}
         loading={props.loadingUpdate.profilePic}

@@ -29,7 +29,6 @@ const GetUser = (id) => {
             },
           });
           // console.log(res.data);
-
           if (res && res.status === 200) {
             setCache((prev) => ({ ...prev, userProfile: res.data }));
           } else if (res && res.status === 404) {

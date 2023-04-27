@@ -25,8 +25,6 @@ const LogoutBtn = (props) => {
         onClick={() => handleLogout()}
         variant="primary"
         justifySelf="center"
-        w="100%"
-        maxW="243px"
         {...props}
       >
         Logout
