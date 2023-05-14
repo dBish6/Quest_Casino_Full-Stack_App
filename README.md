@@ -5,4 +5,4 @@ This is a fun little "casino" app that has different kinds of card games. The fi
 This is a React application by CRA with Redux and Charka UI on front-end, while the back-end is Nodejs using Firebase Auth and Firestore.
 
 ## Current State
-__This app is currently in development__, so I'm open to collaborate with anyone who would like to help:) [Contact me here](mailto:davidbish2002@hotmail.com).
+__This app is currently almost ready for production__, I'm open to collaborate with anyone who would like to help:) [Contact me here](mailto:davidbish2002@hotmail.com).
