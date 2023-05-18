@@ -1,21 +1,36 @@
-const { admin, db } = require("../../model/firebaseConfig");
+const { auth, db, dbUtils } = require("../../model/firebaseConfig");
+const { logger } = require("firebase-functions");
+const { hash } = require("bcrypt");
 const moment = require("moment");
 
 // *Reads*
 const getAllUsersFromDb = async () => {
-  // FIXME: Could just send the felids we need.
-  let documents = [];
   try {
     const collection = await db.collection("users").get();
-    const response = collection.docs.map((doc) => documents.push(doc.data()));
-    if (response) {
-      documents.sort(() => Math.random() - 0.5);
-      documents = documents.slice(0, 8);
-      return documents;
-    }
+    return collection.docs();
   } catch (error) {
+    logger.error("auth.dal error: getAllUsersFromDb");
     logger.error(error);
-    if (DEBUG) logger.error("DEBUGGER: auth.dal error: getAllUsersFromDb");
+  }
+};
+
+// FIXME: Getting every single document is pretty time consuming.
+const getPlayerHighlightFromDb = async () => {
+  let highlights = [];
+  try {
+    const documents = await db.collection("users").get({
+      fields: ["username", "photoURL", "wins"],
+    });
+    documents.forEach((doc) => {
+      const { username, photoURL, wins } = doc.data();
+      highlights.push({ username, photoURL, wins });
+    });
+    highlights.sort(() => Math.random() - 0.5);
+    highlights = highlights.slice(0, 8);
+    return highlights;
+  } catch (error) {
+    logger.error("auth.dal error: getPlayerHighlightFromDb");
+    throw error;
   }
 };
 
@@ -28,8 +43,8 @@ const getUserFromDb = async (id) => {
       return document.data();
     }
   } catch (error) {
-    logger.error(error);
-    if (DEBUG) logger.error("DEBUGGER: auth.dal error: getUserFromDb");
+    logger.error("auth.dal error: getUserFromDb");
+    throw error;
   }
 };
 
@@ -41,18 +56,18 @@ const getUserBalanceCompletedQuestsFromDb = async (id) => {
       .get({
         fields: ["balance", "completed_quests"],
       });
+    const { balance, completed_quests } = document.data();
     if (!document.exists) {
       return "User doesn't exist.";
     } else {
       return {
-        balance: await document.get("balance"),
-        completedQuests: await document.get("completed_quests"),
+        balance: balance,
+        completedQuests: completed_quests,
       };
     }
   } catch (error) {
-    logger.error(error);
-    if (DEBUG)
-      logger.error("DEBUGGER: auth.dal error: getUserWinsBalanceFromDb");
+    logger.error("auth.dal error: getUserBalanceCompletedQuestsFromDb");
+    throw error;
   }
 };
 
@@ -73,8 +88,8 @@ const getLeaderBoardFromDb = async () => {
 
     if (leaderboard.length) return leaderboard;
   } catch (error) {
-    logger.error(error);
-    if (DEBUG) logger.error("DEBUGGER: auth.dal error: getLeaderBoardFromDb");
+    logger.error("auth.dal error: getLeaderBoardFromDb");
+    throw error;
   }
 };
 
@@ -91,8 +106,8 @@ const dbCheckUsername = async (username) => {
       return false;
     }
   } catch (error) {
-    logger.error(error);
-    if (DEBUG) logger.error("DEBUGGER: auth.dal error: getUsernameFromDb");
+    logger.error("auth.dal error: dbCheckUsername");
+    throw error;
   }
 };
 
@@ -105,14 +120,13 @@ const confirmUserDocument = async (id) => {
       return true;
     }
   } catch (error) {
-    logger.error(error);
-    if (DEBUG) logger.error("DEBUGGER: auth.dal error: confirmUserDocument");
+    logger.error("auth.dal error: confirmUserDocument");
+    throw error;
   }
 };
 
 // *Creates*
 const addUserToDb = async (
-  id,
   type,
   firstName,
   lastName,
@@ -122,29 +136,58 @@ const addUserToDb = async (
   phoneNum,
   photoURL
 ) => {
-  try {
-    const response = await db
-      .collection("users")
-      .doc(id)
-      .set({
-        register_type: type === "Google" ? "Google" : "Standard",
-        full_name: firstName + " " + lastName,
-        username: username,
-        email: email,
-        password:
-          type === "Google" && !password ? "Stored by google." : password,
-        phone_number: phoneNum,
-        photoURL: photoURL,
-        wins: { total: 0, blackjack: 0, slots: 0 },
-        balance: 0,
-        quests_completed: [],
-        creation_date: moment().format(),
-      });
+  let firebaseAuth;
+  let firestore;
 
-    return response;
+  try {
+    // Adds user to auth.
+    if (!phoneNum) {
+      firebaseAuth = await auth.createUser({
+        displayName: username,
+        email: email,
+        password: password,
+        emailVerified: false,
+        disabled: false,
+      });
+    } else {
+      firebaseAuth = await auth.createUser({
+        displayName: username,
+        email: email,
+        password: password,
+        phoneNumber: phoneNum,
+        emailVerified: false,
+        disabled: false,
+      });
+    }
+
+    if (firebaseAuth) {
+      const hashedPassword = await hash(password, 10);
+      // Adds user to Firestore DB.
+      firestore = await db
+        .collection("users")
+        .doc(firebaseAuth.uid)
+        .set({
+          register_type: type === "Google" ? "Google" : "Standard",
+          full_name: firstName + " " + lastName,
+          username: username,
+          email: email,
+          password:
+            type === "Google" && !password
+              ? "Stored by google."
+              : hashedPassword,
+          phone_number: phoneNum,
+          photoURL: photoURL,
+          wins: { total: 0, blackjack: 0, slots: 0 },
+          balance: 0,
+          completed_quests: [],
+          creation_date: moment().format(),
+        });
+    }
+
+    return { firebaseAuth, firestore };
   } catch (error) {
-    logger.error(error);
-    if (DEBUG) logger.error("DEBUGGER: auth.dal error: addUserToDb");
+    logger.error("auth.dal error: addUserToDb");
+    throw error;
   }
 };
 
@@ -156,14 +199,14 @@ const updateRealName = async (id, fullName) => {
     });
     return response;
   } catch (error) {
-    logger.error(error);
-    if (DEBUG) logger.error("DEBUGGER: auth.dal error: updateRealName");
+    logger.error("auth.dal error: updateRealName");
+    throw error;
   }
 };
 
 const updateUsername = async (id, username) => {
   try {
-    const firebaseAuth = await admin.auth().updateUser(id, {
+    const firebaseAuth = await auth.updateUser(id, {
       displayName: username,
     });
     const firestore = await db.collection("users").doc(id).update({
@@ -171,14 +214,14 @@ const updateUsername = async (id, username) => {
     });
     return { firebaseAuth, firestore };
   } catch (error) {
-    logger.error(error);
-    if (DEBUG) logger.error("DEBUGGER: auth.dal error: updateUsername");
+    logger.error("auth.dal error: updateUsername");
+    throw error;
   }
 };
 
 const updateEmail = async (id, email) => {
   try {
-    const firebaseAuth = await admin.auth().updateUser(id, {
+    const firebaseAuth = await auth.updateUser(id, {
       email: email,
     });
     const firestore = await db.collection("users").doc(id).update({
@@ -186,14 +229,14 @@ const updateEmail = async (id, email) => {
     });
     return { firebaseAuth, firestore };
   } catch (error) {
-    logger.error(error);
-    if (DEBUG) logger.error("DEBUGGER: auth.dal error: updateEmail");
+    logger.error("auth.dal error: updateEmail");
+    throw error;
   }
 };
 
 const updatePhoneNumber = async (id, phoneNum) => {
   try {
-    const firebaseAuth = await admin.auth().updateUser(id, {
+    const firebaseAuth = await auth.updateUser(id, {
       phoneNumber: phoneNum,
     });
     const firestore = await db.collection("users").doc(id).update({
@@ -201,14 +244,14 @@ const updatePhoneNumber = async (id, phoneNum) => {
     });
     return { firebaseAuth, firestore };
   } catch (error) {
-    logger.error(error);
-    if (DEBUG) logger.error("DEBUGGER: auth.dal error: updatePhoneNumber");
+    logger.error("auth.dal error: updatePhoneNumber");
+    throw error;
   }
 };
 
 const updateProfilePicture = async (id, photoURL) => {
   try {
-    const firebaseAuth = await admin.auth().updateUser(id, {
+    const firebaseAuth = await auth.updateUser(id, {
       photoURL: photoURL,
     });
     const firestore = await db.collection("users").doc(id).update({
@@ -216,8 +259,8 @@ const updateProfilePicture = async (id, photoURL) => {
     });
     return { firebaseAuth, firestore };
   } catch (error) {
-    logger.error(error);
-    if (DEBUG) logger.error("DEBUGGER: auth.dal error: updatePhoneNumber");
+    logger.error("auth.dal error: updatePhoneNumber");
+    throw error;
   }
 };
 
@@ -263,8 +306,8 @@ const updateWins = async (id, win) => {
       return response;
     }
   } catch (error) {
-    logger.error(error);
-    if (DEBUG) logger.error("DEBUGGER: auth.dal error: updateWins");
+    logger.error("auth.dal error: updateWins");
+    throw error;
   }
 };
 
@@ -274,14 +317,12 @@ const updateBalance = async (id, balance, isDeposit) => {
       .collection("users")
       .doc(id)
       .update({
-        balance: isDeposit
-          ? admin.firestore.FieldValue.increment(balance)
-          : balance,
+        balance: isDeposit ? dbUtils.FieldValue.increment(balance) : balance,
       });
     return response;
   } catch (error) {
-    logger.error(error);
-    if (DEBUG) logger.error("DEBUGGER: auth.dal error: updateBalance");
+    logger.error("auth.dal error: updateBalance");
+    throw error;
   }
 };
 
@@ -292,29 +333,44 @@ const updateCompletedQuests = async (id, quest, currBalance, reward) => {
       .collection("users")
       .doc(id)
       .update({
-        completed_quests: admin.firestore.FieldValue.arrayUnion(quest),
+        completed_quests: dbUtils.FieldValue.arrayUnion(quest),
         balance: newBalance,
       });
     return response;
   } catch (error) {
-    logger.error(error);
-    if (DEBUG) logger.error("DEBUGGER: auth.dal error: updateCompletedQuests");
+    logger.error("auth.dal error: updateCompletedQuests");
+    throw error;
+  }
+};
+
+const updateActiveTimestamp = async (id) => {
+  try {
+    const response = await db.collection("users").doc(id).update({
+      active_timestamp: moment().format(),
+    });
+    return response;
+  } catch (error) {
+    logger.error("auth.dal error: updateActiveTimestamp");
+    throw error;
   }
 };
 
 // *Deletes*
-const deleteUserFromDb = async (id) => {
+const deleteUser = async (id) => {
   try {
-    const response = await db.collection("users").doc(id).delete();
-    return response;
+    let firebaseAuth = await auth.deleteUser(id);
+    firebaseAuth = `${id} user was successfully deleted from firebase auth.`;
+    const firestore = await db.collection("users").doc(id).delete();
+    return { firebaseAuth, firestore };
   } catch (error) {
-    logger.error(error);
-    if (DEBUG) logger.error("DEBUGGER: auth.dal error: updatePhoneNumber");
+    logger.error("auth.dal error: updatePhoneNumber");
+    throw error;
   }
 };
 
 module.exports = {
   getAllUsersFromDb,
+  getPlayerHighlightFromDb,
   getUserFromDb,
   getUserBalanceCompletedQuestsFromDb,
   getLeaderBoardFromDb,
@@ -329,5 +385,6 @@ module.exports = {
   updateWins,
   updateBalance,
   updateCompletedQuests,
-  deleteUserFromDb,
+  updateActiveTimestamp,
+  deleteUser,
 };

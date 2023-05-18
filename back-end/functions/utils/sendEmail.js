@@ -8,7 +8,6 @@ const sendEmail = async (email, subject, message) => {
       pass: process.env.GMAIL_APP_PASSWORD,
     },
   });
-
   const info = await transporter.sendMail({
     from: '"Quest Casino - David Bishop; the Dev :D" <noreply.questcasino@gmail.com>',
     to: `${email}`,

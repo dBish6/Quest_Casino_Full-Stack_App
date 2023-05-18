@@ -5,6 +5,9 @@ const firebaseConfig = admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
 
-const db = admin.firestore(firebaseConfig);
+const auth = admin.auth(firebaseConfig),
+  db = admin.firestore(firebaseConfig),
+  dbUtils = admin.firestore,
+  storage = admin.storage(firebaseConfig);
 
-module.exports = { admin, db };
+module.exports = { auth, db, dbUtils, storage };

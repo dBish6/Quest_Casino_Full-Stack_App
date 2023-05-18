@@ -4,6 +4,7 @@
   "description": "back-end REST API for Quest Casino using Firebase.",
   "main": "server.js",
   "scripts": {
+    "dev": "nodemon",
     "deploy": "firebase deploy --only functions",
     "logs": "firebase functions:log",
     "clean": "rmdir /s /q node_modules"
@@ -24,5 +25,8 @@
     "hpp": "^0.2.3",
     "moment": "^2.29.4",
     "nodemailer": "^6.9.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
   }
 }

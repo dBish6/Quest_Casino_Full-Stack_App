@@ -2,6 +2,11 @@
 const express = require("express");
 const app = express();
 
+const { region } = require("firebase-functions");
+const {
+  deleteInactiveProfilePictures,
+} = require("./utils/deleteInactiveProfilePictures");
+
 require("dotenv").config();
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
@@ -11,10 +16,13 @@ const helmet = require("helmet");
 const hpp = require("hpp");
 const rateLimit = require("express-rate-limit");
 
-const { region } = require("firebase-functions");
 const authRouter = require("./authentication/routes/auth");
 
 global.DEBUG = true;
+
+// *Exports for Firebase Functions*
+exports.server = region("northamerica-northeast1").https.onRequest(app);
+exports.deleteInactiveProfilePictures = deleteInactiveProfilePictures;
 
 // *Middleware*
 // So express can read the new parameters off the url and encoding them correctly.
@@ -49,4 +57,8 @@ app.use(
 // *Routers*
 app.use("/auth", authRouter);
 
-exports.server = region("northamerica-northeast1").https.onRequest(app);
+// app.listen(4000, "localhost", () => {
+//   console.log(
+//     "Server is running on http://localhost:4000; Ctrl-C to terminate..."
+//   );
+// });

@@ -1,5 +1,6 @@
 const { logger } = require("firebase-functions");
-const { admin } = require("../../model/firebaseConfig");
+const { auth } = require("../../model/firebaseConfig");
+const { compare } = require("bcrypt");
 
 // Verifies the user's idToken and send back the user.
 const verifyUserToken = async (req, res, next) => {
@@ -7,9 +8,9 @@ const verifyUserToken = async (req, res, next) => {
 
   try {
     const authToken = req.headers.authorization || "",
-      { uid, email, email_verified, name, phone_number, picture } = await admin
-        .auth()
-        .verifyIdToken(authToken);
+      { uid, email, email_verified, name, phone_number, picture } =
+        await auth.verifyIdToken(authToken);
+
     req.idToken = authToken;
     req.user = {
       uid,
@@ -32,10 +33,11 @@ const verifyUserToken = async (req, res, next) => {
 // Verifies the cross site request forgery token by comparing the one sent from the client; mainly you
 // verify this token on requests that change data.
 const verifyCsrfToken = async (req, res, next) => {
-  if (DEBUG) logger.debug("CSRF token from client: ", req.headers.authorization);
+  if (DEBUG) logger.debug("CSRF token from client: ", req.headers.csrf_token);
 
   try {
-    if (req.headers.csrf_token !== req.cookies.XSRF_TOKEN) {
+    const match = await compare(req.cookies.XSRF_TOKEN, req.headers.csrf_token);
+    if (!match) {
       return res.status(401).json({
         ERROR: "CSRF token is missing or does not match.",
       });
