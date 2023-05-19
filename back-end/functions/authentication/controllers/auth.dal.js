@@ -127,6 +127,7 @@ const confirmUserDocument = async (id) => {
 
 // *Creates*
 const addUserToDb = async (
+  id,
   type,
   firstName,
   lastName,
@@ -141,31 +142,34 @@ const addUserToDb = async (
 
   try {
     // Adds user to auth.
-    if (!phoneNum) {
-      firebaseAuth = await auth.createUser({
-        displayName: username,
-        email: email,
-        password: password,
-        emailVerified: false,
-        disabled: false,
-      });
+    if (type !== "Google" && !id) {
+      if (!phoneNum) {
+        firebaseAuth = await auth.createUser({
+          displayName: username,
+          email: email,
+          password: password,
+          emailVerified: false,
+          disabled: false,
+        });
+      } else {
+        firebaseAuth = await auth.createUser({
+          displayName: username,
+          email: email,
+          password: password,
+          phoneNumber: phoneNum,
+          emailVerified: false,
+          disabled: false,
+        });
+      }
     } else {
-      firebaseAuth = await auth.createUser({
-        displayName: username,
-        email: email,
-        password: password,
-        phoneNumber: phoneNum,
-        emailVerified: false,
-        disabled: false,
-      });
+      firebaseAuth = "Registered via google.";
     }
-
     if (firebaseAuth) {
-      const hashedPassword = await hash(password, 10);
       // Adds user to Firestore DB.
+      const userId = !id ? firebaseAuth.uid : id;
       firestore = await db
         .collection("users")
-        .doc(firebaseAuth.uid)
+        .doc(userId)
         .set({
           register_type: type === "Google" ? "Google" : "Standard",
           full_name: firstName + " " + lastName,
@@ -174,7 +178,7 @@ const addUserToDb = async (
           password:
             type === "Google" && !password
               ? "Stored by google."
-              : hashedPassword,
+              : await hash(password, 10),
           phone_number: phoneNum,
           photoURL: photoURL,
           wins: { total: 0, blackjack: 0, slots: 0 },

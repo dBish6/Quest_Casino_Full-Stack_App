@@ -35,7 +35,11 @@ app.use(cookieParser());
 // cors allows different domain applications to interact with each other.
 app.use(
   cors({
-    origin: "http://localhost:3000", // Location of client side; react app.
+    origin: [
+      "http://localhost:3000",
+      `https://${process.env.PROJECT_ID}.web.app`,
+      "questcasino.xyz",
+    ], // Location of client side; react app.
     credentials: true, // Allows for sending credentials like cookies.
   })
 );

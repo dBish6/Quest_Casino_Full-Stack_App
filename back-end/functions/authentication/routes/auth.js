@@ -267,6 +267,7 @@ router.post("/api/firebase/register", async (req, res) => {
       } else {
         // Creates auth user & Firestore user.
         const response = await authDal.addUserToDb(
+          null,
           req.body.type,
           req.body.firstName,
           req.body.lastName,
