@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import apiURL from "../../../../apiUrl";
 
 // *Custom Hooks Import*
 import useCache from "../../../../hooks/useCache";
@@ -24,7 +25,7 @@ const GetLeaderboard = () => {
 
           const res = await axios({
             method: "GET",
-            url: `http://localhost:4000/auth/api/firebase/users?leaderboard=${true}`,
+            url: `${apiURL}/auth/api/firebase/users?leaderboard=${true}`,
             signal: abortController.signal,
             validateStatus: (status) => {
               return status === 200 || status === 404; // Resolve only if the status code is 404 or 200.

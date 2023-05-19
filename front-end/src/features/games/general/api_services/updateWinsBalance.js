@@ -1,20 +1,28 @@
 import axios from "axios";
+import apiURL from "../../../../apiUrl";
 
 import { createStandaloneToast } from "@chakra-ui/toast";
 const { toast } = createStandaloneToast();
 
-const updateWinsBalance = async (id, win, type, balance) => {
+const updateWinsBalance = async (id, win, type, balance, csrfToken) => {
   const abortController = new AbortController();
   try {
     const res = await axios({
       method: "PATCH",
-      url: `http://localhost:4000/auth/api/firebase/update/${id}?win=${win}&winType=${type}&balance=${balance}`,
+      url: `${apiURL}/auth/api/firebase/update/${id}?win=${win}&winType=${type}`,
+      data: {
+        balance: balance,
+      },
+      headers: {
+        CSRF_Token: csrfToken,
+      },
+      withCredentials: true,
       signal: abortController.signal,
       validateStatus: (status) => {
         return status === 200 || status === 404; // Resolve only if the status code is 404 or 200.
       },
     });
-    console.log(res.data);
+    // console.log(res.data);
     if (res && res.status === 404) {
       toast({
         description: "Server Error 404: " + res.data.user,
@@ -30,6 +38,14 @@ const updateWinsBalance = async (id, win, type, balance) => {
   } catch (error) {
     if (error.code === "ECONNABORTED" || error.message === "canceled") {
       console.warn("Request was aborted.");
+    } else if (error.response && error.response.status === 401) {
+      console.error(error);
+      // TODO: Check later.
+      const pathname =
+        window.location.hostname === "localhost"
+          ? `${window.location.hostname}:3000/error401`
+          : `${window.location.hostname}/error401`;
+      window.location = `${window.location.protocol}//${pathname}`;
     } else {
       console.error(error);
       toast({

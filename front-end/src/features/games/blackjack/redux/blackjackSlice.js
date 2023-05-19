@@ -11,10 +11,11 @@ export const updateWinsBalanceThunk = createAsyncThunk(
   "blackjack/updateWinsBalance",
   async (payload, thunkAPI) => {
     const res = await updateWinsBalance(
-      payload.uid,
+      payload.id,
       payload.winner !== "dealer" ? true : false,
       payload.game,
-      payload.balance
+      payload.balance,
+      payload.csrfToken
     );
     if (res.status === 200) return res.data;
   }
@@ -46,6 +47,27 @@ const blackjackSlice = createSlice({
     winner: null,
   },
   reducers: {
+    FULL_RESET: (state) => {
+      state.gameType = null;
+      state.deck = createDeck();
+      state.dealerCards = [];
+      state.dealerFaceDownScore = 0;
+      state.dealerScore = 0;
+      state.dealerTurn = false;
+      state.dealerStanding = false;
+      state.dealerHasNatural = false;
+      state.playerCards = [];
+      state.playerBet = 0;
+      state.playerScore = 0;
+      state.playerInitialHit = false;
+      state.playerStanding = false;
+      state.playerHasNatural = false;
+      // TODO: Save their streak in the db if they already had one before log out.
+      state.streak = 0;
+      state.balanceLoading = false;
+      state.updatedBalance = false;
+      state.winner = null;
+    },
     CLEAR_GAME: (state) => {
       state.gameType = null;
       state.dealerCards = [];
@@ -247,6 +269,7 @@ const blackjackSlice = createSlice({
 
 // Action creators are generated for each case reducer function.
 export const {
+  FULL_RESET,
   CLEAR_GAME,
   GAME_TYPE,
   START_GAME,

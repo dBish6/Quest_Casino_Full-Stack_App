@@ -63,7 +63,12 @@ const DesktopIndex = () => {
 
           <TabPanels>
             <TabPanel>
-              <MyHeading fontSize="28px" text="Navigation" mb="1rem" />
+              <MyHeading
+                fontSize="28px"
+                text="Navigation"
+                textShadow={colorMode === "light" && "1px 1px 0px #363636"}
+                mb="1rem"
+              />
               <Container
                 display="flex"
                 flexDir="column"
@@ -86,7 +91,13 @@ const DesktopIndex = () => {
                 }
                 overflow={isHeightSmallerThan935 && "hidden"}
               >
-                <MyHeading fontSize="28px" text="Players" mt="1rem" mb="1rem" />
+                <MyHeading
+                  fontSize="28px"
+                  text="Players"
+                  textShadow={colorMode === "light" && "1px 1px 0px #363636"}
+                  mt="1rem"
+                  mb="1rem"
+                />
                 <UserList />
               </Container>
               <Flex justifyContent="center">
@@ -104,7 +115,12 @@ const DesktopIndex = () => {
             </TabPanel>
 
             <TabPanel>
-              <MyHeading fontSize="28px" text="Log In" mb="1.5rem" />
+              <MyHeading
+                fontSize="28px"
+                text="Log In"
+                textShadow={colorMode === "light" && "1px 1px 0px #363636"}
+                mb="1.5rem"
+              />
               <LoginForm show={show} setShow={setShow} />
               <Image
                 src={
@@ -121,8 +137,14 @@ const DesktopIndex = () => {
             </TabPanel>
 
             <TabPanel>
-              <MyHeading fontSize="28px" text="Settings" mb="1.5rem" />
+              <MyHeading
+                fontSize="28px"
+                text="Settings"
+                textShadow={colorMode === "light" && "1px 1px 0px #363636"}
+                mb="1.5rem"
+              />
               <Settings />
+              {/* FIXME: Just don't use a image. */}
               <Image
                 src={
                   colorMode === "dark"

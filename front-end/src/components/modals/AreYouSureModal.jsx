@@ -44,7 +44,6 @@ const AreYouSureModal = (props) => {
           onClick={() => {
             if (props.handleProfilePicture) {
               props.handleProfilePicture(
-                props.userId,
                 props.profilePic,
                 props.setSelectedPicture,
                 false,
@@ -52,7 +51,7 @@ const AreYouSureModal = (props) => {
                 props.setShow
               );
             } else if (props.handleDeleteProfile) {
-              props.handleDeleteProfile(props.userId);
+              props.handleDeleteProfile();
             }
           }}
           type="submit"

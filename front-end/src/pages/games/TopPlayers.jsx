@@ -1,7 +1,6 @@
 // *Design Imports*
 import {
   Box,
-  VStack,
   Heading,
   Text,
   chakra,

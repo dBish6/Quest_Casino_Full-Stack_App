@@ -6,7 +6,7 @@
 
 import { useState, useEffect, lazy, Suspense } from "react";
 import {
-  HashRouter,
+  BrowserRouter,
   Routes,
   Route,
   Navigate,
@@ -17,11 +17,11 @@ import { Box, useMediaQuery } from "@chakra-ui/react";
 
 import PrivateRoute from "./features/authentication/PrivateRoute";
 
-// *Context Import*
+// *Context Imports*
 import { AuthProvider } from "./features/authentication/contexts/AuthContext";
-import { CacheProvider } from "./contexts/cache";
+import { CacheProvider } from "./contexts/Cache";
 
-// *Design Imports*
+// *Design Import*
 import { chakra } from "@chakra-ui/react";
 
 // *Component Imports*
@@ -38,6 +38,7 @@ import Profile from "./pages/Profile";
 import GamesHome from "./pages/games/GamesHome";
 import TopPlayers from "./pages/games/TopPlayers";
 import Error404 from "./pages/errors/Error404";
+import Error401 from "./pages/errors/Error401";
 import Error500 from "./pages/errors/Error500";
 
 import DomLoader from "./components/DomLoader";
@@ -85,14 +86,14 @@ const ShowPartials = (props) => {
 function App() {
   const [showConfirmAge, setShowConfirmAge] = useState(false);
   const [isLargerThan1280] = useMediaQuery("(min-width: 1280px)");
-  const isAgeConfirmed = localStorage.getItem("ageConfirmed");
 
+  const isAgeConfirmed = localStorage.getItem("ageConfirmed");
   useEffect(() => {
     !isAgeConfirmed && setShowConfirmAge(true);
   }, [isAgeConfirmed]);
 
   return (
-    <HashRouter>
+    <BrowserRouter>
       <AuthProvider>
         <CacheProvider>
           {isAgeConfirmed ? (
@@ -134,6 +135,10 @@ function App() {
                     element={<Error404 title="ERROR" />}
                   />
                   <Route
+                    path="/error401"
+                    element={<Error401 title="ERROR" />}
+                  />
+                  <Route
                     path="/error500"
                     element={<Error500 title="ERROR" />}
                   />
@@ -158,7 +163,7 @@ function App() {
           )}
         </CacheProvider>
       </AuthProvider>
-    </HashRouter>
+    </BrowserRouter>
   );
 }
 

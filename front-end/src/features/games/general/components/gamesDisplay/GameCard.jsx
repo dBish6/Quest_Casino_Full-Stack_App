@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import LazyLoad from "react-lazy-load";
 
 // *Design Imports*
 import {
@@ -62,14 +63,16 @@ const GameCard = (props) => {
               </Text>
               <Divider />
               {i === 0 && (
-                <Box w="198px" h="190px" m="0 !important">
-                  <Image
-                    src={davyBlackjackPreview}
-                    objectFit="cover"
-                    h="100%"
-                    borderBottomRadius="6px"
-                  />
-                </Box>
+                <LazyLoad>
+                  <Box w="198px" h="190px" m="0 !important">
+                    <Image
+                      src={davyBlackjackPreview}
+                      objectFit="cover"
+                      h="100%"
+                      borderBottomRadius="6px"
+                    />
+                  </Box>
+                </LazyLoad>
               )}
 
               <AnimatePresence>

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import axios from "axios";
+import apiURL from "../../../apiUrl";
 
 // *Design Imports*
 import { useToast } from "@chakra-ui/react";
@@ -20,6 +21,7 @@ const PostRegister = () => {
 
   const handleRegister = async (
     formRef,
+    type,
     firstName,
     lastName,
     username,
@@ -27,7 +29,8 @@ const PostRegister = () => {
     password,
     confirmPassword,
     callingCode,
-    phoneNum
+    phoneNum,
+    setPasswordStrength
   ) => {
     setErrorHandler({
       confirmation: false,
@@ -45,8 +48,9 @@ const PostRegister = () => {
     try {
       const res = await axios({
         method: "POST",
-        url: "http://localhost:4000/auth/api/firebase/register",
+        url: `${apiURL}/auth/api/firebase/register`,
         data: {
+          type: type,
           firstName: firstName,
           lastName: lastName,
           username: username,
@@ -61,8 +65,9 @@ const PostRegister = () => {
       });
       // console.log(res);
       if (res) {
-        if (res.status === 200) {
+        if (res.status === 200 && res.data.registered) {
           formRef.current.reset();
+          setPasswordStrength(0);
           toast({
             description:
               "Account was created successfully, you can now proceed to log in.",

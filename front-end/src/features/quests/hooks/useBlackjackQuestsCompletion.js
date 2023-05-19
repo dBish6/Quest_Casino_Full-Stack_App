@@ -24,8 +24,13 @@ const useBlackjackQuestsCompletion = (currentUser) => {
   const updatedBalance = useSelector(selectUpdatedBalance);
   const gameType = useSelector(selectGameType);
   const winStreak = useSelector(selectStreak);
-  const { balance, setBalance, completedQuests, setCompletedQuests } =
-    useAuth();
+  const {
+    balance,
+    setBalance,
+    completedQuests,
+    setCompletedQuests,
+    csrfToken,
+  } = useAuth();
 
   const playerScore = useSelector(selectPlayerScore);
   const winner = useSelector(selectWinner);
@@ -34,7 +39,7 @@ const useBlackjackQuestsCompletion = (currentUser) => {
     handleCompletedQuest,
     loading: completedQuestLoading,
     abortController: postAbortController,
-  } = PostCompletedQuest(currentUser.uid);
+  } = PostCompletedQuest();
 
   useEffect(() => {
     if (gameType === "Match" && !completedQuestLoading && updatedBalance) {
@@ -42,27 +47,31 @@ const useBlackjackQuestsCompletion = (currentUser) => {
       let questReward = undefined;
       if (
         winStreak >= 12 &&
-        (completedQuests === null ||
-          !completedQuests.includes(quests.onARole.title))
+        (completedQuests === null || !completedQuests.includes(quests[1].title))
       ) {
         // When "On a Role" quest is completed.
-        questTitle = quests.onARole.title;
-        questReward = quests.onARole.reward;
+        questTitle = quests[1].title;
+        questReward = quests[1].reward;
       } else if (
         playerScore === 21 &&
         winner === currentUser.displayName &&
-        (completedQuests === null ||
-          !completedQuests.includes(quests.beginnersLuck.title))
+        (completedQuests === null || !completedQuests.includes(quests[0].title))
       ) {
         // When "Beginner's Luck" quest is completed.
-        questTitle = quests.beginnersLuck.title;
-        questReward = quests.beginnersLuck.reward;
+        questTitle = quests[0].title;
+        questReward = quests[0].reward;
       }
 
       // Saves to db and adds to redux.
       questTitle &&
         questTitle &&
-        handleCompletedQuest(questTitle, balance, questReward).then(() => {
+        handleCompletedQuest(
+          currentUser.uid,
+          questTitle,
+          balance,
+          questReward,
+          csrfToken
+        ).then(() => {
           !completedQuests
             ? setCompletedQuests([questTitle])
             : setCompletedQuests([...completedQuests, questTitle]);

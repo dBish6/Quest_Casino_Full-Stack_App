@@ -30,7 +30,7 @@ import { FcGoogle } from "react-icons/fc";
 import useAuth from "../../../hooks/useAuth";
 
 // *API Services Imports*
-import SaveLogin from "../api_services/SaveLogin";
+import PostLogin from "../api_services/PostLogin";
 import PostGoogleRegister from "../api_services/PostGoogleRegister";
 
 // *Component Imports*
@@ -53,7 +53,7 @@ const LoginForm = (props) => {
     },
   });
   const formRef = useRef(null);
-  const { handleLogin, errorHandler, successMsg, loading } = SaveLogin();
+  const { handleLogin, errorHandler, successMsg, loading } = PostLogin();
   const {
     handleGoogleRegister,
     googleSuccessMsg,
@@ -165,7 +165,11 @@ const LoginForm = (props) => {
                 right="0.875rem"
                 cursor="pointer"
                 zIndex={currentUser !== null ? "hide" : "1"}
-                color={focused && (colorMode === "dark" ? "p500" : "g500")}
+                color={
+                  focused &&
+                  currentUser === null &&
+                  (colorMode === "dark" ? "p500" : "g500")
+                }
               />
             ) : (
               <Icon
@@ -175,7 +179,11 @@ const LoginForm = (props) => {
                 right="0.875rem"
                 cursor="pointer"
                 zIndex={currentUser !== null ? "hide" : "1"}
-                color={focused && (colorMode === "dark" ? "p500" : "g500")}
+                color={
+                  focused &&
+                  currentUser === null &&
+                  (colorMode === "dark" ? "p500" : "g500")
+                }
               />
             )}
           </HStack>
@@ -186,7 +194,7 @@ const LoginForm = (props) => {
               <FormErrorMessage mt="6px">{message}</FormErrorMessage>
             )}
           />
-          {errorHandler.badRequest ? (
+          {errorHandler.badRequest && !errorHandler.notFound ? (
             <FormErrorMessage mt="6px">Password is incorrect.</FormErrorMessage>
           ) : undefined}
           <Box mt="6px">

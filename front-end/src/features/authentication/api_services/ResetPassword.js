@@ -6,7 +6,7 @@ import useAuth from "../../../hooks/useAuth";
 // *Design Imports*
 import { useToast } from "@chakra-ui/react";
 
-const PostResetPassword = () => {
+const ResetPassword = () => {
   const [loading, toggleLoading] = useState(false);
   const [errorHandler, setErrorHandler] = useState({
     notFound: false,
@@ -23,9 +23,10 @@ const PostResetPassword = () => {
       await resetPassword(email);
       formRef.current.reset();
       toast({
-        description: "Check your email inbox for further instructions.",
+        description:
+          "Check your email inbox for further instructions. If you are unable to find it, please check your junk/spam folder.",
         status: "success",
-        duration: 9000,
+        duration: 12000,
         isClosable: true,
         position: "top",
         variant: "solid",
@@ -35,8 +36,8 @@ const PostResetPassword = () => {
         setErrorHandler({ ...errorHandler, notFound: true });
       } else {
         setErrorHandler({ ...errorHandler, unexpected: true });
+        console.error(error);
       }
-      console.error(error);
     } finally {
       toggleLoading(false);
     }
@@ -45,4 +46,4 @@ const PostResetPassword = () => {
   return { handleReset, errorHandler, loading };
 };
 
-export default PostResetPassword;
+export default ResetPassword;

@@ -53,6 +53,7 @@ const PopOutMenus = (props) => {
             <MyHeading
               fontSize="24px"
               text="Navigation"
+              textShadow={colorMode === "light" && "1px 1px 0px #363636"}
               whiteSpace="nowrap"
               mb="0.5rem"
             />
@@ -164,6 +165,7 @@ const PopOutMenus = (props) => {
             <MyHeading
               fontSize="28px"
               text="Log In"
+              textShadow={colorMode === "light" && "1px 1px 0px #363636"}
               whiteSpace="nowrap"
               mb="1.5rem"
             />

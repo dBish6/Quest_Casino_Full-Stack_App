@@ -25,7 +25,7 @@ import ModalTemplate from "../../../../components/modals/ModalTemplate";
 import MyHeading from "../../../../components/MyHeading";
 
 // *API Services Imports*
-import PostResetPassword from "../../api_services/PostResetPassword";
+import ResetPassword from "../../api_services/ResetPassword";
 
 const PasswordResetModal = (props) => {
   const {
@@ -39,7 +39,7 @@ const PasswordResetModal = (props) => {
     },
   });
   const formRef = useRef(null);
-  const { handleReset, errorHandler, loading } = PostResetPassword();
+  const { handleReset, errorHandler, loading } = ResetPassword();
 
   useDisableScroll(
     typeof props.show === "object" ? props.show.passwordReset : props.show,

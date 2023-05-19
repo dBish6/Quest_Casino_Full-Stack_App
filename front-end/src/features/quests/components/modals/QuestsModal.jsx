@@ -66,18 +66,14 @@ const QuestsModal = (props) => {
         flexWrap="wrap"
         gap="1rem 1.5rem"
       >
-        {Object.entries(quests).map(([quest, detail]) => {
+        {quests.map((detail) => {
           const isCompleted =
             completedQuests &&
-            completedQuests.some(
-              (q) =>
-                q.toLowerCase().replace(/(\s|')/g, "") ===
-                quest.toLowerCase().replace(/(\s|')/g, "")
-            );
+            completedQuests.some((quest) => quest === detail.title);
 
           return (
             <Card
-              key={quest}
+              key={detail.title}
               variant="primary"
               maxW="225px"
               bg={!isCompleted && "transparent"}

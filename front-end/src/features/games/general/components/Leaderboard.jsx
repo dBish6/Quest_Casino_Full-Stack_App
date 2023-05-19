@@ -12,7 +12,6 @@ import {
   AlertIcon,
   AlertTitle,
   AlertDescription,
-  chakra,
   useColorMode,
 } from "@chakra-ui/react";
 
@@ -120,7 +119,9 @@ const Leaderboard = () => {
                             i === 2
                               ? "#977F5B"
                               : i > 2
-                              ? "dwordMain"
+                              ? colorMode === "dark"
+                                ? "wMain"
+                                : "bMain"
                               : "transparent"
                           }
                           lineHeight="0.95"

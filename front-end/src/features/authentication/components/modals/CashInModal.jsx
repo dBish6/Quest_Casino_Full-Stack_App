@@ -33,8 +33,8 @@ import UpdateProfile from "../../api_services/UpdateProfile";
 import ModalTemplate from "../../../../components/modals/ModalTemplate";
 import MyHeading from "../../../../components/MyHeading";
 
-const CashInModel = (props) => {
-  const { currentUser } = useAuth();
+const CashInModal = (props) => {
+  const { currentUser, csrfToken, balance, setBalance } = useAuth();
 
   const {
     register,
@@ -79,7 +79,14 @@ const CashInModel = (props) => {
 
       <chakra.form
         onSubmit={handleSubmit(() =>
-          handleUpdateBalance(formRef, currentUser.uid, watch("deposit"))
+          handleUpdateBalance(
+            formRef,
+            currentUser.uid,
+            watch("deposit"),
+            balance,
+            setBalance,
+            csrfToken
+          )
         )}
         ref={formRef}
       >
@@ -94,7 +101,7 @@ const CashInModel = (props) => {
         ) : undefined}
 
         <FormControl isInvalid={errors.deposit}>
-          <FormLabel htmlFor="deposit">
+          <FormLabel htmlFor="deposit" opacity={currentUser === null && "0.4"}>
             Amount<chakra.span color="r400"> *</chakra.span>
           </FormLabel>
           <HStack>
@@ -103,6 +110,7 @@ const CashInModel = (props) => {
               position="absolute"
               left="0.5rem"
               color="g500"
+              opacity={currentUser === null && "0.4"}
             />
             <Input
               {...register("deposit", {
@@ -123,10 +131,12 @@ const CashInModel = (props) => {
               id="deposit"
               name="deposit"
               autoComplete="off"
+              isDisabled={currentUser === null}
               variant="primary"
               h="48px"
               marginInlineStart="0px !important"
               paddingInline="1.5rem 1rem"
+              cursor={currentUser === null && "not-allowed"}
             />
           </HStack>
           <ErrorMessage
@@ -140,6 +150,7 @@ const CashInModel = (props) => {
 
         <Button
           isLoading={loadingUpdate.balance ? true : false}
+          isDisabled={currentUser === null}
           type="submit"
           variant="primary"
           mt="1.5rem"
@@ -152,4 +163,4 @@ const CashInModel = (props) => {
   );
 };
 
-export default CashInModel;
+export default CashInModal;

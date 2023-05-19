@@ -12,16 +12,13 @@ import {
   Grid,
   useMediaQuery,
 } from "@chakra-ui/react";
-import { motion, useScroll } from "framer-motion";
+import { motion } from "framer-motion";
 import cardsImg from "../../assets/cards-pngwing.com.png";
 import { CgCardSpades } from "react-icons/cg";
 import { AiOutlineTrophy, AiOutlineSafety } from "react-icons/ai";
 
-// If you add to the home page. Make the view animation only happen once if it haven't yet.
-
 const WelcomeSection = () => {
   const { colorMode } = useColorMode();
-  const { scrollYProgress } = useScroll();
   const [isSmallerThan601] = useMediaQuery("(max-width: 601px)");
   const [isSmallerThan410] = useMediaQuery("(max-width: 410px)");
 
@@ -47,7 +44,6 @@ const WelcomeSection = () => {
             },
           }}
           viewport={{ width: window.innerWidth, height: window.innerHeight }}
-          progress={scrollYProgress}
           position="absolute"
           top="-140px"
           right="-116px"
@@ -66,7 +62,6 @@ const WelcomeSection = () => {
           transition: { duration: 1 },
         }}
         viewport={{ width: window.innerWidth, height: window.innerHeight }}
-        progress={scrollYProgress}
         pos="relative"
         maxW="985px"
         mt="164px"
@@ -88,6 +83,7 @@ const WelcomeSection = () => {
                 isSmallerThan410 ? "32px" : isSmallerThan601 ? "40px" : "50px"
               }
               lineHeight="1.2"
+              textShadow={colorMode === "light" && "1px 1px 0px #363636"}
               color="p500"
               textAlign="center"
             >
@@ -147,7 +143,12 @@ const WelcomeSection = () => {
             </Heading>
           </VStack>
 
-          <Text textAlign="center" maxW="732px" m="0 0 3rem 0 !important">
+          <Text
+            textAlign="center"
+            lineHeight="1.725"
+            maxW="732px"
+            m="0 0 3rem 0 !important"
+          >
             Welcome to Quest Casino, where the fun never stops! We offer the
             best blackjack tables, exciting slot machines, and thrilling games.
             Your safety is our top priority, and we have taken every precaution

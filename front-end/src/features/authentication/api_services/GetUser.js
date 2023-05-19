@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import apiURL from "../../../apiUrl";
 
 // *Custom Hooks Import*
 import useCache from "../../../hooks/useCache";
@@ -22,7 +23,8 @@ const GetUser = (id) => {
           setNotFoundErr("");
           const res = await axios({
             method: "GET",
-            url: `http://localhost:4000/auth/api/firebase/users/${id}`,
+            url: `${apiURL}/auth/api/firebase/users/${id}`,
+            withCredentials: true,
             signal: abortController.signal,
             validateStatus: (status) => {
               return status === 200 || status === 404; // Resolve only if the status code is 404 or 200.
@@ -38,6 +40,9 @@ const GetUser = (id) => {
       } catch (error) {
         if (error.code === "ECONNABORTED" || error.message === "canceled") {
           console.warn("Request was aborted.");
+        } else if (error.response && error.response.status === 401) {
+          console.error(error);
+          navigate("/error401");
         } else {
           console.error(error);
           navigate("/error500");

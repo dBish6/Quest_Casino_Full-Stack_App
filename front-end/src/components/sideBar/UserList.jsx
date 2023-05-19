@@ -2,13 +2,13 @@
 import { HStack, Text, Avatar, Box, chakra } from "@chakra-ui/react";
 
 // *API Services Import*
-import GetAllUsers from "../../features/authentication/api_services/GetAllUsers";
+import GetPlayerHighlight from "../../features/authentication/api_services/GetPlayerHighlight";
 
 // *Component Import*
 import PlayerSkeleton from "../skeletons/PlayerSkeleton";
 
 const UserList = () => {
-  const [fsUsers, notFoundErr] = GetAllUsers();
+  const [fsUsers, notFoundErr] = GetPlayerHighlight();
 
   return (
     <Box>
@@ -42,28 +42,10 @@ const UserList = () => {
                   {detail.username}
                 </Text>
                 <Text color="g500" fontWeight="500">
-                  {detail.wins ? (
-                    typeof detail.wins === "object" ? (
-                      <>
-                        Wins:{" "}
-                        <chakra.span color={detail.wins.total < 1 && "r600"}>
-                          {detail.wins.total}
-                        </chakra.span>
-                      </>
-                    ) : (
-                      <>
-                        Wins:{" "}
-                        <chakra.span color={detail.wins < 1 && "r600"}>
-                          {detail.wins}
-                        </chakra.span>
-                      </>
-                    )
-                  ) : (
-                    // TODO: Don't need in production.
-                    <>
-                      Wins: <chakra.span color="r600">0</chakra.span>
-                    </>
-                  )}
+                  Wins:{" "}
+                  <chakra.span color={detail.wins.total < 1 && "r600"}>
+                    {detail.wins.total}
+                  </chakra.span>
                 </Text>
               </Box>
             </HStack>

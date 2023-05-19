@@ -1,20 +1,37 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import apiURL from "../../../apiUrl";
 import { useToast } from "@chakra-ui/react";
 
-const PostCompletedQuest = (id) => {
+const PostCompletedQuest = () => {
   const [loading, toggleLoading] = useState(false);
+  const navigate = useNavigate();
   const toast = useToast();
 
   const abortController = new AbortController();
 
-  const handleCompletedQuest = async (quest, balance, reward) => {
+  const handleCompletedQuest = async (
+    id,
+    quest,
+    balance,
+    reward,
+    csrfToken
+  ) => {
     toggleLoading(true);
     try {
       const res = await axios({
         method: "PATCH",
-        url: `http://localhost:4000/auth/api/firebase/update/${id}?completedQuest=${quest}&balance=${balance}&reward=${reward}`,
+        url: `${apiURL}/auth/api/firebase/update/${id}?completedQuest=${quest}`,
+        data: {
+          balance: balance,
+          reward: reward,
+        },
+        headers: {
+          CSRF_Token: csrfToken,
+        },
+        withCredentials: true,
         signal: abortController.signal,
       });
       // console.log("questRes", res.data);
@@ -32,6 +49,9 @@ const PostCompletedQuest = (id) => {
     } catch (error) {
       if (error.code === "ECONNABORTED" || error.message === "canceled") {
         console.warn("Request was aborted.");
+      } else if (error.response && error.response.status === 401) {
+        console.error(error);
+        navigate("/error401");
       } else {
         console.error(error);
         toast({

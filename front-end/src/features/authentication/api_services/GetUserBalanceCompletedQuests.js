@@ -1,6 +1,6 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import apiURL from "../../../apiUrl";
 import { useToast } from "@chakra-ui/react";
 
 const GetUserBalanceCompletedQuests = () => {
@@ -17,7 +17,8 @@ const GetUserBalanceCompletedQuests = () => {
     try {
       const res = await axios({
         method: "GET",
-        url: `http://localhost:4000/auth/api/firebase/users/${id}?balance=${true}&completedQuests=${true}`,
+        url: `${apiURL}/auth/api/firebase/users/${id}?balance=${true}&completedQuests=${true}`,
+        withCredentials: true,
         signal: abortController.signal,
         validateStatus: (status) => {
           return status === 200 || status === 404; // Resolve only if the status code is 404 or 200.
@@ -42,6 +43,9 @@ const GetUserBalanceCompletedQuests = () => {
     } catch (error) {
       if (error.code === "ECONNABORTED" || error.message === "canceled") {
         console.warn("Request was aborted.");
+      } else if (error.response && error.response.status === 401) {
+        console.error(error);
+        navigate("/error401");
       } else {
         console.error(error);
         navigate("/error500");

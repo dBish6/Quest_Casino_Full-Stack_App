@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 // *Design Imports*
@@ -33,10 +33,6 @@ const MatchOrForFunModal = (props) => {
   const dispatch = useDispatch();
   const toast = useToast();
   useDisableScroll(props.show.gameStart, 510);
-
-  useEffect(() => {
-    console.log("needToFinish", needToFinish);
-  }, [needToFinish]);
 
   return (
     <ModalTemplate

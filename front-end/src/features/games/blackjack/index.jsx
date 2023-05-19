@@ -75,7 +75,7 @@ const BlackjackFeature = () => {
   const { colorMode } = useColorMode();
   const [isWidthSmallerThan1429] = useMediaQuery("(max-width: 1429px)");
   const [isHeightSmallerThan844] = useMediaQuery("(max-height: 844px)");
-  const { currentUser, balance, setBalance } = useAuth();
+  const { currentUser, balance, setBalance, csrfToken } = useAuth();
   const dispatch = useDispatch();
   const gameType = useSelector(selectGameType);
   const winner = useSelector(selectWinner);
@@ -107,6 +107,7 @@ const BlackjackFeature = () => {
   const playerHasNatural = useSelector(selectPlayerHasNatural);
 
   // TODO: +playerBet on win floating animation.
+  // TODO: Make background the actual html background.
 
   useOnlyDarkMode();
 
@@ -239,10 +240,11 @@ const BlackjackFeature = () => {
         if (winner !== "push")
           dispatch(
             updateWinsBalanceThunk({
-              uid: currentUser.uid,
+              id: currentUser.uid,
               winner: winner,
               game: "blackjack",
               balance: newBalance,
+              csrfToken: csrfToken,
             })
           );
       });

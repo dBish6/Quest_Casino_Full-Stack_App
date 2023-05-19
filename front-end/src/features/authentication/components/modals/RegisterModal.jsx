@@ -128,6 +128,7 @@ const RegisterModal = (props) => {
         onSubmit={handleSubmit(() =>
           handleRegister(
             formRef,
+            "Standard",
             watch("firstName"),
             watch("lastName"),
             watch("username"),
@@ -135,7 +136,8 @@ const RegisterModal = (props) => {
             watch("password"),
             watch("conPassword"),
             watch("callingCode"),
-            watch("phone")
+            watch("phone"),
+            setPasswordStrength
           )
         )}
         ref={formRef}
@@ -162,7 +164,11 @@ const RegisterModal = (props) => {
               fontSize={{ base: "14px", md: "16px", xl: "16px" }}
               fontWeight={{ base: "600", md: "500", xl: "500" }}
             >
-              First Name<chakra.span color="r400"> *</chakra.span>
+              First Name
+              <chakra.span aria-label="Required" color="r400">
+                {" "}
+                *
+              </chakra.span>
             </FormLabel>
             <Input
               {...register("firstName", {
@@ -172,6 +178,7 @@ const RegisterModal = (props) => {
                   message: "Max of 50 characters exceeded.",
                 },
               })}
+              aria-required="true"
               id="firstName"
               name="firstName"
               autoComplete="off"
@@ -192,7 +199,11 @@ const RegisterModal = (props) => {
               fontSize={{ base: "14px", md: "16px", xl: "16px" }}
               fontWeight={{ base: "600", md: "500", xl: "500" }}
             >
-              Last Name<chakra.span color="r400"> *</chakra.span>
+              Last Name
+              <chakra.span aria-label="Required" color="r400">
+                {" "}
+                *
+              </chakra.span>
             </FormLabel>
             <Input
               {...register("lastName", {
@@ -202,6 +213,7 @@ const RegisterModal = (props) => {
                   message: "Max of 80 characters exceeded.",
                 },
               })}
+              aria-required="true"
               id="lastName"
               name="lastName"
               autoComplete="off"
@@ -227,7 +239,11 @@ const RegisterModal = (props) => {
             fontSize={{ base: "14px", md: "16px", xl: "16px" }}
             fontWeight={{ base: "600", md: "500", xl: "500" }}
           >
-            Username<chakra.span color="r400"> *</chakra.span>
+            Username
+            <chakra.span aria-label="Required" color="r400">
+              {" "}
+              *
+            </chakra.span>
           </FormLabel>
           <Input
             {...register("username", {
@@ -241,6 +257,7 @@ const RegisterModal = (props) => {
                 message: "You can make a better username then that...",
               },
             })}
+            aria-required="true"
             id="username"
             name="username"
             autoComplete="off"
@@ -268,7 +285,11 @@ const RegisterModal = (props) => {
             fontSize={{ base: "14px", md: "16px", xl: "16px" }}
             fontWeight={{ base: "600", md: "500", xl: "500" }}
           >
-            Email<chakra.span color="r400"> *</chakra.span>
+            Email
+            <chakra.span aria-label="Required" color="r400">
+              {" "}
+              *
+            </chakra.span>
           </FormLabel>
           <Input
             {...register("email", {
@@ -282,6 +303,7 @@ const RegisterModal = (props) => {
                 message: "This can't be your actual email, holy crap!.",
               },
             })}
+            aria-required="true"
             id="email"
             name="email"
             autoComplete="off"
@@ -309,7 +331,11 @@ const RegisterModal = (props) => {
               fontSize={{ base: "14px", md: "16px", xl: "16px" }}
               fontWeight={{ base: "600", md: "500", xl: "500" }}
             >
-              Password<chakra.span color="r400"> *</chakra.span>
+              Password
+              <chakra.span aria-label="Required" color="r400">
+                {" "}
+                *
+              </chakra.span>
             </FormLabel>
             <HStack>
               <Input
@@ -326,6 +352,7 @@ const RegisterModal = (props) => {
                 })}
                 onFocus={() => setFocused({ ...focused, password: true })}
                 onBlur={() => setFocused({ ...focused, password: false })}
+                aria-required="true"
                 id="password"
                 name="password"
                 autoComplete="off"
@@ -338,7 +365,7 @@ const RegisterModal = (props) => {
                 <Icon
                   as={MdOutlineVisibilityOff}
                   onClick={() =>
-                    toggleVisibility({ ...focused, password: false })
+                    toggleVisibility({ ...visible, password: false })
                   }
                   position="absolute"
                   right="0.875rem"
@@ -352,7 +379,7 @@ const RegisterModal = (props) => {
                 <Icon
                   as={MdOutlineVisibility}
                   onClick={() =>
-                    toggleVisibility({ ...focused, password: true })
+                    toggleVisibility({ ...visible, password: true })
                   }
                   position="absolute"
                   right="0.875rem"
@@ -389,7 +416,10 @@ const RegisterModal = (props) => {
               fontWeight={{ base: "600", md: "500", xl: "500" }}
             >
               Confirm Password
-              <chakra.span color="r400"> *</chakra.span>
+              <chakra.span aria-label="Required" color="r400">
+                {" "}
+                *
+              </chakra.span>
             </FormLabel>
             <HStack>
               <Input
@@ -406,6 +436,7 @@ const RegisterModal = (props) => {
                 })}
                 onFocus={() => setFocused({ ...focused, confirm: true })}
                 onBlur={() => setFocused({ ...focused, confirm: false })}
+                aria-required="true"
                 id="conPassword"
                 name="conPassword"
                 autoComplete="off"
@@ -418,7 +449,7 @@ const RegisterModal = (props) => {
                 <Icon
                   as={MdOutlineVisibilityOff}
                   onClick={() =>
-                    toggleVisibility({ ...focused, confirm: false })
+                    toggleVisibility({ ...visible, confirm: false })
                   }
                   position="absolute"
                   right="0.875rem"
@@ -432,7 +463,7 @@ const RegisterModal = (props) => {
                 <Icon
                   as={MdOutlineVisibility}
                   onClick={() =>
-                    toggleVisibility({ ...focused, confirm: true })
+                    toggleVisibility({ ...visible, confirm: true })
                   }
                   position="absolute"
                   right="0.875rem"
@@ -470,6 +501,8 @@ const RegisterModal = (props) => {
               {...register("callingCode", {
                 required: watch("phone").length ? true : false,
               })}
+              aria-label="Calling Codes"
+              aria-required="false"
               id="callingCode"
               name="callingCode"
               variant="primary"
@@ -496,6 +529,7 @@ const RegisterModal = (props) => {
                 },
               })}
               value={inputValue}
+              aria-required="false"
               id="phone"
               name="phone"
               maxLength="14"

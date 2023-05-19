@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import { CacheContext } from "../contexts/cache";
+import { CacheContext } from "../contexts/Cache";
 
 const useCache = () => {
   return useContext(CacheContext);

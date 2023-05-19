@@ -1,22 +1,27 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { v4 } from "uuid";
+import apiURL from "../../../apiUrl";
+import { nanoid } from "nanoid";
 
-// *Design Imports*
+// *Design Import*
 import { useToast } from "@chakra-ui/react";
-
-// *Custom Hooks Import*
-import useAuth from "../../../hooks/useAuth";
 
 // *Utility Import*
 import { storage } from "../../../utils/firebaseConfig";
 // Firebase Imports...
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import {
+  ref,
+  listAll,
+  uploadBytes,
+  getDownloadURL,
+  deleteObject,
+} from "firebase/storage";
 
-// NOTE: I know I could of just used the data object with axios and then
-// use req.body on the back-end, but that's it now... I used query strings.
-const UpdateProfile = () => {
+// *API Services Import*
+import PostLogout from "../api_services/PostLogout";
+
+const UpdateProfile = (currentUser, csrfToken) => {
   const [loadingUpdate, toggleLoadingUpdate] = useState({
     name: false,
     username: false,
@@ -32,19 +37,27 @@ const UpdateProfile = () => {
 
   const toast = useToast();
   const navigate = useNavigate();
-  const [emailSent, setEmailSent] = useState(false);
-  const { currentUser, logout, verifyEmail, balance, setBalance } = useAuth();
+  const [handleUserLogout, logoutLoading] = PostLogout();
+
   const abortController = new AbortController();
 
-  const handleFullName = async (id, name, setIsUpdating) => {
+  const handleFullName = async (name, setIsUpdating) => {
     setErrorHandler({ unexpected: false, maxRequests: false });
 
     try {
       if (currentUser.name !== name) {
         toggleLoadingUpdate({ ...loadingUpdate, name: true });
+
         const res = await axios({
           method: "PATCH",
-          url: `http://localhost:4000/auth/api/firebase/update/${id}?name=${name}`,
+          url: `${apiURL}/auth/api/firebase/update/${currentUser.uid}`,
+          data: {
+            name: name,
+          },
+          headers: {
+            CSRF_Token: csrfToken,
+          },
+          withCredentials: true,
           signal: abortController.signal,
           validateStatus: (status) => {
             return status === 200 || status === 429;
@@ -82,6 +95,9 @@ const UpdateProfile = () => {
     } catch (error) {
       if (error.code === "ECONNABORTED" || error.message === "canceled") {
         console.warn("Request was aborted.");
+      } else if (error.response && error.response.status === 401) {
+        console.error(error);
+        navigate("/error401");
       } else {
         setErrorHandler({ ...errorHandler, unexpected: true });
         console.error(error);
@@ -91,7 +107,7 @@ const UpdateProfile = () => {
     }
   };
 
-  const handleUsername = async (id, username, setIsUpdating) => {
+  const handleUsername = async (username, setIsUpdating) => {
     setErrorHandler({ unexpected: false, maxRequests: false });
 
     try {
@@ -99,7 +115,14 @@ const UpdateProfile = () => {
         toggleLoadingUpdate({ ...loadingUpdate, username: true });
         const res = await axios({
           method: "PATCH",
-          url: `http://localhost:4000/auth/api/firebase/update/${id}?username=${username}`,
+          url: `${apiURL}/auth/api/firebase/update/${currentUser.uid}`,
+          data: {
+            username: username,
+          },
+          headers: {
+            CSRF_Token: csrfToken,
+          },
+          withCredentials: true,
           signal: abortController.signal,
           validateStatus: (status) => {
             return status === 200 || status === 429;
@@ -137,6 +160,9 @@ const UpdateProfile = () => {
     } catch (error) {
       if (error.code === "ECONNABORTED" || error.message === "canceled") {
         console.warn("Request was aborted.");
+      } else if (error.response && error.response.status === 401) {
+        console.error(error);
+        navigate("/error401");
       } else {
         setErrorHandler({ ...errorHandler, unexpected: true });
         console.error(error);
@@ -146,7 +172,7 @@ const UpdateProfile = () => {
     }
   };
 
-  const handleEmail = async (id, email, setIsUpdating) => {
+  const handleEmail = async (email, setIsUpdating) => {
     setErrorHandler({ unexpected: false, maxRequests: false });
 
     try {
@@ -154,7 +180,14 @@ const UpdateProfile = () => {
         toggleLoadingUpdate({ ...loadingUpdate, email: true });
         const res = await axios({
           method: "PATCH",
-          url: `http://localhost:4000/auth/api/firebase/update/${id}?email=${email}`,
+          url: `${apiURL}/auth/api/firebase/update/${currentUser.uid}`,
+          data: {
+            email: email,
+          },
+          headers: {
+            CSRF_Token: csrfToken,
+          },
+          withCredentials: true,
           signal: abortController.signal,
           validateStatus: (status) => {
             return status === 200 || status === 400 || status === 429;
@@ -164,18 +197,18 @@ const UpdateProfile = () => {
         if (res) {
           if (res && res.status === 200) {
             setIsUpdating((prev) => ({ ...prev, email: false }));
-            toast({
-              description:
-                "Email successfully updated, you must now log in again.",
-              status: "success",
-              duration: 9000,
-              isClosable: true,
-              position: "top",
-              variant: "solid",
-            });
-            new Promise((resolve) => {
-              resolve(navigate("/home"));
-            }).then(() => logout());
+            const logoutRes = await handleUserLogout();
+            if (logoutRes && !logoutLoading) {
+              toast({
+                description:
+                  "Email successfully updated, you must now log in again.",
+                status: "success",
+                duration: 9000,
+                isClosable: true,
+                position: "top",
+                variant: "solid",
+              });
+            }
           } else if (
             res.status === 400 &&
             res.data.code === "auth/email-already-exists"
@@ -208,6 +241,9 @@ const UpdateProfile = () => {
     } catch (error) {
       if (error.code === "ECONNABORTED" || error.message === "canceled") {
         console.warn("Request was aborted.");
+      } else if (error.response && error.response.status === 401) {
+        console.error(error);
+        navigate("/error401");
       } else {
         setErrorHandler({ ...errorHandler, unexpected: true });
         console.error(error);
@@ -217,20 +253,7 @@ const UpdateProfile = () => {
     }
   };
 
-  const handleEmailVerified = async () => {
-    setEmailSent(false);
-    setErrorHandler({ ...errorHandler, maxRequests: false });
-    try {
-      await verifyEmail();
-      setEmailSent(true);
-    } catch (error) {
-      if (error.code === "auth/too-many-requests")
-        setErrorHandler({ ...errorHandler, maxRequests: true });
-      console.error(error);
-    }
-  };
-
-  const handlePhone = async (id, callingCode, phoneNum, setIsUpdating) => {
+  const handlePhone = async (callingCode, phoneNum, setIsUpdating) => {
     setErrorHandler({ unexpected: false, maxRequests: false });
 
     try {
@@ -239,9 +262,14 @@ const UpdateProfile = () => {
         toggleLoadingUpdate({ ...loadingUpdate, phone: true });
         const res = await axios({
           method: "PATCH",
-          url: `http://localhost:4000/auth/api/firebase/update/${id}?phoneNum=${encodeURIComponent(
-            phoneNumUpdate
-          )}`,
+          url: `${apiURL}/auth/api/firebase/update/${currentUser.uid}`,
+          data: {
+            phoneNum: phoneNumUpdate,
+          },
+          headers: {
+            CSRF_Token: csrfToken,
+          },
+          withCredentials: true,
           signal: abortController.signal,
           validateStatus: (status) => {
             return status === 200 || status === 400 || status === 429;
@@ -292,6 +320,9 @@ const UpdateProfile = () => {
     } catch (error) {
       if (error.code === "ECONNABORTED" || error.message === "canceled") {
         console.warn("Request was aborted.");
+      } else if (error.response && error.response.status === 401) {
+        console.error(error);
+        navigate("/error401");
       } else {
         setErrorHandler({ ...errorHandler, unexpected: true });
         console.error(error);
@@ -302,7 +333,6 @@ const UpdateProfile = () => {
   };
 
   const handleProfilePicture = async (
-    id,
     photoURL,
     setSelectedPicture,
     custom,
@@ -323,17 +353,37 @@ const UpdateProfile = () => {
           file.type.substring(0, 5) === "image" &&
           /\.(jpe?g|png)$/i.test(file.name)
         ) {
-          const imageRef = ref(
-            storage,
-            `images/userProfilePics/${file.name}_${v4()}`
-          );
-          await uploadBytes(imageRef, file);
-          const downloadURL = await getDownloadURL(imageRef);
-          const encodedURL = encodeURIComponent(downloadURL);
+          const currentImage = await listAll(
+              ref(storage, `images/userProfilePics/${currentUser.uid}/`)
+            ),
+            newImageRef = ref(
+              storage,
+              `images/userProfilePics/${currentUser.uid}/${
+                file.name
+              }_${nanoid()}`
+            );
+          // If there is not a item in storage, just upload the new image. Else delete it and then upload.
+          if (!currentImage.items.length) {
+            await uploadBytes(newImageRef, file);
+          } else {
+            for (const item of currentImage.items) {
+              // There can only be one item in storage, but this is just in case.
+              await deleteObject(ref(storage, item.fullPath));
+            }
+            await uploadBytes(newImageRef, file);
+          }
+          const downloadURL = await getDownloadURL(newImageRef);
 
           const res = await axios({
             method: "PATCH",
-            url: `http://localhost:4000/auth/api/firebase/update/${id}?profilePic=${encodedURL}`,
+            url: `${apiURL}/auth/api/firebase/update/${currentUser.uid}`,
+            data: {
+              profilePic: downloadURL,
+            },
+            headers: {
+              CSRF_Token: csrfToken,
+            },
+            withCredentials: true,
             signal: abortController.signal,
             validateStatus: (status) => {
               return status === 200 || status === 429;
@@ -369,12 +419,18 @@ const UpdateProfile = () => {
           });
         }
 
-        // If the user use one of the default images.
+        // If the user uses one of the default images.
       } else {
-        const encodedURL = encodeURIComponent(photoURL);
         const res = await axios({
           method: "PATCH",
-          url: `http://localhost:4000/auth/api/firebase/update/${id}?profilePic=${encodedURL}`,
+          url: `${apiURL}/auth/api/firebase/update/${currentUser.uid}`,
+          data: {
+            profilePic: photoURL,
+          },
+          headers: {
+            CSRF_Token: csrfToken,
+          },
+          withCredentials: true,
           signal: abortController.signal,
           validateStatus: (status) => {
             return status === 200 || status === 429;
@@ -404,6 +460,9 @@ const UpdateProfile = () => {
     } catch (error) {
       if (error.code === "ECONNABORTED" || error.message === "canceled") {
         console.warn("Request was aborted.");
+      } else if (error.response && error.response.status === 401) {
+        console.error(error);
+        navigate("/error401");
       } else {
         setErrorHandler({ ...errorHandler, unexpected: true });
         console.error(error);
@@ -413,14 +472,28 @@ const UpdateProfile = () => {
     }
   };
 
-  const handleUpdateBalance = async (formRef, id, deposit) => {
+  const handleUpdateBalance = async (
+    formRef,
+    id,
+    deposit,
+    balance,
+    setBalance,
+    csrfToken
+  ) => {
     setErrorHandler({ ...errorHandler, unexpected: false });
     toggleLoadingUpdate({ ...loadingUpdate, balance: true });
 
     try {
       const res = await axios({
         method: "PATCH",
-        url: `http://localhost:4000/auth/api/firebase/update/${id}?deposit=${deposit}`,
+        url: `${apiURL}/auth/api/firebase/update/${id}`,
+        data: {
+          deposit: deposit,
+        },
+        headers: {
+          CSRF_Token: csrfToken,
+        },
+        withCredentials: true,
         signal: abortController.signal,
       });
       // console.log(res.data);
@@ -439,6 +512,9 @@ const UpdateProfile = () => {
     } catch (error) {
       if (error.code === "ECONNABORTED" || error.message === "canceled") {
         console.warn("Request was aborted.");
+      } else if (error.response && error.response.status === 401) {
+        console.error(error);
+        navigate("/error401");
       } else {
         setErrorHandler({ ...errorHandler, unexpected: true });
         console.error(error);
@@ -452,11 +528,9 @@ const UpdateProfile = () => {
     handleFullName,
     handleUsername,
     handleEmail,
-    handleEmailVerified,
     handlePhone,
     handleProfilePicture,
     handleUpdateBalance,
-    emailSent,
     loadingUpdate,
     errorHandler,
   };

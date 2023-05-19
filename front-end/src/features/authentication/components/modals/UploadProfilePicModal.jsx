@@ -68,12 +68,7 @@ const UploadProfilePicModal = (props) => {
               accept="/image/*"
               isDisabled={props.loading}
               onChange={(file) =>
-                props.handleProfilePicture(
-                  props.userId,
-                  file,
-                  props.setSelectedPicture,
-                  true
-                )
+                props.handleProfilePicture(file, props.setSelectedPicture, true)
               }
               variant="unstyled"
               p="0 0.5rem"

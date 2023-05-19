@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
+import { getAuth, setPersistence, inMemoryPersistence } from "firebase/auth";
 import { getStorage } from "firebase/storage";
 
 const firebaseConfig = initializeApp({
@@ -11,6 +11,8 @@ const firebaseConfig = initializeApp({
   appId: process.env.REACT_APP_FIREBASE_APP_ID,
 });
 
-export const auth = getAuth();
+export const auth = getAuth(firebaseConfig);
+// Sets the Persistence to "NONE" because the back-end handles the user session and data.
+setPersistence(auth, inMemoryPersistence);
 export const storage = getStorage(firebaseConfig);
 export default firebaseConfig;

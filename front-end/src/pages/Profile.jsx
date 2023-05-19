@@ -1,9 +1,5 @@
 import { useState } from "react";
 
-// *Custom Hooks Imports*
-import useAuth from "../hooks/useAuth";
-import useDocumentTitle from "../hooks/useDocumentTitle";
-
 // *Design Imports*
 import {
   VStack,
@@ -18,6 +14,7 @@ import {
   AlertIcon,
   AlertTitle,
   AlertDescription,
+  Spinner,
   Box,
   Link,
   HStack,
@@ -28,8 +25,13 @@ import {
 } from "@chakra-ui/react";
 import { RiMedalLine } from "react-icons/ri";
 
+// *Custom Hooks Imports*
+import useAuth from "../hooks/useAuth";
+import useDocumentTitle from "../hooks/useDocumentTitle";
+
 // *API Services Imports*
 import GetUser from "../features/authentication/api_services/GetUser";
+import SendEmailVerificationLink from "../features/authentication/api_services/SendEmailVerificationLink";
 import UpdateProfile from "../features/authentication/api_services/UpdateProfile";
 import DeleteUser from "../features/authentication/api_services/DeleteUser";
 
@@ -42,33 +44,48 @@ import ChangePicture from "../features/authentication/components/profile/ChangeP
 
 const Profile = (props) => {
   const [show, setShow] = useState({ passwordReset: false, areYouSure: false });
+  const [onPictureTab, setOnPictureTab] = useState(false);
   const { colorMode } = useColorMode();
-  const { currentUser } = useAuth();
+  const { currentUser, csrfToken, logout } = useAuth();
 
   const [fsUser, notFoundErr] = GetUser(currentUser.uid);
+  const {
+    handleEmailVerificationLink,
+    errorHandler: EmailVerificationErrorHandler,
+    loading: EmailVerificationLoading,
+    emailSent,
+  } = SendEmailVerificationLink();
   const {
     handleUsername,
     handleFullName,
     handleEmail,
-    handleEmailVerified,
     handlePhone,
     handleProfilePicture,
-    emailSent,
     loadingUpdate,
     errorHandler,
-  } = UpdateProfile();
+  } = UpdateProfile(currentUser, csrfToken);
   const {
     handleDeleteProfile,
     unexpectedErr: deletionUnexpectedErr,
     loading: deletionLoading,
-  } = DeleteUser();
+  } = DeleteUser(logout, currentUser.uid, csrfToken);
 
   useDocumentTitle(`${props.title} | Quest Casino`);
 
   return (
     <>
       {!currentUser.emailVerified ? (
-        errorHandler.maxRequests ? (
+        EmailVerificationErrorHandler.unexpected ? (
+          <Alert status="error" variant="left-accent">
+            <AlertIcon />
+            <Box>
+              <AlertTitle>Server Error 500</AlertTitle>
+              <AlertDescription>
+                Failed to send email verification link.
+              </AlertDescription>
+            </Box>
+          </Alert>
+        ) : EmailVerificationErrorHandler.maxRequests ? (
           <Alert status="error" variant="left-accent">
             <AlertIcon />
             <Box>
@@ -81,22 +98,49 @@ const Profile = (props) => {
         ) : !emailSent ? (
           <Alert status="warning" variant="left-accent">
             <AlertIcon />
-            <AlertDescription>
+            <AlertDescription
+              display={EmailVerificationLoading && "flex"}
+              alignItems={EmailVerificationLoading && "center"}
+            >
               Please verify your email by clicking the link;{" "}
-              <Link onClick={() => handleEmailVerified()} color="blue.300">
-                Verify Here
-              </Link>
-              .
+              {!EmailVerificationLoading ? (
+                <>
+                  <Link
+                    onClick={() => {
+                      handleEmailVerificationLink(currentUser.email);
+                    }}
+                    color="blue.300"
+                  >
+                    Send Verification
+                  </Link>
+                  .
+                  <br />
+                  <Text as="small" fontSize="12.75px" opacity="0.9">
+                    <Box as="span" fontWeight="500">
+                      NOTE:
+                    </Box>{" "}
+                    If you are verified and you still see this message, you may
+                    have to refresh the page.
+                  </Text>
+                </>
+              ) : (
+                <Spinner
+                  size="sm"
+                  color={colorMode === "dark" ? "p500" : "r500"}
+                  ml="0.5rem"
+                />
+              )}
             </AlertDescription>
           </Alert>
         ) : (
           <Alert status="success" variant="left-accent">
             <AlertIcon />
-            Email sent! Check your email for instructions.
+            Email sent! Check your email inbox for further instructions. If you
+            are unable to find it, please check your junk/spam folder.
           </Alert>
         )
       ) : undefined}
-      <VStack mt={currentUser.emailVerified ? "calc(5rem + 48px)" : "5rem"}>
+      <VStack mt={currentUser.emailVerified ? "calc(4rem + 73px)" : "4rem"}>
         {fsUser && Object.keys(fsUser).length > 0 ? (
           notFoundErr.length ? (
             <Alert status="error" variant="left-accent">
@@ -137,6 +181,7 @@ const Profile = (props) => {
                 >
                   <TabList display="flex" justifyContent="center">
                     <Tab
+                      onClick={() => setOnPictureTab(false)}
                       _selected={{
                         borderWidth: "1px",
                         borderColor:
@@ -159,6 +204,7 @@ const Profile = (props) => {
                       General
                     </Tab>
                     <Tab
+                      onClick={() => setOnPictureTab(true)}
                       _selected={{
                         borderWidth: "1px",
                         borderColor:
@@ -223,6 +269,7 @@ const Profile = (props) => {
                         />
                         <Text
                           fontSize="18px"
+                          fontWeight={colorMode === "light" && "500"}
                           color={fsUser.wins.total > 0 ? "g500" : "r600"}
                         >
                           {fsUser.wins.total}
@@ -235,7 +282,6 @@ const Profile = (props) => {
                         handlePhone={handlePhone}
                         loadingUpdate={loadingUpdate}
                         fsUser={fsUser}
-                        currentUser={currentUser}
                       />
 
                       <Link
@@ -295,6 +341,7 @@ const Profile = (props) => {
                       <ChangePicture
                         handleProfilePicture={handleProfilePicture}
                         AreYouSureModal={AreYouSureModal}
+                        onPictureTab={onPictureTab}
                         loadingUpdate={loadingUpdate}
                         currentUser={currentUser}
                       />
@@ -328,7 +375,6 @@ const Profile = (props) => {
         setShow={setShow}
         loading={deletionLoading}
         handleDeleteProfile={handleDeleteProfile}
-        userId={currentUser.uid}
       />
     </>
   );

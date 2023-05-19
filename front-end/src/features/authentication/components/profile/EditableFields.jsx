@@ -56,6 +56,7 @@ const EditableFields = (props) => {
     formState: { errors },
     handleSubmit,
     watch,
+    setError,
   } = useForm({
     defaultValues: {
       name: "",
@@ -93,13 +94,17 @@ const EditableFields = (props) => {
         </HStack>
       ) : (
         <chakra.form
-          onSubmit={handleSubmit(() =>
-            props.handleFullName(
-              props.currentUser.uid,
-              watch("name"),
-              setIsUpdating
-            )
-          )}
+          onSubmit={handleSubmit(() => {
+            if (!watch("name").includes(" ")) {
+              setError("name", {
+                type: "custom",
+                message: "Must be a full name.",
+              });
+            } else {
+              setError("name", false);
+              props.handleFullName(watch("name"), setIsUpdating);
+            }
+          })}
           display="flex"
         >
           <FormControl isInvalid={errors.name}>
@@ -187,11 +192,7 @@ const EditableFields = (props) => {
       ) : (
         <chakra.form
           onSubmit={handleSubmit(() =>
-            props.handleUsername(
-              props.currentUser.uid,
-              watch("username"),
-              setIsUpdating
-            )
+            props.handleUsername(watch("username"), setIsUpdating)
           )}
           display="flex"
         >
@@ -292,11 +293,7 @@ const EditableFields = (props) => {
       ) : (
         <chakra.form
           onSubmit={handleSubmit(() =>
-            props.handleEmail(
-              props.currentUser.uid,
-              watch("email"),
-              setIsUpdating
-            )
+            props.handleEmail(watch("email"), setIsUpdating)
           )}
           display="flex"
         >
@@ -394,7 +391,6 @@ const EditableFields = (props) => {
         <chakra.form
           onSubmit={handleSubmit(() =>
             props.handlePhone(
-              props.currentUser.uid,
               watch("callingCode"),
               watch("phone"),
               setIsUpdating
