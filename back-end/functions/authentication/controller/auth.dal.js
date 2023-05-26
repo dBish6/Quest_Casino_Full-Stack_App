@@ -7,40 +7,66 @@ const moment = require("moment");
 const getAllUsersFromDb = async () => {
   try {
     const collection = await db.collection("users").get();
-    return collection.docs();
+    return collection.docs.map((doc) => doc.data());
   } catch (error) {
     logger.error("auth.dal error: getAllUsersFromDb");
     logger.error(error);
   }
 };
 
-// FIXME: Getting every single document is pretty time consuming.
 const getPlayerHighlightFromDb = async () => {
-  let highlights = [];
+  const randomIds = [];
+
   try {
-    const documents = await db.collection("users").get({
-      fields: ["username", "photoURL", "wins"],
-    });
-    documents.forEach((doc) => {
-      const { username, photoURL, wins } = doc.data();
-      highlights.push({ username, photoURL, wins });
-    });
-    highlights.sort(() => Math.random() - 0.5);
-    highlights = highlights.slice(0, 8);
-    return highlights;
+    const queryList = await db.collection("users").listDocuments();
+    // Shuffles all the documents real nice and creates a array of a max of 8 random IDs.
+    for (let i = queryList.length - 1; i >= 0 && randomIds.length < 8; i--) {
+      let randomIndex = Math.floor(Math.random() * (i + 1));
+      let temp = queryList[i];
+      queryList[i] = queryList[randomIndex];
+      queryList[randomIndex] = temp;
+      randomIds.push(queryList[i].id);
+    }
+
+    const querySnapshot = await db
+      .collection("users")
+      .where(dbUtils.FieldPath.documentId(), "in", randomIds)
+      .select("username", "photoURL", "wins.total")
+      .get();
+    console.log(
+      "data",
+      querySnapshot.docs.map((docs) => docs.data())
+    );
+    if (!querySnapshot.empty)
+      return querySnapshot.docs.map((docs) => docs.data());
   } catch (error) {
     logger.error("auth.dal error: getPlayerHighlightFromDb");
     throw error;
   }
 };
 
+// Wasn't necessary to get balance, completed_quests and win_streaks with this function
+// because we get those fields on page load; this is mainly for the profile page.
 const getUserFromDb = async (id) => {
   try {
-    const document = await db.collection("users").doc(id).get();
-    if (!document.exists) {
+    // const document = await db.collection("users").doc(id).get();
+    const querySnapshot = await db
+      .collection("users")
+      .where(dbUtils.FieldPath.documentId(), "==", id)
+      .select(
+        "full_name",
+        "username",
+        "email",
+        "photoURL",
+        "phone_number",
+        "wins"
+      )
+      .get();
+
+    if (querySnapshot.empty) {
       return "User doesn't exist.";
     } else {
-      return document.data();
+      return querySnapshot.docs[0].data();
     }
   } catch (error) {
     logger.error("auth.dal error: getUserFromDb");
@@ -50,20 +76,16 @@ const getUserFromDb = async (id) => {
 
 const getUserBalanceCompletedQuestsFromDb = async (id) => {
   try {
-    const document = await db
+    const querySnapshot = await db
       .collection("users")
-      .doc(id)
-      .get({
-        fields: ["balance", "completed_quests"],
-      });
-    const { balance, completed_quests } = document.data();
-    if (!document.exists) {
+      .where(dbUtils.FieldPath.documentId(), "==", id)
+      .select("balance", "completed_quests")
+      .get();
+
+    if (querySnapshot.empty) {
       return "User doesn't exist.";
     } else {
-      return {
-        balance: balance,
-        completedQuests: completed_quests,
-      };
+      return querySnapshot.docs[0].data();
     }
   } catch (error) {
     logger.error("auth.dal error: getUserBalanceCompletedQuestsFromDb");
@@ -73,20 +95,15 @@ const getUserBalanceCompletedQuestsFromDb = async (id) => {
 
 const getLeaderBoardFromDb = async () => {
   try {
-    const documents = await db
+    const querySnapshot = await db
       .collection("users")
       .orderBy("wins.total", "desc")
+      .select("username", "photoURL", "wins.total")
       .limit(10)
       .get();
-    const leaderboard = documents.docs.map((doc) => {
-      return {
-        photoURL: doc.get("photoURL"),
-        username: doc.get("username"),
-        totalWins: doc.get("wins.total"),
-      };
-    });
 
-    if (leaderboard.length) return leaderboard;
+    if (!querySnapshot.empty)
+      return querySnapshot.docs.map((docs) => docs.data());
   } catch (error) {
     logger.error("auth.dal error: getLeaderBoardFromDb");
     throw error;
@@ -181,7 +198,7 @@ const addUserToDb = async (
               : await hash(password, 10),
           phone_number: phoneNum,
           photoURL: photoURL,
-          wins: { total: 0, blackjack: 0, slots: 0 },
+          wins: { blackjack: 0, slots: 0, total: 0 },
           balance: 0,
           completed_quests: [],
           creation_date: moment().format(),
@@ -268,47 +285,26 @@ const updateProfilePicture = async (id, photoURL) => {
   }
 };
 
-const updateWins = async (id, win) => {
-  if (!win) {
-    throw new Error(
-      "The wins wasn't updated successfully! You must of forgot to pass the type as the req.query.win."
-    );
-  }
-
+const updateWins = async (id, win, game) => {
   try {
-    const document = await db.collection("users").doc(id).get({
-      fields: "wins",
-    });
+    const response = await db
+      .collection("users")
+      .doc(id)
+      .update(
+        game === "blackjack"
+          ? {
+              "wins.blackjack": dbUtils.FieldValue.increment(1),
+              "wins.total": dbUtils.FieldValue.increment(1),
+            }
+          : game === "Slots"
+          ? {
+              "wins.slots": dbUtils.FieldValue.increment(1),
+              "wins.total": dbUtils.FieldValue.increment(1),
+            }
+          : undefined
+      );
 
-    if (!document.exists) {
-      return "User doesn't exist.";
-    } else {
-      const currentWins = await document.get("wins");
-
-      const response = await db
-        .collection("users")
-        .doc(id)
-        .update(
-          win === "blackjack"
-            ? {
-                wins: {
-                  ...currentWins,
-                  blackjack: currentWins.blackjack + 1,
-                  total: currentWins.total + 1,
-                },
-              }
-            : win === "Slots"
-            ? {
-                wins: {
-                  ...currentWins,
-                  slots: currentWins.slots + 1,
-                  total: currentWins.total + 1,
-                },
-              }
-            : { wins: {} }
-        );
-      return response;
-    }
+    return response;
   } catch (error) {
     logger.error("auth.dal error: updateWins");
     throw error;
