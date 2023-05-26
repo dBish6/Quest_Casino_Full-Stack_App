@@ -1,5 +1,5 @@
 const { logger } = require("firebase-functions");
-const { updateActiveTimestamp } = require("../controllers/auth.dal");
+const { updateActiveTimestamp } = require("../controller/auth.dal");
 
 // Add a new activity timestamp to the user.
 const timestamp = async (req, res, next) => {

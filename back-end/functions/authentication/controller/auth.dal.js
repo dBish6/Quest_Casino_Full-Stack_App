@@ -33,10 +33,7 @@ const getPlayerHighlightFromDb = async () => {
       .where(dbUtils.FieldPath.documentId(), "in", randomIds)
       .select("username", "photoURL", "wins.total")
       .get();
-    console.log(
-      "data",
-      querySnapshot.docs.map((docs) => docs.data())
-    );
+
     if (!querySnapshot.empty)
       return querySnapshot.docs.map((docs) => docs.data());
   } catch (error) {
@@ -45,11 +42,10 @@ const getPlayerHighlightFromDb = async () => {
   }
 };
 
-// Wasn't necessary to get balance, completed_quests and win_streaks with this function
+// Wasn't necessary to get balance, completed_quests with this function
 // because we get those fields on page load; this is mainly for the profile page.
 const getUserFromDb = async (id) => {
   try {
-    // const document = await db.collection("users").doc(id).get();
     const querySnapshot = await db
       .collection("users")
       .where(dbUtils.FieldPath.documentId(), "==", id)
@@ -285,7 +281,7 @@ const updateProfilePicture = async (id, photoURL) => {
   }
 };
 
-const updateWins = async (id, win, game) => {
+const updateWins = async (id, game) => {
   try {
     const response = await db
       .collection("users")

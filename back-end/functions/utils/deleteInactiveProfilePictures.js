@@ -1,5 +1,5 @@
 const { region, logger } = require("firebase-functions");
-const { getAllUsersFromDb } = require("../authentication/controllers/auth.dal");
+const { getAllUsersFromDb } = require("../authentication/controller/auth.dal");
 const moment = require("moment");
 const { storage } = require("../model/firebaseConfig");
 

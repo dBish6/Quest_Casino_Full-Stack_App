@@ -16,7 +16,8 @@ const helmet = require("helmet");
 const hpp = require("hpp");
 const rateLimit = require("express-rate-limit");
 
-const authRouter = require("./authentication/routes/auth");
+const authRouter = require("./authentication/route/auth");
+const gamesRouter = require("./games/route/games");
 
 global.DEBUG = true;
 
@@ -38,7 +39,8 @@ app.use(
     origin: [
       "http://localhost:3000",
       `https://${process.env.PROJECT_ID}.web.app`,
-      "questcasino.xyz",
+      `https://${process.env.PROJECT_ID}.firebaseapp.com`,
+      "https://questcasino.xyz",
     ], // Location of client side; react app.
     credentials: true, // Allows for sending credentials like cookies.
   })
@@ -60,9 +62,10 @@ app.use(
 
 // *Routers*
 app.use("/auth", authRouter);
+app.use("/games", gamesRouter);
 
-// app.listen(4000, "localhost", () => {
-//   console.log(
-//     "Server is running on http://localhost:4000; Ctrl-C to terminate..."
-//   );
-// });
+app.listen(4000, "localhost", () => {
+  console.log(
+    "Server is running on http://localhost:4000; Ctrl-C to terminate..."
+  );
+});

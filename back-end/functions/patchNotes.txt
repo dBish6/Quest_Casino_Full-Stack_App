@@ -1,0 +1,7 @@
+Since Production:
+
+v1.1.2
+- Auth controllers changed for better performance; controllers that get specific fields 
+  now uses select() to avoid getting the full document before hand.
+- Game route and controller was added to persist the current game session. 
+- Fixed auth.dal get all users function.

@@ -1,19 +1,18 @@
 const { Router } = require("express");
-const router = Router();
 const { logger } = require("firebase-functions");
 
 const { hash } = require("bcrypt");
 const { randomUUID } = require("crypto");
 const sendEmail = require("../../utils/sendEmail");
 
-const {
-  verifyUserToken,
-  verifyCsrfToken,
-} = require("../middleware/verifyTokens");
+const verifyUserToken = require("../middleware/verifyUserToken");
 const verifySessionCookie = require("../middleware/verifySessionCookie");
+const verifyCsrfToken = require("../../middleware/verifyCsrfToken");
 const timestamp = require("../middleware/timestamp");
 const { auth } = require("../../model/firebaseConfig");
-const authDal = require("../controllers/auth.dal");
+const authDal = require("../controller/auth.dal");
+
+const router = Router();
 
 // Get All Users
 router.get("/api/firebase/users", async (req, res) => {
@@ -27,7 +26,7 @@ router.get("/api/firebase/users", async (req, res) => {
       fsRes = await authDal.getPlayerHighlightFromDb();
     }
 
-    if (!fsRes.length) {
+    if (!fsRes) {
       return res.status(404).json({
         firestoreRes: fsRes,
         ERROR: "/auth/api/firebase/users found no data.",
@@ -38,10 +37,14 @@ router.get("/api/firebase/users", async (req, res) => {
     }
   } catch (error) {
     logger.error(error);
-    return res.status(500).json({
-      fsRes: false,
-      ERROR: "/auth/api/firebase/users failed to send users.",
-    });
+    if (error.code === "auth/too-many-requests") {
+      return res.status(429).json(error);
+    } else {
+      return res.status(500).json({
+        fsRes: false,
+        ERROR: "/auth/api/firebase/users failed to send users.",
+      });
+    }
   }
 });
 
@@ -59,7 +62,7 @@ router.get("/api/firebase/users/:id", verifySessionCookie, async (req, res) => {
     }
 
     if (fsRes === "User doesn't exist.") {
-      res.status(404).json({
+      return res.status(404).json({
         user: fsRes,
         ERROR:
           "/auth/api/firebase/users/:id failed to find the document of the requested user.",
@@ -102,12 +105,11 @@ router.post(
         };
       res.cookie("session", sessionCookie, options);
       const csrfToken = randomUUID();
-      console.log("csrfToken", csrfToken);
       res.cookie("XSRF_TOKEN", csrfToken, options);
 
       return res.status(200).json({
         session: true,
-        user: req.user,
+        authUser: req.user,
         token: await hash(csrfToken, 10),
         message: "Session cookie created successfully.",
       });
@@ -154,11 +156,15 @@ router.get(
       });
     } catch (error) {
       logger.error(error);
-      return res.status(500).json({
-        session: false,
-        ERROR:
-          "/api/firebase/users/session failed to send session confirmation.",
-      });
+      if (error.code === "auth/too-many-requests") {
+        return res.status(429).json(error);
+      } else {
+        return res.status(500).json({
+          session: false,
+          ERROR:
+            "/api/firebase/users/session failed to send session confirmation.",
+        });
+      }
     }
   }
 );
@@ -202,7 +208,6 @@ router.post(
 router.post("/api/firebase/logout", verifySessionCookie, async (req, res) => {
   if (DEBUG) logger.debug("/auth/api/firebase/logout");
 
-  // FIXME: On logout I am still getting "Some cookies are misusing the recommended “SameSite“ attribute" warning.
   try {
     res.clearCookie("session");
     res.clearCookie("XSRF_TOKEN");
@@ -224,13 +229,14 @@ router.post("/api/firebase/logout", verifySessionCookie, async (req, res) => {
 // Add User
 router.post("/api/firebase/register", async (req, res) => {
   if (DEBUG) logger.debug("/auth/api/firebase/register body:", req.body);
+  let fsRes;
 
   try {
     // If the user uses the Google register.
     if (req.body.type === "Google" && req.body.userId) {
       const userExists = await authDal.confirmUserDocument(req.body.userId);
       if (!userExists) {
-        const fsRes = await authDal.addUserToDb(
+        fsRes = await authDal.addUserToDb(
           req.body.userId,
           req.body.type,
           req.body.firstName,
@@ -248,7 +254,7 @@ router.post("/api/firebase/register", async (req, res) => {
             );
           return res
             .status(200)
-            .json({ registered: true, firestoreRes: fsRes });
+            .json({ registered: true, firestoreRes: fsRes.firestore });
         }
       } else {
         if (DEBUG)
@@ -266,7 +272,7 @@ router.post("/api/firebase/register", async (req, res) => {
           .json({ registered: false, ERROR: "Username is already taken." });
       } else {
         // Creates auth user & Firestore user.
-        const response = await authDal.addUserToDb(
+        fsRes = await authDal.addUserToDb(
           null,
           req.body.type,
           req.body.firstName,
@@ -278,24 +284,22 @@ router.post("/api/firebase/register", async (req, res) => {
           null
         );
 
-        if (response) {
+        if (fsRes) {
           if (DEBUG)
             logger.debug("DEBUGGER: User was registered into the database.");
           return res.status(200).json({
             registered: true,
-            authUser: response.firebaseAuth,
-            firestoreRes: response.firestore,
+            authUser: fsRes.firebaseAuth,
+            firestoreRes: fsRes.firestore,
           });
         }
       }
     } else {
-      res.status(500).json({
+      return res.status(500).json({
+        registered: false,
         ERROR:
           '/api/firebase/register was not given a register type; must be "Google" or "Standard".',
       });
-      throw new Error(
-        '/api/firebase/register was not given a register type; must be "Google" or "Standard".'
-      );
     }
   } catch (error) {
     if (error.code === "auth/email-already-exists") {
@@ -334,19 +338,11 @@ router.patch(
     let balanceRes;
 
     try {
-      if (req.query.win && req.query.winType && req.body.balance) {
+      if (req.query.win && req.query.game && req.body.balance >= 0) {
         if (req.query.win === "true")
-          winsRes = await authDal.updateWins(userId, req.query.winType);
+          winsRes = await authDal.updateWins(userId, req.query.game);
 
-        if (winsRes !== "User doesn't exist." || !winsRes) {
-          balanceRes = await authDal.updateBalance(userId, req.body.balance);
-        } else if (winsRes === "User doesn't exist.") {
-          return res.status(404).json({
-            user: winsRes,
-            ERROR:
-              "/auth/api/firebase/update/:id failed to find the document by Id to update wins and balance.",
-          });
-        }
+        balanceRes = await authDal.updateBalance(userId, req.body.balance);
       } else if (req.body.deposit) {
         fsRes = await authDal.updateBalance(
           userId,
@@ -392,13 +388,10 @@ router.patch(
           req.body.reward
         );
       } else {
-        res.status(400).json({
+        return res.status(400).json({
           ERROR:
             "/auth/api/firebase/update/:id was given nothing to update or you missed a query.",
         });
-        // throw new Error(
-        //   "/auth/api/firebase/update/:id was given nothing to update."
-        // );
       }
 
       if (authRes && fsRes) {
