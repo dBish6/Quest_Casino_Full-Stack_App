@@ -29,15 +29,11 @@ router.get("/api/firebase/session", async (req, res) => {
     return res.status(200).json(fsRes);
   } catch (error) {
     logger.error(error);
-    if (error.code === "auth/too-many-requests") {
-      return res.status(429).json(error);
-    } else {
-      return res.status(500).json({
-        fsRes: false,
-        ERROR:
-          "/games/api/firebase/session failed to send the game session data.",
-      });
-    }
+    return res.status(500).json({
+      fsRes: false,
+      ERROR:
+        "/games/api/firebase/session failed to send the game session data.",
+    });
   }
 });
 
@@ -55,14 +51,10 @@ router.patch("/api/firebase/session", verifyCsrfToken, async (req, res) => {
     return res.status(200).json(fsRes);
   } catch (error) {
     logger.error(error);
-    if (error.code === "auth/too-many-requests") {
-      return res.status(429).json(error);
-    } else {
-      return res.status(500).json({
-        fsRes: false,
-        ERROR: "/games/api/firebase/session failed to set the game session.",
-      });
-    }
+    return res.status(500).json({
+      fsRes: false,
+      ERROR: "/games/api/firebase/session failed to set the game session.",
+    });
   }
 });
 
