@@ -8,6 +8,7 @@ const Footer = (props) => {
 
   return (
     <chakra.footer
+      role="banner"
       aria-label="Footer"
       display="flex"
       alignItems="center"
@@ -15,6 +16,7 @@ const Footer = (props) => {
       mt="1.5rem"
     >
       <Flex
+        aria-label="Game Mode Container"
         as={motion.div}
         variants={fadeInVar1}
         initial="hidden"
@@ -22,8 +24,14 @@ const Footer = (props) => {
         align="center"
         gap="0.5rem"
       >
-        <Box borderRadius="50%" w="1rem" h="1rem" bgColor="#FF2D2D" />
-        <Text variant="blackjack">
+        <Box
+          aria-label="Playing"
+          borderRadius="50%"
+          w="1rem"
+          h="1rem"
+          bgColor="#FF2D2D"
+        />
+        <Text aria-label="Game Mode" variant="blackjack">
           {props.gameType === "Fun"
             ? "For " + props.gameType + " Mode"
             : props.gameType + " Mode"}

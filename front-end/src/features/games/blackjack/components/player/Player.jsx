@@ -33,30 +33,36 @@ import {
   SET_PLAYER_STANDING,
   DOUBLE_DOWN,
   DEALER_TURN,
+  SET_GOT_PERSISTED_DATA,
 } from "../../redux/blackjackSlice";
 import {
   selectDealerTurn,
   selectBalanceLoading,
+  selectGotPersistedData,
 } from "../../redux/blackjackSelectors";
 
 const Player = (props) => {
-  const isDealerTurn = useSelector(selectDealerTurn);
-  const dispatch = useDispatch();
-  const dealerTurn = useDealerTurn();
-  const [isHeightSmallerThan910] = useMediaQuery("(max-height: 910px)");
-  const { fadeInVar2 } = fadeInAnimations(0.8);
-  const { slideCard, slideCardResponsive } = cardAnimation(
-    true,
-    props.playerViewWidthOnMoreCards,
-    isHeightSmallerThan910
-  );
-  const [showcaseRunning, toggleShowcaseRunning] = useState(false);
+  const isDealerTurn = useSelector(selectDealerTurn),
+    gotPersistedData = useSelector(selectGotPersistedData),
+    dispatch = useDispatch(),
+    dealerTurn = useDealerTurn(),
+    [isHeightSmallerThan910] = useMediaQuery("(max-height: 910px)"),
+    { fadeInVar2 } = fadeInAnimations(0.8),
+    { slideCard, slideCardResponsive } = cardAnimation(
+      true,
+      props.playerViewWidthOnMoreCards,
+      isHeightSmallerThan910
+    ),
+    [showcaseRunning, toggleShowcaseRunning] = useState(false);
 
-  const [prevAcesInHandLength, setPrevAcesInHandLength] = useState(-1);
-  const [acesInCurrentHand, setAcesInCurrentHand] = useState([]);
+  const [prevAcesInHandLength, setPrevAcesInHandLength] = useState(-1),
+    [acesInCurrentHand, setAcesInCurrentHand] = useState([]);
 
-  const balanceLoading = useSelector(selectBalanceLoading);
-  const completedQuestLoading = useBlackjackQuestsCompletion(props.currentUser);
+  const balanceLoading = useSelector(selectBalanceLoading),
+    completedQuestLoading = useBlackjackQuestsCompletion(
+      props.currentUser,
+      props.csrfToken
+    );
 
   useEffect(() => {
     props.winner
@@ -71,7 +77,6 @@ const Player = (props) => {
   // Checks if any aces are in the players hand.
   useEffect(() => {
     if (props.playerCards.length && prevAcesInHandLength !== -1) {
-      const currentAces = props.playerCards.filter((card) => card.face === "A");
       if (
         // So Ace Prompt doesn't show when the player has blackjack on first turn.
         (props.playerCards.length === 2 &&
@@ -82,7 +87,10 @@ const Player = (props) => {
           ["J", "Q", "K"].includes(props.playerCards[1].face))
       ) {
         return;
-      } else if (
+      }
+
+      const currentAces = props.playerCards.filter((card) => card.face === "A");
+      if (
         props.playerCards.length === 2 &&
         props.playerCards[0].face === "A" &&
         props.playerCards[1].face === "A"
@@ -109,7 +117,11 @@ const Player = (props) => {
 
   // Makes the dealer showcase their turn when the game is over; player busts or has blackjack.
   useEffect(() => {
-    if (props.playerScore >= 21 && !props.playerHasNatural) {
+    if (
+      props.playerScore >= 21 &&
+      !props.playerHasNatural &&
+      !gotPersistedData
+    ) {
       dispatch(DEALER_TURN(true));
       if (props.playerScore !== 21) {
         toggleShowcaseRunning(true);
@@ -136,6 +148,7 @@ const Player = (props) => {
             >
               <Box pos="relative">
                 <Text
+                  aria-label="Player Score"
                   as={motion.p}
                   variants={fadeInVar2}
                   initial="hidden"
@@ -149,6 +162,7 @@ const Player = (props) => {
                 </Text>
                 {props.playerScore === 21 ? (
                   <Text
+                    aria-label="Has Blackjack"
                     as={motion.p}
                     variants={fadeInVar2}
                     initial={["hidden", { x: "-50%", y: "-50%", left: "18%" }]}
@@ -165,6 +179,7 @@ const Player = (props) => {
                   </Text>
                 ) : props.playerScore > 21 ? (
                   <Text
+                    aria-label="Has Bust"
                     as={motion.p}
                     variants={fadeInVar2}
                     initial={["hidden", { x: "-50%", y: "-50%", left: "50%" }]}
@@ -182,9 +197,13 @@ const Player = (props) => {
                 ) : undefined}
               </Box>
 
-              <Box aria-label="Player Cards" ml="1rem !important">
-                {props.playerCards.map((card, i) => {
-                  return (
+              <Box role="group" aria-label="Player Cards" ml="1rem !important">
+                {props.playerCards.map((card, i) => (
+                  <Box
+                    key={i}
+                    aria-label={`Player Card ${i} Container`}
+                    display="inline-block"
+                  >
                     <Image
                       src={card.image}
                       alt={`Player Card ${i}`}
@@ -198,14 +217,12 @@ const Player = (props) => {
                       initial="fromDeck"
                       animate="toHand"
                       exit="giveBack"
-                      display="inline-block"
-                      key={i}
                       maxW="130px"
                       h="188px"
                       ml={i > 0 && "-98px"}
                     />
-                  );
-                })}
+                  </Box>
+                ))}
               </Box>
             </HStack>
           </>
@@ -214,7 +231,12 @@ const Player = (props) => {
 
       {props.playerCards.length && props.winner === null ? (
         <>
-          <ButtonGroup minW="255px">
+          <ButtonGroup
+            minW="255px"
+            onClick={() =>
+              gotPersistedData && dispatch(SET_GOT_PERSISTED_DATA(false))
+            }
+          >
             <Button
               onClick={() => {
                 dispatch(SET_PLAYER_STANDING(true));
@@ -249,13 +271,19 @@ const Player = (props) => {
               <Button
                 onClick={() => {
                   props.gameType === "Match" &&
-                    props.setBalance(props.balance - props.playerBet);
+                    props.setCache((prev) => ({
+                      ...prev,
+                      userProfile: {
+                        ...prev.userProfile,
+                        balance: prev.userProfile.balance - props.playerBet,
+                      },
+                    }));
                   dispatch(DOUBLE_DOWN());
                   dispatch(PLAYER_HIT());
                 }}
                 isDisabled={
                   props.playerCards.length === 1 ||
-                  props.balance < props.playerBet ||
+                  props.cache.userProfile.balance < props.playerBet ||
                   isDealerTurn ||
                   props.showAcePrompt
                 }
@@ -268,6 +296,7 @@ const Player = (props) => {
           </ButtonGroup>
           {props.gameType === "Match" && (
             <Text
+              aria-label="Bet"
               variant="blackjack"
               fontSize="20px"
               fontWeight="500"
@@ -288,19 +317,27 @@ const Player = (props) => {
         <>
           {props.gameType === "Fun" ? (
             <DealButton
+              dispatch={dispatch}
               isDealerTurn={isDealerTurn}
               showcaseRunning={showcaseRunning}
+              gotPersistedData={gotPersistedData}
+              SET_GOT_PERSISTED_DATA={SET_GOT_PERSISTED_DATA}
               playerCards={props.playerCards}
             />
           ) : (
             <BettingButtons
+              dispatch={dispatch}
               isDealerTurn={isDealerTurn}
               showcaseRunning={showcaseRunning}
-              balance={props.balance}
-              setBalance={props.setBalance}
+              cache={props.cache}
+              setCache={props.setCache}
               gameType={props.gameType}
               balanceLoading={balanceLoading}
               completedQuestLoading={completedQuestLoading}
+              winner={props.winner}
+              persisterLoading={props.persisterLoading}
+              gotPersistedData={gotPersistedData}
+              SET_GOT_PERSISTED_DATA={SET_GOT_PERSISTED_DATA}
               playerCards={props.playerCards}
             />
           )}

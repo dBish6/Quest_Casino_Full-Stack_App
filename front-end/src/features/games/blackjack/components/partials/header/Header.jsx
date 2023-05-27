@@ -10,11 +10,11 @@ import GetBalance from "../../../../../../components/GetBalance";
 import Dropdown from "./Dropdown";
 
 const Header = (props) => {
-  const [showDropdown, setShowDropdown] = useState(false);
-  const [clicked, setClicked] = useState(false);
-  const [isSmallerThan491] = useMediaQuery("(max-width: 491px)");
-  const [isSmallerThan481] = useMediaQuery("(max-width: 481px)");
-  const { fadeInVar1, fadeInVar2 } = fadeInAnimations(0.8);
+  const [showDropdown, setShowDropdown] = useState(false),
+    [clicked, setClicked] = useState(false),
+    [isSmallerThan491] = useMediaQuery("(max-width: 491px)"),
+    [isSmallerThan481] = useMediaQuery("(max-width: 481px)"),
+    { fadeInVar1, fadeInVar2 } = fadeInAnimations(0.8);
 
   return (
     <chakra.header
@@ -52,6 +52,7 @@ const Header = (props) => {
         {/* Hamburger and Dropdown */}
         <VStack position="relative" w="max-content">
           <VStack
+            aria-label="Menu Icon"
             as={motion.div}
             variants={fadeInVar2}
             initial="hidden"
@@ -64,7 +65,6 @@ const Header = (props) => {
                   options: false,
                 });
             }}
-            aria-label="Menu"
             gap={!showDropdown && "6.5px"}
             cursor="pointer"
             w="2rem"

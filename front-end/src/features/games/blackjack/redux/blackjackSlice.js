@@ -1,87 +1,48 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { createSlice } from "@reduxjs/toolkit";
+import {
+  getCurrentGameDataThunk,
+  updateCurrentGameDataThunk,
+  updateUserWinsAndBalanceThunk,
+} from "./blackjackThunks";
 
 // *Utility Imports*
 import createDeck from "../utils/createDeck";
 import checkCard from "../utils/checkCard";
 
-// *API Services Import*
-import updateWinsBalance from "../../general/api_services/updateWinsBalance";
+const initialState = {
+  gameType: null,
+  deck: createDeck(),
 
-export const updateWinsBalanceThunk = createAsyncThunk(
-  "blackjack/updateWinsBalance",
-  async (payload, thunkAPI) => {
-    const res = await updateWinsBalance(
-      payload.id,
-      payload.winner !== "dealer" ? true : false,
-      payload.game,
-      payload.balance,
-      payload.csrfToken
-    );
-    if (res.status === 200) return res.data;
-  }
-);
+  dealerCards: [],
+  dealerFaceDownScore: 0,
+  dealerScore: 0,
+  dealerDealt: false,
+  dealerTurn: false,
+  dealerStanding: false,
+  dealerHasNatural: false,
+
+  playerCards: [],
+  playerBet: 0,
+  playerScore: 0,
+  playerInitialHit: false,
+  playerStanding: false,
+  playerHasNatural: false,
+  streak: 0,
+  winner: null,
+
+  persisterLoading: { get: true, patch: false },
+  gotPersistedData: false,
+
+  balanceLoading: false,
+  updatedBalance: false,
+};
 
 const blackjackSlice = createSlice({
   name: "blackjack",
-  initialState: {
-    gameType: null,
-    deck: createDeck(),
-
-    dealerCards: [],
-    dealerFaceDownScore: 0,
-    dealerScore: 0,
-    dealerTurn: false,
-    dealerStanding: false,
-    dealerHasNatural: false,
-
-    playerCards: [],
-    playerBet: 0,
-    playerScore: 0,
-    playerInitialHit: false,
-    playerStanding: false,
-    playerHasNatural: false,
-    streak: 0,
-    balanceLoading: false,
-    updatedBalance: false,
-
-    winner: null,
-  },
+  initialState,
   reducers: {
-    FULL_RESET: (state) => {
-      state.gameType = null;
-      state.deck = createDeck();
-      state.dealerCards = [];
-      state.dealerFaceDownScore = 0;
-      state.dealerScore = 0;
-      state.dealerTurn = false;
-      state.dealerStanding = false;
-      state.dealerHasNatural = false;
-      state.playerCards = [];
-      state.playerBet = 0;
-      state.playerScore = 0;
-      state.playerInitialHit = false;
-      state.playerStanding = false;
-      state.playerHasNatural = false;
-      // TODO: Save their streak in the db if they already had one before log out.
-      state.streak = 0;
-      state.balanceLoading = false;
-      state.updatedBalance = false;
-      state.winner = null;
-    },
-    CLEAR_GAME: (state) => {
-      state.gameType = null;
-      state.dealerCards = [];
-      state.dealerFaceDownScore = 0;
-      state.dealerScore = 0;
-      state.dealerTurn = false;
-      state.dealerStanding = false;
-      state.playerCards = [];
-      state.playerBet = 0;
-      state.playerScore = 0;
-      state.playerInitialHit = false;
-      state.playerStanding = false;
-      state.winner = null;
-    },
+    FULL_CLEAR: () => initialState,
+
     GAME_TYPE: (state, action) => {
       state.gameType = action.payload;
     },
@@ -91,6 +52,7 @@ const blackjackSlice = createSlice({
       state.deck = createDeck();
       state.dealerCards = [];
       state.dealerScore = 0;
+      state.dealerDealt = false;
       state.dealerStanding = false;
       state.dealerHasNatural = false;
 
@@ -211,12 +173,6 @@ const blackjackSlice = createSlice({
     },
 
     // *Dealer*
-    DEAL_A_CARD_PLAYER: (state) => {
-      state.playerCards = [...state.playerCards, state.deck.pop()];
-    },
-    DEAL_A_CARD_DEALER: (state) => {
-      state.dealerCards = [...state.dealerCards, state.deck.pop()];
-    },
     DEALER_SHUFFLE: (state) => {
       // Fisher-Yates shuffle algorithm.
       for (let i = state.deck.length - 1; i > 0; i--) {
@@ -226,6 +182,15 @@ const blackjackSlice = createSlice({
         state.deck[i] = state.deck[randomIndex];
         state.deck[randomIndex] = temp;
       }
+    },
+    DEAL_A_CARD_PLAYER: (state) => {
+      state.playerCards = [...state.playerCards, state.deck.pop()];
+    },
+    DEAL_A_CARD_DEALER: (state) => {
+      state.dealerCards = [...state.dealerCards, state.deck.pop()];
+    },
+    DEALER_DEALT: (state) => {
+      state.dealerDealt = true;
     },
     DEALER_HIT: (state) => {
       state.dealerCards.push(state.deck.pop());
@@ -251,16 +216,62 @@ const blackjackSlice = createSlice({
     SET_PLAYER_STANDING: (state, action) => {
       state.playerStanding = action.payload;
     },
+    SET_NATURALS: (state, action) => {
+      state.dealerHasNatural = action.payload.dealerHasNatural;
+      state.playerHasNatural = action.payload.playerHasNatural;
+    },
+
+    // *For Get Persister*
+    SET_DECK: (state, action) => {
+      state.deck = action.payload;
+    },
+    SET_CARDS: (state, action) => {
+      state.playerCards = action.payload.playerCards;
+      state.dealerCards = action.payload.dealerCards;
+    },
+    SET_STREAK: (state, action) => {
+      state.streak = action.payload;
+    },
+    SET_SCORE: (state, action) => {
+      state.playerScore = action.payload.playerScore;
+      state.dealerFaceDownScore = action.payload.dealerFaceDownScore;
+      state.dealerScore = action.payload.dealerScore;
+    },
+    SET_WINNER: (state, action) => {
+      state.winner = action.payload;
+    },
+    SET_GOT_PERSISTED_DATA: (state, action) => {
+      state.gotPersistedData = action.payload;
+    },
   },
   extraReducers: (builder) => {
-    builder.addCase(updateWinsBalanceThunk.pending, (state) => {
+    builder.addCase(getCurrentGameDataThunk.fulfilled, (state) => {
+      state.persisterLoading.get = false;
+    });
+    builder.addCase(getCurrentGameDataThunk.rejected, (state, action) => {
+      state.persisterLoading.get = false;
+      console.error(action.error.message);
+    });
+
+    builder.addCase(updateCurrentGameDataThunk.pending, (state) => {
+      state.persisterLoading.patch = true;
+    });
+    builder.addCase(updateCurrentGameDataThunk.fulfilled, (state) => {
+      state.persisterLoading.patch = false;
+    });
+    builder.addCase(updateCurrentGameDataThunk.rejected, (state, action) => {
+      state.persisterLoading.patch = false;
+      console.error(action.error.message);
+    });
+
+    builder.addCase(updateUserWinsAndBalanceThunk.pending, (state) => {
       state.balanceLoading = true;
     });
-    builder.addCase(updateWinsBalanceThunk.fulfilled, (state) => {
+    builder.addCase(updateUserWinsAndBalanceThunk.fulfilled, (state) => {
       state.balanceLoading = false;
       state.updatedBalance = true;
     });
-    builder.addCase(updateWinsBalanceThunk.rejected, (state, action) => {
+    builder.addCase(updateUserWinsAndBalanceThunk.rejected, (state, action) => {
       state.balanceLoading = false;
       console.error(action.error.message);
     });
@@ -269,15 +280,21 @@ const blackjackSlice = createSlice({
 
 // Action creators are generated for each case reducer function.
 export const {
-  FULL_RESET,
-  CLEAR_GAME,
+  FULL_CLEAR,
   GAME_TYPE,
   START_GAME,
+  SET_DECK,
+  SET_CARDS,
+  SET_SCORE,
+  SET_NATURALS,
+  SET_GOT_PERSISTED_DATA,
   UPDATE_SCORE,
   DETERMINE_WINNER,
+  SET_WINNER,
+  DEALER_SHUFFLE,
   DEAL_A_CARD_PLAYER,
   DEAL_A_CARD_DEALER,
-  DEALER_SHUFFLE,
+  DEALER_DEALT,
   DEALER_HIT,
   DEALER_TURN,
   SET_DEALER_STANDING,
@@ -285,6 +302,7 @@ export const {
   PLAYER_HIT,
   DOUBLE_DOWN,
   SET_PLAYER_STANDING,
+  SET_STREAK,
 } = blackjackSlice.actions;
 // Exports the slice's reducer.
 export default blackjackSlice.reducer;

@@ -2,7 +2,7 @@
 import { useEffect } from "react";
 
 // *Custom Hooks Import*
-import useAuth from "../../../hooks/useAuth";
+import useCache from "../../../hooks/useCache";
 
 // *Utility Import*
 import quests from "../staticQuests";
@@ -20,17 +20,11 @@ import {
   selectWinner,
 } from "../../games/blackjack/redux/blackjackSelectors";
 
-const useBlackjackQuestsCompletion = (currentUser) => {
+const useBlackjackQuestsCompletion = (currentUser, csrfToken) => {
   const updatedBalance = useSelector(selectUpdatedBalance);
   const gameType = useSelector(selectGameType);
   const winStreak = useSelector(selectStreak);
-  const {
-    balance,
-    setBalance,
-    completedQuests,
-    setCompletedQuests,
-    csrfToken,
-  } = useAuth();
+  const { cache, setCache } = useCache();
 
   const playerScore = useSelector(selectPlayerScore);
   const winner = useSelector(selectWinner);
@@ -47,7 +41,8 @@ const useBlackjackQuestsCompletion = (currentUser) => {
       let questReward = undefined;
       if (
         winStreak >= 12 &&
-        (completedQuests === null || !completedQuests.includes(quests[1].title))
+        (cache.userProfile.completed_quests === null ||
+          !cache.userProfile.completed_quests.includes(quests[1].title))
       ) {
         // When "On a Role" quest is completed.
         questTitle = quests[1].title;
@@ -55,7 +50,8 @@ const useBlackjackQuestsCompletion = (currentUser) => {
       } else if (
         playerScore === 21 &&
         winner === currentUser.displayName &&
-        (completedQuests === null || !completedQuests.includes(quests[0].title))
+        (cache.userProfile.completed_quests === null ||
+          !cache.userProfile.completed_quests.includes(quests[0].title))
       ) {
         // When "Beginner's Luck" quest is completed.
         questTitle = quests[0].title;
@@ -68,14 +64,21 @@ const useBlackjackQuestsCompletion = (currentUser) => {
         handleCompletedQuest(
           currentUser.uid,
           questTitle,
-          balance,
+          cache.userProfile.balance,
           questReward,
           csrfToken
         ).then(() => {
-          !completedQuests
-            ? setCompletedQuests([questTitle])
-            : setCompletedQuests([...completedQuests, questTitle]);
-          setBalance(balance + questReward);
+          setCache((prev) => ({
+            ...prev,
+            userProfile: {
+              ...prev.userProfile,
+              balance: prev.userProfile.balance + questReward,
+              completed_quests: [
+                ...prev.userProfile.completed_quests,
+                questTitle,
+              ],
+            },
+          }));
         });
 
       return () => postAbortController.abort();

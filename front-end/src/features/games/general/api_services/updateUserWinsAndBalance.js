@@ -4,12 +4,12 @@ import apiURL from "../../../../apiUrl";
 import { createStandaloneToast } from "@chakra-ui/toast";
 const { toast } = createStandaloneToast();
 
-const updateWinsBalance = async (id, win, type, balance, csrfToken) => {
+const updateUserWinsAndBalance = async (id, win, game, balance, csrfToken) => {
   const abortController = new AbortController();
   try {
     const res = await axios({
       method: "PATCH",
-      url: `${apiURL}/auth/api/firebase/update/${id}?win=${win}&winType=${type}`,
+      url: `${apiURL}/auth/api/firebase/update/${id}?win=${win}&game=${game}`,
       data: {
         balance: balance,
       },
@@ -33,14 +33,11 @@ const updateWinsBalance = async (id, win, type, balance, csrfToken) => {
         variant: "solid",
       });
     }
-
-    return res;
   } catch (error) {
     if (error.code === "ECONNABORTED" || error.message === "canceled") {
       console.warn("Request was aborted.");
     } else if (error.response && error.response.status === 401) {
       console.error(error);
-      // TODO: Check later.
       const pathname =
         window.location.hostname === "localhost"
           ? `${window.location.hostname}:3000/error401`
@@ -50,7 +47,7 @@ const updateWinsBalance = async (id, win, type, balance, csrfToken) => {
       console.error(error);
       toast({
         description:
-          "Server Error 500: Failed to update user wins and balance.",
+          "Server Error 500: Failed to update user wins and balance. If the issue persists, please contact support for further assistance.",
         status: "error",
         duration: 99999999,
         isClosable: true,
@@ -62,4 +59,4 @@ const updateWinsBalance = async (id, win, type, balance, csrfToken) => {
   }
 };
 
-export default updateWinsBalance;
+export default updateUserWinsAndBalance;

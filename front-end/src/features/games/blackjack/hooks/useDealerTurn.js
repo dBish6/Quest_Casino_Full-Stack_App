@@ -18,13 +18,13 @@ import {
 } from "../redux/blackjackSelectors";
 
 const useDealerTurn = () => {
-  const dispatch = useDispatch();
-  const dealerCards = useSelector(selectDealerCards);
-  const dealerScore = useSelector(selectDealerScore);
-  const dealerStanding = useSelector(selectDealerStanding);
-  const playerScore = useSelector(selectPlayerScore);
-  const playerHasNatural = useSelector(selectPlayerHasNatural);
-  const winner = useSelector(selectWinner);
+  const dispatch = useDispatch(),
+    dealerCards = useSelector(selectDealerCards),
+    dealerScore = useSelector(selectDealerScore),
+    dealerStanding = useSelector(selectDealerStanding),
+    playerScore = useSelector(selectPlayerScore),
+    playerHasNatural = useSelector(selectPlayerHasNatural),
+    winner = useSelector(selectWinner);
 
   // To un-disable player buttons.
   useEffect(() => {

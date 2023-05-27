@@ -19,6 +19,7 @@ const Dealer = (props) => {
             <HStack position="relative" pointerEvents="none">
               <Box pos="relative">
                 <Text
+                  aria-label="Dealer Score"
                   as={motion.p}
                   variants={fadeInVar2}
                   initial="hidden"
@@ -34,6 +35,7 @@ const Dealer = (props) => {
                 </Text>
                 {props.dealerScore === 21 ? (
                   <Text
+                    aria-label="Has Blackjack"
                     as={motion.p}
                     initial={["hidden", { x: "-50%", y: "-50%", left: "18%" }]}
                     animate={["visible", { x: "-50%", y: "-50%", left: "18%" }]}
@@ -49,6 +51,7 @@ const Dealer = (props) => {
                   </Text>
                 ) : props.dealerScore > 21 ? (
                   <Text
+                    aria-label="Has Bust"
                     as={motion.p}
                     initial={["hidden", { x: "-50%", y: "-50%", left: "50%" }]}
                     animate={["visible", { x: "-50%", y: "-50%", left: "50%" }]}
@@ -65,9 +68,13 @@ const Dealer = (props) => {
                 ) : undefined}
               </Box>
 
-              <Box ml="1rem !important">
-                {props.dealerCards.map((card, i) => {
-                  return (
+              <Box role="group" aria-label="Dealer Cards" ml="1rem !important">
+                {props.dealerCards.map((card, i) => (
+                  <Box
+                    key={i}
+                    aria-label={`Dealer Card ${i} Container`}
+                    display="inline-block"
+                  >
                     <Image
                       src={
                         props.dealerCards.length === 2 &&
@@ -87,8 +94,6 @@ const Dealer = (props) => {
                       initial="fromDeck"
                       animate="toHand"
                       exit="giveBack"
-                      key={i}
-                      display="inline-block"
                       maxW="130px"
                       h={
                         props.dealerCards.length === 2 &&
@@ -99,8 +104,8 @@ const Dealer = (props) => {
                       }
                       ml={i > 0 && "-98px"}
                     />
-                  );
-                })}
+                  </Box>
+                ))}
               </Box>
 
               {props.dealerStanding && props.dealerScore < 21 && (

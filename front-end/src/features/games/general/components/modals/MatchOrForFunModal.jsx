@@ -39,7 +39,7 @@ const MatchOrForFunModal = (props) => {
       show={props.show.gameStart}
       setShow={props.setShow}
       objName="gameStart"
-      game="blackjack"
+      game={props.game}
       animation={{ type: "up", y: "200%" }}
       p="1.5rem 2rem 1rem 2rem"
       maxW="max-content"
@@ -63,10 +63,11 @@ const MatchOrForFunModal = (props) => {
         <ButtonGroup>
           <Button
             onClick={() => {
-              props.gameType === "Fun" &&
-                props.playerCards.length > 0 &&
-                dispatch(START_GAME());
-
+              if (props.game === "blackjack") {
+                props.gameType === "Fun" &&
+                  props.playerCards.length > 0 &&
+                  dispatch(START_GAME());
+              }
               props.gameType !== "Match" && dispatch(GAME_TYPE("match"));
               props.setShow({ ...props.show, gameStart: false });
             }}
@@ -77,6 +78,7 @@ const MatchOrForFunModal = (props) => {
           <Button
             as={motion.button}
             onClick={() => {
+              // TODO: Make dynamic for all games.
               if (
                 props.gameType === "Match" &&
                 props.winner === null &&

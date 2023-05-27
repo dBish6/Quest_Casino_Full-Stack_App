@@ -16,6 +16,8 @@ const Dropdown = (props) => {
       <AnimatePresence>
         {props.showDropdown && (
           <VStack
+            role="menu"
+            aria-label="Menu"
             as={motion.div}
             variants={fadeUp}
             initial="hidden"

@@ -29,6 +29,7 @@ const RulesOverlay = (props) => {
       <AnimatePresence>
         {props.show.rules && (
           <Container
+            aria-label="Rules Overlay"
             as={motion.div}
             position="absolute"
             top="0"
@@ -40,6 +41,8 @@ const RulesOverlay = (props) => {
             zIndex="overlay"
           >
             <chakra.header
+              role="navigation"
+              aria-label="Rules Header"
               display="grid"
               gridTemplateColumns={{
                 base: "1fr 1fr",
@@ -68,8 +71,9 @@ const RulesOverlay = (props) => {
               >
                 Rules
               </Heading>
-              <Box justifySelf="flex-end" mr="1rem">
+              <Box aria-label="Exit" justifySelf="flex-end" mr="1rem">
                 <IconButton
+                  aria-label="Exit"
                   icon={<MdClose fontSize="24px" />}
                   onClick={() => props.setShow({ ...props.show, rules: false })}
                   variant="exit"
@@ -89,6 +93,7 @@ const RulesOverlay = (props) => {
               gap="1.5rem 2.5rem"
             >
               <Flex
+                aria-label="General Rules"
                 as="section"
                 gridColumn={{ base: "", md: "span 2", xl: "span 2" }}
                 justify="center"
@@ -164,6 +169,7 @@ const RulesOverlay = (props) => {
               </Flex>
 
               <Box
+                aria-label="Player Rules"
                 as="section"
                 justifySelf="center"
                 alignSelf="flex-start"
@@ -208,6 +214,7 @@ const RulesOverlay = (props) => {
               </Box>
 
               <Box
+                aria-label="Dealer Rules"
                 as="section"
                 justifySelf="center"
                 alignSelf="flex-start"
@@ -271,7 +278,7 @@ const RulesOverlay = (props) => {
                 gap="0.5rem 1.5rem"
                 w="100%"
               >
-                <Text>
+                <Text aria-label="Developer">
                   <chakra.span fontWeight="600">Developer:</chakra.span> David
                   Bishop
                 </Text>

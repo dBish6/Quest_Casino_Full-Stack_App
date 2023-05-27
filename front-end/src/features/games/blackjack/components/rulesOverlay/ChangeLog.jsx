@@ -17,7 +17,9 @@ const ChangeLog = () => {
   return (
     <Popover m="0 !important">
       <PopoverTrigger m="0 !important">
-        <Link variant="simple">Davy Blackjack v1.0.6</Link>
+        <Link aria-label="Change Log Link" variant="simple">
+          Davy Blackjack v1.0.6
+        </Link>
       </PopoverTrigger>
       <PopoverContent bgColor="bd700" maxH="500px" overflowY="scroll">
         <PopoverCloseButton color="dwordMain" />
@@ -25,6 +27,37 @@ const ChangeLog = () => {
           Change Log
         </PopoverHeader>
         <PopoverBody>
+          <Heading textAlign="center" fontSize="24px" lineHeight="1.2" mb="4px">
+            v1.1.11
+          </Heading>
+          <UnorderedList fontSize="14px">
+            <ListItem>
+              Changes of how the balance and the completed quests are handled
+              due to the changes of how the balance and the completed quests is
+              stored in the Cache context now.
+            </ListItem>
+            <ListItem>
+              The bug where when the dealer deals a new card, at the start of
+              the animation, the image appears in it's initial position for a
+              few milliseconds and then starts the animation is now fixed!
+            </ListItem>
+            <ListItem>
+              Changed the table background to be the actual document body
+              background.
+            </ListItem>
+            <ListItem>
+              There is now a custom persister to persist some of the game data,
+              so the player can't just restart a bad game if they feel like it
+              now. They couldn't do that in v1.0.6 because of the redux
+              persister from redux-persist, but I had to remove it because that
+              cause way too many problems then good, it shouldn't of been
+              released, sorry about that.
+            </ListItem>
+            <ListItem>Redundant dealerUpdate state removed.</ListItem>
+            <ListItem>More accessability labels.</ListItem>
+          </UnorderedList>
+          <Divider m="0.5rem 0" />
+
           <Heading textAlign="center" fontSize="24px" lineHeight="1.2" mb="4px">
             v1.0.6
           </Heading>
@@ -54,6 +87,7 @@ const ChangeLog = () => {
             </ListItem>
           </UnorderedList>
           <Divider m="0.5rem 0" />
+
           <Heading textAlign="center" fontSize="24px" lineHeight="1.2" mb="4px">
             v1.0.2
           </Heading>
@@ -67,6 +101,7 @@ const ChangeLog = () => {
             </ListItem>
           </UnorderedList>
           <Divider m="0.5rem 0" />
+
           <Heading textAlign="center" fontSize="24px" lineHeight="1.2" mb="4px">
             v1.0.0
           </Heading>
@@ -96,6 +131,7 @@ const ChangeLog = () => {
             </ListItem>
           </UnorderedList>
           <Divider m="0.5rem 0" />
+
           <Heading textAlign="center" fontSize="24px" lineHeight="1.2" mb="4px">
             v1.1.5-alpha
           </Heading>
@@ -118,6 +154,7 @@ const ChangeLog = () => {
             <ListItem>Fixed hamburger menu animation.</ListItem>
           </UnorderedList>
           <Divider m="0.5rem 0" />
+
           <Heading textAlign="center" fontSize="24px" lineHeight="1.2" mb="4px">
             v1.0.2-alpha
           </Heading>

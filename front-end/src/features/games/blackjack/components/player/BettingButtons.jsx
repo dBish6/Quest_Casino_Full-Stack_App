@@ -10,24 +10,23 @@ import useStartGame from "../../hooks/useStartGame";
 import useDeal from "../../hooks/useDeal";
 
 // *Redux Imports*
-import { useDispatch } from "react-redux";
 import { SET_BET } from "../../redux/blackjackSlice";
 
 const BettingButtons = (props) => {
-  const { fadeInVar2 } = fadeInAnimations(0.9, 0.2);
-  const [bet, setBet] = useState({
-    count: 0,
-    multiplierIndex: 0,
-    multiplier: 5,
-  });
-  const BET_MULTIPLIERS = [5, 10, 15, 25, 50, 100];
+  const { fadeInVar2 } = fadeInAnimations(0.9, 0.2),
+    [bet, setBet] = useState({
+      count: 0,
+      multiplierIndex: 0,
+      multiplier: 5,
+    }),
+    BET_MULTIPLIERS = [5, 10, 15, 25, 50, 100];
 
-  const dispatch = useDispatch();
-  const startGame = useStartGame();
-  const deal = useDeal();
+  const startGame = useStartGame(),
+    deal = useDeal();
 
   return (
     <ButtonGroup
+      aria-label="Action Buttons"
       as={motion.div}
       variants={fadeInVar2}
       initial="hidden"
@@ -35,9 +34,10 @@ const BettingButtons = (props) => {
       isDisabled={
         props.isDealerTurn ||
         props.showcaseRunning ||
+        (props.persisterLoading.patch && props.winner) ||
         props.balanceLoading ||
         props.completedQuestLoading ||
-        props.balance === null
+        props.cache.userProfile.balance <= 5
       }
       position="relative"
       minW="255px"
@@ -45,7 +45,8 @@ const BettingButtons = (props) => {
       <Button
         onClick={() => {
           const newCount = bet.count + bet.multiplier;
-          const maxCount = (props.balance / bet.multiplier) * bet.multiplier;
+          const maxCount =
+            (props.cache.userProfile.balance / bet.multiplier) * bet.multiplier;
           newCount <= 1000
             ? setBet((prev) => ({
                 ...prev,
@@ -62,8 +63,10 @@ const BettingButtons = (props) => {
       >
         {props.balanceLoading || props.completedQuestLoading
           ? "Updating Balance..."
-          : props.balance === null
-          ? "Loading Balance..."
+          : props.persisterLoading.patch && props.winner
+          ? "Saving Data..."
+          : props.cache.userProfile.balance <= 5
+          ? "Insufficient Funds"
           : `Bet: $${bet.count}`}
       </Button>
 
@@ -96,9 +99,17 @@ const BettingButtons = (props) => {
           initial="hidden"
           animate="visible"
           onClick={() => {
-            dispatch(SET_BET(bet.count));
+            props.gotPersistedData &&
+              props.dispatch(props.SET_GOT_PERSISTED_DATA(false));
+            props.dispatch(SET_BET(bet.count));
             props.gameType === "Match" &&
-              props.setBalance(props.balance - bet.count);
+              props.setCache((prev) => ({
+                ...prev,
+                userProfile: {
+                  ...prev.userProfile,
+                  balance: prev.userProfile.balance - bet.count,
+                },
+              }));
             new Promise((resolve) => {
               if (props.playerCards.length > 0) {
                 startGame();
