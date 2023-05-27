@@ -37,14 +37,10 @@ router.get("/api/firebase/users", async (req, res) => {
     }
   } catch (error) {
     logger.error(error);
-    if (error.code === "auth/too-many-requests") {
-      return res.status(429).json(error);
-    } else {
-      return res.status(500).json({
-        fsRes: false,
-        ERROR: "/auth/api/firebase/users failed to send users.",
-      });
-    }
+    return res.status(500).json({
+      fsRes: false,
+      ERROR: "/auth/api/firebase/users failed to send users.",
+    });
   }
 });
 
@@ -93,6 +89,7 @@ router.post(
 
     try {
       // Creates session cookie and CSRF cookie.
+      // TODO: Maybe for two or three days?
       const expiresIn = 1000 * 60 * 60 * 24, // One day.
         sessionCookie = await auth.createSessionCookie(req.idToken, {
           expiresIn,
