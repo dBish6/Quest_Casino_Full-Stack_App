@@ -64,8 +64,8 @@ app.use(
 app.use("/auth", authRouter);
 app.use("/games", gamesRouter);
 
-app.listen(4000, "localhost", () => {
-  console.log(
-    "Server is running on http://localhost:4000; Ctrl-C to terminate..."
-  );
-});
+// app.listen(4000, "localhost", () => {
+//   console.log(
+//     "Server is running on http://localhost:4000; Ctrl-C to terminate..."
+//   );
+// });
