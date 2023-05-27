@@ -11,7 +11,7 @@ import {
 } from "@chakra-ui/react";
 import { MdMenu, MdLockOutline } from "react-icons/md";
 import { FiSettings } from "react-icons/fi";
-import QuestCasinoDiceDARK from "../../../assets/Dice.png";
+import QuestCasinoDice from "../../../assets/Dice.png";
 import { MdExpandMore, MdExpandLess } from "react-icons/md";
 import { motion } from "framer-motion";
 
@@ -158,7 +158,7 @@ const MobileIndex = () => {
           />
         </VStack>
         <Image
-          src={QuestCasinoDiceDARK}
+          src={QuestCasinoDice}
           alt="Quest Casino Small Logo"
           w="48px"
           h="42px"

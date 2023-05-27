@@ -184,7 +184,7 @@ dist
 # Other
 .github
 .DS_Store
-front-end/firebase.json
+front-end/src/features/games/blackjack/changeLog.txt
 back-end/model/credentials.json*
 
 # End of https://www.toptal.com/developers/gitignore/api/node

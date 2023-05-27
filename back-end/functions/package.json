@@ -1,7 +1,10 @@
 {
   "name": "back-end",
   "version": "1.1.2",
-  "description": "back-end REST API for Quest Casino using Firebase.",
+  "author": "David Bishop",
+  "description": "back-end/server side REST API for Quest Casino using Firebase.",
+  "repository": "https://github.com/dBish6/Quest_Casino_Full-Stack_App/tree/master/back-end",
+  "license": "MIT",
   "main": "server.js",
   "scripts": {
     "dev": "nodemon",
@@ -9,8 +12,6 @@
     "logs": "firebase functions:log",
     "clean": "rmdir /s /q node_modules"
   },
-  "author": "David Bishop",
-  "license": "ISC",
   "dependencies": {
     "bcrypt": "^5.1.0",
     "body-parser": "^1.20.1",

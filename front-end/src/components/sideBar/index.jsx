@@ -20,6 +20,9 @@ import { FiSettings } from "react-icons/fi";
 import QuestCasinoLogoDARK from "../../assets/QuestCasinoLogo-Dark-FreeLogoDesign.png";
 import QuestCasinoLogoLIGHT from "../../assets/QuestCasinoLogo-Light-FreeLogoDesign.png";
 
+// *API Services Import*
+import GetPlayerHighlight from "../../features/authentication/api_services/GetPlayerHighlight";
+
 // *Component Imports*
 import MyHeading from "../MyHeading";
 import Navigation from "./Navigation";
@@ -36,6 +39,7 @@ const DesktopIndex = () => {
     passwordReset: false,
     register: false,
   });
+  const [fsUsers, notFoundErr] = GetPlayerHighlight();
   const { colorMode } = useColorMode();
   const [isHeightSmallerThan935] = useMediaQuery("(max-height: 935px)");
   const [isHeightSmallerThan886] = useMediaQuery("(max-height: 886px)");
@@ -98,7 +102,7 @@ const DesktopIndex = () => {
                   mt="1rem"
                   mb="1rem"
                 />
-                <UserList />
+                <UserList fsUsers={fsUsers} notFoundErr={notFoundErr} />
               </Container>
               <Flex justifyContent="center">
                 <Image
@@ -108,6 +112,8 @@ const DesktopIndex = () => {
                       : QuestCasinoLogoLIGHT
                   }
                   alt="Quest Casino Logo"
+                  pos={fsUsers && fsUsers.length <= 5 && "absolute"}
+                  bottom={fsUsers && fsUsers.length <= 5 && "0"}
                   maxW="203px"
                   minH="203px"
                 />
@@ -144,7 +150,6 @@ const DesktopIndex = () => {
                 mb="1.5rem"
               />
               <Settings />
-              {/* FIXME: Just don't use a image. */}
               <Image
                 src={
                   colorMode === "dark"

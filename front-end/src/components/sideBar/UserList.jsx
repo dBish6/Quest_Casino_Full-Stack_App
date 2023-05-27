@@ -1,23 +1,18 @@
 // *Design Imports*
 import { HStack, Text, Avatar, Box, chakra } from "@chakra-ui/react";
 
-// *API Services Import*
-import GetPlayerHighlight from "../../features/authentication/api_services/GetPlayerHighlight";
-
 // *Component Import*
 import PlayerSkeleton from "../skeletons/PlayerSkeleton";
 
-const UserList = () => {
-  const [fsUsers, notFoundErr] = GetPlayerHighlight();
-
+const UserList = (props) => {
   return (
     <Box>
-      {!fsUsers ? (
+      {!props.fsUsers ? (
         <PlayerSkeleton />
-      ) : notFoundErr.length ? (
-        <Text color="red">{notFoundErr}</Text>
+      ) : props.notFoundErr.length ? (
+        <Text color="red">{props.notFoundErr}</Text>
       ) : (
-        fsUsers.map((detail, i) => {
+        props.fsUsers.map((detail, i) => {
           return (
             <HStack key={i}>
               <Box w="2rem" h="2rem" borderRadius="50%" bgColor="wMain">

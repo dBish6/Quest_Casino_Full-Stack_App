@@ -34,6 +34,7 @@ const MatchOrForFunModal = (props) => {
   const toast = useToast();
   useDisableScroll(props.show.gameStart, 510);
 
+  // TODO: Make dynamic for all games when added.
   return (
     <ModalTemplate
       show={props.show.gameStart}
@@ -67,8 +68,9 @@ const MatchOrForFunModal = (props) => {
                 props.gameType === "Fun" &&
                   props.playerCards.length > 0 &&
                   dispatch(START_GAME());
+
+                props.gameType !== "Match" && dispatch(GAME_TYPE("match"));
               }
-              props.gameType !== "Match" && dispatch(GAME_TYPE("match"));
               props.setShow({ ...props.show, gameStart: false });
             }}
             variant="primary"
@@ -78,32 +80,35 @@ const MatchOrForFunModal = (props) => {
           <Button
             as={motion.button}
             onClick={() => {
-              // TODO: Make dynamic for all games.
-              if (
-                props.gameType === "Match" &&
-                props.winner === null &&
-                props.playerCards.length > 0
-              ) {
-                setNeedToFinish({ state: true, clicked: true });
-                toast({
-                  description:
-                    "Please complete your game before changing the mode.",
-                  status: "error",
-                  duration: 6000,
-                  isClosable: true,
-                  position: "top",
-                  variant: "solid",
-                });
-                setTimeout(() => {
-                  setNeedToFinish((prev) => ({ ...prev, clicked: false }));
-                }, 601);
-              } else {
-                if (needToFinish.state || needToFinish.clicked)
-                  setNeedToFinish({ state: false, clicked: false });
-                if (props.gameType !== "Fun") {
-                  dispatch(GAME_TYPE("fun"));
-                  props.playerCards.length > 0 && dispatch(START_GAME());
+              if (props.game === "blackjack") {
+                if (
+                  props.gameType === "Match" &&
+                  props.winner === null &&
+                  props.playerCards.length > 0
+                ) {
+                  setNeedToFinish({ state: true, clicked: true });
+                  toast({
+                    description:
+                      "Please complete your game before changing the mode.",
+                    status: "error",
+                    duration: 6000,
+                    isClosable: true,
+                    position: "top",
+                    variant: "solid",
+                  });
+                  setTimeout(() => {
+                    setNeedToFinish((prev) => ({ ...prev, clicked: false }));
+                  }, 601);
+                } else {
+                  if (needToFinish.state || needToFinish.clicked)
+                    setNeedToFinish({ state: false, clicked: false });
+                  if (props.gameType !== "Fun") {
+                    dispatch(GAME_TYPE("fun"));
+                    props.playerCards.length > 0 && dispatch(START_GAME());
+                  }
+                  props.setShow({ ...props.show, gameStart: false });
                 }
+              } else {
                 props.setShow({ ...props.show, gameStart: false });
               }
             }}
