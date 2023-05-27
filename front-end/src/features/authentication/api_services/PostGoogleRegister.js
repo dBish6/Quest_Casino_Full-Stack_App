@@ -60,7 +60,7 @@ const PostGoogleRegister = () => {
           });
           // console.log("sessionRes", sessionRes.data);
           if (sessionRes && sessionRes.status === 200) {
-            setCurrentUser(sessionRes.data.user);
+            setCurrentUser(sessionRes.data.authUser);
             setCsrfToken(sessionRes.data.token);
             setGoogleSuccessMsg("Welcome back!");
             setTimeout(() => {

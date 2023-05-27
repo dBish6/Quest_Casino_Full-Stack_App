@@ -92,10 +92,7 @@ const PostRegister = () => {
           res.data.code === "auth/phone-number-already-exists"
         ) {
           setErrorHandler({ ...errorHandler, phoneInUse: true });
-        } else if (
-          res.status === 429 &&
-          res.data.code === "auth/too-many-requests"
-        ) {
+        } else if (res.status === 429) {
           setErrorHandler({ ...errorHandler, maxRequests: true });
         }
       }

@@ -141,7 +141,7 @@ const Profile = (props) => {
         )
       ) : undefined}
       <VStack mt={currentUser.emailVerified ? "calc(4rem + 73px)" : "4rem"}>
-        {fsUser && Object.keys(fsUser).length > 0 ? (
+        {fsUser && Object.keys(fsUser).length > 2 ? (
           notFoundErr.length ? (
             <Alert status="error" variant="left-accent">
               <AlertIcon />

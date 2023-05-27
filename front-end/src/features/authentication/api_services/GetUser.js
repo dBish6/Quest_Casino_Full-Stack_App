@@ -18,7 +18,10 @@ const GetUser = (id) => {
 
     const fetchDetails = async () => {
       try {
-        if (cache.userProfile === null) {
+        if (
+          cache.userProfile === null ||
+          (cache.userProfile && Object.keys(cache.userProfile).length <= 2)
+        ) {
           abortController = new AbortController();
           setNotFoundErr("");
           const res = await axios({
@@ -32,7 +35,10 @@ const GetUser = (id) => {
           });
           // console.log(res.data);
           if (res && res.status === 200) {
-            setCache((prev) => ({ ...prev, userProfile: res.data }));
+            setCache((prev) => ({
+              ...prev,
+              userProfile: { ...prev.userProfile, ...res.data },
+            }));
           } else if (res && res.status === 404) {
             setNotFoundErr(res.data.user);
           }

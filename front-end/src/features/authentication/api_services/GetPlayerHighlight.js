@@ -25,14 +25,16 @@ const GetPlayerHighlight = () => {
             url: `${apiURL}/auth/api/firebase/users`,
             signal: abortController.signal,
             validateStatus: (status) => {
-              return status === 200 || status === 404; // Resolve only if the status code is 404 or 200.
+              return status === 200 || status === 404 || status === 429;
             },
           });
           // console.log(res.data);
-          if (res && res.status === 200) {
-            setCache((prev) => ({ ...prev, playersHighlight: res.data }));
-          } else if (res && res.status === 404) {
-            setNotFoundErr("No users found.");
+          if (res) {
+            if (res.status === 200) {
+              setCache((prev) => ({ ...prev, playersHighlight: res.data }));
+            } else if (res.status === 404) {
+              setNotFoundErr("No users found.");
+            }
           }
         }
       } catch (error) {

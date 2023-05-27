@@ -39,6 +39,7 @@ import GamesHome from "./pages/games/GamesHome";
 import TopPlayers from "./pages/games/TopPlayers";
 import Error404 from "./pages/errors/Error404";
 import Error401 from "./pages/errors/Error401";
+import Error429 from "./pages/errors/Error429";
 import Error500 from "./pages/errors/Error500";
 
 import DomLoader from "./components/DomLoader";
@@ -137,6 +138,10 @@ function App() {
                   <Route
                     path="/error401"
                     element={<Error401 title="ERROR" />}
+                  />
+                  <Route
+                    path="/error429"
+                    element={<Error429 title="ERROR" />}
                   />
                   <Route
                     path="/error500"

@@ -184,7 +184,7 @@ dist
 # Other
 .github
 .DS_Store
-back-end/model/credentials.json
-back-end/model/credentials.json.dev
+front-end/firebase.json
+back-end/model/credentials.json*
 
 # End of https://www.toptal.com/developers/gitignore/api/node

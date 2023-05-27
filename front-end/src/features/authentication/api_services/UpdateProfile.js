@@ -32,7 +32,6 @@ const UpdateProfile = (currentUser, csrfToken) => {
   });
   const [errorHandler, setErrorHandler] = useState({
     unexpected: false,
-    maxRequests: false,
   });
 
   const toast = useToast();
@@ -42,7 +41,7 @@ const UpdateProfile = (currentUser, csrfToken) => {
   const abortController = new AbortController();
 
   const handleFullName = async (name, setIsUpdating) => {
-    setErrorHandler({ unexpected: false, maxRequests: false });
+    setErrorHandler({ unexpected: false });
 
     try {
       if (currentUser.name !== name) {
@@ -75,11 +74,8 @@ const UpdateProfile = (currentUser, csrfToken) => {
               position: "top",
               variant: "solid",
             });
-          } else if (
-            res.status === 429 &&
-            res.data.code === "auth/too-many-requests"
-          ) {
-            setErrorHandler({ ...errorHandler, maxRequests: true });
+          } else if (res.status === 429) {
+            navigate("/error429");
           }
         }
       } else {
@@ -102,13 +98,14 @@ const UpdateProfile = (currentUser, csrfToken) => {
         setErrorHandler({ ...errorHandler, unexpected: true });
         console.error(error);
       }
+      abortController.abort();
     } finally {
       toggleLoadingUpdate({ ...loadingUpdate, name: false });
     }
   };
 
   const handleUsername = async (username, setIsUpdating) => {
-    setErrorHandler({ unexpected: false, maxRequests: false });
+    setErrorHandler({ unexpected: false });
 
     try {
       if (currentUser.username !== username) {
@@ -140,11 +137,8 @@ const UpdateProfile = (currentUser, csrfToken) => {
               position: "top",
               variant: "solid",
             });
-          } else if (
-            res.status === 429 &&
-            res.data.code === "auth/too-many-requests"
-          ) {
-            setErrorHandler({ ...errorHandler, maxRequests: true });
+          } else if (res.status === 429) {
+            navigate("/error429");
           }
         }
       } else {
@@ -167,13 +161,14 @@ const UpdateProfile = (currentUser, csrfToken) => {
         setErrorHandler({ ...errorHandler, unexpected: true });
         console.error(error);
       }
+      abortController.abort();
     } finally {
       toggleLoadingUpdate({ ...loadingUpdate, username: false });
     }
   };
 
   const handleEmail = async (email, setIsUpdating) => {
-    setErrorHandler({ unexpected: false, maxRequests: false });
+    setErrorHandler({ unexpected: false });
 
     try {
       if (currentUser.email !== email) {
@@ -221,11 +216,8 @@ const UpdateProfile = (currentUser, csrfToken) => {
               position: "top",
               variant: "solid",
             });
-          } else if (
-            res.status === 429 &&
-            res.data.code === "auth/too-many-requests"
-          ) {
-            setErrorHandler({ ...errorHandler, maxRequests: true });
+          } else if (res.status === 429) {
+            navigate("/error429");
           }
         }
       } else {
@@ -248,13 +240,14 @@ const UpdateProfile = (currentUser, csrfToken) => {
         setErrorHandler({ ...errorHandler, unexpected: true });
         console.error(error);
       }
+      abortController.abort();
     } finally {
       toggleLoadingUpdate({ ...loadingUpdate, email: false });
     }
   };
 
   const handlePhone = async (callingCode, phoneNum, setIsUpdating) => {
-    setErrorHandler({ unexpected: false, maxRequests: false });
+    setErrorHandler({ unexpected: false });
 
     try {
       const phoneNumUpdate = callingCode + phoneNum.replace(/[()\-\s]/g, "");
@@ -300,11 +293,8 @@ const UpdateProfile = (currentUser, csrfToken) => {
               position: "top",
               variant: "solid",
             });
-          } else if (
-            res.status === 429 &&
-            res.data.code === "auth/too-many-requests"
-          ) {
-            setErrorHandler({ ...errorHandler, maxRequests: true });
+          } else if (res.status === 429) {
+            navigate("/error429");
           }
         }
       } else {
@@ -327,6 +317,7 @@ const UpdateProfile = (currentUser, csrfToken) => {
         setErrorHandler({ ...errorHandler, unexpected: true });
         console.error(error);
       }
+      abortController.abort();
     } finally {
       toggleLoadingUpdate({ ...loadingUpdate, phone: false });
     }
@@ -339,7 +330,7 @@ const UpdateProfile = (currentUser, csrfToken) => {
     show,
     setShow
   ) => {
-    setErrorHandler({ unexpected: false, maxRequests: false });
+    setErrorHandler({ unexpected: false });
     toggleLoadingUpdate({ ...loadingUpdate, profilePic: true });
 
     try {
@@ -401,11 +392,8 @@ const UpdateProfile = (currentUser, csrfToken) => {
                 position: "top",
                 variant: "solid",
               });
-            } else if (
-              res.status === 429 &&
-              res.data.code === "auth/too-many-requests"
-            ) {
-              setErrorHandler({ ...errorHandler, maxRequests: true });
+            } else if (res.status === 429) {
+              navigate("/error429");
             }
           }
         } else {
@@ -449,11 +437,8 @@ const UpdateProfile = (currentUser, csrfToken) => {
               variant: "solid",
             });
             setShow({ ...show, areYouSure: false });
-          } else if (
-            res.status === 429 &&
-            res.data.code === "auth/too-many-requests"
-          ) {
-            setErrorHandler({ ...errorHandler, maxRequests: true });
+          } else if (res.status === 429) {
+            navigate("/error429");
           }
         }
       }
@@ -467,6 +452,7 @@ const UpdateProfile = (currentUser, csrfToken) => {
         setErrorHandler({ ...errorHandler, unexpected: true });
         console.error(error);
       }
+      abortController.abort();
     } finally {
       toggleLoadingUpdate({ ...loadingUpdate, profilePic: false });
     }
@@ -476,8 +462,7 @@ const UpdateProfile = (currentUser, csrfToken) => {
     formRef,
     id,
     deposit,
-    balance,
-    setBalance,
+    setCache,
     csrfToken
   ) => {
     setErrorHandler({ ...errorHandler, unexpected: false });
@@ -495,19 +480,32 @@ const UpdateProfile = (currentUser, csrfToken) => {
         },
         withCredentials: true,
         signal: abortController.signal,
+        validateStatus: (status) => {
+          return status === 200 || status === 429;
+        },
       });
       // console.log(res.data);
-      if (res && res.status === 200) {
-        formRef.current.reset();
-        toast({
-          description: "Funds successfully added.",
-          status: "success",
-          duration: 9000,
-          isClosable: true,
-          position: "top",
-          variant: "solid",
-        });
-        setBalance(balance + parseInt(deposit));
+      if (res) {
+        if (res.status === 200) {
+          formRef.current.reset();
+          toast({
+            description: "Funds successfully added.",
+            status: "success",
+            duration: 9000,
+            isClosable: true,
+            position: "top",
+            variant: "solid",
+          });
+          setCache((prev) => ({
+            ...prev,
+            userProfile: {
+              ...prev.userProfile,
+              balance: prev.userProfile.balance + parseInt(deposit),
+            },
+          }));
+        } else if (res.status === 429) {
+          navigate("error429");
+        }
       }
     } catch (error) {
       if (error.code === "ECONNABORTED" || error.message === "canceled") {
@@ -519,6 +517,7 @@ const UpdateProfile = (currentUser, csrfToken) => {
         setErrorHandler({ ...errorHandler, unexpected: true });
         console.error(error);
       }
+      abortController.abort();
     } finally {
       toggleLoadingUpdate({ ...loadingUpdate, balance: false });
     }

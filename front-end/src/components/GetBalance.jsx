@@ -2,18 +2,21 @@
 import { Text, chakra, Skeleton } from "@chakra-ui/react";
 
 // *Custom Hooks Import*
-import useAuth from "../hooks/useAuth";
+import useCache from "../hooks/useCache";
 
 const GetBalance = (props) => {
-  const { balance } = useAuth();
+  const { cache } = useCache();
 
   return (
     <>
-      {balance !== null ? (
+      {cache.userProfile !== null ? (
         <Text aria-label="Balance" {...props}>
           Balance:{" "}
-          <chakra.span color={balance === 0 ? "r500" : "g500"} fontWeight="500">
-            ${balance}
+          <chakra.span
+            color={cache.userProfile.balance === 0 ? "r500" : "g500"}
+            fontWeight="500"
+          >
+            ${cache.userProfile.balance}
           </chakra.span>
         </Text>
       ) : (

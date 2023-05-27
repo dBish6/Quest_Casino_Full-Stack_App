@@ -37,10 +37,7 @@ const SendEmailVerificationLink = () => {
       if (res) {
         if (res.status === 200) {
           setEmailSent(true);
-        } else if (
-          res.status === 429 &&
-          res.data.code === "auth/too-many-requests"
-        ) {
+        } else if (res.status === 429) {
           setErrorHandler({ ...errorHandler, maxRequests: true });
         }
       }

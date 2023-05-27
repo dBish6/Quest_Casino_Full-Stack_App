@@ -4,6 +4,7 @@ import { ErrorMessage } from "@hookform/error-message";
 
 // *Custom Hooks Import*
 import useAuth from "../../../../hooks/useAuth";
+import useCache from "../../../../hooks/useCache";
 
 // *Design Imports*
 import {
@@ -34,7 +35,8 @@ import ModalTemplate from "../../../../components/modals/ModalTemplate";
 import MyHeading from "../../../../components/MyHeading";
 
 const CashInModal = (props) => {
-  const { currentUser, csrfToken, balance, setBalance } = useAuth();
+  const { currentUser, csrfToken } = useAuth();
+  const { setCache } = useCache();
 
   const {
     register,
@@ -83,8 +85,7 @@ const CashInModal = (props) => {
             formRef,
             currentUser.uid,
             watch("deposit"),
-            balance,
-            setBalance,
+            setCache,
             csrfToken
           )
         )}

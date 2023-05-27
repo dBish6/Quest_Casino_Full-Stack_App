@@ -9,11 +9,7 @@ const GetUserBalanceCompletedQuests = () => {
 
   const abortController = new AbortController();
 
-  const fetchBalanceAndCompletedQuests = async (
-    id,
-    setBalance,
-    setCompletedQuests
-  ) => {
+  const fetchBalanceAndCompletedQuests = async (id, setCache) => {
     try {
       const res = await axios({
         method: "GET",
@@ -26,10 +22,14 @@ const GetUserBalanceCompletedQuests = () => {
       });
       // console.log(res.data);
       if (res && res.status === 200) {
-        setBalance(res.data.balance);
-        if (res.data.completedQuests) {
-          setCompletedQuests(res.data.completedQuests);
-        }
+        setCache((prev) => ({
+          ...prev,
+          userProfile: {
+            ...prev.userProfile,
+            balance: res.data.balance,
+            completed_quests: res.data.completed_quests,
+          },
+        }));
       } else if (res && res.status === 404) {
         toast({
           description: `Server Error 404: balance and quests wasn't received because ${res.data.user}`,

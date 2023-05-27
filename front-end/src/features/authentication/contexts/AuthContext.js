@@ -14,32 +14,24 @@ import { createStandaloneToast } from "@chakra-ui/toast";
 import { auth } from "../../../utils/firebaseConfig";
 
 // *Redux Imports*
-import {
-  useDispatch,
-  // useSelector
-} from "react-redux";
-import { FULL_RESET } from "../../games/blackjack/redux/blackjackSlice";
-// import { selectGameType } from "../../games/blackjack/redux/blackjackSelectors";
+import { useDispatch, useSelector } from "react-redux";
+import { FULL_CLEAR } from "../../games/blackjack/redux/blackjackSlice";
+import { selectGameType } from "../../games/blackjack/redux/blackjackSelectors";
 
-// *API Services Imports*
-import GetUserBalanceCompletedQuests from "../api_services/GetUserBalanceCompletedQuests";
+// *API Services Import*
 import GetSessionStatus from "../api_services/GetSessionStatus";
 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [loadingUser, toggleLoading] = useState(true);
-  const [currentUser, setCurrentUser] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null); // Firebase Auth user.
   const [csrfToken, setCsrfToken] = useState(null);
-  const [balance, setBalance] = useState(null);
-  const [completedQuests, setCompletedQuests] = useState(null);
 
-  const dispatch = useDispatch();
-  // const gameType = useSelector(selectGameType);
   const handleCheckSessionStatus = GetSessionStatus();
-  const { fetchBalanceAndCompletedQuests, abortController } =
-    GetUserBalanceCompletedQuests();
   const { toast } = createStandaloneToast();
+  const gameType = useSelector(selectGameType);
+  const dispatch = useDispatch();
 
   const login = (email, password) => {
     return signInWithEmailAndPassword(auth, email, password);
@@ -51,10 +43,9 @@ export const AuthProvider = ({ children }) => {
   };
 
   const clear = () => {
+    gameType && dispatch(FULL_CLEAR()); // Clears the blackjack redux.
     setCurrentUser(null);
     setCsrfToken(null);
-    setBalance(null);
-    setCompletedQuests(null);
   };
 
   const logout = () => {
@@ -108,32 +99,10 @@ export const AuthProvider = ({ children }) => {
     checkUser();
   }, []);
 
-  // Gets and sets user balance and completed while checking if the session cookie is expired.
-  useEffect(() => {
-    if (currentUser !== null && balance === null && completedQuests === null) {
-      fetchBalanceAndCompletedQuests(
-        currentUser.uid,
-        setBalance,
-        setCompletedQuests
-      );
-
-      return () => abortController.abort();
-    } else if (currentUser === null) {
-      // If the user is logged out, clear the persisted blackjack redux.
-      // console.log("START", gameType);
-      // console.log("BLACKJACK CLEARED");
-      dispatch(FULL_RESET());
-    }
-  }, [currentUser]);
-
   // useEffect(() => {
   //   console.log("currentUser", currentUser);
   //   console.log("csrfToken", csrfToken);
   // }, [currentUser, csrfToken]);
-
-  // useEffect(() => {
-  //   console.log("completedQuests", completedQuests);
-  // }, [completedQuests]);
 
   const exports = {
     currentUser,
@@ -141,10 +110,6 @@ export const AuthProvider = ({ children }) => {
     loadingUser,
     csrfToken,
     setCsrfToken,
-    balance,
-    setBalance,
-    completedQuests,
-    setCompletedQuests,
     login,
     signInWithGoogle,
     logout,

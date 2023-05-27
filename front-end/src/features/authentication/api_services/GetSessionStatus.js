@@ -15,10 +15,13 @@ const GetSessionStatus = () => {
         withCredentials: true,
         signal: abortController.signal,
         validateStatus: (status) => {
-          return status === 200 || status === 401;
+          return status === 200 || status === 401 || status === 429;
         },
       });
       // console.log("session res", res);
+      if (res && res.status === 429) {
+        return navigate("error429");
+      }
 
       return res;
     } catch (error) {

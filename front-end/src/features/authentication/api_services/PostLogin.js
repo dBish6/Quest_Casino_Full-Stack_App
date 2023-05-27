@@ -63,7 +63,7 @@ const PostLogin = () => {
         // console.log("serverRes", serverRes.data);
 
         if (serverRes && serverRes.status === 200) {
-          setCurrentUser(serverRes.data.user);
+          setCurrentUser(serverRes.data.authUser);
           setCsrfToken(serverRes.data.token);
           setSuccessMsg("Welcome back!");
           formRef.current.reset();

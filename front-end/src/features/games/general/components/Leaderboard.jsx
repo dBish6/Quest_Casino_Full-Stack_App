@@ -47,7 +47,7 @@ const Leaderboard = () => {
             {topUsers &&
             topUsers.length > 0 &&
             fsUser &&
-            Object.keys(fsUser).length > 0 ? (
+            Object.keys(fsUser).length > 4 ? (
               <>
                 {leaderboardNotFoundErr.length || userNotFoundErr.length ? (
                   <Alert status="error" variant="left-accent">
@@ -136,7 +136,7 @@ const Leaderboard = () => {
                           color="g500"
                           textAlign="center"
                         >
-                          {detail.totalWins} Wins
+                          {detail.wins.total} Wins
                         </Text>
                         <Divider marginBlock="1rem" />
                       </Flex>

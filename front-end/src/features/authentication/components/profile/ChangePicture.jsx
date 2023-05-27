@@ -1,6 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect } from "react";
-import LazyLoad from "react-lazy-load";
 
 // *Design Imports*
 import {
@@ -101,23 +100,21 @@ const ChangePicture = (props) => {
                     Current
                   </Text>
                 ) : undefined}
-                <LazyLoad>
-                  <Image
-                    src={profilePic.url}
-                    alt={`Profile Picture ${i}`}
-                    loading="lazy"
-                    objectFit="contain"
-                    borderRadius="50%"
-                    bgColor={colorMode === "dark" ? "bd100" : "wMain"}
-                    _hover={{
-                      bgColor: colorMode === "dark" ? "wMain" : "#E0E2EA",
-                    }}
-                    _active={{
-                      bgColor: isCurrent ? "r500" : "g400",
-                    }}
-                    transition="0.2s ease"
-                  />
-                </LazyLoad>
+                <Image
+                  src={profilePic.url}
+                  alt={`Profile Picture ${i}`}
+                  loading="lazy"
+                  objectFit="contain"
+                  borderRadius="50%"
+                  bgColor={colorMode === "dark" ? "bd100" : "wMain"}
+                  _hover={{
+                    bgColor: colorMode === "dark" ? "wMain" : "#E0E2EA",
+                  }}
+                  _active={{
+                    bgColor: isCurrent ? "r500" : "g400",
+                  }}
+                  transition="0.2s ease"
+                />
               </WrapItem>
             );
           })

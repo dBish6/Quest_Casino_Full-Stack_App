@@ -1,6 +1,6 @@
 {
   "name": "front-end",
-  "version": "1.0.0",
+  "version": "1.1.5",
   "private": true,
   "author": "David Bishop",
   "dependencies": {
@@ -17,11 +17,9 @@
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.42.1",
     "react-icons": "^4.7.1",
-    "react-lazy-load": "^4.0.1",
     "react-redux": "^8.0.5",
     "react-router-dom": "^6.6.2",
-    "react-scripts": "5.0.1",
-    "redux-persist": "^6.0.0"
+    "react-scripts": "5.0.1"
   },
   "devDependencies": {
     "cross-env": "^7.0.3"
@@ -29,6 +27,7 @@
   "scripts": {
     "start": "cross-env BROWSER=none react-scripts start",
     "build": "react-scripts build",
+    "deploy": "firebase deploy --only hosting",
     "eject": "react-scripts eject",
     "clean": "rmdir /s /q node_modules"
   },

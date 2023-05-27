@@ -14,7 +14,7 @@ import {
 } from "@chakra-ui/react";
 
 // *Custom Hooks Import*
-import useAuth from "../../../../hooks/useAuth";
+import useCache from "../../../../hooks/useCache";
 import useDisableScroll from "../../../../hooks/useDisableScroll";
 
 // *Utility Imports*
@@ -26,7 +26,7 @@ import MyHeading from "../../../../components/MyHeading";
 
 const QuestsModal = (props) => {
   const { colorMode } = useColorMode();
-  const { completedQuests } = useAuth();
+  const { cache } = useCache();
 
   useDisableScroll(
     typeof props.show === "object" ? props.show.quests : props.show,
@@ -68,8 +68,10 @@ const QuestsModal = (props) => {
       >
         {quests.map((detail) => {
           const isCompleted =
-            completedQuests &&
-            completedQuests.some((quest) => quest === detail.title);
+            cache.userProfile &&
+            cache.userProfile.completed_quests.some(
+              (quest) => quest === detail.title
+            );
 
           return (
             <Card
