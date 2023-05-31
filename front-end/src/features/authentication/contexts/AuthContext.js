@@ -1,5 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { createContext, useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   signInWithEmailAndPassword,
   GoogleAuthProvider,
@@ -30,6 +31,7 @@ export const AuthProvider = ({ children }) => {
 
   const handleCheckSessionStatus = GetSessionStatus();
   const { toast } = createStandaloneToast();
+  const navigate = useNavigate();
   const gameType = useSelector(selectGameType);
   const dispatch = useDispatch();
 
@@ -87,7 +89,7 @@ export const AuthProvider = ({ children }) => {
           }
         } else if (serverRes.status === 401) {
           if (serverRes.data.ERROR.includes("Invalid")) {
-            // console.log("UNAUTHENTICATED");
+            currentUser !== null && navigate("/error401");
           } else if (serverRes.data.ERROR === "Session cookie expired.") {
             currentUser !== null && (await logout());
             alert("Your session is expired, please processed to login.");

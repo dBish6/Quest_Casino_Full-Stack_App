@@ -39,6 +39,7 @@ const GetUser = (id) => {
               ...prev,
               userProfile: { ...prev.userProfile, ...res.data },
             }));
+            // FIXME: Could just do the error status.
           } else if (res && res.status === 404) {
             setNotFoundErr(res.data.user);
           }
