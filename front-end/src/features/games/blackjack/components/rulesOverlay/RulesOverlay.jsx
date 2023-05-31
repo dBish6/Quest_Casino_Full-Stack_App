@@ -150,19 +150,14 @@ const RulesOverlay = (props) => {
                       respective party loses the game.
                     </ListItem>
                     <ListItem>
-                      In Davy Blackjack if the Player gets a{" "}
+                      In Davy Blackjack if either player or the dealer gets a{" "}
                       <chakra.span fontWeight="700">"Natural"</chakra.span>{" "}
-                      (gets a blackjack on the initial deal), then the dealer
+                      (gets a blackjack on the initial deal), then the opponent
                       has{" "}
                       <chakra.span fontWeight="700">
                         one hit for a chance of getting blackjack
-                      </chakra.span>
-                      . If the dealer gets blackjack on that one hit, it will
-                      result in a push.{" "}
-                      <chakra.span fontWeight="700">
-                        Same rules goes for the player
                       </chakra.span>{" "}
-                      if the dealer gets a "Natural".
+                      and make it a push.
                     </ListItem>
                   </UnorderedList>
                 </Box>

@@ -32,7 +32,6 @@ const getCurrentGameDataThunk = createAsyncThunk(
           gameStart: true,
         }));
       } else if (Object.keys(res.data.game.blackjack).length) {
-        console.log("Got the game data.");
         thunkAPI.dispatch(
           GAME_TYPE(res.data.game.blackjack.game_type.toLowerCase())
         );

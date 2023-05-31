@@ -18,7 +18,7 @@ const ChangeLog = () => {
     <Popover m="0 !important">
       <PopoverTrigger m="0 !important">
         <Link aria-label="Change Log Link" variant="simple">
-          Davy Blackjack v1.0.6
+          Davy Blackjack v1.1.11
         </Link>
       </PopoverTrigger>
       <PopoverContent bgColor="bd700" maxH="500px" overflowY="scroll">

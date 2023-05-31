@@ -13,9 +13,6 @@ const getCurrentGameData = async (uid, game) => {
       url: `${apiURL}/games/api/firebase/session?uid=${uid}&game=${game}`,
       withCredentials: true,
       signal: abortController.signal,
-      validateStatus: (status) => {
-        return status === 200 || status === 201 || status === 429;
-      },
     });
     // console.log("GET", res.data);
 
@@ -61,9 +58,6 @@ const updateCurrentGameData = async (gameData, uid, csrfToken) => {
       },
       withCredentials: true,
       signal: abortController.signal,
-      validateStatus: (status) => {
-        return status === 200 || status === 429;
-      },
     });
     // console.log("POST", res.data);
 
