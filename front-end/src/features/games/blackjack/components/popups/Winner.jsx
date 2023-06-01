@@ -1,14 +1,14 @@
 // *Design Imports*
 import { Box, Heading } from "@chakra-ui/react";
 import { motion, AnimatePresence } from "framer-motion";
-import fadeInAnimations from "../../general/utils/animations/fadeIn";
+import fadeInAnimations from "../../../general/utils/animations/fadeIn";
 
-const WinnerPopup = (props) => {
+const WinnerPopup = ({ winner }) => {
   const { fadeInVar1 } = fadeInAnimations();
 
   return (
     <AnimatePresence>
-      {props.winner !== null && (
+      {winner !== null && (
         <Box as={motion.div} justifySelf="center" alignSelf="center">
           <Heading
             as={motion.h2}
@@ -20,11 +20,11 @@ const WinnerPopup = (props) => {
             fontSize="60px"
             lineHeight="1.2"
           >
-            {props.winner === "dealer"
+            {winner === "dealer"
               ? `Dealer Wins`
-              : props.winner === "push"
+              : winner === "push"
               ? "Push!"
-              : `${props.winner} Wins!`}
+              : `${winner} Wins!`}
           </Heading>
         </Box>
       )}

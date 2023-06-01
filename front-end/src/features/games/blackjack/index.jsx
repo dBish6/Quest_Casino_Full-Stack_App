@@ -1,3 +1,9 @@
+/* Davy Blackjack
+
+   Author: David Bishop
+   Creation Date: March 27, 2023
+*/
+
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect } from "react";
 
@@ -21,6 +27,7 @@ import fadeInAnimations from "../general/utils/animations/fadeIn";
 import useAuth from "../../../hooks/useAuth";
 import useCache from "../../../hooks/useCache";
 import useChangeBackground from "../general/hooks/useChangeBackground";
+import useClearGameOnPageLeave from "../general/hooks/useClearGameOnPageLeave";
 import useOnlyDarkMode from "../general/hooks/useOnlyDarkMode";
 import useCardSoundEffect from "./hooks/useCardSoundEffect";
 import useDealerTurn from "./hooks/useDealerTurn";
@@ -35,7 +42,7 @@ import Header from "./components/partials/header/Header";
 import Dealer from "./components/Dealer";
 import Player from "./components/player/Player";
 import AcePrompt from "./components/AcePrompt";
-import WinnerPopup from "./components/WinnerPopup";
+import WinnerPopup from "./components/popups/Winner";
 import RulesOverlay from "./components/rulesOverlay/RulesOverlay";
 import Footer from "./components/partials/Footer";
 
@@ -121,10 +128,10 @@ const BlackjackFeature = () => {
     winStreak = useSelector(selectStreak);
 
   // TODO: +playerBet on win floating animation.
-  // TODO: Show the win streak.
 
   // *Layout Hooks*
   useChangeBackground(tableImg);
+  useClearGameOnPageLeave("blackjack");
   useOnlyDarkMode();
   const toggleMute = useCardSoundEffect(playerCards, dealerCards);
 
