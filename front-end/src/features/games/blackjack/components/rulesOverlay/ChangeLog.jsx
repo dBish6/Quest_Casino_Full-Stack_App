@@ -18,7 +18,7 @@ const ChangeLog = () => {
     <Popover m="0 !important">
       <PopoverTrigger m="0 !important">
         <Link aria-label="Change Log Link" variant="simple">
-          Davy Blackjack v1.1.11
+          Davy Blackjack v1.4.13
         </Link>
       </PopoverTrigger>
       <PopoverContent bgColor="bd700" maxH="500px" overflowY="scroll">
@@ -27,6 +27,36 @@ const ChangeLog = () => {
           Change Log
         </PopoverHeader>
         <PopoverBody>
+          <Heading textAlign="center" fontSize="24px" lineHeight="1.2" mb="4px">
+            v1.4.13
+          </Heading>
+          <UnorderedList fontSize="14px">
+            <ListItem>
+              useClearGameOnPageLeave hook was introduced to fix the issue
+              where, upon leaving the game page and returning again and since
+              the new persister persists the winner. If there was a winner, the
+              balance and wins were unnecessarily updated in the database again.
+              This exploit is now resolved.
+            </ListItem>
+            <ListItem>
+              Added a undo button for the player's bet by storing the history of
+              bets that was incremented.
+            </ListItem>
+            <ListItem>
+              Added new bet animation to indicate the bet was subtracted from
+              the player's balance.
+            </ListItem>
+            <ListItem>
+              Added the ability to see your streak in Match mode and with a
+              flame animation when the streak increases.
+            </ListItem>
+            <ListItem>
+              Fixed how the winner text wasn't properly aligned on smaller
+              resolutions.
+            </ListItem>
+          </UnorderedList>
+          <Divider m="0.5rem 0" />
+
           <Heading textAlign="center" fontSize="24px" lineHeight="1.2" mb="4px">
             v1.1.11
           </Heading>

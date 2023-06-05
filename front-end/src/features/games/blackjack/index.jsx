@@ -42,6 +42,7 @@ import Header from "./components/partials/header/Header";
 import Dealer from "./components/Dealer";
 import Player from "./components/player/Player";
 import AcePrompt from "./components/AcePrompt";
+import FloatingBet from "./components/popups/Bet";
 import WinnerPopup from "./components/popups/Winner";
 import RulesOverlay from "./components/rulesOverlay/RulesOverlay";
 import Footer from "./components/partials/Footer";
@@ -115,6 +116,7 @@ const BlackjackFeature = () => {
   // Player
   const [playerViewWidthOnMoreCards, setPlayerViewWidthOnMoreCards] =
       useState("30.6vw"),
+    [animate, setAnimate] = useState({ playerBet: false, winStreak: false }),
     [showAcePrompt, setShowAcePrompt] = useState(false),
     [madeAceDecision, setMadeAceDecision] = useState(false),
     [secureAceOnNatural, setSecureAceOnNatural] = useState(false),
@@ -126,8 +128,6 @@ const BlackjackFeature = () => {
     playerStanding = useSelector(selectPlayerStanding),
     playerHasNatural = useSelector(selectPlayerHasNatural),
     winStreak = useSelector(selectStreak);
-
-  // TODO: +playerBet on win floating animation.
 
   // *Layout Hooks*
   useChangeBackground(tableImg);
@@ -432,6 +432,7 @@ const BlackjackFeature = () => {
                     playerViewWidthOnMoreCards={playerViewWidthOnMoreCards}
                     playerBet={playerBet}
                     playerScore={playerScore}
+                    setAnimate={setAnimate}
                     hasPlayerHit={hasPlayerHit}
                     currentUser={currentUser}
                     csrfToken={csrfToken}
@@ -450,8 +451,18 @@ const BlackjackFeature = () => {
                 </VStack>
 
                 <RulesOverlay show={show} setShow={setShow} />
+                <FloatingBet
+                  playerBet={playerBet}
+                  animate={animate}
+                  setAnimate={setAnimate}
+                />
               </chakra.main>
-              <Footer gameType={gameType} />
+              <Footer
+                gameType={gameType}
+                winStreak={winStreak}
+                animate={animate}
+                setAnimate={setAnimate}
+              />
             </>
           )
         )}

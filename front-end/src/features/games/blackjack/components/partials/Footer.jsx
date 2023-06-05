@@ -3,6 +3,9 @@ import { chakra, Flex, Box, Text } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import fadeInAnimations from "../../../general/utils/animations/fadeIn";
 
+// *Component Import*
+import Streak from "../player/Streak";
+
 const Footer = (props) => {
   const { fadeInVar1 } = fadeInAnimations();
 
@@ -37,6 +40,13 @@ const Footer = (props) => {
             : props.gameType + " Mode"}
         </Text>
       </Flex>
+
+      <Streak
+        gameType={props.gameType}
+        winStreak={props.winStreak}
+        animate={props.animate}
+        setAnimate={props.setAnimate}
+      />
     </chakra.footer>
   );
 };

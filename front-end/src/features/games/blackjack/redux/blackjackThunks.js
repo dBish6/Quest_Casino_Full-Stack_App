@@ -24,64 +24,60 @@ const getCurrentGameDataThunk = createAsyncThunk(
   async (payload, thunkAPI) => {
     const res = await getCurrentGameData(payload.uid, payload.game);
 
-    if (res) {
-      if (res.status === 201) {
-        // If the persisted data was just initially set, show the modal.
-        payload.setShowMatchOrForFunModal((prev) => ({
-          ...prev,
-          gameStart: true,
-        }));
-      } else if (Object.keys(res.data.game.blackjack).length) {
+    if (res && res.status === 201) {
+      // If the persisted data was just initially set, show the modal.
+      payload.setShowMatchOrForFunModal((prev) => ({
+        ...prev,
+        gameStart: true,
+      }));
+    } else if (Object.keys(res.data.game.blackjack).length) {
+      thunkAPI.dispatch(
+        GAME_TYPE(res.data.game.blackjack.game_type.toLowerCase())
+      );
+      thunkAPI.dispatch(SET_DECK(res.data.game.blackjack.deck));
+      thunkAPI.dispatch(
+        SET_CARDS({
+          playerCards: res.data.game.blackjack.player.cards,
+          dealerCards: res.data.game.blackjack.dealer.cards,
+        })
+      );
+      thunkAPI.dispatch(
+        SET_SCORE({
+          playerScore: res.data.game.blackjack.player.score,
+          dealerFaceDownScore: res.data.game.blackjack.dealer.face_down_score,
+          dealerScore: res.data.game.blackjack.dealer.score,
+        })
+      );
+      res.data.game.blackjack.game_type !== "Fun" &&
+        thunkAPI.dispatch(SET_BET(res.data.game.blackjack.player.bet));
+      thunkAPI.dispatch(SET_STREAK(res.data.game.blackjack.player.win_streak));
+      if (res.data.game.blackjack.winner) {
+        thunkAPI.dispatch(SET_WINNER(res.data.game.blackjack.winner));
+      } else {
         thunkAPI.dispatch(
-          GAME_TYPE(res.data.game.blackjack.game_type.toLowerCase())
-        );
-        thunkAPI.dispatch(SET_DECK(res.data.game.blackjack.deck));
-        thunkAPI.dispatch(
-          SET_CARDS({
-            playerCards: res.data.game.blackjack.player.cards,
-            dealerCards: res.data.game.blackjack.dealer.cards,
-          })
-        );
-        thunkAPI.dispatch(
-          SET_SCORE({
-            playerScore: res.data.game.blackjack.player.score,
-            dealerFaceDownScore: res.data.game.blackjack.dealer.face_down_score,
-            dealerScore: res.data.game.blackjack.dealer.score,
+          SET_NATURALS({
+            dealerHasNatural: res.data.game.blackjack.dealer.has_natural,
+            playerHasNatural: res.data.game.blackjack.player.has_natural,
           })
         );
         res.data.game.blackjack.game_type !== "Fun" &&
-          thunkAPI.dispatch(SET_BET(res.data.game.blackjack.player.bet));
-        thunkAPI.dispatch(
-          SET_STREAK(res.data.game.blackjack.player.win_streak)
-        );
-        if (res.data.game.blackjack.winner) {
-          thunkAPI.dispatch(SET_WINNER(res.data.game.blackjack.winner));
-        } else {
-          thunkAPI.dispatch(
-            SET_NATURALS({
-              dealerHasNatural: res.data.game.blackjack.dealer.has_natural,
-              playerHasNatural: res.data.game.blackjack.player.has_natural,
-            })
-          );
-          res.data.game.blackjack.game_type !== "Fun" &&
-            payload.setCache((prev) => ({
-              ...prev,
-              userProfile: {
-                ...prev.userProfile,
-                balance:
-                  prev.userProfile.balance - res.data.game.blackjack.player.bet,
-              },
-            }));
-        }
-
-        thunkAPI.dispatch(SET_GOT_PERSISTED_DATA(true));
-      } else {
-        // When the data that is received is just the initially set data, show the modal.
-        payload.setShowMatchOrForFunModal((prev) => ({
-          ...prev,
-          gameStart: true,
-        }));
+          payload.setCache((prev) => ({
+            ...prev,
+            userProfile: {
+              ...prev.userProfile,
+              balance:
+                prev.userProfile.balance - res.data.game.blackjack.player.bet,
+            },
+          }));
       }
+
+      thunkAPI.dispatch(SET_GOT_PERSISTED_DATA(true));
+    } else {
+      // When the data that is received is just the initially set data, show the modal.
+      payload.setShowMatchOrForFunModal((prev) => ({
+        ...prev,
+        gameStart: true,
+      }));
     }
   }
 );

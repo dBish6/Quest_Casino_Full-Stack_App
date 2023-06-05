@@ -18,6 +18,7 @@ const WinnerPopup = ({ winner }) => {
             variant="blackjack"
             fontFamily="fugaz"
             fontSize="60px"
+            textAlign="center"
             lineHeight="1.2"
           >
             {winner === "dealer"

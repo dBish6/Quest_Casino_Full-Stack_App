@@ -331,7 +331,7 @@ const Player = (props) => {
               showcaseRunning={showcaseRunning}
               cache={props.cache}
               setCache={props.setCache}
-              gameType={props.gameType}
+              setAnimate={props.setAnimate}
               balanceLoading={balanceLoading}
               completedQuestLoading={completedQuestLoading}
               winner={props.winner}

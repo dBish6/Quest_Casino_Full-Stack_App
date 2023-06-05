@@ -82,6 +82,9 @@ const errorConditions = (error, type) => {
   } else if (error.response && error.response.status === 401) {
     console.error(error);
     navigate("error401");
+  } else if (error.response && error.response.status === 429) {
+    console.error(error);
+    navigate("error429");
   } else {
     console.error(error);
     if (type === "post") {
