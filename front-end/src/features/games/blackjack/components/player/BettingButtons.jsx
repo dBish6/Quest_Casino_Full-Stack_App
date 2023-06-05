@@ -14,6 +14,7 @@ import { SET_BET } from "../../redux/blackjackSlice";
 
 const BettingButtons = (props) => {
   const { fadeInVar2 } = fadeInAnimations(0.9, 0.2),
+    [previousBets, setPreviousBets] = useState([]),
     [bet, setBet] = useState({
       count: 0,
       multiplierIndex: 0,
@@ -48,10 +49,17 @@ const BettingButtons = (props) => {
           const maxCount =
             (props.cache.userProfile.balance / bet.multiplier) * bet.multiplier;
           newCount <= 1000
-            ? setBet((prev) => ({
-                ...prev,
-                count: newCount > maxCount ? maxCount : newCount,
-              }))
+            ? setBet((prev) => {
+                newCount <= maxCount &&
+                  setPreviousBets((prevPreviousBets) => [
+                    ...prevPreviousBets,
+                    prev.count,
+                  ]);
+                return {
+                  ...prev,
+                  count: newCount > maxCount ? maxCount : newCount,
+                };
+              })
             : setBet((prev) => ({
                 ...prev,
                 count: 1000,
@@ -93,16 +101,41 @@ const BettingButtons = (props) => {
       </Button>
 
       {bet.count > 0 && (
-        <Button
-          as={motion.button}
-          variants={fadeInVar2}
-          initial="hidden"
-          animate="visible"
-          onClick={() => {
-            props.gotPersistedData &&
-              props.dispatch(props.SET_GOT_PERSISTED_DATA(false));
-            props.dispatch(SET_BET(bet.count));
-            props.gameType === "Match" &&
+        <>
+          <Button
+            onClick={() => {
+              if (previousBets.length > 0) {
+                const previousBetCount = previousBets[previousBets.length - 1];
+                setPreviousBets((prevPreviousBets) =>
+                  prevPreviousBets.slice(0, -1)
+                );
+                setBet((prev) => ({
+                  ...prev,
+                  count: previousBetCount,
+                }));
+              }
+            }}
+            variant="transparency"
+            fontSize="15px"
+            position="absolute"
+            bottom="34px"
+            left="66px"
+            h="fit-content"
+            p="0.5rem"
+          >
+            Undo
+          </Button>
+
+          <Button
+            as={motion.button}
+            variants={fadeInVar2}
+            initial="hidden"
+            animate="visible"
+            onClick={() => {
+              props.gotPersistedData &&
+                props.dispatch(props.SET_GOT_PERSISTED_DATA(false));
+              props.dispatch(SET_BET(bet.count));
+              props.setAnimate({ playerBet: true });
               props.setCache((prev) => ({
                 ...prev,
                 userProfile: {
@@ -110,24 +143,25 @@ const BettingButtons = (props) => {
                   balance: prev.userProfile.balance - bet.count,
                 },
               }));
-            new Promise((resolve) => {
-              if (props.playerCards.length > 0) {
-                startGame();
-                // Waits for card exit animation.
-                setTimeout(() => {
-                  resolve();
-                }, 1280);
-              } else {
-                resolve(startGame());
-              }
-            }).then(() => deal());
-          }}
-          variant="blackjackGreen"
-          w="55%"
-          zIndex="1"
-        >
-          Place Bet
-        </Button>
+              new Promise((resolve) => {
+                if (props.playerCards.length > 0) {
+                  startGame();
+                  // Waits for card exit animation.
+                  setTimeout(() => {
+                    resolve();
+                  }, 1280);
+                } else {
+                  resolve(startGame());
+                }
+              }).then(() => deal());
+            }}
+            variant="blackjackGreen"
+            w="55%"
+            zIndex="1"
+          >
+            Place Bet
+          </Button>
+        </>
       )}
     </ButtonGroup>
   );
