@@ -56,23 +56,11 @@ const PasswordResetModal = (props) => {
       animation={{ type: "up", y: "200%" }}
       maxW="325px"
     >
-      <Button
-        onClick={() =>
-          typeof props.show === "object"
-            ? props.setShow({ ...props.show, passwordReset: false })
-            : props.setShow(false)
-        }
-        variant="exit"
-        position="absolute"
-        top="-8px"
-        right="-8px"
-      >
-        &#10005;
-      </Button>
       <MyHeading fontSize="32px" mb="1.5rem" text="Reset Password" />
 
       <chakra.form
         onSubmit={handleSubmit(() => handleReset(formRef, watch("email")))}
+        aria-label="Password Reset"
         ref={formRef}
         justifySelf="center"
       >
@@ -86,7 +74,10 @@ const PasswordResetModal = (props) => {
           </Alert>
         ) : undefined}
 
-        <FormControl isInvalid={errors.email || errorHandler.notFound}>
+        <FormControl
+          aria-label="Password Field"
+          isInvalid={errors.email || errorHandler.notFound}
+        >
           <FormLabel htmlFor="email">Email</FormLabel>
           <Input
             {...register("email", {
@@ -118,6 +109,7 @@ const PasswordResetModal = (props) => {
 
         <Button
           isLoading={loading ? true : false}
+          aria-disabled={loading}
           type="submit"
           variant="primary"
           mt="1.5rem"

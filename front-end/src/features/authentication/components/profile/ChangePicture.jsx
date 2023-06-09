@@ -14,6 +14,9 @@ import {
 } from "@chakra-ui/react";
 import { MdUploadFile } from "react-icons/md";
 
+// *Custom Hooks Import*
+import useKeyboardHelper from "../../../../hooks/useKeyboardHelper";
+
 // *Component Imports*
 import DefaultPicsSkeleton from "../skeletons/DefaultPicsSkeleton";
 import UploadProfilePicModal from "../modals/UploadProfilePicModal";
@@ -30,6 +33,7 @@ const ChangePicture = (props) => {
   const [defaultPictures, setDefaultPictures] = useState([]);
   const [selectedPicture, setSelectedPicture] = useState("");
   const [toBeSelectedPicture, setToBeSelectedPicture] = useState("");
+  const { handleKeyDown } = useKeyboardHelper();
   let isCustomCurrent =
     (props.currentUser.photoURL &&
       props.currentUser.photoURL.indexOf("userProfilePics") !== -1 &&
@@ -54,7 +58,12 @@ const ChangePicture = (props) => {
 
   return (
     <>
-      <Wrap spacing="2rem" justify="center" mt="1.5rem">
+      <Wrap
+        aria-label="Profile Pictures Selection"
+        spacing="2rem"
+        justify="center"
+        mt="1.5rem"
+      >
         {defaultPictures.length < 15 ? (
           <>
             <DefaultPicsSkeleton />
@@ -69,6 +78,10 @@ const ChangePicture = (props) => {
 
             return (
               <WrapItem
+                tabIndex="0"
+                aria-controls="modal"
+                aria-selected={show.areYouSure}
+                aria-current={isCurrent}
                 key={profilePic.name}
                 w="115px"
                 h="115px"
@@ -84,9 +97,17 @@ const ChangePicture = (props) => {
                     setShow({ ...show, areYouSure: true });
                   }
                 }}
+                onKeyDown={(e) =>
+                  handleKeyDown(e, {
+                    setShow: setShow,
+                    objKey: "areYouSure",
+                  })
+                }
               >
                 {isCurrent ? (
                   <Text
+                    role="complementary"
+                    aria-label="Selected Current"
                     position="absolute"
                     bgColor={colorMode === "dark" ? "p500" : "r500"}
                     color={colorMode === "dark" ? "bMain" : "wMain"}
@@ -121,6 +142,15 @@ const ChangePicture = (props) => {
         )}
 
         <WrapItem
+          tabIndex="0"
+          aria-label={
+            isCustomCurrent
+              ? "Uploaded Profile Picture"
+              : "Upload a Profile Picture"
+          }
+          aria-controls="modal"
+          aria-selected={show.areYouSure}
+          aria-current={isCustomCurrent}
           position="relative"
           w="115px"
           h="115px"
@@ -135,10 +165,18 @@ const ChangePicture = (props) => {
             bgColor: "g400",
           }}
           onClick={() => setShow({ ...show, uploadPicture: true })}
+          onKeyDown={(e) =>
+            handleKeyDown(e, {
+              setShow: setShow,
+              objKey: "uploadPicture",
+            })
+          }
         >
           {isCustomCurrent ? (
             <>
               <Text
+                role="complementary"
+                aria-label="Selected Current"
                 position="absolute"
                 top="-1.5rem"
                 bgColor={colorMode === "dark" ? "p500" : "r500"}
@@ -154,12 +192,12 @@ const ChangePicture = (props) => {
                 Current
               </Text>
               <Avatar
+                aria-label={`${props.currentUser.displayName}'s Profile Picture`}
                 src={
                   selectedPicture.indexOf("userProfilePics") !== -1
                     ? selectedPicture
                     : props.currentUser.photoURL
                 }
-                alt={`${props.currentUser.displayName}'s Profile Picture`}
                 w="115px"
                 h="115px"
               />

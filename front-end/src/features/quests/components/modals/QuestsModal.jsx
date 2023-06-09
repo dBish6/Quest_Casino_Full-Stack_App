@@ -1,7 +1,6 @@
 // *Design Imports*
 import {
   Heading,
-  Button,
   HStack,
   Text,
   chakra,
@@ -13,7 +12,7 @@ import {
   Divider,
 } from "@chakra-ui/react";
 
-// *Custom Hooks Import*
+// *Custom Hooks Imports*
 import useCache from "../../../../hooks/useCache";
 import useDisableScroll from "../../../../hooks/useDisableScroll";
 
@@ -41,19 +40,6 @@ const QuestsModal = (props) => {
       animation={{ type: "up", y: "200%" }}
       maxW="max-content"
     >
-      <Button
-        onClick={() =>
-          typeof props.show === "object"
-            ? props.setShow({ ...props.show, quests: false })
-            : props.setShow(false)
-        }
-        variant="exit"
-        position="absolute"
-        top="-8px"
-        right="-8px"
-      >
-        &#10005;
-      </Button>
       <MyHeading fontSize="2rem" text="Quests" mb="0.5rem" />
       <Text textAlign="center" mb="1.5rem">
         Here are the featured quests for you to complete, if you desire, to earn
@@ -86,6 +72,7 @@ const QuestsModal = (props) => {
               {/* TODO: Make better. */}
               {isCompleted && (
                 <Text
+                  aria-label="Completed"
                   pos="absolute"
                   top="50%"
                   left="50%"
@@ -119,10 +106,19 @@ const QuestsModal = (props) => {
               </CardHeader>
               <Divider />
               <CardBody>
-                <Text opacity="0.9">{detail.description}</Text>
+                <Text
+                  aria-label={`${detail.title}'s Description`}
+                  opacity="0.9"
+                >
+                  {detail.description}
+                </Text>
               </CardBody>
               <CardFooter>
-                <Text fontSize="18px" fontWeight="500">
+                <Text
+                  aria-label={`${detail.title}'s Reward`}
+                  fontSize="18px"
+                  fontWeight="500"
+                >
                   Reward:{" "}
                   <chakra.span fontSize="16px" fontWeight="600" color="g500">
                     ${detail.reward}

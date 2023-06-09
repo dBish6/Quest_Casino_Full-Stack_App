@@ -28,6 +28,7 @@ import { RiMedalLine } from "react-icons/ri";
 // *Custom Hooks Imports*
 import useAuth from "../hooks/useAuth";
 import useDocumentTitle from "../hooks/useDocumentTitle";
+import useKeyboardHelper from "../hooks/useKeyboardHelper";
 
 // *API Services Imports*
 import GetUser from "../features/authentication/api_services/GetUser";
@@ -47,6 +48,7 @@ const Profile = (props) => {
   const [onPictureTab, setOnPictureTab] = useState(false);
   const { colorMode } = useColorMode();
   const { currentUser, csrfToken, logout } = useAuth();
+  const { handleKeyDown } = useKeyboardHelper();
 
   const [fsUser, notFoundErr] = GetUser(currentUser.uid);
   const {
@@ -167,6 +169,8 @@ const Profile = (props) => {
                     Profile
                   </Heading>
                   <Text
+                    role="complementary"
+                    aria-label="Explanation"
                     as="small"
                     color={colorMode === "dark" ? "wMain" : "bMain"}
                     textAlign="center"
@@ -179,7 +183,11 @@ const Profile = (props) => {
                   borderColor={colorMode === "dark" ? "borderD" : "borderL"}
                   mt="1rem"
                 >
-                  <TabList display="flex" justifyContent="center">
+                  <TabList
+                    aria-label="Options Navigation"
+                    display="flex"
+                    justifyContent="center"
+                  >
                     <Tab
                       onClick={() => setOnPictureTab(false)}
                       _selected={{
@@ -194,6 +202,13 @@ const Profile = (props) => {
                         fontWeight: "500",
                       }}
                       isDisabled={
+                        loadingUpdate.username ||
+                        loadingUpdate.name ||
+                        loadingUpdate.email ||
+                        loadingUpdate.phone ||
+                        loadingUpdate.profilePic
+                      }
+                      aria-disabled={
                         loadingUpdate.username ||
                         loadingUpdate.name ||
                         loadingUpdate.email ||
@@ -217,6 +232,13 @@ const Profile = (props) => {
                         fontWeight: "500",
                       }}
                       isDisabled={
+                        loadingUpdate.username ||
+                        loadingUpdate.name ||
+                        loadingUpdate.email ||
+                        loadingUpdate.phone ||
+                        loadingUpdate.profilePic
+                      }
+                      aria-disabled={
                         loadingUpdate.username ||
                         loadingUpdate.name ||
                         loadingUpdate.email ||
@@ -263,11 +285,13 @@ const Profile = (props) => {
                       ) : undefined}
                       <HStack>
                         <Icon
+                          aria-label="Medal"
                           as={RiMedalLine}
                           variant="primary"
                           fontSize="24px"
                         />
                         <Text
+                          aria-label="Current Wins"
                           fontSize="18px"
                           fontWeight={colorMode === "light" && "500"}
                           color={fsUser.wins.total > 0 ? "g500" : "r600"}
@@ -285,8 +309,17 @@ const Profile = (props) => {
                       />
 
                       <Link
+                        tabIndex="0"
+                        aria-controls="modal"
+                        aria-selected={show.passwordReset}
                         onClick={() =>
                           setShow({ ...show, passwordReset: true })
+                        }
+                        onKeyDown={(e) =>
+                          handleKeyDown(e, {
+                            setShow: setShow,
+                            objKey: "passwordReset",
+                          })
                         }
                         variant="simple"
                         justifySelf="center"
@@ -304,7 +337,12 @@ const Profile = (props) => {
                         justifySelf="center"
                         _hover={{
                           bgColor: "r500",
-                          color: "wMain",
+                          color: colorMode === "dark" ? "wMain" : "#000000",
+                          boxShadow: "lg",
+                        }}
+                        _focusVisible={{
+                          bgColor: "r500",
+                          color: colorMode === "dark" ? "wMain" : "#000000",
                           boxShadow: "lg",
                         }}
                         _active={{ bgColor: "r600" }}

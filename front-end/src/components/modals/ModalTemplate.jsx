@@ -1,6 +1,9 @@
-import { Box, Container, useColorMode } from "@chakra-ui/react";
+/* eslint-disable react-hooks/exhaustive-deps */
+import { useRef, useEffect } from "react";
+import { Box, Container, Button, useColorMode } from "@chakra-ui/react";
 import { motion, AnimatePresence } from "framer-motion";
 import ModalAnimations from "../../utils/animations/modalAnimations";
+import useKeyboardHelper from "../../hooks/useKeyboardHelper";
 
 const ModalTemplate = (props) => {
   const {
@@ -15,9 +18,36 @@ const ModalTemplate = (props) => {
     ...rest
   } = props;
 
+  const modalRef = useRef(null);
   const { colorMode } = useColorMode();
   const { modelBackdrop, modelFadeDown, modelFadeUp } =
     ModalAnimations(animation);
+  const {
+    handleKeyEscape,
+    initializeKeyboardOnModal,
+    handleModalKeyboardLock,
+  } = useKeyboardHelper();
+
+  useEffect(() => {
+    if (show) {
+      const modalElement = modalRef.current;
+
+      const { firstFocusableElement, lastFocusableElement } =
+          initializeKeyboardOnModal(modalRef),
+        keyboardListenerWrapper = (event) => {
+          handleKeyEscape(event, { type: "modal", setShow, objKey: objName });
+          handleModalKeyboardLock(event, {
+            firstFocusableElement,
+            lastFocusableElement,
+          });
+        };
+
+      modalElement.addEventListener("keydown", keyboardListenerWrapper);
+      return () => {
+        modalElement.removeEventListener("keydown", keyboardListenerWrapper);
+      };
+    }
+  }, [show]);
 
   return (
     <AnimatePresence>
@@ -25,6 +55,7 @@ const ModalTemplate = (props) => {
         <>
           {/* *Backdrop* */}
           <Box
+            aria-label="Backdrop"
             as={motion.div}
             variants={modelBackdrop}
             animate={modelBackdrop.visible}
@@ -57,7 +88,11 @@ const ModalTemplate = (props) => {
 
           {/* *Modal* */}
           <Container
+            tabIndex="-1"
+            aria-label="Modal"
             as={motion.div}
+            ref={modalRef}
+            id="modal"
             variants={animation.type === "down" ? modelFadeDown : modelFadeUp}
             animate={
               animation.type === "down"
@@ -86,6 +121,25 @@ const ModalTemplate = (props) => {
             borderRadius="6px"
             {...rest}
           >
+            <Button
+              aria-label="Exit"
+              isDisabled={loading}
+              aria-disabled={loading}
+              onClick={() =>
+                objName
+                  ? setShow((prev) => ({
+                      ...prev,
+                      [objName]: false,
+                    }))
+                  : setShow(false)
+              }
+              variant="exit"
+              position="absolute"
+              top="-8px"
+              right="-8px"
+            >
+              &#10005;
+            </Button>
             {children}
           </Container>
         </>

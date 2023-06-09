@@ -46,6 +46,8 @@ const GetUserBalanceCompletedQuests = () => {
       } else if (error.response && error.response.status === 401) {
         console.error(error);
         navigate("/error401");
+      } else if (error.response && error.response.status === 429) {
+        navigate("/error429");
       } else {
         console.error(error);
         navigate("/error500");

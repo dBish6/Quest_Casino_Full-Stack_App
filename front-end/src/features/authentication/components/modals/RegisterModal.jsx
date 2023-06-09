@@ -28,6 +28,7 @@ import { MdOutlineVisibilityOff, MdOutlineVisibility } from "react-icons/md";
 
 // *Custom Hooks Import*
 import useDisableScroll from "../../../../hooks/useDisableScroll";
+import useKeyboardHelper from "../../../../hooks/useKeyboardHelper";
 import usePhoneFormat from "../../hooks/usePhoneFormat";
 
 // *Utility Imports*
@@ -55,6 +56,7 @@ const RegisterModal = (props) => {
   const formRef = useRef(null);
   const { colorMode } = useColorMode();
 
+  const { handleKeyDown } = useKeyboardHelper();
   const { handleRegister, errorHandler, setErrorHandler, loading } =
     PostRegister();
   const { handlePhoneFormat, inputValue, handlePhoneErrorMsg, errorMsg } =
@@ -109,19 +111,6 @@ const RegisterModal = (props) => {
       display="grid"
       maxW="522px"
     >
-      <Button
-        onClick={() =>
-          typeof props.show === "object"
-            ? props.setShow({ ...props.show, register: false })
-            : props.setShow(false)
-        }
-        variant="exit"
-        position="absolute"
-        top="-8px"
-        right="-8px"
-      >
-        &#10005;
-      </Button>
       <MyHeading fontSize="32px" mb="2rem" text="Register" />
 
       <chakra.form
@@ -140,6 +129,7 @@ const RegisterModal = (props) => {
             setPasswordStrength
           )
         )}
+        aria-label="Create a Account"
         ref={formRef}
       >
         {errorHandler.unexpected ? (
@@ -158,7 +148,10 @@ const RegisterModal = (props) => {
         ) : undefined}
 
         <HStack mb="1rem">
-          <FormControl isInvalid={errors.firstName}>
+          <FormControl
+            aria-label="First Name Field"
+            isInvalid={errors.firstName}
+          >
             <FormLabel
               htmlFor="firstName"
               fontSize={{ base: "14px", md: "16px", xl: "16px" }}
@@ -193,7 +186,7 @@ const RegisterModal = (props) => {
               )}
             />
           </FormControl>
-          <FormControl isInvalid={errors.lastName}>
+          <FormControl aria-label="Last Name Field" isInvalid={errors.lastName}>
             <FormLabel
               htmlFor="lastName"
               fontSize={{ base: "14px", md: "16px", xl: "16px" }}
@@ -231,6 +224,7 @@ const RegisterModal = (props) => {
         </HStack>
 
         <FormControl
+          aria-label="Username Field"
           isInvalid={errors.username || errorHandler.usernameInUse.length}
           mb="1rem"
         >
@@ -277,6 +271,7 @@ const RegisterModal = (props) => {
         </FormControl>
 
         <FormControl
+          aria-label="Email Field"
           isInvalid={errors.email || errorHandler.emailInUse}
           mb="1rem"
         >
@@ -325,7 +320,7 @@ const RegisterModal = (props) => {
         </FormControl>
 
         <HStack mb="10px">
-          <FormControl isInvalid={errors.password}>
+          <FormControl aria-label="Password Field" isInvalid={errors.password}>
             <FormLabel
               htmlFor="password"
               fontSize={{ base: "14px", md: "16px", xl: "16px" }}
@@ -363,9 +358,20 @@ const RegisterModal = (props) => {
               />
               {visible.password ? (
                 <Icon
+                  role="button"
+                  tabIndex="0"
+                  aria-label="visibility"
+                  aria-controls="password"
                   as={MdOutlineVisibilityOff}
                   onClick={() =>
                     toggleVisibility({ ...visible, password: false })
+                  }
+                  onKeyDown={(e) =>
+                    handleKeyDown(e, {
+                      toggleVisibility,
+                      objKey: "password",
+                      type: "off",
+                    })
                   }
                   position="absolute"
                   right="0.875rem"
@@ -377,9 +383,20 @@ const RegisterModal = (props) => {
                 />
               ) : (
                 <Icon
+                  role="button"
+                  tabIndex="0"
+                  aria-label="visibility"
+                  aria-controls="password"
                   as={MdOutlineVisibility}
                   onClick={() =>
                     toggleVisibility({ ...visible, password: true })
+                  }
+                  onKeyDown={(e) =>
+                    handleKeyDown(e, {
+                      toggleVisibility,
+                      objKey: "password",
+                      type: "on",
+                    })
                   }
                   position="absolute"
                   right="0.875rem"
@@ -392,6 +409,7 @@ const RegisterModal = (props) => {
               )}
             </HStack>
             <Progress
+              aria-label="Password Strength Indicator"
               variant={passwordStrength >= 80 ? "highStrength" : "lowStrength"}
               mt="6px"
               size="xs"
@@ -407,6 +425,7 @@ const RegisterModal = (props) => {
             />
           </FormControl>
           <FormControl
+            aria-label="Confirm Password Field"
             isInvalid={errors.conPassword || errorHandler.confirmation}
             mb="10px !important"
           >
@@ -447,9 +466,20 @@ const RegisterModal = (props) => {
               />
               {visible.confirm ? (
                 <Icon
+                  role="button"
+                  tabIndex="0"
+                  aria-label="visibility"
+                  aria-controls="password"
                   as={MdOutlineVisibilityOff}
                   onClick={() =>
                     toggleVisibility({ ...visible, confirm: false })
+                  }
+                  onKeyDown={(e) =>
+                    handleKeyDown(e, {
+                      toggleVisibility,
+                      objKey: "confirm",
+                      type: "on",
+                    })
                   }
                   position="absolute"
                   right="0.875rem"
@@ -461,9 +491,20 @@ const RegisterModal = (props) => {
                 />
               ) : (
                 <Icon
+                  role="button"
+                  tabIndex="0"
+                  aria-label="visibility"
+                  aria-controls="password"
                   as={MdOutlineVisibility}
                   onClick={() =>
                     toggleVisibility({ ...visible, confirm: true })
+                  }
+                  onKeyDown={(e) =>
+                    handleKeyDown(e, {
+                      toggleVisibility,
+                      objKey: "confirm",
+                      type: "on",
+                    })
                   }
                   position="absolute"
                   right="0.875rem"
@@ -488,7 +529,10 @@ const RegisterModal = (props) => {
           </FormControl>
         </HStack>
 
-        <FormControl isInvalid={errorHandler.phoneInUse}>
+        <FormControl
+          aria-label="Phone Number Field"
+          isInvalid={errorHandler.phoneInUse}
+        >
           <FormLabel
             htmlFor="phone"
             fontSize={{ base: "14px", md: "16px", xl: "16px" }}
@@ -559,6 +603,7 @@ const RegisterModal = (props) => {
 
         <Button
           isLoading={loading ? true : false}
+          aria-disabled={loading}
           type="submit"
           variant="primary"
           mt="1.5rem"
@@ -567,7 +612,13 @@ const RegisterModal = (props) => {
           Sign Up
         </Button>
       </chakra.form>
-      <Text as="small" textAlign="center" mt="12px">
+      <Text
+        role="complementary"
+        aria-label="Warning"
+        as="small"
+        textAlign="center"
+        mt="12px"
+      >
         By clicking on{" "}
         <chakra.span
           fontWeight="500"

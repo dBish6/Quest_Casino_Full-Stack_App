@@ -72,6 +72,8 @@ const Leaderboard = () => {
                         align="center"
                       >
                         <Text
+                          role="complementary"
+                          aria-label="Place"
                           pos="absolute"
                           top="2%"
                           left="4px"
@@ -92,19 +94,21 @@ const Leaderboard = () => {
                           {i + 1}.
                         </Text>
                         <Box
+                          role="presentation"
                           w="2.5rem"
                           h="2.5rem"
                           borderRadius="50%"
                           bgColor="wMain"
                         >
                           <Avatar
+                            aria-label={`${detail.username}'s Profile Picture`}
                             src={detail.photoURL}
-                            alt={`${detail.username}'s Profile Picture`}
                             w="2.5rem"
                             h="2.5rem"
                           />
                         </Box>
                         <Text
+                          aria-label={`${detail.username}'s Username`}
                           fontSize={{ base: "17px", md: "18px", xl: "18px" }}
                           fontWeight={i <= 2 && "600"}
                           bgGradient={
@@ -131,6 +135,7 @@ const Leaderboard = () => {
                           {detail.username}
                         </Text>
                         <Text
+                          aria-label={`${detail.username}'s Wins`}
                           fontSize={{ base: "17px", md: "18px", xl: "18px" }}
                           fontWeight="500"
                           color="g500"
@@ -147,6 +152,7 @@ const Leaderboard = () => {
                 {sameUsernameRef.current !== fsUser.username && (
                   <Flex pos="relative" flexDir="column" align="center">
                     <Text
+                      role="complementary"
                       pos="absolute"
                       top="2%"
                       left="4px"
@@ -157,19 +163,21 @@ const Leaderboard = () => {
                       You:
                     </Text>
                     <Box
+                      role="presentation"
                       w="2.5rem"
                       h="2.5rem"
                       borderRadius="50%"
                       bgColor="wMain"
                     >
                       <Avatar
+                        aria-label="Your Profile Picture"
                         src={fsUser.photoURL}
-                        alt={`${fsUser.username}'s Profile Picture`}
                         w="2.5rem"
                         h="2.5rem"
                       />
                     </Box>
                     <Text
+                      aria-label="Your Username"
                       fontSize={{ base: "17px", md: "18px", xl: "18px" }}
                       textAlign="center"
                       lineHeight="0.95"
@@ -178,6 +186,7 @@ const Leaderboard = () => {
                       {fsUser.username}
                     </Text>
                     <Text
+                      aria-label="Your Wins"
                       fontSize={{ base: "17px", md: "18px", xl: "18px" }}
                       fontWeight="500"
                       color={fsUser.wins.total > 0 ? "g500" : "r600"}

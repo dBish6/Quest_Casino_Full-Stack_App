@@ -15,7 +15,7 @@ import { BsLightbulbFill, BsLightbulbOffFill } from "react-icons/bs";
 import useCache from "../../hooks/useCache";
 
 const Settings = () => {
-  const { toggleColorMode } = useColorMode();
+  const { colorMode, toggleColorMode } = useColorMode();
   const SwitchIcon = useColorModeValue(FaMoon, FaSun);
   const toast = useToast();
   const { cache, setCache } = useCache();
@@ -23,8 +23,11 @@ const Settings = () => {
   return (
     <>
       <HStack justify="space-between" paddingInline="1rem">
-        <Text whiteSpace="nowrap">Light/Dark Mode:</Text>
+        <Text aria-label="Light or Dark Mode" whiteSpace="nowrap">
+          Light/Dark Mode:
+        </Text>
         <IconButton
+          aria-label={colorMode === "dark" ? "Moon" : "Sun"}
           icon={<SwitchIcon />}
           onClick={() => toggleColorMode()}
           size="md"
@@ -36,8 +39,11 @@ const Settings = () => {
       </HStack>
       <Divider justifySelf="center" m="0.6rem auto" w="90%" />
       <HStack justify="space-between" paddingInline="1rem">
-        <Text whiteSpace="nowrap">Enable Tips:</Text>
+        <Text aria-label="Enable tip Popups" whiteSpace="nowrap">
+          Enable Tips:
+        </Text>
         <IconButton
+          aria-label="Lightbulb"
           size="md"
           fontSize="lg"
           variant="ghost"

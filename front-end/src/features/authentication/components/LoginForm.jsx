@@ -26,8 +26,9 @@ import {
 import { MdOutlineVisibilityOff, MdOutlineVisibility } from "react-icons/md";
 import { FcGoogle } from "react-icons/fc";
 
-// *Custom Hooks Import*
+// *Custom Hooks Imports*
 import useAuth from "../../../hooks/useAuth";
+import useKeyboardHelper from "../../../hooks/useKeyboardHelper";
 
 // *API Services Imports*
 import PostLogin from "../api_services/PostLogin";
@@ -40,6 +41,7 @@ const LoginForm = (props) => {
   const [visible, toggleVisibility] = useState(false);
   const [focused, setFocused] = useState(false);
   const { colorMode } = useColorMode();
+  const { handleKeyDown } = useKeyboardHelper();
 
   const {
     register,
@@ -69,6 +71,7 @@ const LoginForm = (props) => {
         onSubmit={handleSubmit(() =>
           handleLogin(formRef, watch("email"), watch("password"))
         )}
+        aria-label="User Login"
         ref={formRef}
         justifySelf="center"
         display="flex"
@@ -103,7 +106,10 @@ const LoginForm = (props) => {
           </Alert>
         ) : undefined}
 
-        <FormControl isInvalid={errors.email || errorHandler.notFound}>
+        <FormControl
+          aria-label="Email Field"
+          isInvalid={errors.email || errorHandler.notFound}
+        >
           <FormLabel htmlFor="email" opacity={currentUser !== null && "0.4"}>
             Email
           </FormLabel>
@@ -120,6 +126,7 @@ const LoginForm = (props) => {
             autoComplete="off"
             // Disables the input if the user is logged in.
             isDisabled={currentUser !== null}
+            aria-disabled={currentUser !== null}
             h="48px"
             variant="primary"
             cursor={currentUser !== null && "not-allowed"}
@@ -133,6 +140,7 @@ const LoginForm = (props) => {
           />
         </FormControl>
         <FormControl
+          aria-label="Password Field"
           isInvalid={
             errors.password || errorHandler.badRequest || errorHandler.notFound
           }
@@ -152,6 +160,7 @@ const LoginForm = (props) => {
               autoComplete="off"
               type={visible ? "text" : "password"}
               isDisabled={currentUser !== null}
+              aria-disabled={currentUser !== null}
               variant="primary"
               h="48px"
               paddingInline="1rem 2.5rem"
@@ -159,11 +168,19 @@ const LoginForm = (props) => {
             />
             {visible ? (
               <Icon
+                role="button"
+                tabIndex={currentUser === null ? "0" : "-1"}
+                aria-label="visibility"
+                aria-controls="password"
                 as={MdOutlineVisibilityOff}
                 onClick={() => toggleVisibility(false)}
+                onKeyDown={(e) =>
+                  handleKeyDown(e, { toggleVisibility, type: "off" })
+                }
                 position="absolute"
                 right="0.875rem"
                 cursor="pointer"
+                opacity={currentUser !== null && "0.4"}
                 zIndex={currentUser !== null ? "hide" : "1"}
                 color={
                   focused &&
@@ -173,11 +190,19 @@ const LoginForm = (props) => {
               />
             ) : (
               <Icon
+                role="button"
+                tabIndex={currentUser === null ? "0" : "-1"}
+                aria-label="visibility"
+                aria-controls="password"
                 as={MdOutlineVisibility}
                 onClick={() => toggleVisibility(true)}
+                onKeyDown={(e) =>
+                  handleKeyDown(e, { toggleVisibility, type: "on" })
+                }
                 position="absolute"
                 right="0.875rem"
                 cursor="pointer"
+                opacity={currentUser !== null && "0.4"}
                 zIndex={currentUser !== null ? "hide" : "1"}
                 color={
                   focused &&
@@ -199,9 +224,18 @@ const LoginForm = (props) => {
           ) : undefined}
           <Box mt="6px">
             <Link
+              tabIndex={currentUser === null ? "0" : "-1"}
+              aria-controls="modal"
+              aria-selected={props.show.passwordReset}
               onClick={() =>
                 currentUser === null &&
                 props.setShow({ ...props.show, passwordReset: true })
+              }
+              onKeyDown={(e) =>
+                handleKeyDown(e, {
+                  setShow: props.setShow,
+                  objKey: "passwordReset",
+                })
               }
               position="relative"
               whiteSpace="nowrap"
@@ -228,10 +262,10 @@ const LoginForm = (props) => {
         {currentUser === null ? (
           <Button
             isLoading={loading ? true : false}
+            aria-disabled={loading}
             type="submit"
             variant="primary"
             zIndex="1"
-            isDisabled={currentUser !== null}
             cursor={currentUser !== null && "not-allowed"}
             _hover={
               currentUser === null && {
@@ -277,6 +311,7 @@ const LoginForm = (props) => {
           position="relative"
           bottom="24px"
           isDisabled={currentUser !== null}
+          aria-disabled={currentUser !== null || googleLoading}
           cursor={currentUser !== null && "not-allowed"}
           _hover={
             currentUser === null && {
@@ -303,10 +338,19 @@ const LoginForm = (props) => {
         </Button>
       </VStack>
 
-      <Text whiteSpace="nowrap">
+      <Text aria-label="Create a Account" whiteSpace="nowrap">
         Don't have account?{" "}
         <Link
+          tabIndex="0"
+          aria-controls="modal"
+          aria-selected={props.show.register}
           onClick={() => props.setShow({ ...props.show, register: true })}
+          onKeyDown={(e) =>
+            handleKeyDown(e, {
+              setShow: props.setShow,
+              objKey: "register",
+            })
+          }
           variant="simple"
         >
           Sign Up

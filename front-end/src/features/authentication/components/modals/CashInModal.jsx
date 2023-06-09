@@ -64,19 +64,6 @@ const CashInModal = (props) => {
       animation={{ type: "down", y: "-400%" }}
       maxW="325px"
     >
-      <Button
-        onClick={() =>
-          typeof props.show === "object"
-            ? props.setShow({ ...props.show, cashIn: false })
-            : props.setShow(false)
-        }
-        variant="exit"
-        position="absolute"
-        top="-8px"
-        right="-8px"
-      >
-        &#10005;
-      </Button>
       <MyHeading fontSize="2rem" mb="1.5rem" text="Cash In" />
 
       <chakra.form
@@ -89,6 +76,7 @@ const CashInModal = (props) => {
             csrfToken
           )
         )}
+        aria-label="Bank Machine"
         ref={formRef}
       >
         {errorHandler.unexpected ? (
@@ -101,12 +89,13 @@ const CashInModal = (props) => {
           </Alert>
         ) : undefined}
 
-        <FormControl isInvalid={errors.deposit}>
+        <FormControl aria-label="Deposit Field" isInvalid={errors.deposit}>
           <FormLabel htmlFor="deposit" opacity={currentUser === null && "0.4"}>
             Amount<chakra.span color="r400"> *</chakra.span>
           </FormLabel>
           <HStack>
             <Icon
+              aria-label="Dollar Sign"
               as={CgDollar}
               position="absolute"
               left="0.5rem"
@@ -133,6 +122,7 @@ const CashInModal = (props) => {
               name="deposit"
               autoComplete="off"
               isDisabled={currentUser === null}
+              aria-disabled={currentUser !== null}
               variant="primary"
               h="48px"
               marginInlineStart="0px !important"
@@ -152,6 +142,7 @@ const CashInModal = (props) => {
         <Button
           isLoading={loadingUpdate.balance ? true : false}
           isDisabled={currentUser === null}
+          aria-disabled={currentUser !== null}
           type="submit"
           variant="primary"
           mt="1.5rem"

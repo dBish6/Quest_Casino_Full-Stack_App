@@ -47,21 +47,33 @@ const DesktopIndex = () => {
   return (
     <>
       <chakra.aside
+        aria-label="Sidebar"
         position="fixed"
         bgColor={colorMode === "dark" ? "bd700" : "bl400"}
         w="235px"
         minH="100vh"
       >
         <Tabs variant="navigation">
-          <TabList justifyContent="space-evenly">
-            <Tab flexGrow="1">
-              <Icon as={MdMenu} fontSize="1.3125rem" />
+          <TabList
+            justifyContent="space-evenly"
+            aria-label="Category Navigation"
+          >
+            <Tab flexGrow="1" aria-label="Menu Tab">
+              <Icon as={MdMenu} fontSize="1.3125rem" aria-label="Menu" />
             </Tab>
-            <Tab flexGrow="1">
-              <Icon as={MdLockOutline} fontSize="1.3125rem" />
+            <Tab flexGrow="1" aria-label="Login Tab">
+              <Icon
+                as={MdLockOutline}
+                fontSize="1.3125rem"
+                aria-label="Login"
+              />
             </Tab>
-            <Tab flexGrow="1">
-              <Icon as={FiSettings} fontSize="1.3125rem" />
+            <Tab flexGrow="1" aria-label="Settings Tab">
+              <Icon
+                as={FiSettings}
+                fontSize="1.3125rem"
+                aria-label="Settings"
+              />
             </Tab>
           </TabList>
 

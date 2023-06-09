@@ -11,6 +11,7 @@ const LogoutBtn = (props) => {
     <Button
       onClick={() => handleUserLogout(true)}
       isLoading={loading}
+      aria-disabled={loading}
       variant="primary"
       justifySelf="center"
       {...props}

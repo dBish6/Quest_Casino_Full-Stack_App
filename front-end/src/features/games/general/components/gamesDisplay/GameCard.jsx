@@ -26,6 +26,9 @@ const GameCard = (props) => {
       {props.content.map((detail, i) => {
         return (
           <Container
+            tabIndex="0"
+            aria-label={`Play ${detail.title}`}
+            as="article"
             key={i}
             position="relative"
             maxW="200px"
@@ -37,9 +40,18 @@ const GameCard = (props) => {
             onMouseEnter={() => setShow(i)}
             onMouseLeave={() => setShow(-1)}
             onClick={() => navigate(detail.url)}
+            onFocus={() => setShow(i)}
+            onBlur={() => setShow(-1)}
+            onKeyDown={(e) =>
+              props.handleKeyDown(e, {
+                navigate: navigate,
+                location: detail.url,
+              })
+            }
           >
             {detail.description.includes("blackjack!") && (
               <Badge
+                aria-label="New Game Indicator"
                 variant="solid"
                 colorScheme="green"
                 position="absolute"
@@ -65,6 +77,7 @@ const GameCard = (props) => {
                 <Box w="198px" h="190px" m="0 !important">
                   <Image
                     src={davyBlackjackPreview}
+                    alt="Davy Blackjack Preview"
                     objectFit="cover"
                     h="100%"
                     borderBottomRadius="6px"
@@ -114,6 +127,7 @@ const GameCard = (props) => {
                     zIndex="1"
                   >
                     <Text
+                      aria-label="Game Description"
                       fontSize="14px"
                       color={colorMode === "dark" ? "wMain" : "bMain"}
                       opacity="0.9"

@@ -27,7 +27,7 @@ const WelcomeSection = () => {
       <Box pos="relative" maxW="985px" m="0 auto" mt="164px">
         <Image
           src={cardsImg}
-          alt="Cards Image"
+          alt="Hand of Cards"
           as={motion.img}
           initial={{
             scale: isSmallerThan601 ? 0.7 : 0.8,
@@ -53,6 +53,7 @@ const WelcomeSection = () => {
       </Box>
 
       <Container
+        aria-label="Welcoming"
         as={motion.section}
         initial={{ height: 0, opacity: 0, y: "50%" }}
         whileInView={{
@@ -144,6 +145,7 @@ const WelcomeSection = () => {
           </VStack>
 
           <Text
+            aria-label="Casino Welcome Text"
             textAlign="center"
             lineHeight="1.725"
             maxW="732px"
@@ -179,11 +181,21 @@ const WelcomeSection = () => {
               >
                 Games
               </Heading>
-              <Text fontSize="13px" textAlign="center" opacity="0.9">
+              <Text
+                aria-label="Game's Offering"
+                fontSize="13px"
+                textAlign="center"
+                opacity="0.9"
+              >
                 Classic table games like blackjack and poker, even slot machines
                 and more!
               </Text>
-              <Icon as={CgCardSpades} fontSize="1.5rem" color="g500" />
+              <Icon
+                aria-label="Card"
+                as={CgCardSpades}
+                fontSize="1.5rem"
+                color="g500"
+              />
             </VStack>
             <VStack maxW="180px" maxH="127.3px">
               <Heading
@@ -195,11 +207,21 @@ const WelcomeSection = () => {
               >
                 Challenges
               </Heading>
-              <Text fontSize="13px" textAlign="center" opacity="0.9">
+              <Text
+                aria-label="Challenges Offering"
+                fontSize="13px"
+                textAlign="center"
+                opacity="0.9"
+              >
                 Challenges are the quests you can fulfil for some extra cash! Or
                 other special rewards.
               </Text>
-              <Icon as={AiOutlineTrophy} fontSize="1.5rem" color="g500" />
+              <Icon
+                aria-label="Trophy"
+                as={AiOutlineTrophy}
+                fontSize="1.5rem"
+                color="g500"
+              />
             </VStack>
             <VStack
               maxW="180px"
@@ -215,11 +237,21 @@ const WelcomeSection = () => {
               >
                 Safety
               </Heading>
-              <Text fontSize="13px" textAlign="center" opacity="0.9">
+              <Text
+                aria-label="Safety Offering"
+                fontSize="13px"
+                textAlign="center"
+                opacity="0.9"
+              >
                 Our top priority is your safety and comfort even though there is
                 no danger! This is all for fun!
               </Text>
-              <Icon as={AiOutlineSafety} fontSize="1.5rem" color="g500" />
+              <Icon
+                aria-label="Shield"
+                as={AiOutlineSafety}
+                fontSize="1.5rem"
+                color="g500"
+              />
             </VStack>
           </Grid>
         </VStack>

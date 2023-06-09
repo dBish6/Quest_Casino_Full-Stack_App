@@ -72,14 +72,26 @@ const EditableFields = (props) => {
       {/* Full Name */}
       {!isUpdating.name ? (
         <HStack>
-          <Icon as={RiFileUserLine} variant="primary" fontSize="24px" />
-          <Text fontSize="18px">{props.fsUser.full_name}</Text>
+          <Icon
+            aria-label="User on Paper"
+            as={RiFileUserLine}
+            variant="primary"
+            fontSize="24px"
+          />
+          <Text aria-label="Full Name" fontSize="18px">
+            {props.fsUser.full_name}
+          </Text>
           <MyTooltip label="Edit">
             <IconButton
               icon={<MdOutlineEdit fontSize="24px" />}
               aria-label="edit"
               isLoading={props.loadingUpdate.name ? true : false}
               isDisabled={
+                props.loadingUpdate.username ||
+                props.loadingUpdate.email ||
+                props.loadingUpdate.phone
+              }
+              aria-disabled={
                 props.loadingUpdate.username ||
                 props.loadingUpdate.email ||
                 props.loadingUpdate.phone
@@ -105,11 +117,13 @@ const EditableFields = (props) => {
               props.handleFullName(watch("name"), setIsUpdating);
             }
           })}
+          aria-label="Change Full Name"
           display="flex"
         >
-          <FormControl isInvalid={errors.name}>
+          <FormControl aria-label="Full Name Field" isInvalid={errors.name}>
             <HStack data-group>
               <Icon
+                aria-label="User on Paper"
                 as={RiFileUserLine}
                 variant="primary"
                 position="absolute"
@@ -125,6 +139,7 @@ const EditableFields = (props) => {
                 })}
                 onFocus={() => setFocused({ ...focused, name: true })}
                 onBlur={() => setFocused({ ...focused, name: false })}
+                aria-required="true"
                 id="name"
                 name="name"
                 autoComplete="off"
@@ -134,19 +149,23 @@ const EditableFields = (props) => {
                 marginInlineStart="0px !important"
                 h="42px"
               />
-              <ButtonGroup size="sm">
+              <ButtonGroup aria-label="Action Buttons" size="sm">
                 <IconButton
+                  aria-label="Confirm"
                   icon={<MdCheck />}
                   type="submit"
                   isLoading={props.loadingUpdate.name ? true : false}
+                  aria-disabled={props.loadingUpdate.name ? true : false}
                   variant="secondary"
                   color="g500"
                   _hover={{ color: "g500" }}
                   _active={{ bgColor: "rgb(244, 244, 244, 0.2)" }}
                 />
                 <IconButton
+                  aria-label="Cancel"
                   icon={<MdClose />}
                   isDisabled={props.loadingUpdate.name ? true : false}
+                  aria-disabled={props.loadingUpdate.name ? true : false}
                   onClick={() => setIsUpdating({ ...isUpdating, name: false })}
                   variant="secondary"
                   color="r500"
@@ -169,14 +188,26 @@ const EditableFields = (props) => {
       {/* Username */}
       {!isUpdating.username ? (
         <HStack>
-          <Icon as={RiUser3Line} variant="primary" fontSize="24px" />
-          <Text fontSize="18px">{props.fsUser.username}</Text>
+          <Icon
+            aria-label="User"
+            as={RiUser3Line}
+            variant="primary"
+            fontSize="24px"
+          />
+          <Text aria-label="Username" fontSize="18px">
+            {props.fsUser.username}
+          </Text>
           <MyTooltip label="Edit">
             <IconButton
               icon={<MdOutlineEdit fontSize="24px" />}
               aria-label="edit"
               isLoading={props.loadingUpdate.username ? true : false}
               isDisabled={
+                props.loadingUpdate.name ||
+                props.loadingUpdate.email ||
+                props.loadingUpdate.phone
+              }
+              aria-disabled={
                 props.loadingUpdate.name ||
                 props.loadingUpdate.email ||
                 props.loadingUpdate.phone
@@ -194,11 +225,13 @@ const EditableFields = (props) => {
           onSubmit={handleSubmit(() =>
             props.handleUsername(watch("username"), setIsUpdating)
           )}
+          aria-label="Change Username"
           display="flex"
         >
-          <FormControl isInvalid={errors.username}>
+          <FormControl aria-label="Username Field" isInvalid={errors.username}>
             <HStack data-group>
               <Icon
+                aria-label="User"
                 as={RiUser3Line}
                 variant="primary"
                 position="absolute"
@@ -224,6 +257,7 @@ const EditableFields = (props) => {
                 })}
                 onFocus={() => setFocused({ ...focused, username: true })}
                 onBlur={() => setFocused({ ...focused, username: false })}
+                aria-required="true"
                 id="username"
                 name="username"
                 autoComplete="off"
@@ -233,19 +267,23 @@ const EditableFields = (props) => {
                 marginInlineStart="0px !important"
                 h="42px"
               />
-              <ButtonGroup size="sm">
+              <ButtonGroup aria-label="Action Buttons" size="sm">
                 <IconButton
+                  aria-label="Confirm"
                   icon={<MdCheck />}
                   type="submit"
                   isLoading={props.loadingUpdate.username ? true : false}
+                  aria-disabled={props.loadingUpdate.username ? true : false}
                   variant="secondary"
                   color="g500"
                   _hover={{ color: "g500" }}
                   _active={{ bgColor: "rgb(244, 244, 244, 0.2)" }}
                 />
                 <IconButton
+                  aria-label="Cancel"
                   icon={<MdClose />}
                   isDisabled={props.loadingUpdate.username ? true : false}
+                  aria-disabled={props.loadingUpdate.username ? true : false}
                   onClick={() =>
                     setIsUpdating({ ...isUpdating, username: false })
                   }
@@ -270,14 +308,26 @@ const EditableFields = (props) => {
       {/* Email Address */}
       {!isUpdating.email ? (
         <HStack>
-          <Icon as={MdOutlineEmail} variant="primary" fontSize="24px" />
-          <Text fontSize="18px">{props.fsUser.email}</Text>
+          <Icon
+            aria-label="Mail"
+            as={MdOutlineEmail}
+            variant="primary"
+            fontSize="24px"
+          />
+          <Text aria-label="Email" fontSize="18px">
+            {props.fsUser.email}
+          </Text>
           <MyTooltip label="Edit">
             <IconButton
               icon={<MdOutlineEdit fontSize="24px" />}
               aria-label="edit"
               isLoading={props.loadingUpdate.email ? true : false}
               isDisabled={
+                props.loadingUpdate.username ||
+                props.loadingUpdate.name ||
+                props.loadingUpdate.phone
+              }
+              aria-disabled={
                 props.loadingUpdate.username ||
                 props.loadingUpdate.name ||
                 props.loadingUpdate.phone
@@ -295,11 +345,13 @@ const EditableFields = (props) => {
           onSubmit={handleSubmit(() =>
             props.handleEmail(watch("email"), setIsUpdating)
           )}
+          aria-label="Change Email"
           display="flex"
         >
-          <FormControl isInvalid={errors.email}>
+          <FormControl aria-label="Email Field" isInvalid={errors.email}>
             <HStack data-group>
               <Icon
+                aria-label="Mail"
                 as={MdOutlineEmail}
                 variant="primary"
                 position="absolute"
@@ -321,6 +373,7 @@ const EditableFields = (props) => {
                 })}
                 onFocus={() => setFocused({ ...focused, email: true })}
                 onBlur={() => setFocused({ ...focused, email: false })}
+                aria-required="true"
                 id="email"
                 name="email"
                 autoComplete="off"
@@ -330,19 +383,23 @@ const EditableFields = (props) => {
                 marginInlineStart="0px !important"
                 h="42px"
               />
-              <ButtonGroup size="sm">
+              <ButtonGroup aria-label="Action Buttons" size="sm">
                 <IconButton
+                  aria-label="Confirm"
                   icon={<MdCheck />}
                   type="submit"
                   isLoading={props.loadingUpdate.email ? true : false}
+                  aria-disabled={props.loadingUpdate.email ? true : false}
                   variant="secondary"
                   color="g500"
                   _hover={{ color: "g500" }}
                   _active={{ bgColor: "rgb(244, 244, 244, 0.2)" }}
                 />
                 <IconButton
+                  aria-label="Cancel"
                   icon={<MdClose />}
                   isDisabled={props.loadingUpdate.email ? true : false}
+                  aria-disabled={props.loadingUpdate.email ? true : false}
                   onClick={() => setIsUpdating({ ...isUpdating, email: false })}
                   variant="secondary"
                   color="r500"
@@ -365,8 +422,13 @@ const EditableFields = (props) => {
       {/* Phone Number */}
       {!isUpdating.phone ? (
         <HStack>
-          <Icon as={MdOutlinePhone} variant="primary" fontSize="24px" />
-          <Text fontSize="18px">
+          <Icon
+            aria-label="Phone"
+            as={MdOutlinePhone}
+            variant="primary"
+            fontSize="24px"
+          />
+          <Text aria-label="Phone Number" fontSize="18px">
             {props.fsUser.phone_number ? props.fsUser.phone_number : "None"}
           </Text>
           <MyTooltip label="Edit">
@@ -375,6 +437,11 @@ const EditableFields = (props) => {
               aria-label="edit"
               isLoading={props.loadingUpdate.phone ? true : false}
               isDisabled={
+                props.loadingUpdate.username ||
+                props.loadingUpdate.name ||
+                props.loadingUpdate.email
+              }
+              aria-disabled={
                 props.loadingUpdate.username ||
                 props.loadingUpdate.name ||
                 props.loadingUpdate.email
@@ -396,9 +463,13 @@ const EditableFields = (props) => {
               setIsUpdating
             )
           )}
+          aria-label="Change Phone Number"
           display="flex"
         >
-          <FormControl isInvalid={errors.phone || errorMsg}>
+          <FormControl
+            aria-label="Phone Number Field"
+            isInvalid={errors.phone || errorMsg}
+          >
             <HStack data-group>
               <Select
                 {...register("callingCode", {
@@ -406,6 +477,8 @@ const EditableFields = (props) => {
                 })}
                 onFocus={() => setFocused({ ...focused, phone: true })}
                 onBlur={() => setFocused({ ...focused, phone: false })}
+                aria-label="Calling Codes"
+                aria-required="true"
                 id="callingCode"
                 name="callingCode"
                 variant="primary"
@@ -420,7 +493,8 @@ const EditableFields = (props) => {
                 ))}
               </Select>
               <Icon
-                as={RiFileUserLine}
+                aria-label="Phone"
+                as={MdOutlinePhone}
                 variant="primary"
                 position="absolute"
                 left="calc(0.5rem + 100px)"
@@ -445,6 +519,7 @@ const EditableFields = (props) => {
                 })}
                 onFocus={() => setFocused({ ...focused, phone: true })}
                 onBlur={() => setFocused({ ...focused, phone: false })}
+                aria-required="true"
                 value={inputValue}
                 id="phone"
                 name="phone"
@@ -457,19 +532,23 @@ const EditableFields = (props) => {
                 h="42px"
                 maxW="175px"
               />
-              <ButtonGroup size="sm">
+              <ButtonGroup aria-label="Action Buttons" size="sm">
                 <IconButton
+                  aria-label="Confirm"
                   icon={<MdCheck />}
                   type="submit"
                   isLoading={props.loadingUpdate.phone ? true : false}
+                  aria-disabled={props.loadingUpdate.phone ? true : false}
                   variant="secondary"
                   color="g500"
                   _hover={{ color: "g500" }}
                   _active={{ bgColor: "rgb(244, 244, 244, 0.2)" }}
                 />
                 <IconButton
+                  aria-label="Cancel"
                   icon={<MdClose />}
                   isDisabled={props.loadingUpdate.phone ? true : false}
+                  aria-disabled={props.loadingUpdate.phone ? true : false}
                   onClick={() => setIsUpdating({ ...isUpdating, phone: false })}
                   variant="secondary"
                   color="r500"

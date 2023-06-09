@@ -17,12 +17,14 @@ const Nav = (props) => {
     <Box display="flex" flexDir="column" rowGap="0.5rem">
       <HStack data-group>
         <Icon
+          aria-label="Home"
           as={MdOutlineHome}
           variant={
             location.pathname === "/home" ? "navOnLocation" : "navigation"
           }
         />
         <Link
+          aria-selected={location.pathname === "/home"}
           as={NavLink}
           to="/home"
           variant={
@@ -34,12 +36,14 @@ const Nav = (props) => {
       </HStack>
       <HStack data-group>
         <Icon
+          aria-label="Dice"
           as={GiPerspectiveDiceSixFacesThree}
           variant={
             location.pathname === "/games" ? "navOnLocation" : "navigation"
           }
         />
         <Link
+          aria-selected={location.pathname === "/games"}
           as={NavLink}
           to="/games"
           variant={
@@ -51,6 +55,7 @@ const Nav = (props) => {
       </HStack>
       <HStack data-group>
         <Icon
+          aria-label="User"
           as={MdOutlineAccountCircle}
           variant={
             location.pathname === "/user/profile"
@@ -59,6 +64,7 @@ const Nav = (props) => {
           }
         />
         <Link
+          aria-selected={location.pathname === "/user/profile"}
           as={NavLink}
           to="/user/profile"
           variant={
@@ -72,10 +78,14 @@ const Nav = (props) => {
       </HStack>
       <HStack data-group>
         <Icon
+          aria-label="Chest"
           as={GiChest}
           variant={props.show.quests ? "navOnLocation" : "navigation"}
         />
         <Link
+          aria-selected={props.show.quests}
+          aria-controls="modal"
+          as={NavLink}
           onClick={() => props.setShow({ ...props.show, quests: true })}
           variant={props.show.quests ? "navOnLocation" : "navigation"}
         >
@@ -84,12 +94,14 @@ const Nav = (props) => {
       </HStack>
       <HStack data-group>
         <Icon
+          aria-label="Info"
           as={MdInfoOutline}
           variant={
             location.pathname === "/about" ? "navOnLocation" : "navigation"
           }
         />
         <Link
+          aria-selected={location.pathname === "/about"}
           as={NavLink}
           to="/about"
           variant={
@@ -101,12 +113,14 @@ const Nav = (props) => {
       </HStack>
       <HStack data-group>
         <Icon
+          aria-label="Support"
           as={MdSupportAgent}
           variant={
             location.pathname === "/support" ? "navOnLocation" : "navigation"
           }
         />
         <Link
+          aria-selected={location.pathname === "/support"}
           as={NavLink}
           to="/support"
           variant={

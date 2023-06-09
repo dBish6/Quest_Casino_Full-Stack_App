@@ -10,3 +10,7 @@ v1.1.4
 v1.1.5
 - Fixed the quest modal and how they weren't showing complete because of
   the change of how the balance and completed quests are handled.
+
+v1.2.6
+- Lots of aria attributes was added; Most is already provided by Chakra UI, but I still had to make tweaks.
+- Quest Casino's UI is now fully keyboard accessible!

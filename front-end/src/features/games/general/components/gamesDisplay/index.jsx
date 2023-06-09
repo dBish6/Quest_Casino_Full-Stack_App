@@ -19,6 +19,7 @@ import { GiPayMoney } from "react-icons/gi";
 import { MdVideogameAsset, MdOutlineLeaderboard } from "react-icons/md";
 
 // *Custom Hooks Imports*
+import useKeyboardHelper from "../../../../../hooks/useKeyboardHelper";
 import useButtonFilter from "../../hooks/useButtonFilter";
 import useSearchFilter from "../../hooks/useSearchFilter";
 
@@ -26,11 +27,12 @@ import useSearchFilter from "../../hooks/useSearchFilter";
 import content from "../../utils/gameCardContent";
 
 // *Component Imports*
-import GameCard from "./GameCard";
 import MyTooltip from "../../../../../components/MyTooltip";
+import GameCard from "./GameCard";
 
 const GamesDisplayIndex = (props) => {
   const [gameCardContent, setGameCardContent] = useState([]);
+  const { handleKeyDown } = useKeyboardHelper();
   const [filterContent, selectedBtn] = useButtonFilter();
   const searchFilter = useSearchFilter();
 
@@ -71,6 +73,7 @@ const GamesDisplayIndex = (props) => {
         align={isLargerThan615 ? "center" : "flex-start"}
       >
         <ButtonGroup
+          aria-label="Filter Games Buttons"
           display="grid"
           gridTemplateColumns={
             isLargerThan615 ? "repeat(3, auto)" : "repeat(2, auto)"
@@ -84,6 +87,7 @@ const GamesDisplayIndex = (props) => {
           flexWrap="wrap"
         >
           <Button
+            aria-selected={selectedBtn.type === "cards"}
             variant="chipRed"
             leftIcon={isLargerThan526 && <ImClubs />}
             onClick={() => setGameCardContent(filterContent("cards", content))}
@@ -92,6 +96,7 @@ const GamesDisplayIndex = (props) => {
             {selectedBtn.type === "cards" ? selectedBtn.text : "Cards"}
           </Button>
           <Button
+            aria-selected={selectedBtn.type === "slots"}
             variant="chipGreen"
             leftIcon={isLargerThan526 && <GiPayMoney />}
             onClick={() => setGameCardContent(filterContent("slots", content))}
@@ -101,6 +106,7 @@ const GamesDisplayIndex = (props) => {
             {selectedBtn.type === "slots" ? selectedBtn.text : "Slots"}
           </Button>
           <Button
+            aria-selected={selectedBtn.type === "other"}
             variant="chipYellow"
             leftIcon={isLargerThan526 && <MdVideogameAsset />}
             onClick={() => setGameCardContent(filterContent("other", content))}
@@ -149,7 +155,14 @@ const GamesDisplayIndex = (props) => {
             </MyTooltip>
           ) : (
             <Link
+              tabIndex="0"
               onClick={() => navigate("/games/leaderboard")}
+              onKeyDown={(e) =>
+                handleKeyDown(e, {
+                  navigate: navigate,
+                  location: "/games/leaderboard",
+                })
+              }
               variant="simple"
             >
               Leaderboard
@@ -168,7 +181,7 @@ const GamesDisplayIndex = (props) => {
           xl: "2rem",
         }}
       >
-        <GameCard content={gameCardContent} />
+        <GameCard content={gameCardContent} handleKeyDown={handleKeyDown} />
       </HStack>
     </Box>
   );

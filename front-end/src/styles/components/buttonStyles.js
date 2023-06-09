@@ -12,6 +12,13 @@ export const buttonStyles = defineStyleConfig({
         color: mode("#000000", "wMain")(props),
         boxShadow: "lg",
       },
+      _focusVisible: {
+        bgColor: mode("wMain", "bd300")(props),
+        color: mode("#000000", "wMain")(props),
+        borderWidth: "1px",
+        borderColor: mode("bMain", "p500")(props),
+        boxShadow: "lg",
+      },
       _active: {
         bgColor: mode("g300", "g500")(props),
       },
@@ -24,6 +31,11 @@ export const buttonStyles = defineStyleConfig({
       borderColor: mode("borderL", "borderD")(props),
       boxShadow: "md",
       _hover: {
+        bgColor: mode("bl200", "bd400")(props),
+        color: mode("#000000", "wMain")(props),
+        boxShadow: "lg",
+      },
+      _focusVisible: {
         bgColor: mode("bl200", "bd400")(props),
         color: mode("#000000", "wMain")(props),
         boxShadow: "lg",

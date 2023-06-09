@@ -40,6 +40,8 @@ const GetPlayerHighlight = () => {
       } catch (error) {
         if (error.code === "ECONNABORTED" || error.message === "canceled") {
           console.warn("Request was aborted.");
+        } else if (error.response && error.response.status === 429) {
+          navigate("/error429");
         } else {
           console.error(error);
           navigate("/error500");

@@ -31,7 +31,12 @@ const NavBar = () => {
 
   return (
     <>
-      <HStack as="header" justifyContent="flex-end">
+      <HStack
+        role="banner"
+        aria-label="Navigation Bar"
+        as="header"
+        justifyContent="flex-end"
+      >
         {currentUser !== null && (
           <>
             <GetBalance fontSize="18px" />
@@ -49,52 +54,54 @@ const NavBar = () => {
             />
           </>
         )}
-        {isLargerThan622 && (
-          <Breadcrumb
-            spacing="8px"
-            separator={
-              <MdChevronRight
-                color={colorMode === "dark" ? "#FFBB00" : "#E35855"}
-                fontSize="2rem"
-              />
-            }
-            m="0 2rem 0 0 !important"
-          >
-            <BreadcrumbItem>
-              <Link
-                as={NavLink}
-                to="/games"
-                variant={
-                  location.pathname === "/games"
-                    ? "navOnLocation"
-                    : "navigation"
-                }
-              >
-                Games
-              </Link>
-            </BreadcrumbItem>
+        <Breadcrumb
+          display={isLargerThan622 ? "initial" : "none"}
+          spacing="8px"
+          separator={
+            <MdChevronRight
+              color={colorMode === "dark" ? "#FFBB00" : "#E35855"}
+              fontSize="2rem"
+            />
+          }
+          m="0 2rem 0 0 !important"
+        >
+          <BreadcrumbItem>
+            <Link
+              aria-selected={location.pathname === "/games"}
+              as={NavLink}
+              to="/games"
+              variant={
+                location.pathname === "/games" ? "navOnLocation" : "navigation"
+              }
+            >
+              Games
+            </Link>
+          </BreadcrumbItem>
 
-            <BreadcrumbItem>
-              <Link
-                as={NavLink}
-                variant={show.quests ? "navOnLocation" : "navigation"}
-                onClick={() => setShow({ ...show, quests: true })}
-              >
-                Quests
-              </Link>
-            </BreadcrumbItem>
+          <BreadcrumbItem>
+            <Link
+              aria-selected={show.quests}
+              aria-controls="modal"
+              as={NavLink}
+              variant={show.quests ? "navOnLocation" : "navigation"}
+              onClick={() => setShow({ ...show, quests: true })}
+            >
+              Quests
+            </Link>
+          </BreadcrumbItem>
 
-            <BreadcrumbItem>
-              <Link
-                as={NavLink}
-                variant={show.cashIn ? "navOnLocation" : "navigation"}
-                onClick={() => setShow({ ...show, cashIn: true })}
-              >
-                Cash In
-              </Link>
-            </BreadcrumbItem>
-          </Breadcrumb>
-        )}
+          <BreadcrumbItem>
+            <Link
+              aria-selected={show.cashIn}
+              aria-controls="modal"
+              as={NavLink}
+              variant={show.cashIn ? "navOnLocation" : "navigation"}
+              onClick={() => setShow({ ...show, cashIn: true })}
+            >
+              Cash In
+            </Link>
+          </BreadcrumbItem>
+        </Breadcrumb>
 
         <Link as={NavLink} to="/home">
           <chakra.h1

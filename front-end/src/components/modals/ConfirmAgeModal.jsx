@@ -64,20 +64,11 @@ const ConfirmAgeModal = (props) => {
         show={props.showConfirmAge}
         confirmAge={true}
         animation={{ type: "up", y: "200%" }}
+        loading={props.loading}
         maxW="325px"
       >
-        <Button
-          isDisabled={props.loading}
-          onClick={() => props.setShowConfirmAge(false)}
-          variant="exit"
-          position="absolute"
-          top="-8px"
-          right="-8px"
-        >
-          &#10005;
-        </Button>
         <MyHeading fontSize="32px" mb="0.5rem" text="Confirm Age" />
-        <Text textAlign="center" mb="1.5rem">
+        <Text aria-label="Age Verification" textAlign="center" mb="1.5rem">
           To proceed you must be at least{" "}
           <chakra.span
             fontSize="17px"

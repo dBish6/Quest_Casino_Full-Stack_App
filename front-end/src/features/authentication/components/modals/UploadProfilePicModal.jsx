@@ -3,7 +3,6 @@ import {
   Input,
   chakra,
   Box,
-  Button,
   Text,
   Spinner,
   useColorMode,
@@ -33,18 +32,6 @@ const UploadProfilePicModal = (props) => {
           p="1.5rem 1.5rem 1rem 1.5rem"
           maxW="325px"
         >
-          <Button
-            isDisabled={props.loading}
-            onClick={() =>
-              props.setShow({ ...props.show, uploadPicture: false })
-            }
-            variant="exit"
-            position="absolute"
-            top="-8px"
-            right="-8px"
-          >
-            &#10005;
-          </Button>
           <MyHeading fontSize="32px" mb="1.5rem" text="Upload Image" />
 
           {props.loading && (
@@ -58,21 +45,30 @@ const UploadProfilePicModal = (props) => {
             />
           )}
           <Box
+            role="presentation"
             borderWidth="1px"
             borderColor={colorMode === "dark" ? "borderD" : "borderL"}
             borderRadius="6px"
             p="0.5rem 0"
           >
             <Input
+              aria-label="Upload"
+              id="fileInput"
               type="file"
               accept="/image/*"
               isDisabled={props.loading}
+              aria-disabled={props.loading}
               onChange={(file) =>
                 props.handleProfilePicture(file, props.setSelectedPicture, true)
               }
               variant="unstyled"
               p="0 0.5rem"
-              _hover={{ boxShadow: "none" }}
+              _focusVisible={{
+                outline:
+                  colorMode === "dark"
+                    ? "1px dotted #f4f4f4"
+                    : "1px dotted #000",
+              }}
             />
           </Box>
           <Text as="small" textAlign="center" mt="0.5rem">

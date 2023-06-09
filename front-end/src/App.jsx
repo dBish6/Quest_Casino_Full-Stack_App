@@ -72,6 +72,7 @@ const ShowPartials = (props) => {
         )}
 
         <chakra.main
+          aria-label="Main Content"
           p={{ base: "1.5rem 1rem", md: "1.5rem 2rem", xl: "1.5rem 2rem" }}
           minH="100vh"
         >

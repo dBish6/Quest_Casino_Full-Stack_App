@@ -10,21 +10,25 @@ const UserList = (props) => {
       {!props.fsUsers ? (
         <PlayerSkeleton />
       ) : props.notFoundErr.length ? (
-        <Text color="red">{props.notFoundErr}</Text>
+        <Text aria-label="Error Text" color="red">
+          {props.notFoundErr}
+        </Text>
       ) : (
         props.fsUsers.map((detail, i) => {
           return (
             <HStack key={i}>
-              <Box w="2rem" h="2rem" borderRadius="50%" bgColor="wMain">
-                <Avatar
-                  src={detail.photoURL}
-                  alt={`${detail.username}'s Profile Picture`}
-                  w="2rem"
-                  h="2rem"
-                />
+              <Box
+                aria-label={`${detail.username}'s Profile Picture`}
+                w="2rem"
+                h="2rem"
+                borderRadius="50%"
+                bgColor="wMain"
+              >
+                <Avatar src={detail.photoURL} w="2rem" h="2rem" />
               </Box>
               <Box>
                 <Text
+                  aria-label={`${detail.username}'s Username`}
                   color="r500"
                   fontWeight="500"
                   position="relative"
@@ -36,7 +40,11 @@ const UserList = (props) => {
                 >
                   {detail.username}
                 </Text>
-                <Text color="g500" fontWeight="500">
+                <Text
+                  aria-label={`${detail.username}'s Wins`}
+                  color="g500"
+                  fontWeight="500"
+                >
                   Wins:{" "}
                   <chakra.span color={detail.wins.total < 1 && "r600"}>
                     {detail.wins.total}
