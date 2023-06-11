@@ -6,7 +6,7 @@ To add, the blackjack game is not your standard simple blackjack game, it has al
 I'm also open to collaborate with anyone who would like to help:) [Contact me here](mailto:davidbish2002@hotmail.com).
 
 ## Keyboard Navigation Controls
-In Quest Casino, you can enhance your user experience with keyboard navigation controls. Here are the key commands you can use:
+In Quest Casino, you can enhance your user experience with keyboard navigation controls. Here are the keys you can use:
 - `Tab` to move focus forward to the next interactive element.
 - `Shift + Tab` to move focus backward to the previous interactive element.
 - `Enter or Space` to select or activate the focused item.
