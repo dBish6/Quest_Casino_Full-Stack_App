@@ -11,7 +11,10 @@ const AcePrompt = (props) => {
           <Text variant="blackjack">
             Do you want to use your ace as a 11 or a 1?
           </Text>
-          <ButtonGroup isDisabled={props.isDealerTurn}>
+          <ButtonGroup
+            isDisabled={props.isDealerTurn}
+            aria-disabled={props.isDealerTurn}
+          >
             <Button
               onClick={() => {
                 props.setWants11(11);

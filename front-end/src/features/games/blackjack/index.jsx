@@ -219,6 +219,7 @@ const BlackjackFeature = () => {
 
       // For slideCardResponsive variant animation.
       if (isWidthSmallerThan1429 || isHeightSmallerThan844) {
+        // FIXME: Overflow doesn't work with Safari.
         document.body.style.overflow = "hidden";
         const animationDuration = setTimeout(() => {
           document.body.style.overflow = "unset";
@@ -358,6 +359,7 @@ const BlackjackFeature = () => {
           gameType={gameType}
           show={show}
           setShow={setShow}
+          cache={cache}
           toggleMute={toggleMute}
         />
 
@@ -450,12 +452,14 @@ const BlackjackFeature = () => {
                   />
                 </VStack>
 
-                <RulesOverlay show={show} setShow={setShow} />
-                <FloatingBet
-                  playerBet={playerBet}
-                  animate={animate}
-                  setAnimate={setAnimate}
-                />
+                <RulesOverlay show={show} setShow={setShow} cache={cache} />
+                {gameType === "Match" && (
+                  <FloatingBet
+                    playerBet={playerBet}
+                    animate={animate}
+                    setAnimate={setAnimate}
+                  />
+                )}
               </chakra.main>
               <Footer
                 gameType={gameType}

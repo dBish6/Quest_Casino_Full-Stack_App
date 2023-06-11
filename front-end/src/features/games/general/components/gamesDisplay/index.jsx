@@ -172,6 +172,8 @@ const GamesDisplayIndex = (props) => {
       </HStack>
 
       <HStack
+        role="feed"
+        aria-label="Games List"
         flexWrap="wrap"
         gap="1.5rem 2.625rem"
         justify={isSmallerThan522 && "center"}

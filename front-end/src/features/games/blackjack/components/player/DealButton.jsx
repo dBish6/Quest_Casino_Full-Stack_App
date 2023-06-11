@@ -14,6 +14,7 @@ const DealButton = (props) => {
 
   return (
     <Button
+      tabIndex="1"
       as={motion.button}
       variants={fadeInVar2}
       initial="hidden"
@@ -34,6 +35,7 @@ const DealButton = (props) => {
         }).then(() => deal());
       }}
       isDisabled={props.isDealerTurn || props.showcaseRunning}
+      aria-disabled={props.isDealerTurn || props.showcaseRunning}
       variant="blackjackBlue"
       w="235px"
       fontSize="18px"

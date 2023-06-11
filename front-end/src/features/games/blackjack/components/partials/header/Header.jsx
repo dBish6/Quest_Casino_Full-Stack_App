@@ -1,9 +1,13 @@
-import { useState } from "react";
+/* eslint-disable react-hooks/exhaustive-deps */
+import { useState, useRef, useEffect } from "react";
 
 // *Design Imports*
 import { chakra, Heading, VStack, Box, useMediaQuery } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import fadeInAnimations from "../../../../general/utils/animations/fadeIn";
+
+// *Custom Hooks Import*
+import useKeyboardHelper from "../../../../../../hooks/useKeyboardHelper";
 
 // *Component Imports*
 import GetBalance from "../../../../../../components/GetBalance";
@@ -12,9 +16,69 @@ import Dropdown from "./Dropdown";
 const Header = (props) => {
   const [showDropdown, setShowDropdown] = useState(false),
     [clicked, setClicked] = useState(false),
-    [isSmallerThan491] = useMediaQuery("(max-width: 491px)"),
+    containerRef = useRef(null),
+    menuRef = useRef(null),
+    [isRulesOpened, setIsRulesOpened] = useState(false);
+
+  const [isSmallerThan491] = useMediaQuery("(max-width: 491px)"),
     [isSmallerThan481] = useMediaQuery("(max-width: 481px)"),
-    { fadeInVar1, fadeInVar2 } = fadeInAnimations(0.8);
+    { fadeInVar1, fadeInVar2 } = fadeInAnimations(0.8),
+    {
+      handleKeyDown,
+      handleKeyEscape,
+      initializeKeyboardOnModal,
+      handleKeyboardLockOnElement,
+    } = useKeyboardHelper();
+
+  useEffect(() => {
+    if (props.cache.isUsingKeyboard) {
+      if (!isRulesOpened && props.show.rules) {
+        setIsRulesOpened(true);
+      } else if (!isRulesOpened) {
+        const keyboardListenerWrapper = (e) => {
+          handleKeyEscape(e, {
+            setShow: setShowDropdown,
+            state: showDropdown,
+            isToggle: true,
+          });
+        };
+
+        window.addEventListener("keydown", keyboardListenerWrapper);
+        return () => {
+          window.removeEventListener("keydown", keyboardListenerWrapper);
+        };
+      }
+    }
+  }, [showDropdown, props.show.rules, isRulesOpened]);
+
+  useEffect(() => {
+    if (showDropdown && !props.show.rules && props.cache.isUsingKeyboard) {
+      const dropdownElement = containerRef.current;
+
+      const { firstFocusableElement, lastFocusableElement } =
+        initializeKeyboardOnModal(containerRef);
+      !props.show.options &&
+        setTimeout(() => {
+          firstFocusableElement.focus();
+        }, 480); // Dropdown animation duration.
+      const keyboardListenerWrapper = (e) => {
+        if (
+          isRulesOpened &&
+          (e.key === "Enter" || e.key === " " || e.key === "Escape")
+        )
+          setIsRulesOpened(false);
+        handleKeyboardLockOnElement(e, {
+          firstFocusableElement,
+          lastFocusableElement,
+        });
+      };
+
+      dropdownElement.addEventListener("keydown", keyboardListenerWrapper);
+      return () => {
+        dropdownElement.removeEventListener("keydown", keyboardListenerWrapper);
+      };
+    }
+  }, [showDropdown, props.show.options, props.show.rules]);
 
   return (
     <chakra.header
@@ -50,10 +114,15 @@ const Header = (props) => {
         )}
 
         {/* Hamburger and Dropdown */}
-        <VStack position="relative" w="max-content">
+        <VStack position="relative" w="max-content" ref={containerRef}>
           <VStack
+            role="button"
+            tabIndex="5"
             aria-label="Menu Icon"
+            aria-pressed={showDropdown}
             as={motion.div}
+            id="navigable"
+            ref={menuRef}
             variants={fadeInVar2}
             initial="hidden"
             animate="visible"
@@ -63,6 +132,14 @@ const Header = (props) => {
                 props.setShow({
                   ...props.show,
                   options: false,
+                });
+            }}
+            onKeyDown={(e) => {
+              document.activeElement === menuRef.current &&
+                handleKeyDown(e, {
+                  setShow: setShowDropdown,
+                  state: showDropdown,
+                  isToggle: true,
                 });
             }}
             gap={!showDropdown && "6.5px"}

@@ -11,15 +11,14 @@ const Footer = (props) => {
 
   return (
     <chakra.footer
-      role="banner"
-      aria-label="Footer"
+      role="none"
       display="flex"
       alignItems="center"
       gap="0.5rem"
       mt="1.5rem"
     >
       <Flex
-        aria-label="Game Mode Container"
+        role="group"
         as={motion.div}
         variants={fadeInVar1}
         initial="hidden"
@@ -41,12 +40,14 @@ const Footer = (props) => {
         </Text>
       </Flex>
 
-      <Streak
-        gameType={props.gameType}
-        winStreak={props.winStreak}
-        animate={props.animate}
-        setAnimate={props.setAnimate}
-      />
+      {props.gameType === "Match" && (
+        <Streak
+          gameType={props.gameType}
+          winStreak={props.winStreak}
+          animate={props.animate}
+          setAnimate={props.setAnimate}
+        />
+      )}
     </chakra.footer>
   );
 };

@@ -40,10 +40,19 @@ const BettingButtons = (props) => {
         props.completedQuestLoading ||
         props.cache.userProfile.balance <= 5
       }
+      aria-disabled={
+        props.isDealerTurn ||
+        props.showcaseRunning ||
+        (props.persisterLoading.patch && props.winner) ||
+        props.balanceLoading ||
+        props.completedQuestLoading ||
+        props.cache.userProfile.balance <= 5
+      }
       position="relative"
       minW="255px"
     >
       <Button
+        tabIndex="1"
         onClick={() => {
           const newCount = bet.count + bet.multiplier;
           const maxCount =
@@ -79,6 +88,7 @@ const BettingButtons = (props) => {
       </Button>
 
       <Button
+        tabIndex="3"
         onClick={() => {
           setBet((prev) => ({
             ...prev,
@@ -103,6 +113,7 @@ const BettingButtons = (props) => {
       {bet.count > 0 && (
         <>
           <Button
+            tabIndex="4"
             onClick={() => {
               if (previousBets.length > 0) {
                 const previousBetCount = previousBets[previousBets.length - 1];
@@ -127,6 +138,7 @@ const BettingButtons = (props) => {
           </Button>
 
           <Button
+            tabIndex="2"
             as={motion.button}
             variants={fadeInVar2}
             initial="hidden"

@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+import { useRef, useEffect } from "react";
 import { Link as ReactLink } from "react-router-dom";
 
 // *Design Imports*
@@ -19,11 +21,48 @@ import { MdClose } from "react-icons/md";
 import DiceLogo from "../../../../../assets/Dice.png";
 import { motion, AnimatePresence } from "framer-motion";
 
+// *Custom Hooks Import*
+import useKeyboardHelper from "../../../../../hooks/useKeyboardHelper";
+
 // *Component Imports*
 import MyHeading from "../../../../../components/MyHeading";
 import ChangeLog from "./ChangeLog";
 
 const RulesOverlay = (props) => {
+  const containerRef = useRef(null),
+    {
+      handleKeyEscape,
+      initializeKeyboardOnModal,
+      handleKeyboardLockOnElement,
+    } = useKeyboardHelper();
+
+  useEffect(() => {
+    if (props.show.rules && props.cache.isUsingKeyboard) {
+      const rulesElement = containerRef.current;
+
+      const { firstFocusableElement, lastFocusableElement } =
+        initializeKeyboardOnModal(containerRef);
+      setTimeout(() => {
+        firstFocusableElement.focus();
+      }, 100);
+      const keyboardListenerWrapper = (e) => {
+        handleKeyboardLockOnElement(e, {
+          firstFocusableElement,
+          lastFocusableElement,
+        });
+        handleKeyEscape(e, {
+          setShow: props.setShow,
+          objKey: "rules",
+        });
+      };
+
+      rulesElement.addEventListener("keydown", keyboardListenerWrapper);
+      return () => {
+        rulesElement.removeEventListener("keydown", keyboardListenerWrapper);
+      };
+    }
+  }, [props.show.rules]);
+
   return (
     <>
       <AnimatePresence>
@@ -31,6 +70,7 @@ const RulesOverlay = (props) => {
           <Container
             aria-label="Rules Overlay"
             as={motion.div}
+            ref={containerRef}
             position="absolute"
             top="0"
             left="0"
@@ -51,9 +91,7 @@ const RulesOverlay = (props) => {
               }}
               mb="4rem"
             >
-              <Link
-                as={ReactLink}
-                to="/home"
+              <Box
                 display={{
                   base: "none",
                   md: "initial",
@@ -61,8 +99,10 @@ const RulesOverlay = (props) => {
                 }}
                 ml="4rem"
               >
-                <Image src={DiceLogo} alt="Quest Casino Small Logo" />
-              </Link>
+                <Link as={ReactLink} to="/home">
+                  <Image src={DiceLogo} alt="Quest Casino Small Logo" />
+                </Link>
+              </Box>
               <Heading
                 variant="blackjack"
                 fontSize="48px"

@@ -238,11 +238,18 @@ const Player = (props) => {
             }
           >
             <Button
+              tabIndex="1"
               onClick={() => {
                 dispatch(SET_PLAYER_STANDING(true));
                 dispatch(DEALER_TURN(true));
               }}
               isDisabled={
+                props.playerCards.length === 1 ||
+                isDealerTurn ||
+                props.showAcePrompt ||
+                props.dealerHasNatural
+              }
+              aria-disabled={
                 props.playerCards.length === 1 ||
                 isDealerTurn ||
                 props.showAcePrompt ||
@@ -254,10 +261,16 @@ const Player = (props) => {
               Stand
             </Button>
             <Button
+              tabIndex="2"
               onClick={() => {
                 dispatch(PLAYER_HIT());
               }}
               isDisabled={
+                props.playerCards.length === 1 ||
+                isDealerTurn ||
+                props.showAcePrompt
+              }
+              aria-disabled={
                 props.playerCards.length === 1 ||
                 isDealerTurn ||
                 props.showAcePrompt
@@ -269,6 +282,7 @@ const Player = (props) => {
             </Button>
             {!props.hasPlayerHit && props.gameType === "Match" && (
               <Button
+                tabIndex="3"
                 onClick={() => {
                   props.gameType === "Match" &&
                     props.setCache((prev) => ({
@@ -282,6 +296,12 @@ const Player = (props) => {
                   dispatch(PLAYER_HIT());
                 }}
                 isDisabled={
+                  props.playerCards.length === 1 ||
+                  props.cache.userProfile.balance < props.playerBet ||
+                  isDealerTurn ||
+                  props.showAcePrompt
+                }
+                aria-disabled={
                   props.playerCards.length === 1 ||
                   props.cache.userProfile.balance < props.playerBet ||
                   isDealerTurn ||

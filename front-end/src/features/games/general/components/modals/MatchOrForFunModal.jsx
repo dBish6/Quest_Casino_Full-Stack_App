@@ -131,6 +131,7 @@ const MatchOrForFunModal = (props) => {
               bgColor:
                 needToFinish.state && props.winner === null ? "r500" : "g500",
             }}
+            is_invalid={needToFinish.state ? "true" : undefined}
             ml="1rem !important"
           >
             For Fun

@@ -7,22 +7,18 @@ const Options = (props) => {
     <>
       <Link
         data-group
+        tabIndex="0"
+        id="navigable"
         onClick={() => {
           props.toggleMute();
           props.setClicked(!props.clicked);
         }}
+        variant="blackjackDropdown"
+        mobile={props.isSmallerThan481.toString()}
         display="flex"
         alignItems="center"
         gap="6px"
-        w="100%"
-        textAlign="center"
         borderTopRadius="6px"
-        p="6px 1rem"
-        _hover={{
-          bgColor: props.isSmallerThan481
-            ? "rgba(244, 244, 244, 0.7)"
-            : "rgba(244, 244, 244, 0.6)",
-        }}
       >
         <Text
           fontSize="18px"
@@ -49,24 +45,20 @@ const Options = (props) => {
       </Link>
       <Link
         data-group
+        tabIndex="0"
+        id="navigable"
         onClick={() =>
           props.setShow({
             ...props.show,
             options: false,
           })
         }
+        variant="blackjackDropdown"
+        mobile={props.isSmallerThan481.toString()}
         display="flex"
         alignItems="center"
         gap="6px"
-        w="100%"
-        textAlign="center"
         borderBottomRadius="6px"
-        p="6px 1rem"
-        _hover={{
-          bgColor: props.isSmallerThan481
-            ? "rgba(244, 244, 244, 0.7)"
-            : "rgba(244, 244, 244, 0.6)",
-        }}
       >
         <Icon
           as={MdOutlineArrowBack}

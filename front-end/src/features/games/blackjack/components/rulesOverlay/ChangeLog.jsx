@@ -18,7 +18,7 @@ const ChangeLog = () => {
     <Popover m="0 !important">
       <PopoverTrigger m="0 !important">
         <Link aria-label="Change Log Link" variant="simple">
-          Davy Blackjack v1.4.13
+          Davy Blackjack v1.5.15
         </Link>
       </PopoverTrigger>
       <PopoverContent bgColor="bd700" maxH="500px" overflowY="scroll">
@@ -27,6 +27,23 @@ const ChangeLog = () => {
           Change Log
         </PopoverHeader>
         <PopoverBody>
+          <Heading textAlign="center" fontSize="24px" lineHeight="1.2" mb="4px">
+            v1.5.15
+          </Heading>
+          <UnorderedList fontSize="14px">
+            <ListItem>
+              Floating bet and streak only renders when it is match mode for
+              less bandwidth.
+            </ListItem>
+            <ListItem>More aria attributes.</ListItem>
+            <ListItem>
+              Davy Blackjack is now keyboard accessible! You can use Tab to
+              navigate, Enter or Space to select items, and Escape to toggle the
+              menu and close the rules overlay.
+            </ListItem>
+          </UnorderedList>
+          <Divider m="0.5rem 0" />
+
           <Heading textAlign="center" fontSize="24px" lineHeight="1.2" mb="4px">
             v1.4.13
           </Heading>
