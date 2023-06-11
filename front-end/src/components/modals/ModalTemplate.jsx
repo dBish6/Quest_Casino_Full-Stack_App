@@ -28,7 +28,7 @@ const ModalTemplate = (props) => {
   const { cache } = useCache();
   const {
     handleKeyEscape,
-    initializeKeyboardOnModal,
+    initializeKeyboardLock,
     handleKeyboardLockOnElement,
   } = useKeyboardHelper();
 
@@ -37,7 +37,7 @@ const ModalTemplate = (props) => {
       const modalElement = modalRef.current;
 
       const { firstFocusableElement, lastFocusableElement } =
-        initializeKeyboardOnModal(modalRef);
+        initializeKeyboardLock(modalRef);
       setTimeout(() => {
         firstFocusableElement.focus();
       }, 500);

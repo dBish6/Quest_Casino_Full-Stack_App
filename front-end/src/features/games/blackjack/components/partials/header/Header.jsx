@@ -26,7 +26,7 @@ const Header = (props) => {
     {
       handleKeyDown,
       handleKeyEscape,
-      initializeKeyboardOnModal,
+      initializeKeyboardLock,
       handleKeyboardLockOnElement,
     } = useKeyboardHelper();
 
@@ -55,7 +55,7 @@ const Header = (props) => {
       const dropdownElement = containerRef.current;
 
       const { firstFocusableElement, lastFocusableElement } =
-        initializeKeyboardOnModal(containerRef);
+        initializeKeyboardLock(containerRef);
       !props.show.options &&
         setTimeout(() => {
           firstFocusableElement.focus();

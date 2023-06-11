@@ -38,8 +38,8 @@ const useKeyboardHelper = () => {
     }
   };
 
-  const initializeKeyboardOnModal = (modalRef) => {
-    const focusableElements = modalRef.current.querySelectorAll([
+  const initializeKeyboardLock = (ref) => {
+    const focusableElements = ref.current.querySelectorAll([
         "a[href]",
         "#navigable",
         "button",
@@ -83,7 +83,7 @@ const useKeyboardHelper = () => {
   return {
     handleKeyDown,
     handleKeyEscape,
-    initializeKeyboardOnModal,
+    initializeKeyboardLock,
     handleKeyboardLockOnElement,
   };
 };

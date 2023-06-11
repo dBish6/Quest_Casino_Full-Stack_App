@@ -30,18 +30,15 @@ import ChangeLog from "./ChangeLog";
 
 const RulesOverlay = (props) => {
   const containerRef = useRef(null),
-    {
-      handleKeyEscape,
-      initializeKeyboardOnModal,
-      handleKeyboardLockOnElement,
-    } = useKeyboardHelper();
+    { handleKeyEscape, initializeKeyboardLock, handleKeyboardLockOnElement } =
+      useKeyboardHelper();
 
   useEffect(() => {
     if (props.show.rules && props.cache.isUsingKeyboard) {
       const rulesElement = containerRef.current;
 
       const { firstFocusableElement, lastFocusableElement } =
-        initializeKeyboardOnModal(containerRef);
+        initializeKeyboardLock(containerRef);
       setTimeout(() => {
         firstFocusableElement.focus();
       }, 100);
