@@ -37,9 +37,9 @@ const ChangeLog = () => {
             </ListItem>
             <ListItem>More aria attributes.</ListItem>
             <ListItem>
-              Davy Blackjack is now keyboard accessible! You can use Tab to
-              navigate, Enter or Space to select items, and Escape to toggle the
-              menu and close the rules overlay.
+              Davy Blackjack is now keyboard accessible! You can use Tab and
+              Shift + Tab to navigate, Enter or Space to select items, and
+              Escape to toggle the menu and close the rules overlay.
             </ListItem>
           </UnorderedList>
           <Divider m="0.5rem 0" />

@@ -28,9 +28,10 @@ export const CacheProvider = ({ children }) => {
   // To capture if the user is using the keyboard to navigate.
   useEffect(() => {
     const handleKeyDown = (event) => {
-      if (event.key === "Tab")
+      if (event.key === "Tab" || event.key === "Escape") {
         setCache((prev) => ({ ...prev, isUsingKeyboard: true }));
-      document.removeEventListener("keydown", handleKeyDown);
+        document.removeEventListener("keydown", handleKeyDown);
+      }
     };
 
     document.addEventListener("keydown", handleKeyDown);

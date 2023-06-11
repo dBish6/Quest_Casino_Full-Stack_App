@@ -31,23 +31,22 @@ const Header = (props) => {
     } = useKeyboardHelper();
 
   useEffect(() => {
-    if (props.cache.isUsingKeyboard) {
-      if (!isRulesOpened && props.show.rules) {
-        setIsRulesOpened(true);
-      } else if (!isRulesOpened) {
-        const keyboardListenerWrapper = (e) => {
-          handleKeyEscape(e, {
-            setShow: setShowDropdown,
-            state: showDropdown,
-            isToggle: true,
-          });
-        };
+    if (!isRulesOpened && props.show.rules && props.cache.isUsingKeyboard)
+      setIsRulesOpened(true);
 
-        window.addEventListener("keydown", keyboardListenerWrapper);
-        return () => {
-          window.removeEventListener("keydown", keyboardListenerWrapper);
-        };
-      }
+    if (!isRulesOpened) {
+      const keyboardListenerWrapper = (e) => {
+        handleKeyEscape(e, {
+          setShow: setShowDropdown,
+          state: showDropdown,
+          isToggle: true,
+        });
+      };
+
+      window.addEventListener("keydown", keyboardListenerWrapper);
+      return () => {
+        window.removeEventListener("keydown", keyboardListenerWrapper);
+      };
     }
   }, [showDropdown, props.show.rules, isRulesOpened]);
 
