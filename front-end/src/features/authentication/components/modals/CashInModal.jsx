@@ -122,7 +122,7 @@ const CashInModal = (props) => {
               name="deposit"
               autoComplete="off"
               isDisabled={currentUser === null}
-              aria-disabled={currentUser !== null}
+              aria-disabled={currentUser === null}
               variant="primary"
               h="48px"
               marginInlineStart="0px !important"
@@ -142,7 +142,7 @@ const CashInModal = (props) => {
         <Button
           isLoading={loadingUpdate.balance ? true : false}
           isDisabled={currentUser === null}
-          aria-disabled={currentUser !== null}
+          aria-disabled={currentUser === null}
           type="submit"
           variant="primary"
           mt="1.5rem"

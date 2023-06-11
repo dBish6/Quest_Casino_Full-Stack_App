@@ -14,3 +14,7 @@ v1.1.5
 v1.2.6
 - Lots of aria attributes was added; Most is already provided by Chakra UI, but I still had to make tweaks.
 - Quest Casino's UI is now fully keyboard accessible!
+
+v1.2.8
+- Added isUsingKeyboard to the cache context to only set keyboard listeners when needed. 
+- Changes to the keyboard helper due to blackjack.

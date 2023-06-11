@@ -14,6 +14,7 @@ export const CacheProvider = ({ children }) => {
     fetchBalAndComQuestsComplete: false,
     topPlayers: null,
     tipsEnabled: true,
+    isUsingKeyboard: false,
   });
   const { currentUser } = useContext(AuthContext);
   const { fetchBalanceAndCompletedQuests, abortController } =
@@ -22,6 +23,18 @@ export const CacheProvider = ({ children }) => {
   useEffect(() => {
     if (localStorage.getItem("tipsDisabled"))
       setCache({ ...cache, tipsEnabled: false });
+  }, []);
+
+  // To capture if the user is using the keyboard to navigate.
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.key === "Tab")
+        setCache((prev) => ({ ...prev, isUsingKeyboard: true }));
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
   }, []);
 
   useEffect(() => {

@@ -3,6 +3,8 @@ import { useRef, useEffect } from "react";
 import { Box, Container, Button, useColorMode } from "@chakra-ui/react";
 import { motion, AnimatePresence } from "framer-motion";
 import ModalAnimations from "../../utils/animations/modalAnimations";
+
+import useCache from "../../hooks/useCache";
 import useKeyboardHelper from "../../hooks/useKeyboardHelper";
 
 const ModalTemplate = (props) => {
@@ -22,30 +24,35 @@ const ModalTemplate = (props) => {
   const { colorMode } = useColorMode();
   const { modelBackdrop, modelFadeDown, modelFadeUp } =
     ModalAnimations(animation);
+
+  const { cache } = useCache();
   const {
     handleKeyEscape,
     initializeKeyboardOnModal,
-    handleModalKeyboardLock,
+    handleKeyboardLockOnElement,
   } = useKeyboardHelper();
 
   useEffect(() => {
-    if (show) {
+    if (show && cache.isUsingKeyboard) {
       const modalElement = modalRef.current;
 
       const { firstFocusableElement, lastFocusableElement } =
-          initializeKeyboardOnModal(modalRef),
-        keyboardListenerWrapper = (event) => {
-          handleKeyEscape(event, { type: "modal", setShow, objKey: objName });
-          handleModalKeyboardLock(event, {
-            firstFocusableElement,
-            lastFocusableElement,
-          });
-        };
+        initializeKeyboardOnModal(modalRef);
+      setTimeout(() => {
+        firstFocusableElement.focus();
+      }, 500);
+
+      const keyboardListenerWrapper = (event) => {
+        handleKeyEscape(event, { setShow, objKey: objName });
+        handleKeyboardLockOnElement(event, {
+          firstFocusableElement,
+          lastFocusableElement,
+        });
+      };
 
       modalElement.addEventListener("keydown", keyboardListenerWrapper);
-      return () => {
+      return () =>
         modalElement.removeEventListener("keydown", keyboardListenerWrapper);
-      };
     }
   }, [show]);
 
@@ -121,25 +128,27 @@ const ModalTemplate = (props) => {
             borderRadius="6px"
             {...rest}
           >
-            <Button
-              aria-label="Exit"
-              isDisabled={loading}
-              aria-disabled={loading}
-              onClick={() =>
-                objName
-                  ? setShow((prev) => ({
-                      ...prev,
-                      [objName]: false,
-                    }))
-                  : setShow(false)
-              }
-              variant="exit"
-              position="absolute"
-              top="-8px"
-              right="-8px"
-            >
-              &#10005;
-            </Button>
+            {game !== "blackjack" && (
+              <Button
+                aria-label="Exit"
+                isDisabled={loading}
+                aria-disabled={loading}
+                onClick={() =>
+                  objName
+                    ? setShow((prev) => ({
+                        ...prev,
+                        [objName]: false,
+                      }))
+                    : setShow(false)
+                }
+                variant="exit"
+                position="absolute"
+                top="-8px"
+                right="-8px"
+              >
+                &#10005;
+              </Button>
+            )}
             {children}
           </Container>
         </>

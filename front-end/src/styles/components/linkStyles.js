@@ -48,5 +48,23 @@ export const linkStyles = defineStyleConfig({
         top: "1.5px",
       },
     }),
+
+    blackjackDropdown: (props) => ({
+      w: "100%",
+      textAlign: "center",
+      p: "6px 1rem",
+      _hover: {
+        bgColor:
+          props.mobile === "true"
+            ? "rgba(244, 244, 244, 0.7)"
+            : "rgba(244, 244, 244, 0.6)",
+      },
+      _focusVisible: {
+        bgColor:
+          props.mobile === "true"
+            ? "rgba(244, 244, 244, 0.7)"
+            : "rgba(244, 244, 244, 0.6)",
+      },
+    }),
   },
 });

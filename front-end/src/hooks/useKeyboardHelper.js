@@ -8,27 +8,31 @@ const useKeyboardHelper = () => {
           options.objKey
             ? options.toggleVisibility((prev) => ({
                 ...prev,
-                [options.objKey]: false,
+                [options.objKey]: options.type === "off" ? false : true,
               }))
             : options.toggleVisibility(options.type === "off" ? false : true);
-        } else if (options.setShow && options.objKey) {
-          options.setShow((prev) => ({ ...prev, [options.objKey]: true }));
+        } else if (options.setShow) {
+          options.objKey
+            ? options.setShow((prev) => ({
+                ...prev,
+                [options.objKey]: options.isToggle ? !options.state : true,
+              }))
+            : options.setShow(options.isToggle ? !options.state : true);
         }
       }
     }
   };
 
   const handleKeyEscape = (event, options) => {
-    console.log(event, options);
     if (event.key === "Escape") {
       if (options) {
-        if (options.type === "modal" && options.setShow) {
+        if (options.setShow) {
           options.objKey
             ? options.setShow((prev) => ({
                 ...prev,
-                [options.objKey]: false,
+                [options.objKey]: options.isToggle ? !options.state : false,
               }))
-            : options.setShow(false);
+            : options.setShow(options.isToggle ? !options.state : false);
         }
       }
     }
@@ -37,6 +41,7 @@ const useKeyboardHelper = () => {
   const initializeKeyboardOnModal = (modalRef) => {
     const focusableElements = modalRef.current.querySelectorAll([
         "a[href]",
+        "#navigable",
         "button",
         "input",
         "textarea",
@@ -49,7 +54,7 @@ const useKeyboardHelper = () => {
   };
 
   // To lock the keyboard navigation to only the modal.
-  const handleModalKeyboardLock = (event, options) => {
+  const handleKeyboardLockOnElement = (event, options) => {
     if (event.key === "Tab") {
       if (
         event.shiftKey &&
@@ -64,6 +69,14 @@ const useKeyboardHelper = () => {
         event.preventDefault();
         options.firstFocusableElement.focus();
       }
+    } else if (event.key === "Enter" || event.key === " ") {
+      if (
+        document.activeElement.id === "navigable" &&
+        document.activeElement.getAttribute("role") === "button"
+      )
+        return;
+
+      document.activeElement.click();
     }
   };
 
@@ -71,7 +84,7 @@ const useKeyboardHelper = () => {
     handleKeyDown,
     handleKeyEscape,
     initializeKeyboardOnModal,
-    handleModalKeyboardLock,
+    handleKeyboardLockOnElement,
   };
 };
 

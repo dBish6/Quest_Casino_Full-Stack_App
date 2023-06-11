@@ -38,6 +38,8 @@ export const buttonStyles = defineStyleConfig({
       _focusVisible: {
         bgColor: mode("bl200", "bd400")(props),
         color: mode("#000000", "wMain")(props),
+        borderWidth: props.is_invalid === "true" && "1px", // is_invalid is from Davy Blackjack.
+        borderColor: props.is_invalid === "true" && "p500",
         boxShadow: "lg",
       },
       _active: {
@@ -160,6 +162,13 @@ export const buttonStyles = defineStyleConfig({
         borderColor: "#000",
         boxShadow: "lg",
       },
+      _focusVisible: {
+        bgColor: "#4570E4",
+        color: "#000",
+        borderColor: "#000",
+        boxShadow: "lg",
+        outline: "auto",
+      },
       _active: {
         bgColor: "#1E4ECF",
         borderBottomWidth: "2px",
@@ -179,6 +188,13 @@ export const buttonStyles = defineStyleConfig({
         color: "#000",
         borderColor: "#000",
         boxShadow: "lg",
+      },
+      _focusVisible: {
+        bgColor: "#F4F4F4",
+        color: "#000",
+        borderColor: "#000",
+        boxShadow: "lg",
+        outline: "auto",
       },
       _active: {
         bgColor: "#FFF",
@@ -200,6 +216,13 @@ export const buttonStyles = defineStyleConfig({
         borderColor: "#000",
         boxShadow: "lg",
       },
+      _focusVisible: {
+        bgColor: "g500",
+        color: "#000",
+        borderColor: "#000",
+        boxShadow: "lg",
+        outline: "auto",
+      },
       _active: {
         bgColor: "g600",
         borderBottomWidth: "2px",
@@ -219,6 +242,13 @@ export const buttonStyles = defineStyleConfig({
         color: "#000",
         borderColor: "#000",
         boxShadow: "lg",
+      },
+      _focusVisible: {
+        bgColor: "r500",
+        color: "#000",
+        borderColor: "#000",
+        boxShadow: "lg",
+        outline: "auto",
       },
       _active: {
         bgColor: "r600",
