@@ -2,6 +2,19 @@ const { db, dbUtils } = require("../../model/firebaseConfig");
 const { logger } = require("firebase-functions");
 const moment = require("moment");
 
+const getAllGameSessions = async () => {
+  try {
+    const collection = await db.collection("games_sessions").get();
+    return collection.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+  } catch (error) {
+    logger.error("games.dal error: getAllGameSessions");
+    throw error;
+  }
+};
+
 const getGameSessionData = async (uid, game) => {
   try {
     const userGameDocument = db
@@ -82,8 +95,20 @@ const updateGameSessionData = async (uid, game, gameData) => {
   }
 };
 
+const deleteGameSession = async (id) => {
+  try {
+    const response = await db.collection("games_sessions").doc(id).delete();
+    return response;
+  } catch (error) {
+    logger.error("game.dal error: deleteGameSession");
+    throw error;
+  }
+};
+
 module.exports = {
+  getAllGameSessions,
   getGameSessionData,
   setGameSessionData,
   updateGameSessionData,
+  deleteGameSession,
 };

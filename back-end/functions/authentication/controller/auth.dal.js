@@ -7,7 +7,10 @@ const moment = require("moment");
 const getAllUsersFromDb = async () => {
   try {
     const collection = await db.collection("users").get();
-    return collection.docs.map((doc) => doc.data());
+    return collection.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
   } catch (error) {
     logger.error("auth.dal error: getAllUsersFromDb");
     logger.error(error);
@@ -342,7 +345,7 @@ const updateCompletedQuests = async (id, quest, currBalance, reward) => {
 const updateActiveTimestamp = async (id) => {
   try {
     const response = await db.collection("users").doc(id).update({
-      active_timestamp: moment().format(),
+      timestamp: moment().format(),
     });
     return response;
   } catch (error) {

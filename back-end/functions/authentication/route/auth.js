@@ -3,7 +3,7 @@ const { logger } = require("firebase-functions");
 
 const { hash } = require("bcrypt");
 const { randomUUID } = require("crypto");
-const sendEmail = require("../../utils/sendEmail");
+const sendEmail = require("../utils/sendEmail");
 
 const verifyUserToken = require("../middleware/verifyUserToken");
 const verifySessionCookie = require("../middleware/verifySessionCookie");

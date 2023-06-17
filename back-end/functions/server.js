@@ -3,9 +3,8 @@ const express = require("express");
 const app = express();
 
 const { region } = require("firebase-functions");
-const {
-  deleteInactiveProfilePictures,
-} = require("./utils/deleteInactiveProfilePictures");
+const deleteInactiveProfilePictures = require("./authentication/utils/deleteInactiveProfilePictures");
+const deleteInactiveGameSessions = require("./games/utils/deleteInactiveGameSessions");
 
 require("dotenv").config();
 const bodyParser = require("body-parser");
@@ -23,7 +22,13 @@ global.DEBUG = true;
 
 // *Exports for Firebase Functions*
 exports.server = region("northamerica-northeast1").https.onRequest(app);
-exports.deleteInactiveProfilePictures = deleteInactiveProfilePictures;
+exports.deleteInactiveProfilePictures = region("northamerica-northeast1")
+  .pubsub.schedule("every 24 hours")
+  .onRun(deleteInactiveProfilePictures);
+
+exports.deleteInactiveGameSessions = region("northamerica-northeast1")
+  .pubsub.schedule("every 24 hours")
+  .onRun(deleteInactiveGameSessions);
 
 // *Middleware*
 // So express can read the new parameters off the url and encoding them correctly.
@@ -51,14 +56,19 @@ app.use(helmet()); // Protects various HTTP headers that can help defend against
 app.use(hpp()); // Protects against HTTP Parameter Pollution attacks.
 
 // Rate-limiting - used to limit repeated requests.
-app.use(
-  rateLimit({
-    windowMs: 60 * 60 * 1000, // 60 minutes, // 15 minutes
-    max: 100, // limit each IP to 100 requests per windowMs
-    message:
-      "Too many requests made from this IP, please try again after an hour",
-  })
-);
+app.use((req, res, next) => {
+  if (!req.path.includes("/games")) {
+    console.log("req.path", req.path);
+    rateLimit({
+      windowMs: 60 * 60 * 1000, // 60 minutes
+      max: 100, // limit each IP to 100 requests per windowMs
+      message:
+        "Too many requests made from this IP, please try again after an hour.",
+    })(req, res, next);
+  } else {
+    next();
+  }
+});
 
 // *Routers*
 app.use("/auth", authRouter);

@@ -1,0 +1,18 @@
+Since Production:
+
+v1.1.2
+- Auth controllers changed for better performance; controllers that get specific fields 
+  now uses select() to avoid getting the full document before hand.
+- Game route and controller was added to persist the current game session. 
+- Fixed auth.dal get all users function.
+
+v1.2.5
+- deleteInactiveGameSession was introduced as a scheduled firebase function to delete unused
+  game sessions from firestore.
+- deleteInactiveProfilePictures fix; The function requires the use of a id in the document,
+  but sense I used the document's id itself as the id, I put that id inside the object
+  when the document is fetched.
+- Re-organized the utils to their respective feature folders.
+- Rate-limiting is currently now disabled for games routes because of the repeated requests
+  when saving the game sessions and would send a 429 error when playing for a long period it 
+  seems.
