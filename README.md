@@ -13,8 +13,20 @@ In Quest Casino, you can enhance your user experience with keyboard navigation c
 - `Escape` to exit modals or toggle the menu in Davy Blackjack. It can also be used to close the rules overlay in Davy Blackjack.
 
 ## Tech Stack
-This React application is built using Create React App (CRA) and uses Redux and Chakra UI on the front-end for state management and styling. On the back-end, Node.js is used with Firebase Authentication and Firestore for data storage. The application is deployed via Firebase Functions.
-
-<br />
+This React application is built using Create React App (CRA) and uses Redux and Chakra UI on the front-end for state management and styling. On the back-end, Node.js is used with Firebase Authentication and 
+Firestore for data storage. The application is deployed via Firebase Functions.
 
 _**Deployed Stable Version:** [www.questcasino.xyz](https://www.questcasino.xyz)_
+
+<br /><br />
+
+Shield: [![CC BY 4.0][cc-by-shield]][cc-by]
+
+This work is licensed under a
+[Creative Commons Attribution 4.0 International License][cc-by].
+
+[![CC BY 4.0][cc-by-image]][cc-by]
+
+[cc-by]: http://creativecommons.org/licenses/by/4.0/
+[cc-by-image]: https://i.creativecommons.org/l/by/4.0/88x31.png
+[cc-by-shield]: https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg
