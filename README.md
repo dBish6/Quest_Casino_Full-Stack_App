@@ -18,6 +18,133 @@ Firestore for data storage. The application is deployed via Firebase Functions.
 
 _**Deployed Stable Version:** [www.questcasino.xyz](https://www.questcasino.xyz)_
 
+## Folder Structure
+This is here to give you an idea of how the Folder Structure works and for me to mention some things I would like to explain about the 'guidelines' of this structure. Here's an overview:
+
+`Features`
+- The files and folders outside the `features` folder serve as `global` and `home` files.
+- There are 3 key feature folders; `authentication`, `games`, and `quests`.
+- Each feature folder follows the `pages` folder files (except for the `quests` feature which doesn't have a page, just a `modal` component) and mimics the `global` structure; components, contexts, hooks, utils, etc.
+
+`Games Feature`
+- The `games` feature folder holds each game featured in Quest Casino.
+- The `general` folder includes files that are used across all games and files from the `games` page.
+- Each game uses Redux shown in the `redux` folder for a lot of the game's data.
+<br />
+
+`contexts`
+- The `contexts` folder within the root of the `src` folder contains the Cache.jsx file, which serves as a global store.
+- `AuthContext` in the authentication feature folder stores the user and other functionality for the user.
+<br />
+
+`styles`
+- The `styles` folder holds all the Chakra UI styles and configurations.
+- The `components` folder within the `styles` folder defines the default styles and variants for Chakra components; Button, Link, Card, Tab, etc.
+
+### Front-End Structure:
+```
+/
+├── node_modules
+|   └── ...
+├── public/
+│   ├── favicon.ico
+|   ├── index.html
+|   └── ...
+├── src/
+|   ├── App.jsx
+|   ├── index.jsx
+│   ├── components/
+│   │   ├── GetBalance.jsx
+|   |   ├── ...
+|   |   ├── home/
+|   |   |   └── WelcomeSection.jsx
+|   |   ├── modals/
+|   |   |   ├── ModalTemplate.jsx
+|   |   |   └── ...
+|   |   ├── partials/
+|   |   |   ├── Footer.jsx
+|   |   |   ├── NavBar.jsx
+|   |   |   └── sideBar/
+|   |   |       ├── index.jsx
+|   |   |       ├── Navigation.jsx
+|   |   |       └── mobile/
+|   |   |           └── ...
+|   |   └── skeletons/
+|   |       └── PlayerSkeleton.jsx
+|   ├── contexts/ 
+|   |   └── Cache.jsx
+|   ├── features/
+|   |   ├── authentication/
+|   |   |   ├── PrivateRoute.jsx
+|   |   |   ├── api_services/
+|   |   |   |   ├── GetUser.js
+|   |   |   |   └── ...
+|   |   |   ├── components/
+|   |   |   |   ├── LoginForm.jsx
+|   |   |   |   ├── profile/
+|   |   |   |   |   └── ...
+|   |   |   |   └── ...
+|   |   |   ├── contexts/
+|   |   |   |   └── AuthContext.jsx
+|   |   |   └── ...
+|   |   ├── games/
+|   |   |   ├── blackjack/
+|   |   |   |  ├── index.jsx
+|   |   |   |  ├── assets/
+|   |   |   |  ├── components/
+|   |   |   |  |   ├── Dealer.jsx
+|   |   |   |  |   ├── player/
+|   |   |   |  |   |   ├── Player.jsx
+|   |   |   |  |   |   ├── BettingButtons.jsx
+|   |   |   |  |   |   └── ...
+|   |   |   |  ├── redux/  
+|   |   |   |  |   └── ...
+|   |   |   |  └── utils/
+|   |   |   |      ├── createDeck.js
+|   |   |   |      └── ...
+|   |   |   ├── general/
+|   |   |   |   ├── api_services/
+|   |   |   |   |   ├── persistCurrentGameData.js
+|   |   |   |   |   ├── updateUserWinsAndBalance.js
+|   |   |   |   |   └── ...
+|   |   |   |   ├── components/
+|   |   |   |   |   ├── gamesDisplay/
+|   |   |   |   |   |   └── ...
+|   |   |   |   |   ├── modals/
+|   |   |   |   |   |   └── MatchOrForFunModal.jsx
+|   |   |   |   |   └── ...
+|   |   |   |   └── ...
+|   |   |   └── ...
+|   |   ├── quests/
+|   |   |   └── staticQuests.js
+|   |   ├── hooks/
+|   |   |   └── useBlackjackQuestsCompletion.js
+|   |   └── ...   
+│   ├── hooks/
+│   |   ├── useAuth.js
+│   |   ├── useKeyboardHelper.js
+│   |   └── ...
+│   ├── pages/
+│   |   ├── Home.jsx
+│   |   ├── Profile.jsx
+│   |   ├── games/
+│   |   |   ├── Blackjack.jsx
+│   |   |   ├── GamesHome.jsx
+│   |   |   └── ...
+|   |   └── ...
+│   ├── redux/
+│   |   └── store.js
+│   ├── styles/
+│   |   ├── theme.js
+│   |   └── components/
+│   |       ├── buttonStyles.js
+│   |       ├── linkStyles.js
+│   |       └── ...
+│   └── ...
+├── package.json
+└── ...
+```
+
 <br /><br />
 
 Shield: [![CC BY 4.0][cc-by-shield]][cc-by]
