@@ -5,6 +5,8 @@ To add, the blackjack game is not your standard simple blackjack game, it has al
 
 I'm also open to collaborate with anyone who would like to help:) [Contact me here](mailto:davidbish2002@hotmail.com).
 
+_**Deployed Stable Version:** [www.questcasino.xyz](https://www.questcasino.xyz)_
+
 ## Keyboard Navigation Controls
 In Quest Casino, you can enhance your user experience with keyboard navigation controls. Here are the keys you can use:
 - `Tab` to move focus forward to the next interactive element.
@@ -15,8 +17,6 @@ In Quest Casino, you can enhance your user experience with keyboard navigation c
 ## Tech Stack
 This React application is built using Create React App (CRA) and uses Redux and Chakra UI on the front-end for state management and styling. On the back-end, Node.js is used with Firebase Authentication and 
 Firestore for data storage. The application is deployed via Firebase Functions.
-
-_**Deployed Stable Version:** [www.questcasino.xyz](https://www.questcasino.xyz)_
 
 ## Folder Structure
 This is here to give you an idea of how the Folder Structure works and for me to mention some things I would like to explain about the 'guidelines' of this structure. Here's an overview:
