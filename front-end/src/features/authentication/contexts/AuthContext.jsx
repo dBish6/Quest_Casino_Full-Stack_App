@@ -88,7 +88,7 @@ export const AuthProvider = ({ children }) => {
             });
           }
         } else if (serverRes.status === 401) {
-          if (serverRes.data.ERROR.includes("Invalid")) {
+          if (serverRes.data.ERROR.includes("expired")) {
             currentUser !== null && navigate("/error401");
           } else if (serverRes.data.ERROR === "Session cookie expired.") {
             currentUser !== null && (await logout());

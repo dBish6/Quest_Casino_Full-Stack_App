@@ -2,7 +2,7 @@
 import { VStack, ButtonGroup, Button, Text } from "@chakra-ui/react";
 import { motion, AnimatePresence } from "framer-motion";
 
-// Shows if the player get a ace!
+// Shows if the player gets a ace!
 const AcePrompt = (props) => {
   return (
     <AnimatePresence>
