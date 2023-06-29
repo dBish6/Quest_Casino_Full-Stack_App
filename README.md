@@ -21,6 +21,7 @@ Firestore for data storage. The application is deployed via Firebase Functions.
 ## Folder Structure
 This is here to give you an idea of how the Folder Structure works and for me to mention some things I would like to explain about the 'guidelines' of this structure. Here's an overview:
 
+### Front-end Structure:
 `Features`
 - The files and folders outside the `features` folder serve as `global` and `home` files.
 - There are 3 key feature folders; `authentication`, `games`, and `quests`.
@@ -41,108 +42,148 @@ This is here to give you an idea of how the Folder Structure works and for me to
 - The `styles` folder holds all the Chakra UI styles and configurations.
 - The `components` folder within the `styles` folder defines the default styles and variants for Chakra components; Button, Link, Card, Tab, etc.
 
-### Front-End Structure:
 ```
 /
-├── node_modules
+├── firebase.json
+├── package.json
+├── ...
+├── node_modules/
 |   └── ...
 ├── public/
 │   ├── favicon.ico
 |   ├── index.html
 |   └── ...
-├── src/
-|   ├── App.jsx
-|   ├── index.jsx
-│   ├── components/
-│   │   ├── GetBalance.jsx
-|   |   ├── ...
-|   |   ├── home/
-|   |   |   └── WelcomeSection.jsx
-|   |   ├── modals/
-|   |   |   ├── ModalTemplate.jsx
-|   |   |   └── ...
-|   |   ├── partials/
-|   |   |   ├── Footer.jsx
-|   |   |   ├── NavBar.jsx
-|   |   |   └── sideBar/
-|   |   |       ├── index.jsx
-|   |   |       ├── Navigation.jsx
-|   |   |       └── mobile/
-|   |   |           └── ...
-|   |   └── skeletons/
-|   |       └── PlayerSkeleton.jsx
-|   ├── contexts/ 
-|   |   └── Cache.jsx
-|   ├── features/
-|   |   ├── authentication/
-|   |   |   ├── PrivateRoute.jsx
-|   |   |   ├── api_services/
-|   |   |   |   ├── GetUser.js
-|   |   |   |   └── ...
-|   |   |   ├── components/
-|   |   |   |   ├── LoginForm.jsx
-|   |   |   |   ├── profile/
-|   |   |   |   |   └── ...
-|   |   |   |   └── ...
-|   |   |   ├── contexts/
-|   |   |   |   └── AuthContext.jsx
-|   |   |   └── ...
-|   |   ├── games/
-|   |   |   ├── blackjack/
-|   |   |   |  ├── index.jsx
-|   |   |   |  ├── assets/
-|   |   |   |  ├── components/
-|   |   |   |  |   ├── Dealer.jsx
-|   |   |   |  |   ├── player/
-|   |   |   |  |   |   ├── Player.jsx
-|   |   |   |  |   |   ├── BettingButtons.jsx
-|   |   |   |  |   |   └── ...
-|   |   |   |  ├── redux/  
-|   |   |   |  |   └── ...
-|   |   |   |  └── utils/
-|   |   |   |      ├── createDeck.js
-|   |   |   |      └── ...
-|   |   |   ├── general/
-|   |   |   |   ├── api_services/
-|   |   |   |   |   ├── persistCurrentGameData.js
-|   |   |   |   |   ├── updateUserWinsAndBalance.js
-|   |   |   |   |   └── ...
-|   |   |   |   ├── components/
-|   |   |   |   |   ├── gamesDisplay/
-|   |   |   |   |   |   └── ...
-|   |   |   |   |   ├── modals/
-|   |   |   |   |   |   └── MatchOrForFunModal.jsx
-|   |   |   |   |   └── ...
-|   |   |   |   └── ...
-|   |   |   └── ...
-|   |   ├── quests/
-|   |   |   └── staticQuests.js
-|   |   ├── hooks/
-|   |   |   └── useBlackjackQuestsCompletion.js
-|   |   └── ...   
-│   ├── hooks/
-│   |   ├── useAuth.js
-│   |   ├── useKeyboardHelper.js
-│   |   └── ...
-│   ├── pages/
-│   |   ├── Home.jsx
-│   |   ├── Profile.jsx
-│   |   ├── games/
-│   |   |   ├── Blackjack.jsx
-│   |   |   ├── GamesHome.jsx
-│   |   |   └── ...
-|   |   └── ...
-│   ├── redux/
-│   |   └── store.js
-│   ├── styles/
-│   |   ├── theme.js
-│   |   └── components/
-│   |       ├── buttonStyles.js
-│   |       ├── linkStyles.js
-│   |       └── ...
-│   └── ...
-├── package.json
-└── ...
+└── src/
+    ├── App.jsx
+    ├── index.jsx
+    ├── components/
+    │   ├── GetBalance.jsx
+    |   ├── ...
+    |   ├── home/
+    |   |   └── WelcomeSection.jsx
+    |   ├── modals/
+    |   |   ├── ModalTemplate.jsx
+    |   |   └── ...
+    |   ├── partials/
+    |   |   ├── Footer.jsx
+    |   |   ├── NavBar.jsx
+    |   |   └── sideBar/
+    |   |       ├── index.jsx
+    |   |       ├── Navigation.jsx
+    |   |       └── mobile/
+    |   |           └── ...
+    |   └── skeletons/
+    |       └── PlayerSkeleton.jsx
+    ├── contexts/ 
+    |   └── Cache.jsx
+    ├── features/
+    |   ├── authentication/
+    |   |   ├── PrivateRoute.jsx
+    |   |   ├── api_services/
+    |   |   |   ├── GetUser.js
+    |   |   |   └── ...
+    |   |   ├── components/
+    |   |   |   ├── LoginForm.jsx
+    |   |   |   ├── profile/
+    |   |   |   |   └── ...
+    |   |   |   └── ...
+    |   |   ├── contexts/
+    |   |   |   └── AuthContext.jsx
+    |   |   └── ...
+    |   ├── games/
+    |   |   ├── blackjack/
+    |   |   |  ├── index.jsx
+    |   |   |  ├── assets/
+    |   |   |  ├── components/
+    |   |   |  |   ├── Dealer.jsx
+    |   |   |  |   ├── player/
+    |   |   |  |   |   ├── Player.jsx
+    |   |   |  |   |   ├── BettingButtons.jsx
+    |   |   |  |   |   └── ...
+    |   |   |  ├── redux/  
+    |   |   |  |   └── ...
+    |   |   |  └── utils/
+    |   |   |      ├── createDeck.js
+    |   |   |      └── ...
+    |   |   ├── general/
+    |   |   |   ├── api_services/
+    |   |   |   |   ├── persistCurrentGameData.js
+    |   |   |   |   ├── updateUserWinsAndBalance.js
+    |   |   |   |   └── ...
+    |   |   |   ├── components/
+    |   |   |   |   ├── gamesDisplay/
+    |   |   |   |   |   └── ...
+    |   |   |   |   ├── modals/
+    |   |   |   |   |   └── MatchOrForFunModal.jsx
+    |   |   |   |   └── ...
+    |   |   |   └── ...
+    |   |   └── ...
+    |   ├── quests/
+    |   |   └── staticQuests.js
+    |   ├── hooks/
+    |   |   └── useBlackjackQuestsCompletion.js
+    |   └── ...   
+    ├── hooks/
+    |   ├── useAuth.js
+    |   ├── useKeyboardHelper.js
+    |   └── ...
+    ├── pages/
+    |   ├── Home.jsx
+    |   ├── Profile.jsx
+    |   ├── games/
+    |   |   ├── Blackjack.jsx
+    |   |   ├── GamesHome.jsx
+    |   |   └── ...
+    |   └── ...
+    ├── redux/
+    |   └── store.js
+    ├── styles/
+    |   ├── theme.js
+    |   └── components/
+    |       ├── buttonStyles.js
+    |       ├── linkStyles.js
+    |       └── ...
+    └── ...
+```
+
+### Back-end Structure:
+- The back-end structure uses `model`, `controller`, and `route` folders, but files and folders are separated by feature; `authentication` and `games` folders respectively.
+- Again, files and folders outside the feature folders serve as `global` files.
+- The entire back-end is encapsulated within the `functions` folder because it is deployed with Firebase Functions.
+
+```
+/
+├── firebase.json
+└── functions/
+    ├── package.json
+    ├── server.js
+    ├── ...
+    ├── node_modules/
+    |   └── ...
+    ├── middleware/
+    |   └── verifyCsrfToken.js
+    ├── model/
+    |   └── firebaseConfig.js
+    |   └── ...
+    |   └── ...
+    ├── authentication/
+    |   ├── controller/
+    |   |   └── auth.dal.js
+    |   ├── middleware/
+    |   |   ├── verifySessionCookie.js
+    |   |   └── ...
+    |   ├── route/
+    |   |   └── auth.js
+    |   ├── utils/
+    |   |   ├── deleteInactiveProfilePictures.js
+    |   |   └── ...
+    └── games/
+        ├── controller/
+        |   └── games.dal.js
+        ├── route/
+        |   └── games.js
+        └── utils/
+            └── deleteInactiveGameSessions.js
 ```
 
 <br /><br />
