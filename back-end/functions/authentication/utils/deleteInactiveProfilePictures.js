@@ -5,8 +5,7 @@ const { storage } = require("../../model/firebaseConfig");
 
 const deleteInactiveProfilePictures = async () => {
   const inactiveUsers = await getInactiveDocuments(getAllUsersFromDb);
-  if (inactiveUsers && inactiveUsers.length)
-    await deleteProfilePictures(inactiveUsers);
+  if (inactiveUsers) await deleteProfilePictures(inactiveUsers);
 
   logger.info("Inactive profile pictures check completed successfully.");
 };

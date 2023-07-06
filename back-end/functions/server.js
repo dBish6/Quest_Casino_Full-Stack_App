@@ -1,3 +1,9 @@
+/* Quest Casino's Server
+
+   Author: David Bishop
+   Creation Date: February 17, 2023
+*/
+
 // *Imports*
 const express = require("express");
 const app = express();
