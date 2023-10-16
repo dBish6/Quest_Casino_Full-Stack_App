@@ -1,0 +1,24 @@
+{
+  "display": "Default",
+  "exclude": ["node_modules", "build"],
+  "compilerOptions": {
+    "baseUrl": ".",
+    "skipLibCheck": true,
+    "composite": false,
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "target": "ES2020",
+    "sourceMap": true,
+
+    "allowJs": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+
+    "strict": true,
+
+    "paths": {
+      "@packages/*": ["../../packages/*"]
+    }
+  }
+}

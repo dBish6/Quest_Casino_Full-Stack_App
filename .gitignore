@@ -182,6 +182,7 @@ dist
 .svelte-kit
 
 # Other
+.turbo
 .github
 .DS_Store
 front-end/src/features/games/blackjack/changeLog.txt
