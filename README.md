@@ -38,8 +38,9 @@ _**Deployed Stable Version (Version 1):** [www.questcasino.xyz](https://www.ques
 
 <a href="https://www.buymeacoffee.com/dBish" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
 
-<br /><br />
+<br />
 
+---
 Shield: [![CC BY 4.0][cc-by-shield]][cc-by]
 
 This work is licensed under a
