@@ -5,7 +5,7 @@ The development of the complete overhaul of Quest Casino is now underway and we'
 This is a fun casino app that has different kinds of casino games. From the sound of the name, in addition, it has some quests/challenges to complete for some extra moolah!
 
 ## New Tech Stack
-Quest Casino has transitioned to a `monoRepo`, which is very scalable. This setup allows for potential expansions into mobile development and additional web apps. Also, this allows for the API to communicate with the front-end via proxy which can provide better performance. This monoRepo uses `npm` and `turboRepo` as the runtime framework.
+Quest Casino has transitioned to a `monoRepo`, which is very scalable. This setup allows for potential expansions into mobile development and additional web apps. Also, this allows for the API to communicate with the front-end via proxy which can provide better performance. This monoRepo uses `npm` and `turboRepo` as the build system.
 
 ### Web
 The `web` (front-end) directory is a `TypeSript React` app which uses `Vite` and custom an SSR server for SEO, `Framer Motion` for dynamic animations, `Redux` for state management, `Storybook` for testing and component management with the help from `Class Variance Authority` for variants and `Radix UI` here and there for accessibly and other benefits. `PostCSS` and `CSS modules` handles styling.
