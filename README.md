@@ -23,7 +23,7 @@ I would love to work with other people with this app I envisioned.
 
 When collaborating, you don't have to help with the main UI, I am also looking for people to make some games for Quest Casino. So, if you think of a cool Casino game to be featured, go right ahead. You could use JavaScript with preferably TypeScript and no React if you really want to, but other games are using React.
 
-To collaborate just shoot me a [email](mailto:davidbish2002@hotmail.com) or you can contact me on [Linkedin](https://www.linkedin.com/in/d-bish/).
+To collaborate just shoot me an [email](mailto:davidbish2002@hotmail.com) or you can contact me on [Linkedin](https://www.linkedin.com/in/d-bish/).
 
 If you want to know more about Quest Casino, take a look at the design case study. Quest Casino's UI has undergone rigorous design and UX testing to ensure a great user experience, the design case study for the new version is on my portfolio website or just use this [link](https://docs.google.com/presentation/d/1cegjwMxQvDhePSHiwVTRRgHZQYwQCqj3NcJFy1GPhMk/edit?usp=sharing). You'll find it at [https://www.davidbishop.info/#design](https://www.davidbishop.info/#design) on my portfolio.
 
