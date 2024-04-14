@@ -1,0 +1,23 @@
+{
+  "display": "Default",
+  // "include": ["**/*.ts*"],
+  "exclude": ["node_modules", "build"],
+  //   "exclude": ["node_modules", "**/*.js"]
+  "compilerOptions": {
+    "skipLibCheck": true,
+    "composite": false,
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    // "target": "ES2020",
+    "sourceMap": true,
+
+    "allowJs": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "allowSyntheticDefaultImports": true,
+    "noEmit": true,
+
+    "strict": true
+  }
+}

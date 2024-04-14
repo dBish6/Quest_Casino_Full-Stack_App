@@ -1,0 +1,15 @@
+{
+  "name": "@qc/vite-config",
+  "version": "0.0.0",
+  "license": "CC-BY-4.0",
+  "scripts": {
+    "clean": "rm -rf node_modules"
+  },
+  "devDependencies": {
+    "vite": "^5.2.8",
+    "vite-tsconfig-paths": "^4.3.2"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
