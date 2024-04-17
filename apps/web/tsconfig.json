@@ -1,0 +1,23 @@
+{
+  "extends": "../../packages/typescript-config/tsconfig.base.json",
+  "include": ["./**/*.ts*"],
+  "compilerOptions": {
+    // "baseUrl": ".",
+    "useDefineForClassFields": true,
+    "lib": ["DOM", "DOM.Iterable", "ESNext"],
+    "target": "ES2020",
+    "jsx": "react-jsx",
+    // "allowImportingTsExtensions": true,
+    "paths": {
+      "@authFeat/*": ["./src/features/auth"],
+      "@chatFeat/*": ["./src/features/chat"],
+      "@gamesFeat/*": ["./src/features/games"],
+
+      "@assets/*": ["./src/assets/*"],
+
+      "@components/*": ["./src/components/*"],
+
+      "@views/*": ["./src/views/*"]
+    }
+  }
+}

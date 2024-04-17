@@ -1,0 +1,360 @@
+/* Paragraph Font */
+@font-face {
+  font-family: "Myriad Pro";
+  src:
+    url("/assets/fonts/MyriadPro/MyriadPro-Light.woff2") format("woff2"),
+    url("/assets/fonts/MyriadPro/MyriadPro-Light.woff") format("woff"),
+    url("/assets/fonts/MyriadPro/MyriadPro-Light.eot")
+      format("embedded-opentype"),
+    url("/assets/fonts/MyriadPro/MyriadPro-Light.eot?#iefix")
+      format("embedded-opentype"),
+    url("/assets/fonts/MyriadPro/MyriadPro-Light.otf") format("opentype");
+  font-weight: 300;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Myriad Pro";
+  src:
+    url("/assets/fonts/MyriadPro/MyriadPro-Light-Italic.woff2") format("woff2"),
+    url("/assets/fonts/MyriadPro/MyriadPro-Light-Italic.woff") format("woff"),
+    url("/assets/fonts/MyriadPro/MyriadPro-Light-Italic.eot")
+      format("embedded-opentype"),
+    url("/assets/fonts/MyriadPro/MyriadPro-Light-Italic.eot?#iefix")
+      format("embedded-opentype"),
+    url("/assets/fonts/MyriadPro/MyriadPro-Light-Italic.otf") format("opentype");
+  font-weight: 300;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: "Myriad Pro";
+  src:
+    url("/assets/fonts/MyriadPro/MyriadPro-Regular.woff2") format("woff2"),
+    url("/assets/fonts/MyriadPro/MyriadPro-Regular.woff") format("woff"),
+    url("/assets/fonts/MyriadPro/MyriadPro-Regular.eot")
+      format("embedded-opentype"),
+    url("/assets/fonts/MyriadPro/MyriadPro-Regular.eot?#iefix")
+      format("embedded-opentype"),
+    url("/assets/fonts/MyriadPro/MyriadPro-Regular.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Myriad Pro";
+  src:
+    url("/assets/fonts/MyriadPro/MyriadPro-Regular-Italic.woff2")
+      format("woff2"),
+    url("/assets/fonts/MyriadPro/MyriadPro-Regular-Italic.woff") format("woff"),
+    url("/assets/fonts/MyriadPro/MyriadPro-Regular-Italic.eot")
+      format("embedded-opentype"),
+    url("/assets/fonts/MyriadPro/MyriadPro-Regular-Italic.eot?#iefix")
+      format("embedded-opentype"),
+    url("/assets/fonts/MyriadPro/MyriadPro-Regular-Italic.otf")
+      format("opentype");
+  font-weight: 400;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: "Myriad Pro";
+  src:
+    url("/assets/fonts/MyriadPro/MyriadPro-SemiBold.woff2") format("woff2"),
+    url("/assets/fonts/MyriadPro/MyriadPro-SemiBold.woff") format("woff"),
+    url("/assets/fonts/MyriadPro/MyriadPro-SemiBold.eot")
+      format("embedded-opentype"),
+    url("/assets/fonts/MyriadPro/MyriadPro-SemiBold.eot?#iefix")
+      format("embedded-opentype"),
+    url("/assets/fonts/MyriadPro/MyriadPro-SemiBold.otf") format("opentype");
+  font-weight: 600;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Myriad Pro";
+  src:
+    url("/assets/fonts/MyriadPro/MyriadPro-SemiBold-Italic.woff2")
+      format("woff2"),
+    url("/assets/fonts/MyriadPro/MyriadPro-SemiBold-Italic.woff") format("woff"),
+    url("/assets/fonts/MyriadPro/MyriadPro-SemiBold-Italic.eot")
+      format("embedded-opentype"),
+    url("/assets/fonts/MyriadPro/MyriadPro-SemiBold-Italic.eot?#iefix")
+      format("embedded-opentype"),
+    url("/assets/fonts/MyriadPro/MyriadPro-SemiBold-Italic.otf")
+      format("opentype");
+  font-weight: 600;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: "Myriad Pro";
+  src:
+    url("/assets/fonts/MyriadPro/MyriadPro-Bold.woff2") format("woff2"),
+    url("/assets/fonts/MyriadPro/MyriadPro-Bold.woff") format("woff"),
+    url("/assets/fonts/MyriadPro/MyriadPro-Bold.eot")
+      format("embedded-opentype"),
+    url("/assets/fonts/MyriadPro/MyriadPro-Bold.eot?#iefix")
+      format("embedded-opentype"),
+    url("/assets/fonts/MyriadPro/MyriadPro-Bold.otf") format("opentype");
+  font-weight: 700;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Myriad Pro";
+  src:
+    url("/assets/fonts/MyriadPro/MyriadPro-Bold-Italic.woff2") format("woff2"),
+    url("/assets/fonts/MyriadPro/MyriadPro-SemiBold-Italic.woff") format("woff"),
+    url("/assets/fonts/MyriadPro/MyriadPro-Bold-Italic.eot")
+      format("embedded-opentype"),
+    url("/assets/fonts/MyriadPro/MyriadPro-Bold-Italic.eot?#iefix")
+      format("embedded-opentype"),
+    url("/assets/fonts/MyriadPro/MyriadPro-Bold-Italic.otf") format("opentype");
+  font-weight: 700;
+  font-style: italic;
+}
+
+/* Heading Font */
+@font-face {
+  font-family: "Enzo OT";
+  src:
+    url("/assets/fonts/Enzo/EnzoOt-Medium.woff2") format("woff2"),
+    url("/assets/fonts/Enzo/EnzoOt-Medium.woff") format("woff"),
+    url("/assets/fonts/Enzo/EnzoOt-Medium.eot") format("embedded-opentype"),
+    url("/assets/fonts/Enzo/EnzoOt-Medium.eot?#iefix")
+      format("embedded-opentype"),
+    url("/assets/fonts/Enzo/EnzoOt-Medium.tff") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Enzo OT";
+  src:
+    url("/assets/fonts/Enzo/EnzoOt-Medium-Italic.woff2") format("woff2"),
+    url("/assets/fonts/Enzo/EnzoOt-Medium-Italic.woff") format("woff"),
+    url("/assets/fonts/Enzo/EnzoOt-Medium-Italic.eot")
+      format("embedded-opentype"),
+    url("/assets/fonts/Enzo/EnzoOt-Medium-Italic.eot?#iefix")
+      format("embedded-opentype"),
+    url("/assets/fonts/Enzo/EnzoOt-Medium-Italic.tff") format("truetype");
+  font-weight: 500;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: "Enzo OT";
+  src:
+    url("/assets/fonts/Enzo/EnzoOt-Bold.woff2") format("woff2"),
+    url("/assets/fonts/Enzo/EnzoOt-Bold.woff") format("woff"),
+    url("/assets/fonts/Enzo/EnzoOt-Bold.eot") format("embedded-opentype"),
+    url("/assets/fonts/Enzo/EnzoOt-Bold.eot?#iefix") format("embedded-opentype"),
+    url("/assets/fonts/Enzo/EnzoOt-Bold.tff") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+  border: 0;
+}
+
+:root {
+  /* Colours */
+  /* --c-bg:
+    radial-gradient(
+      closest-side at 49% 64%,
+      var(--c-purple-500) 0%,
+      #160f29 100%
+    )
+    0% 0% no-repeat; */
+  /* --c-bg: radial-gradient(
+      closest-side at 49% 64%,
+      var(--c-purple-500) 0%,
+      #160f29 100%
+    )
+    0% 0% no-repeat; */
+
+  /* --c-bg: radial-gradient(
+      circle at 49% 64%,
+      var(--c-purple-500) 0%,
+      #160f29 100%
+    )
+    no-repeat; */
+
+  --c-bg: radial-gradient(
+      closest-side at 50% 52%,
+      var(--c-purple-500) -100%,
+      #160f29 100%
+    )
+    no-repeat;
+
+  /* radial-gradient(ellipse farthest-corner at 45px 45px, rgba(50, 50, 50, 0.8) 0%, rgba(80, 80, 80, 0.2) ) */
+
+  --c-purple-idk: #c2adff;
+
+  --c-purple-100: #cdc5e7;
+  --c-purple-200: #b5a9dc;
+  --c-purple-300: #9481cb;
+  --c-purple-400: #7f69c1;
+  --c-purple-500: #5f43b2;
+  --c-purple-600: #563da2;
+  --c-purple-700: #43307e;
+  --c-purple-800: #342562;
+  --c-purple-900: #281c4b;
+
+  --c-magenta-300: #cb81cb;
+  --c-magenta-400: #c169c1;
+  --c-magenta-500: #b243b2;
+  --c-magenta-600: #a23da2;
+  --c-magenta-700: #7e307e;
+
+  --c-heading-1: #f5f5f5;
+  --c-heading-2: #efefef;
+
+  --c-para: #e3e3e3;
+  --c-para-faded: #c1c1c1;
+
+  /* TODO: LEVELING COLOURS. */
+
+  /* Typography */
+  /* May need the default line height. */
+  --h1: 700 42px/59px "Enzo OT", sans-serif;
+  --h2: 700 32px/45px "Enzo OT", sans-serif;
+  --h3: 700 24px/34px "Enzo OT", sans-serif;
+  --h4: italic 500 18px/26px "Enzo OT", sans-serif;
+
+  /* 
+  --h1-clamp: clamp(
+    4.375rem,
+    3.7333650190114067rem + 2.053231939163498vw,
+    6.0625rem
+  );
+  --h2-clamp: clamp(
+    3.1875rem,
+    2.640922053231939rem + 1.7490494296577945vw,
+    4.625rem
+  );
+  --h3-clamp: clamp(
+    2.375rem,
+    1.9710076045627376rem + 1.2927756653992395vw,
+    3.4375rem
+  );
+  --h4-clamp: clamp(2rem, 1.417300380228137rem + 1.064638783269962vw, 2.625rem); */
+
+  /* 20px */
+  --para-large: 400 20px/28.5px "Myriad Pro", sans-serif;
+  --para-medium: 400 18px/28.5px "Myriad Pro", sans-serif; /* Main */
+  --para-regular: 400 16px/24.5px "Myriad Pro", sans-serif;
+  --para-small: 400 14px/23.5px "Myriad Pro", sans-serif;
+  --para-x-small: 400 12px/18.5px "Myriad Pro", sans-serif;
+  --para-xx-small: 400 10px/17.5px "Myriad Pro", sans-serif;
+  --para-letter-spaceing: 0.18px;
+
+  /* 18px to 15px... */
+  /* --para-large-clamp: clamp(
+    1.125rem,
+    0.9824144486692015rem + 0.45627376425855515vw,
+    1.5rem
+  );
+  --para-medium-clamp: clamp(
+    1.0625rem,
+    0.9912072243346007rem + 0.22813688212927757vw,
+    1.25rem
+  );
+  --para-regular-clamp: clamp(
+    0.9375rem,
+    0.8662072243346007rem + 0.22813688212927757vw,
+    1.125rem
+  );
+  --para-small-clamp: clamp(
+    0.8125rem,
+    0.7835648148148148rem + 0.0925925925925926vw,
+    0.875rem
+  ); */
+
+  background: var(--c-bg);
+  color-scheme: light;
+  min-height: 100vh;
+}
+
+/* html,
+body {
+  overflow-x: hidden;
+} */
+
+body,
+button,
+input {
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
+
+  font: var(--para-medium);
+  /* font-family: "Myriad Pro"; */
+  /* font-weight: 400; */
+  color: var(--c-para);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5 {
+  font-family: "Enzo OT", sans-serif;
+  color: var(--c-heading1);
+}
+
+p {
+  /* font-size: var(--para-regular-clamp); */
+  letter-spacing: var(--para-letter-spaceing);
+}
+/* li {
+  list-style-position: inside;
+} */
+
+.link {
+  position: relative;
+  color: inherit;
+  text-decoration: none;
+  transition: 0.22s ease-in-out color;
+  & .underline {
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    height: 1px;
+    background-color: transparent;
+    transition: 0.28s ease-in-out background-color;
+  }
+  &:hover,
+  &:focus-visible {
+    color: var(--c-heading-2);
+    & .activeUnderline {
+      background-color: var(--c-heading-2);
+    }
+  }
+}
+
+/* @media (--medium-viewport) {
+  main {
+    padding-inline: 2rem;
+  }
+}
+
+@media (--small-viewport) {
+  main {
+    padding-inline: 1rem;
+  }
+}
+
+@media (--aside-breakpoint) {
+
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+  }
+} */

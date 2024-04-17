@@ -1,0 +1,15 @@
+{
+  "name": "Quest Casino",
+  "short_name": "QC",
+  "description": "TODO:",
+  "icons": [
+    {
+      "src": "/logo.svg",
+      "type": "image/svg+xml"
+    }
+  ],
+  "theme_color": "#5F43B2",
+  "background_color": "#160F29",
+  "categories": ["entertainment", "social"],
+  "display": "standalone"
+}
