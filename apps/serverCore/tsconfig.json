@@ -1,0 +1,23 @@
+{
+  "extends": "../../packages/typescript-config/tsconfig.base.json",
+  "include": ["./**/*.ts*"],
+  "compilerOptions": {
+    "target": "ES6",
+    "lib": ["ES2020"],
+    // "outDir": "build",
+    "paths": {
+      "@cache": ["./src/v2/cache.ts"],
+
+      "@authFeat/*": ["./src/v2/features/auth/*"],
+      "@chatFeat/*": ["./src/v2/features/chat/*"],
+      "@csrfFeat/*": ["./src/v2/features/csrf/*"],
+      "@gamesFeat/*": ["./src/v2/features/games/*"],
+
+      "@middleware/*": ["./src/v2/middleware/*"],
+
+      "@model/*": ["./src/v2/model/*"],
+
+      "@utils/*": ["./src/v2/utils/*"]
+    }
+  }
+}
