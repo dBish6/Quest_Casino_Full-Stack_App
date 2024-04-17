@@ -40,10 +40,11 @@ $ npm run dev
 ```
 $ npm run dev --workspace <project>
 ```
-- When installing a package, don't forget to install it for a specific project:
+- When `installing a package`, don't forget to install it for a specific project:
 ```
 $ npm install <package> --workspace <project>
 ```
+- Also, please note that you need `service account credentials` to use Firebase for severCore.
 
 ## Directory Structure
 ...
