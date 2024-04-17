@@ -3,10 +3,10 @@
   "version": "0.0.0",
   "license": "CC-BY-4.0",
   "devDependencies": {
-    "@types/dotenv": "^8.2.0",
     "@types/express": "^4.17.21",
     "@types/morgan": "^1.9.9",
-    "@types/node": "^20.12.5"
+    "@types/node": "^20.12.5",
+    "tsx": "^4.7.2"
   },
   "publishConfig": {
     "access": "public"

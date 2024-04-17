@@ -116,11 +116,7 @@ web_modules/
 .yarn-integrity
 
 # dotenv environment variable files
-.env
-.env.development.local
-.env.test.local
-.env.production.local
-.env.local
+.env*
 
 # parcel-bundler cache (https://parceljs.org/)
 .cache
@@ -190,3 +186,7 @@ back-end/model/credentials.json*
 Card Sound Effects All Sounds.mp3
 
 # End of https://www.toptal.com/developers/gitignore/api/node
+
+*.old*
+*storybook.log
+stories
