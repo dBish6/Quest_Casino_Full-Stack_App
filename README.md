@@ -7,16 +7,16 @@ This is a fun casino app that has different kinds of casino games. From the soun
 ## New Tech Stack
 Quest Casino has transitioned to a `monoRepo`, which is very scalable. This setup allows for potential expansions into mobile development and additional web apps. Also, this allows for the API to communicate with the front-end via proxy which can provide better performance. This monoRepo uses `npm` and `turboRepo` as the build system.
 
-### Web
-The `web` (front-end) directory is a `TypeSript React` app which uses `Vite` and custom an SSR server for SEO, `Framer Motion` for dynamic animations, `Redux` for state management, `Storybook` for testing and component management with the help from `Class Variance Authority` for variants and `Radix UI` here and there to ensure accessibility and other benefits. `PostCSS` and `CSS modules` handles styling.
+### web
+The `web` directory is a `TypeSript React` app which uses `Vite` and custom an `SSR server` for SEO, `Framer Motion` for dynamic animations, `Redux` for state management, `Storybook` for testing and component management with the help from `Class Variance Authority` for variants and `Radix UI` here and there to ensure accessibility and other benefits. `PostCSS` and `CSS modules` handles styling.
 
-### Api
-The `api` (back-end) directory is the main API, developed using `TypeScript Express`. Despite considering alternative options, Quest Casino remains integrated with `Firebase`, I thought there was no reason to move the current `Firestore` database to some other document-oriented database, so we will still have the advantages of Firebase.
+### serverCore
+The `serverCore` directory contains the core API and socket connections, developed using `TypeScript Express`. Despite considering alternative options, Quest Casino remains integrated with `Firebase`, I thought there was no reason to move the current `Firestore` database to some other document-oriented database, so we will still have the advantages of Firebase.
 
 _This is the plan as of now._
 
 ## First Steps
-I'm going to start with the new chat feature for Quest Casino, yes the app will have a chat now using `socket.io`.
+I'm going to start with the **user authentication** and then move to the new **chat feature**, yes the app will have a chat now using `socket.io`.
 
 ## Collaboration Appreciated!
 I would love to work with other people with this app I envisioned.
@@ -27,8 +27,23 @@ To collaborate just shoot me an [email](mailto:davidbish2002@hotmail.com) or you
 
 If you want to know more about Quest Casino, take a look at the design case study. Quest Casino's UI has undergone rigorous design and UX testing to ensure a great user experience, the design case study for the new version is on my portfolio website or just use this [link](https://docs.google.com/presentation/d/1cegjwMxQvDhePSHiwVTRRgHZQYwQCqj3NcJFy1GPhMk/edit?usp=sharing). You'll find it at [https://www.davidbishop.info/#design](https://www.davidbishop.info/#design) on my portfolio.
 
+### Prerequisites
+- `Nodejs` version 18 or greater.
+- `NPM` version 10 or greater.
+
 ### Getting Started
-...
+```
+$ npm install
+$ npm run dev
+```
+- Running `npm run dev` would run every project in the repo. If you want to run a specific project, use the --workspace flag. The _\<project\>_ would be the name in the package.json for a project.
+```
+$ npm run dev --workspace <project>
+```
+- When installing a package, don't forget to install it for a specific project:
+```
+$ npm install <package> --workspace <project>
+```
 
 ## Directory Structure
 ...
