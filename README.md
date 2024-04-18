@@ -11,12 +11,12 @@ Quest Casino has transitioned to a `monoRepo`, which is very scalable. This setu
 The `web` directory is a `TypeSript React` app which uses `Vite` and custom an `SSR server` for SEO, `Framer Motion` for dynamic animations, `Redux` for state management, `Storybook` for testing and component management with the help from `Class Variance Authority` for variants and `Radix UI` here and there to ensure accessibility and other benefits. `PostCSS` and `CSS modules` handles styling.
 
 ### serverCore
-The `serverCore` directory contains the core API and socket connections, developed using `TypeScript Express`. Despite considering alternative options, Quest Casino remains integrated with `Firebase`, I thought there was no reason to move the current `Firestore` database to some other document-oriented database, so we will still have the advantages of Firebase.
+The `serverCore` directory contains the core API and socket connections via `socket.io`, developed using `TypeScript Express`. Despite considering alternative options, Quest Casino remains integrated with `Firebase`, I thought there was no reason to move the current `Firestore` database to some other document-oriented database, so we will still have the advantages of Firebase.
 
 _This is the plan as of now._
 
 ## First Steps
-I'm going to start with the **user authentication** and then move to the new **chat feature**, yes the app will have a chat now using `socket.io`.
+I'm going to start with the `user authentication` and then move to the new `chat feature`.
 
 ## Collaboration Appreciated!
 I would love to work with other people with this app I envisioned.
