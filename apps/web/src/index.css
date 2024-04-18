@@ -2,26 +2,25 @@
 @font-face {
   font-family: "Myriad Pro";
   src:
-    url("/assets/fonts/MyriadPro/MyriadPro-Light.woff2") format("woff2"),
-    url("/assets/fonts/MyriadPro/MyriadPro-Light.woff") format("woff"),
-    url("/assets/fonts/MyriadPro/MyriadPro-Light.eot")
+    url("/fonts/MyriadPro/MyriadPro-Light.woff2") format("woff2"),
+    url("/fonts/MyriadPro/MyriadPro-Light.woff") format("woff"),
+    url("/fonts/MyriadPro/MyriadPro-Light.eot") format("embedded-opentype"),
+    url("/fonts/MyriadPro/MyriadPro-Light.eot?#iefix")
       format("embedded-opentype"),
-    url("/assets/fonts/MyriadPro/MyriadPro-Light.eot?#iefix")
-      format("embedded-opentype"),
-    url("/assets/fonts/MyriadPro/MyriadPro-Light.otf") format("opentype");
+    url("/fonts/MyriadPro/MyriadPro-Light.otf") format("opentype");
   font-weight: 300;
   font-style: normal;
 }
 @font-face {
   font-family: "Myriad Pro";
   src:
-    url("/assets/fonts/MyriadPro/MyriadPro-Light-Italic.woff2") format("woff2"),
-    url("/assets/fonts/MyriadPro/MyriadPro-Light-Italic.woff") format("woff"),
-    url("/assets/fonts/MyriadPro/MyriadPro-Light-Italic.eot")
+    url("/fonts/MyriadPro/MyriadPro-Light-Italic.woff2") format("woff2"),
+    url("/fonts/MyriadPro/MyriadPro-Light-Italic.woff") format("woff"),
+    url("/fonts/MyriadPro/MyriadPro-Light-Italic.eot")
       format("embedded-opentype"),
-    url("/assets/fonts/MyriadPro/MyriadPro-Light-Italic.eot?#iefix")
+    url("/fonts/MyriadPro/MyriadPro-Light-Italic.eot?#iefix")
       format("embedded-opentype"),
-    url("/assets/fonts/MyriadPro/MyriadPro-Light-Italic.otf") format("opentype");
+    url("/fonts/MyriadPro/MyriadPro-Light-Italic.otf") format("opentype");
   font-weight: 300;
   font-style: italic;
 }
@@ -29,28 +28,25 @@
 @font-face {
   font-family: "Myriad Pro";
   src:
-    url("/assets/fonts/MyriadPro/MyriadPro-Regular.woff2") format("woff2"),
-    url("/assets/fonts/MyriadPro/MyriadPro-Regular.woff") format("woff"),
-    url("/assets/fonts/MyriadPro/MyriadPro-Regular.eot")
+    url("/fonts/MyriadPro/MyriadPro-Regular.woff2") format("woff2"),
+    url("/fonts/MyriadPro/MyriadPro-Regular.woff") format("woff"),
+    url("/fonts/MyriadPro/MyriadPro-Regular.eot") format("embedded-opentype"),
+    url("/fonts/MyriadPro/MyriadPro-Regular.eot?#iefix")
       format("embedded-opentype"),
-    url("/assets/fonts/MyriadPro/MyriadPro-Regular.eot?#iefix")
-      format("embedded-opentype"),
-    url("/assets/fonts/MyriadPro/MyriadPro-Regular.otf") format("opentype");
+    url("/fonts/MyriadPro/MyriadPro-Regular.otf") format("opentype");
   font-weight: 400;
   font-style: normal;
 }
 @font-face {
   font-family: "Myriad Pro";
   src:
-    url("/assets/fonts/MyriadPro/MyriadPro-Regular-Italic.woff2")
-      format("woff2"),
-    url("/assets/fonts/MyriadPro/MyriadPro-Regular-Italic.woff") format("woff"),
-    url("/assets/fonts/MyriadPro/MyriadPro-Regular-Italic.eot")
+    url("/fonts/MyriadPro/MyriadPro-Regular-Italic.woff2") format("woff2"),
+    url("/fonts/MyriadPro/MyriadPro-Regular-Italic.woff") format("woff"),
+    url("/fonts/MyriadPro/MyriadPro-Regular-Italic.eot")
       format("embedded-opentype"),
-    url("/assets/fonts/MyriadPro/MyriadPro-Regular-Italic.eot?#iefix")
+    url("/fonts/MyriadPro/MyriadPro-Regular-Italic.eot?#iefix")
       format("embedded-opentype"),
-    url("/assets/fonts/MyriadPro/MyriadPro-Regular-Italic.otf")
-      format("opentype");
+    url("/fonts/MyriadPro/MyriadPro-Regular-Italic.otf") format("opentype");
   font-weight: 400;
   font-style: italic;
 }
@@ -58,28 +54,25 @@
 @font-face {
   font-family: "Myriad Pro";
   src:
-    url("/assets/fonts/MyriadPro/MyriadPro-SemiBold.woff2") format("woff2"),
-    url("/assets/fonts/MyriadPro/MyriadPro-SemiBold.woff") format("woff"),
-    url("/assets/fonts/MyriadPro/MyriadPro-SemiBold.eot")
+    url("/fonts/MyriadPro/MyriadPro-SemiBold.woff2") format("woff2"),
+    url("/fonts/MyriadPro/MyriadPro-SemiBold.woff") format("woff"),
+    url("/fonts/MyriadPro/MyriadPro-SemiBold.eot") format("embedded-opentype"),
+    url("/fonts/MyriadPro/MyriadPro-SemiBold.eot?#iefix")
       format("embedded-opentype"),
-    url("/assets/fonts/MyriadPro/MyriadPro-SemiBold.eot?#iefix")
-      format("embedded-opentype"),
-    url("/assets/fonts/MyriadPro/MyriadPro-SemiBold.otf") format("opentype");
+    url("/fonts/MyriadPro/MyriadPro-SemiBold.otf") format("opentype");
   font-weight: 600;
   font-style: normal;
 }
 @font-face {
   font-family: "Myriad Pro";
   src:
-    url("/assets/fonts/MyriadPro/MyriadPro-SemiBold-Italic.woff2")
-      format("woff2"),
-    url("/assets/fonts/MyriadPro/MyriadPro-SemiBold-Italic.woff") format("woff"),
-    url("/assets/fonts/MyriadPro/MyriadPro-SemiBold-Italic.eot")
+    url("/fonts/MyriadPro/MyriadPro-SemiBold-Italic.woff2") format("woff2"),
+    url("/fonts/MyriadPro/MyriadPro-SemiBold-Italic.woff") format("woff"),
+    url("/fonts/MyriadPro/MyriadPro-SemiBold-Italic.eot")
       format("embedded-opentype"),
-    url("/assets/fonts/MyriadPro/MyriadPro-SemiBold-Italic.eot?#iefix")
+    url("/fonts/MyriadPro/MyriadPro-SemiBold-Italic.eot?#iefix")
       format("embedded-opentype"),
-    url("/assets/fonts/MyriadPro/MyriadPro-SemiBold-Italic.otf")
-      format("opentype");
+    url("/fonts/MyriadPro/MyriadPro-SemiBold-Italic.otf") format("opentype");
   font-weight: 600;
   font-style: italic;
 }
@@ -87,26 +80,25 @@
 @font-face {
   font-family: "Myriad Pro";
   src:
-    url("/assets/fonts/MyriadPro/MyriadPro-Bold.woff2") format("woff2"),
-    url("/assets/fonts/MyriadPro/MyriadPro-Bold.woff") format("woff"),
-    url("/assets/fonts/MyriadPro/MyriadPro-Bold.eot")
+    url("/fonts/MyriadPro/MyriadPro-Bold.woff2") format("woff2"),
+    url("/fonts/MyriadPro/MyriadPro-Bold.woff") format("woff"),
+    url("/fonts/MyriadPro/MyriadPro-Bold.eot") format("embedded-opentype"),
+    url("/fonts/MyriadPro/MyriadPro-Bold.eot?#iefix")
       format("embedded-opentype"),
-    url("/assets/fonts/MyriadPro/MyriadPro-Bold.eot?#iefix")
-      format("embedded-opentype"),
-    url("/assets/fonts/MyriadPro/MyriadPro-Bold.otf") format("opentype");
+    url("/fonts/MyriadPro/MyriadPro-Bold.otf") format("opentype");
   font-weight: 700;
   font-style: normal;
 }
 @font-face {
   font-family: "Myriad Pro";
   src:
-    url("/assets/fonts/MyriadPro/MyriadPro-Bold-Italic.woff2") format("woff2"),
-    url("/assets/fonts/MyriadPro/MyriadPro-SemiBold-Italic.woff") format("woff"),
-    url("/assets/fonts/MyriadPro/MyriadPro-Bold-Italic.eot")
+    url("/fonts/MyriadPro/MyriadPro-Bold-Italic.woff2") format("woff2"),
+    url("/fonts/MyriadPro/MyriadPro-SemiBold-Italic.woff") format("woff"),
+    url("/fonts/MyriadPro/MyriadPro-Bold-Italic.eot")
       format("embedded-opentype"),
-    url("/assets/fonts/MyriadPro/MyriadPro-Bold-Italic.eot?#iefix")
+    url("/fonts/MyriadPro/MyriadPro-Bold-Italic.eot?#iefix")
       format("embedded-opentype"),
-    url("/assets/fonts/MyriadPro/MyriadPro-Bold-Italic.otf") format("opentype");
+    url("/fonts/MyriadPro/MyriadPro-Bold-Italic.otf") format("opentype");
   font-weight: 700;
   font-style: italic;
 }
@@ -115,25 +107,23 @@
 @font-face {
   font-family: "Enzo OT";
   src:
-    url("/assets/fonts/Enzo/EnzoOt-Medium.woff2") format("woff2"),
-    url("/assets/fonts/Enzo/EnzoOt-Medium.woff") format("woff"),
-    url("/assets/fonts/Enzo/EnzoOt-Medium.eot") format("embedded-opentype"),
-    url("/assets/fonts/Enzo/EnzoOt-Medium.eot?#iefix")
-      format("embedded-opentype"),
-    url("/assets/fonts/Enzo/EnzoOt-Medium.tff") format("truetype");
+    url("/fonts/Enzo/EnzoOt-Medium.woff2") format("woff2"),
+    url("/fonts/Enzo/EnzoOt-Medium.woff") format("woff"),
+    url("/fonts/Enzo/EnzoOt-Medium.eot") format("embedded-opentype"),
+    url("/fonts/Enzo/EnzoOt-Medium.eot?#iefix") format("embedded-opentype"),
+    url("/fonts/Enzo/EnzoOt-Medium.tff") format("truetype");
   font-weight: 500;
   font-style: normal;
 }
 @font-face {
   font-family: "Enzo OT";
   src:
-    url("/assets/fonts/Enzo/EnzoOt-Medium-Italic.woff2") format("woff2"),
-    url("/assets/fonts/Enzo/EnzoOt-Medium-Italic.woff") format("woff"),
-    url("/assets/fonts/Enzo/EnzoOt-Medium-Italic.eot")
+    url("/fonts/Enzo/EnzoOt-Medium-Italic.woff2") format("woff2"),
+    url("/fonts/Enzo/EnzoOt-Medium-Italic.woff") format("woff"),
+    url("/fonts/Enzo/EnzoOt-Medium-Italic.eot") format("embedded-opentype"),
+    url("/fonts/Enzo/EnzoOt-Medium-Italic.eot?#iefix")
       format("embedded-opentype"),
-    url("/assets/fonts/Enzo/EnzoOt-Medium-Italic.eot?#iefix")
-      format("embedded-opentype"),
-    url("/assets/fonts/Enzo/EnzoOt-Medium-Italic.tff") format("truetype");
+    url("/fonts/Enzo/EnzoOt-Medium-Italic.tff") format("truetype");
   font-weight: 500;
   font-style: italic;
 }
@@ -141,11 +131,11 @@
 @font-face {
   font-family: "Enzo OT";
   src:
-    url("/assets/fonts/Enzo/EnzoOt-Bold.woff2") format("woff2"),
-    url("/assets/fonts/Enzo/EnzoOt-Bold.woff") format("woff"),
-    url("/assets/fonts/Enzo/EnzoOt-Bold.eot") format("embedded-opentype"),
-    url("/assets/fonts/Enzo/EnzoOt-Bold.eot?#iefix") format("embedded-opentype"),
-    url("/assets/fonts/Enzo/EnzoOt-Bold.tff") format("truetype");
+    url("/fonts/Enzo/EnzoOt-Bold.woff2") format("woff2"),
+    url("/fonts/Enzo/EnzoOt-Bold.woff") format("woff"),
+    url("/fonts/Enzo/EnzoOt-Bold.eot") format("embedded-opentype"),
+    url("/fonts/Enzo/EnzoOt-Bold.eot?#iefix") format("embedded-opentype"),
+    url("/fonts/Enzo/EnzoOt-Bold.tff") format("truetype");
   font-weight: 700;
   font-style: normal;
 }
@@ -207,13 +197,15 @@
   --c-magenta-600: #a23da2;
   --c-magenta-700: #7e307e;
 
+  --c-lvl-1: #131313;
+  --c-lv1-2: #160f29;
+  --c-lvl-3: #19112f;
+
   --c-heading-1: #f5f5f5;
   --c-heading-2: #efefef;
 
   --c-para: #e3e3e3;
   --c-para-faded: #c1c1c1;
-
-  /* TODO: LEVELING COLOURS. */
 
   /* Typography */
   /* May need the default line height. */
@@ -334,6 +326,12 @@ p {
     & .activeUnderline {
       background-color: var(--c-heading-2);
     }
+  }
+  &[data-pressed="true"] {
+    top: 2px;
+  }
+  &:active {
+    color: red;
   }
 }
 

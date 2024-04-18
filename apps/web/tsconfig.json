@@ -9,13 +9,17 @@
     "jsx": "react-jsx",
     // "allowImportingTsExtensions": true,
     "paths": {
-      "@authFeat/*": ["./src/features/auth"],
-      "@chatFeat/*": ["./src/features/chat"],
-      "@gamesFeat/*": ["./src/features/games"],
+      "@routes/*": ["./src/routes/*"],
 
-      "@assets/*": ["./src/assets/*"],
+      "@authFeat/*": ["./src/features/auth/*"],
+      "@chatFeat/*": ["./src/features/chat/*"],
+      "@gamesFeat/*": ["./src/features/games/*"],
 
       "@components/*": ["./src/components/*"],
+
+      "@redux/*": ["./src/redux/*"],
+
+      "@utils/*": ["./src/utils/*"],
 
       "@views/*": ["./src/views/*"]
     }

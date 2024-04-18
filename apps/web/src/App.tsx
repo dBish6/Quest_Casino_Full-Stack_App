@@ -16,22 +16,18 @@
  * The log is in the changelog.txt file at the base of this web directory.
  */
 
+import HistoryProvider from "@utils/History";
+import RoutesProvider from "@routes/index";
+
 import "./index.css";
 
-import { Button } from "@components/common/button";
-
 function App() {
+  // console.log("env", import.meta.env.MODE);
+
   return (
     <>
-      <Button intent="primary" size="lrg" className="test1">
-        Hello
-      </Button>
-      <br />
-      <Button intent="primary" size="md" className="test2" asChild>
-        <a href="#">Link</a>
-      </Button>
-      <br />
-      <p>Helioda skj ka gfgjlad asdk jgasm igjfdsi krotktahl spdfl!</p>
+      <HistoryProvider />
+      <RoutesProvider />
     </>
   );
 }

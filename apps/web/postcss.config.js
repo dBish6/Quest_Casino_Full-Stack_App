@@ -1,4 +1,4 @@
-import postcssImport from "postcss-import";
+// import postcssImport from "postcss-import";
 import postcssPresetEnv from "postcss-preset-env";
 import postcssCustomMedia from "postcss-custom-media";
 import postcssFlexbugsFixes from "postcss-flexbugs-fixes";
@@ -6,10 +6,10 @@ import cssnano from "cssnano";
 
 export default {
   plugins: [
-    postcssImport({
-      // root: "./src"
-      path: "./src/**",
-    }),
+    // postcssImport({
+    //   // root: "./src"
+    //   path: "./src/**",
+    // }),
     postcssPresetEnv({
       stage: 3,
       features: {
