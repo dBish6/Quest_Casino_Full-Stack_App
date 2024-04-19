@@ -62,7 +62,7 @@ const Button = forwardRef<HTMLButtonElement, React.PropsWithChildren<ButtonProps
 );
 export default Button;
 
-export const keyPress = (
+const keyPress = (
   e: React.KeyboardEvent<HTMLButtonElement>,
   callback: () => void
 ) => {

@@ -21,8 +21,8 @@ const meta: Meta<typeof Button> = {
   },
   args: { onClick: fn() },
 };
-
 export default meta;
+
 type Story = StoryObj<typeof meta>;
 
 const groupStyle = {
@@ -32,6 +32,12 @@ const groupStyle = {
 } as const;
 
 export const Intents: Story = {
+  argTypes: {
+    intent: { table: { disable: true } },
+  },
+  args: {
+    size: "lrg",
+  },
   render: (args) => (
     <div style={groupStyle}>
       <Button intent="primary" size="lrg" {...args}>
@@ -45,6 +51,12 @@ export const Intents: Story = {
 };
 
 export const Sizes: Story = {
+  argTypes: {
+    size: { table: { disable: true } },
+  },
+  args: {
+    intent: "primary",
+  },
   render: (args) => (
     <div style={groupStyle}>
       <Button intent="primary" size="sm" {...args}>
@@ -71,24 +83,28 @@ export const IconButton: Story = {
 
 export const Small: Story = {
     args: {
+      intent: "primary",
       size: "sm",
       children: "Small",
     },
   },
   Medium: Story = {
     args: {
+      intent: "primary",
       size: "md",
       children: "Medium",
     },
   },
   Large: Story = {
     args: {
+      intent: "primary",
       size: "lrg",
       children: "Large",
     },
   },
   ExtraLarge: Story = {
     args: {
+      intent: "primary",
       size: "xl",
       children: "Extra Large",
     },
