@@ -1,4 +1,4 @@
-import { Store } from "@reduxjs/toolkit";
+import { type Store } from "@reduxjs/toolkit";
 
 import ReactDOMServer from "react-dom/server";
 import { StaticRouter } from "react-router-dom/server";
