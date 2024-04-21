@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { fn } from "@storybook/test";
 import Button from "./Button";
+import { Icon as CIcon } from "../icon";
 
 const meta: Meta<typeof Button> = {
   title: "Components/Button",
@@ -18,6 +19,7 @@ const meta: Meta<typeof Button> = {
       control: { type: "select" },
       options: ["sm", "md", "lrg", "xl"],
     },
+    iconBtn: { table: { disable: true } },
   },
   args: { onClick: fn() },
 };
@@ -59,26 +61,20 @@ export const Sizes: Story = {
   },
   render: (args) => (
     <div style={groupStyle}>
-      <Button intent="primary" size="sm" {...args}>
+      <Button size="sm" {...args}>
         Small
       </Button>
-      <Button intent="primary" size="md" {...args}>
+      <Button size="md" {...args}>
         Medium
       </Button>
-      <Button intent="primary" size="lrg" {...args}>
+      <Button size="lrg" {...args}>
         Large
       </Button>
-      <Button intent="primary" size="xl" {...args}>
+      <Button size="xl" {...args}>
         Extra Large
       </Button>
     </div>
   ),
-};
-
-export const IconButton: Story = {
-  args: {
-    children: "TODO",
-  },
 };
 
 export const Small: Story = {
@@ -108,4 +104,43 @@ export const Small: Story = {
       size: "xl",
       children: "Extra Large",
     },
+  };
+
+export const Icon: Story = {
+    argTypes: {
+      size: { options: ["lrg", "xl"] },
+    },
+    args: {
+      intent: "primary",
+      size: "xl",
+      iconBtn: true,
+    },
+    render: (args) => (
+      <Button {...args}>
+        <CIcon id={args.size === "xl" ? "bell-25" : "bell-22"} />
+      </Button>
+    ),
+  },
+  IconExit: Story = {
+    argTypes: {
+      intent: { table: { disable: true } },
+      size: { options: ["xl", "sm"] },
+    },
+    args: {
+      intent: "exit",
+      size: "xl",
+      iconBtn: true,
+    },
+    render: (args) => (
+      <>
+        <Button {...args}>
+          <CIcon
+            id={args.size === "xl" ? "exit-19" : "exit-14"}
+            fill={
+              args.size === "xl" ? "var(--c-purple-800)" : "var(--c-status-red)"
+            }
+          />
+        </Button>
+      </>
+    ),
   };
