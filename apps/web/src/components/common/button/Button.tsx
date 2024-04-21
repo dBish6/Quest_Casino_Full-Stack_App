@@ -4,7 +4,6 @@ import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
 import s from "./button.module.css";
 
-// TODO: Icon button.
 const button = cva(s.button, {
   variants: {
     intent: {
