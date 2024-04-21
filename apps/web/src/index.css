@@ -181,6 +181,7 @@
 
   --c-purple-idk: #c2adff;
 
+  --c-purple-50: #efecf7;
   --c-purple-100: #cdc5e7;
   --c-purple-200: #b5a9dc;
   --c-purple-300: #9481cb;
@@ -190,6 +191,7 @@
   --c-purple-700: #43307e;
   --c-purple-800: #342562;
   --c-purple-900: #281c4b;
+  --c-purple-border: rgba(95, 67, 178, 0.45) --c-magenta-300: #cb81cb;
 
   --c-magenta-300: #cb81cb;
   --c-magenta-400: #c169c1;
@@ -200,6 +202,9 @@
   --c-lvl-1: #131313;
   --c-lvl-2: #160f29;
   --c-lvl-3: #19112f;
+
+  --c-status-red: #c63b50;
+  --c-status-green: #43b25f;
 
   --c-heading-1: #f5f5f5;
   --c-heading-2: #efefef;
@@ -333,6 +338,10 @@ p {
   &:active {
     color: red;
   }
+}
+
+button {
+  background: none;
 }
 
 /* @media (--medium-viewport) {

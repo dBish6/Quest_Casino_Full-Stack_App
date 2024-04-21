@@ -1,1 +1,1 @@
-export { default as Icon, iconLib } from "./Icon";
+export { default as Icon } from "./Icon";
