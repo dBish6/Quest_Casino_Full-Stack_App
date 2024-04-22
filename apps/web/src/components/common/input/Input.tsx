@@ -1,16 +1,13 @@
+import { type ButtonProps } from "../button";
+
 import { forwardRef, useRef } from "react";
 import { Label } from "@radix-ui/react-label";
-
 import { cva, type VariantProps } from "class-variance-authority";
+
 import s from "./input.module.css";
 
 const input = cva(s.input, {
   variants: {
-    intent: {
-      regular: null,
-      icon: s.icon,
-      button: s.button,
-    },
     size: {
       lrg: s.lrg,
       xl: s.xl,
@@ -22,24 +19,24 @@ const input = cva(s.input, {
   },
 });
 
-interface InputProps
+export interface InputProps
   extends Omit<React.ComponentProps<"input">, "size">,
     VariantProps<typeof input> {
   label: string;
-  type: string;
   name: string;
   id: string;
-  Icon?: JSX.Element;
+  Button?: () => React.ReactElement<ButtonProps>;
   error?: string;
 }
 
+// prettier-ignore
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ label, className, size = "lrg", Icon, error, ...props }, ref) => {
+  ({ label, className, size = "lrg", Button, error, ...props }, ref) => {
     const inputContainerRef = useRef<HTMLDivElement>(null);
 
     return (
       <div role="presentation" aria-live="assertive" className={s.container}>
-        <div ref={inputContainerRef} className={input({ size, className })}>
+        <div ref={inputContainerRef} className={`${input({ size, className })}${Button ? " " + s.button : ""}`}>
           <Label htmlFor={props.id}>
             {label}
             {props.required && (
@@ -64,7 +61,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             }}
             {...props}
           />
-          {/* {Icon && <Icon />} */}
+          {Button && <Button />}
         </div>
         {error && (
           <span role="status" id="formError" className={s.error}>
