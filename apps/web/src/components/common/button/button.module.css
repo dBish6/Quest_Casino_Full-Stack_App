@@ -7,7 +7,8 @@
   z-index: 1;
 
   &.primary:not(.icon),
-  &.secondary:not(.icon) {
+  &.secondary:not(.icon),
+  &.ghost:not(.icon) {
     padding-inline: 16px;
     font-weight: 600 !important;
     color: var(--c-heading-2);
@@ -62,6 +63,27 @@
       border-color: var(--c-purple-600);
     }
   }
+
+  &.ghost {
+    background-color: transparent;
+    padding-inline: 16px;
+    transition:
+      0.22s ease-in-out background-color,
+      0.22s ease-in-out color;
+    &:not(.icon) {
+      border-radius: 6px;
+    }
+    &:hover,
+    &:focus-visible {
+      background-color: rgba(95, 67, 178, 0.1);
+      color: var(--c-purple-50);
+    }
+    &:active,
+    &[data-key-press="true"] {
+      background-color: rgba(95, 67, 178, 0.25);
+    }
+  }
+
   &.exit:not(.sm) {
     border: 2px solid #52396e;
     border-radius: 6px;

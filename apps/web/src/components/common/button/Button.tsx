@@ -1,7 +1,9 @@
 import { forwardRef } from "react";
 import { Slot } from "@radix-ui/react-slot";
-
 import { cva, type VariantProps } from "class-variance-authority";
+
+import { Icon } from "../icon";
+
 import s from "./button.module.css";
 
 const button = cva(s.button, {
@@ -9,6 +11,7 @@ const button = cva(s.button, {
     intent: {
       primary: s.primary,
       secondary: s.secondary,
+      ghost: s.ghost,
       exit: `${s.icon} ${s.exit}`,
     },
     size: {
@@ -25,7 +28,7 @@ const button = cva(s.button, {
   },
 });
 
-interface ButtonProps
+export interface ButtonProps
   extends React.ComponentProps<"button">,
     VariantProps<typeof button> {
   asChild?: boolean;
@@ -56,7 +59,15 @@ const Button = forwardRef<HTMLButtonElement, React.PropsWithChildren<ButtonProps
         }
         {...props}
       >
-        {children}
+        {intent === "exit" ? (
+          size === "xl" ? (
+            <Icon id="exit-19" fill="var(--c-purple-800)" />
+          ) : (
+            <Icon id="exit-14" fill="var(--c-status-red)" />
+          )
+        ) : (
+          children
+        )}
       </Element>
     );
   }

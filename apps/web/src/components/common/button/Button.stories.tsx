@@ -42,11 +42,14 @@ export const Intents: Story = {
   },
   render: (args) => (
     <div style={groupStyle}>
-      <Button intent="primary" size="lrg" {...args}>
+      <Button intent="primary" {...args}>
         Primary
       </Button>
-      <Button intent="secondary" size="lrg" {...args}>
+      <Button intent="secondary" {...args}>
         Secondary
+      </Button>
+      <Button intent="ghost" {...args}>
+        Ghost
       </Button>
     </div>
   ),
@@ -131,16 +134,5 @@ export const Icon: Story = {
       size: "xl",
       iconBtn: true,
     },
-    render: (args) => (
-      <>
-        <Button {...args}>
-          <CIcon
-            id={args.size === "xl" ? "exit-19" : "exit-14"}
-            fill={
-              args.size === "xl" ? "var(--c-purple-800)" : "var(--c-status-red)"
-            }
-          />
-        </Button>
-      </>
-    ),
+    render: (args) => <Button {...args} />,
   };
