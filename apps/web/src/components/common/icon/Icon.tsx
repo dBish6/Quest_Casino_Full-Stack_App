@@ -52,12 +52,28 @@ const iconLib = {
   "eye-18": {
     id: "eye-18",
     size: { width: "18.002", height: "9.061" },
-    "aria-label": "Hide",
+    "aria-label": "Hide Password",
   },
   "eye-closed-18": {
     id: "eye-closed-18",
     size: { width: "17.998", height: "15.007" },
-    "aria-label": "Visible",
+    "aria-label": "Show Password",
+  },
+
+  "expand-18": {
+    id: "expand-18",
+    size: { width: "18", height: "10" },
+    "aria-label": "Expand",
+  },
+  "expand-16": {
+    id: "expand-18",
+    size: { width: "16", height: "8.889" },
+    "aria-label": "Expand",
+  },
+  "expand-14": {
+    id: "expand-14",
+    size: { width: "14", height: "7.778" },
+    "aria-label": "Expand",
   },
 
   "exit-19": {
