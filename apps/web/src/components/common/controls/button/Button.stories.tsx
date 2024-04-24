@@ -1,10 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { fn } from "@storybook/test";
+
 import Button from "./Button";
-import { Icon as CIcon } from "../icon";
+import { Icon as CIcon } from "@components/common/icon";
 
 const meta: Meta<typeof Button> = {
-  title: "Components/Button",
+  title: "Components/Controls/Button",
   component: Button,
   parameters: {
     layout: "centered",

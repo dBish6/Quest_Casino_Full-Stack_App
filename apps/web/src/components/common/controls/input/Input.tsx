@@ -1,19 +1,22 @@
-import { type ButtonProps } from "../button";
+import { type ButtonProps } from "../button/Button";
 
 import { forwardRef, useRef } from "react";
 import { Label } from "@radix-ui/react-label";
 import { cva, type VariantProps } from "class-variance-authority";
 
+import "../input-select.css";
 import s from "./input.module.css";
 
-const input = cva(s.input, {
+const input = cva("input", {
   variants: {
+    intent: {
+      primary: "primary",
+    },
     size: {
-      lrg: s.lrg,
-      xl: s.xl,
+      lrg: "lrg",
+      xl: "xl",
     },
   },
-  compoundVariants: [{ size: "xl", className: s.button }],
   defaultVariants: {
     size: "xl",
   },
@@ -31,16 +34,24 @@ export interface InputProps
 
 // prettier-ignore
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ label, className, size = "lrg", Button, error, ...props }, ref) => {
+  ({ label, className, intent, size = "lrg", style, Button, error, ...props }, ref) => {
     const inputContainerRef = useRef<HTMLDivElement>(null);
 
     return (
-      <div role="presentation" aria-live="assertive" className={s.container}>
-        <div ref={inputContainerRef} className={`${input({ size, className })}${Button ? " " + s.button : ""}`}>
+      <div
+        role="presentation"
+        aria-live="assertive"
+        className={s.container}
+        style={style}
+      >
+        <div
+          ref={inputContainerRef}
+          className={`${input({ className, intent, size })}${Button ? " " + s.button : ""}`}
+        >
           <Label htmlFor={props.id}>
             {label}
             {props.required && (
-              <span aria-hidden="true" className={s.required}>
+              <span aria-hidden="true" className="required">
                 *
               </span>
             )}

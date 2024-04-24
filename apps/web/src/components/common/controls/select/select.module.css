@@ -1,0 +1,78 @@
+.container {
+  & :global(.select) {
+    &:global(.primary),
+    &:global(.callingCode) {
+      &[focused="true"][selected="true"] {
+        & select {
+          color: var(--c-heading-2);
+        }
+      }
+      &[focused="true"] {
+        & select {
+          color: var(--c-heading-2);
+        }
+        & select {
+          background-color: var(--c-lvl-3);
+        }
+        & svg {
+          transform: translateY(-50%) rotate(-180deg);
+          & use {
+            fill: var(--c-heading-2);
+          }
+        }
+      }
+      &[selected="true"] {
+        & select {
+          color: var(--_input-fade);
+        }
+      }
+
+      & label {
+        pointer-events: none;
+        z-index: 1;
+      }
+      select::-ms-expand {
+        display: none;
+      }
+      & select {
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        position: absolute;
+        top: 0;
+        padding-inline: 16px 38px;
+        color: transparent;
+        & option {
+          color: var(--c-heading-2);
+        }
+        &:focus-visible {
+          border: 1px solid var(--c-purple-800);
+          background-color: var(--c-lvl-3);
+          border-radius: 3px;
+        }
+      }
+      & svg {
+        right: 0.75rem;
+        pointer-events: none;
+        transition: 0.22s ease-in-out transform;
+        & use {
+          fill: var(--_input-fade);
+          transition: 0.28s ease-in-out fill;
+        }
+      }
+    }
+
+    &:global(.primary) {
+      & select,
+      & label {
+        background-color: var(--c-lvl-2);
+      }
+    }
+
+    &:global(.callingCode) {
+      & select,
+      & label {
+        background-color: var(--c-lvl-4);
+      }
+    }
+  }
+}

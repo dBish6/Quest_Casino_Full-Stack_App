@@ -2,7 +2,7 @@ import { forwardRef } from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
 
-import { Icon } from "../icon";
+import { Icon } from "@components/common/icon";
 
 import s from "./button.module.css";
 
@@ -21,7 +21,6 @@ const button = cva(s.button, {
       xl: s.xl,
     },
   },
-  compoundVariants: [{ intent: "primary", size: "md", className: s.button }],
   defaultVariants: {
     intent: "primary",
     size: "md",
@@ -43,7 +42,7 @@ const Button = forwardRef<HTMLButtonElement, React.PropsWithChildren<ButtonProps
     return (
       <Element
         ref={ref}
-        className={`${button({ intent, size, className })}${iconBtn ? " " + s.icon : ""}`}
+        className={`${button({ className, intent, size })}${iconBtn ? " " + s.icon : ""}`}
         onKeyDown={(e) =>
           keyPress(e, () =>
             (e.target as HTMLButtonElement).setAttribute(

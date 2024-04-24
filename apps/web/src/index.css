@@ -202,6 +202,7 @@
   --c-lvl-1: #131313;
   --c-lvl-2: #160f29;
   --c-lvl-3: #19112f;
+  --c-lvl-4: #1c1435;
 
   --c-status-red: #c63b50;
   --c-status-green: #43b25f;
@@ -211,6 +212,7 @@
 
   --c-para: #e3e3e3;
   --c-para-faded: #c1c1c1;
+  --c-para-faded: #cecdd2;
 
   /* Typography */
   /* May need the default line height. */
@@ -280,7 +282,8 @@ body {
 
 body,
 button,
-input {
+input,
+select {
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -310,38 +313,36 @@ p {
   list-style-position: inside;
 } */
 
-.link {
+a {
   position: relative;
-  color: inherit;
-  text-decoration: none;
-  transition: 0.22s ease-in-out color;
+  /* text-decoration: none; */
+
   & .underline {
-    position: absolute;
-    left: 50%;
-    bottom: 0;
-    transform: translate(-50%, -50%);
-    width: 100%;
-    height: 1px;
-    background-color: transparent;
-    transition: 0.28s ease-in-out background-color;
+    font-weight: 600;
+    text-decoration: underline inherit;
   }
+
   &:hover,
-  &:focus-visible {
+  &:focus-visible,
+  &:active,
+  &[data-key-press="true"] {
     color: var(--c-heading-2);
-    & .activeUnderline {
-      background-color: var(--c-heading-2);
-    }
   }
-  &[data-pressed="true"] {
+  &:active,
+  &[data-key-press="true"] {
     top: 2px;
-  }
-  &:active {
-    color: red;
   }
 }
 
 button {
   background: none;
+}
+
+.modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50vh);
 }
 
 /* @media (--medium-viewport) {

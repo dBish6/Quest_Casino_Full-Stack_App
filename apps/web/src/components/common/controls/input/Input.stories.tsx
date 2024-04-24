@@ -3,17 +3,21 @@ import { fn } from "@storybook/test";
 import { useState } from "react";
 
 import Input from "./Input";
-import { Button as CButton } from "../button";
-import { Icon } from "../icon";
+import CButton from "../button/Button";
+import { Icon } from "@components/common/icon";
 
 const meta: Meta<typeof Input> = {
-  title: "Components/Input",
+  title: "Components/Controls/Input",
   component: Input,
   parameters: {
     layout: "centered",
   },
   tags: ["autodocs"],
   argTypes: {
+    intent: {
+      control: { type: "radio" },
+      options: ["primary"],
+    },
     size: {
       control: { type: "select" },
       options: ["lrg", "xl"],
@@ -28,14 +32,20 @@ type Story = StoryObj<typeof meta>;
 export const Large: Story = {
     args: {
       label: "Large",
+      intent: "primary",
       size: "lrg",
+      id: "large",
+      name: "large",
       required: true,
     },
   },
   ExtraLarge: Story = {
     args: {
       label: "Extra Large",
+      intent: "primary",
       size: "xl",
+      id: "extraLarge",
+      name: "extraLarge",
       required: true,
     },
   };
@@ -46,7 +56,11 @@ export const Password: Story = {
   },
   args: {
     label: "Password",
+    intent: "primary",
     size: "lrg",
+    id: "password",
+    name: "password",
+    required: true,
   },
   render: (args) => {
     const [visible, toggleVisible] = useState(false);
@@ -57,6 +71,9 @@ export const Password: Story = {
         {...args}
         Button={() => (
           <CButton
+            aria-controls="password"
+            aria-expanded={visible}
+            aria-pressed={visible}
             intent="ghost"
             size={args.size === "xl" ? "xl" : "lrg"}
             iconBtn
@@ -73,7 +90,10 @@ export const Password: Story = {
 export const Button: Story = {
   args: {
     label: "Button",
+    intent: "primary",
     size: "lrg",
+    id: "button",
+    name: "button",
   },
   render: (args) => (
     <Input
