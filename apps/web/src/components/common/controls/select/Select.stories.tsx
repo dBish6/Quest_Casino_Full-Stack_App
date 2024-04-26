@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { fn } from "@storybook/test";
 
-import countries from "@authFeat/constants/countries";
+import COUNTRIES from "@authFeat/constants/COUNTRIES";
 
 import Select from "./Select";
 
@@ -78,7 +78,7 @@ export const CallingCode: Story = {
   },
   render: (args) => (
     <Select style={{ width: "126px" }} {...args}>
-      {countries.map((country) => (
+      {COUNTRIES.map((country) => (
         <option key={country.name} value={country.callingCode}>
           {country.abbr} {country.callingCode}
         </option>

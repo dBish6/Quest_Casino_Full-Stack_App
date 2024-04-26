@@ -1,4 +1,4 @@
-const countries = [
+export default [
   {
     name: "Afghanistan",
     abbr: "AF",
@@ -1255,5 +1255,3 @@ const countries = [
     callingCode: "+263",
   },
 ];
-
-export default countries;

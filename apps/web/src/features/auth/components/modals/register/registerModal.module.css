@@ -1,0 +1,146 @@
+.modal {
+  width: 100%;
+  max-width: 496px;
+  max-height: 774.5px;
+  padding: 2rem;
+  /* FIXME: I can't make the modal scrollable... */
+  /* @media (width <= 460px) {
+    @media (height >= 997px) {
+      overflow: scroll;
+    }
+  } */
+
+  & > button {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+  }
+
+  & .head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    & hgroup {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      & h2 {
+        font: var(--h1);
+        color: var(--c-heading-1);
+      }
+    }
+    & > div {
+      & span:first-child {
+        color: var(--c-status-red);
+      }
+      & span:last-child {
+        font-style: italic;
+        color: var(--c-heading-2);
+      }
+    }
+  }
+
+  & form {
+    margin-bottom: 1.5rem;
+    & .inputs {
+      /* @media (width <= 460px) {
+        left: 2.5rem;
+      } */
+      & > :global(.control) {
+        margin-bottom: 1.5rem;
+      }
+      & :global(.control) {
+        width: 100%;
+        & input[type="number"] {
+          -webkit-appearance: none;
+          -moz-appearance: textfield;
+        }
+      }
+      & div[role="group"] {
+        display: flex;
+        margin-bottom: 1.5rem;
+      }
+      & div[role="group"]:not(:last-of-type) {
+        @media (width >= 461px) {
+          gap: 1rem;
+        }
+        @media (width <= 460px) {
+          flex-direction: column;
+          gap: 1.5rem;
+        }
+      }
+      & div[role="group"]:last-of-type {
+        & > :global(.control):first-of-type {
+          max-width: 126px;
+          & :global(.select) {
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+            & label :global(.required) {
+              display: none;
+            }
+          }
+        }
+        & > :global(.control):last-of-type :global(.input) {
+          position: relative;
+          right: 2px;
+          width: calc(100% + 2px) !important;
+          border-top-left-radius: 0;
+          border-bottom-left-radius: 0;
+        }
+      }
+    }
+
+    & .submit {
+      & button {
+        width: 100%;
+        margin-bottom: 4px;
+      }
+      & p {
+        font: var(--para-x-small);
+        color: var(--c-para-faded);
+        & a {
+          color: var(--c-para);
+        }
+      }
+    }
+    & .or {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-block: 1.25rem 1rem;
+      & hr {
+        width: 100%;
+        border-top: 1px solid var(--c-purple-border);
+      }
+      & span {
+        color: var(--c-heading-2);
+        background-color: inherit;
+        white-space: nowrap;
+      }
+    }
+    & > button {
+      width: 100%;
+      & span {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        & svg {
+          & use {
+            fill: var(--c-heading-2);
+          }
+        }
+      }
+    }
+  }
+
+  & > span {
+    font: var(--para-small);
+    color: var(--c-para-faded);
+    & a {
+      font-weight: 600;
+      color: var(--c-para);
+    }
+  }
+}

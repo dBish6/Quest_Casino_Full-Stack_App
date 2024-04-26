@@ -20,6 +20,7 @@
   }
   &.primary {
     background: linear-gradient(180deg, var(--c-purple-500), #302259);
+    transition: 0.22s ease-in-out border-color;
     &::before,
     &::after {
       position: absolute;
@@ -52,7 +53,9 @@
   &.secondary {
     background-color: transparent;
     border: 2px solid var(--c-purple-800);
-    transition: 0.22s ease-in-out background-color;
+    transition:
+      0.22s ease-in-out background-color,
+      0.22s ease-in-out border-color;
     &:hover,
     &:focus-visible {
       border-color: var(--c-purple-600);

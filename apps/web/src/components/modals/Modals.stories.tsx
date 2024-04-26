@@ -1,5 +1,6 @@
-import type { Meta } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react";
 import ModalTemplate from "./ModalTemplate";
+import { RegisterModal } from "@authFeat/components/modals";
 
 const meta: Meta<typeof ModalTemplate> = {
   title: "Components/Modal",
@@ -12,3 +13,9 @@ const meta: Meta<typeof ModalTemplate> = {
   //   args: { onClick: fn() },
 };
 export default meta;
+
+type Story = StoryObj<typeof meta>;
+
+export const Register: Story = {
+  render: () => <RegisterModal />,
+};

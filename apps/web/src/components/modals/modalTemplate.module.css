@@ -1,0 +1,22 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* TODO: Or however big the dashboard is. */
+  width: 100vw;
+  min-height: 100vh;
+  background-color: rgba(19, 19, 19, 0.35);
+  backdrop-filter: blur(6px);
+  z-index: var(--z-overlay);
+  & .modal {
+    height: fit-content;
+    margin: 0.5rem;
+    border: 2px solid var(--c-purple-border);
+    border-radius: 12px;
+    background-color: var(--c-lvl-modal);
+    backdrop-filter: blur(40px);
+    /* z-index: 1; */
+  }
+}

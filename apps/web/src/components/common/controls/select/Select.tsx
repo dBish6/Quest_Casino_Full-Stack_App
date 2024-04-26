@@ -41,7 +41,7 @@ export const Input = forwardRef<HTMLSelectElement,React.PropsWithChildren<Select
       <div
         role="presentation"
         aria-live="assertive"
-        className={s.container}
+        className={`control ${s.container}`}
         style={style}
       >
         <div
@@ -80,6 +80,7 @@ export const Input = forwardRef<HTMLSelectElement,React.PropsWithChildren<Select
             }}
             {...props}
           >
+            <option value="" />
             {children}
           </select>
           <Icon

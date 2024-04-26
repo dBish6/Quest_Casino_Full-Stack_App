@@ -41,7 +41,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       <div
         role="presentation"
         aria-live="assertive"
-        className={s.container}
+        className={`control ${s.container}`}
         style={style}
       >
         <div

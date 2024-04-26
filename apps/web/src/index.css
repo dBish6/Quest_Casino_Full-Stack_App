@@ -191,7 +191,7 @@
   --c-purple-700: #43307e;
   --c-purple-800: #342562;
   --c-purple-900: #281c4b;
-  --c-purple-border: rgba(95, 67, 178, 0.45) --c-magenta-300: #cb81cb;
+  --c-purple-border: rgba(95, 67, 178, 0.45);
 
   --c-magenta-300: #cb81cb;
   --c-magenta-400: #c169c1;
@@ -201,6 +201,7 @@
 
   --c-lvl-1: #131313;
   --c-lvl-2: #160f29;
+  --c-lvl-modal: rgba(22, 15, 41, 0.45);
   --c-lvl-3: #19112f;
   --c-lvl-4: #1c1435;
 
@@ -212,7 +213,7 @@
 
   --c-para: #e3e3e3;
   --c-para-faded: #c1c1c1;
-  --c-para-faded: #cecdd2;
+  /* --c-para-faded: #cecdd2; */
 
   /* Typography */
   /* May need the default line height. */
@@ -270,6 +271,10 @@
     0.875rem
   ); */
 
+  /* Indices */
+  --z-dropdown: 5;
+  --z-overlay: 10;
+
   background: var(--c-bg);
   color-scheme: light;
   min-height: 100vh;
@@ -315,7 +320,7 @@ p {
 
 a {
   position: relative;
-  /* text-decoration: none; */
+  color: inherit;
 
   & .underline {
     font-weight: 600;
@@ -336,13 +341,6 @@ a {
 
 button {
   background: none;
-}
-
-.modal {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50vh);
 }
 
 /* @media (--medium-viewport) {
