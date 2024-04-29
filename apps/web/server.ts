@@ -25,8 +25,8 @@ const { PROTOCOL, HOST, PORT: ENV_PORT } = process.env,
 
 async function setupServer() {
   const app = express();
+  let vite: ViteDevServer, ip: string | undefined;
 
-  let vite: ViteDevServer;
   if (process.env.NODE_ENV === "development") {
     vite = await createViteServer({
       server: { middlewareMode: true },
@@ -80,7 +80,13 @@ async function setupServer() {
           if (error.statusCode === 404) {
             return res.redirect("/error-404");
           } else if (error.location.pathname === "/") {
-            return res.redirect("/about");
+            const incomingIp = req.socket.remoteAddress || req.ip;
+            if (ip !== incomingIp) {
+              ip = incomingIp;
+              return res.redirect("/about");
+            }
+
+            return res.redirect("/home");
           }
         } else if (
           error instanceof Response &&
