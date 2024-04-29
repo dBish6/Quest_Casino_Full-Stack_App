@@ -4,7 +4,7 @@
  *
  * Author: David Bishop
  * Creation Date: April 16, 2024
- * Last Updated: April 26, 2024
+ * Last Updated: April 29, 2024
  *
  * Description:
  * .
@@ -16,20 +16,66 @@
  * The log is in the changelog.txt file at the base of this web directory.
  */
 
-import HistoryProvider from "@utils/History";
-import RoutesProvider from "@routes/index";
+import { type RouteObject } from "react-router-dom";
+
+import { Dashboard } from "@components/partials";
+import { About, Home, Profile, Settings, Support } from "@views/index";
+import { Error404, Error500 } from "@views/errors";
+
+import registerAction from "@authFeat/actions/register";
 
 import "./index.css";
 
-function App() {
-  // console.log("env", import.meta.env.MODE);
+const restricted = new Set(["/profile"]);
 
-  return (
-    <>
-      <HistoryProvider />
-      <RoutesProvider />
-    </>
-  );
-}
-
-export default App;
+export const routes: RouteObject[] = [
+  {
+    path: "/",
+    element: <Dashboard />,
+    children: [
+      {
+        index: true,
+        path: "about",
+        element: <About />,
+      },
+      {
+        path: "home",
+        element: <Home />,
+      },
+      {
+        path: "/profile",
+        children: [
+          {
+            path: "profile",
+            element: <Profile />,
+          },
+          {
+            path: "settings",
+            element: <Settings />,
+          },
+        ],
+      },
+      {
+        path: "support",
+        element: <Support />,
+      },
+      {
+        path: "/error-404",
+        element: <Error404 />,
+      },
+      {
+        path: "/error-500",
+        element: <Error500 />,
+      },
+    ],
+  },
+  {
+    path: "/action",
+    children: [
+      {
+        path: "register",
+        action: registerAction,
+      },
+    ],
+  },
+];

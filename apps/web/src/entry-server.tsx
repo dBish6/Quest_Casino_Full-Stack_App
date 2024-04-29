@@ -1,23 +1,58 @@
-import { type Store } from "@reduxjs/toolkit";
+import { Request as ERequest, Response as EResponse } from "express";
 
-import ReactDOMServer from "react-dom/server";
-import { StaticRouter } from "react-router-dom/server";
+import { renderToString } from "react-dom/server";
+import {
+  createStaticHandler,
+  createStaticRouter,
+  StaticRouterProvider,
+} from "react-router-dom/server";
+// import { isbot } from "isbot";
 
-import { Provider } from "react-redux";
+import { routes } from "./App";
 
-import App from "./App";
+export async function render(req: ERequest, res: EResponse) {
+  const { query, dataRoutes } = createStaticHandler(routes),
+    request = createFetchRequest(req, res),
+    context = await query(request);
 
-interface renderProps {
-  path: string;
-  store: Store;
+  if (
+    context instanceof Response ||
+    context.statusCode === 404 ||
+    context.location.pathname === "/"
+  ) {
+    throw context;
+  }
+
+  const router = createStaticRouter(dataRoutes, context);
+  return renderToString(
+    <StaticRouterProvider router={router} context={context} nonce="the-nonce" />
+  );
 }
 
-export function render({ path, store }: renderProps) {
-  return ReactDOMServer.renderToString(
-    <Provider store={store}>
-      <StaticRouter location={path}>
-        <App />
-      </StaticRouter>
-    </Provider>
-  );
+export function createFetchRequest(req: ERequest, res: EResponse) {
+  const origin = `${req.protocol}://${req.get("host")}`,
+    url = new URL(req.originalUrl || req.url, origin),
+    controller = new AbortController();
+
+  res.on("close", () => controller.abort());
+
+  const headers = new Headers();
+  for (let [key, values] of Object.entries(req.headers)) {
+    if (values) {
+      if (Array.isArray(values)) {
+        for (let value of values) {
+          headers.append(key, value);
+        }
+      } else {
+        headers.set(key, values);
+      }
+    }
+  }
+
+  return new Request(url.href, {
+    method: req.method,
+    headers,
+    ...(req.method !== "GET" && req.method !== "HEAD" && { body: req.body }),
+    signal: controller.signal,
+  });
 }

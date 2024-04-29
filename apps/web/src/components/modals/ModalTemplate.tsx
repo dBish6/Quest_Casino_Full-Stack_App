@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { type Variants, AnimatePresence, motion } from "framer-motion";
+import { type Variants, AnimatePresence, m } from "framer-motion";
 import { Root, Trigger, Portal, Overlay } from "@radix-ui/react-dialog";
 
 import preventScroll from "@utils/preventScroll";
@@ -72,7 +72,7 @@ export default function ModalTemplate({
       <Portal>
         <AnimatePresence>
           {modal.show && (
-            <motion.div
+            <m.div
               role="presentation"
               key="backdrop"
               className={s.backdrop}
@@ -82,7 +82,7 @@ export default function ModalTemplate({
               exit="hidden"
             >
               <Overlay />
-              <motion.div
+              <m.div
                 role="presentation"
                 key="modal"
                 className={s.modal}
@@ -92,8 +92,8 @@ export default function ModalTemplate({
                 exit="hidden"
               >
                 {children({ close: handleToggle })}
-              </motion.div>
-            </motion.div>
+              </m.div>
+            </m.div>
           )}
         </AnimatePresence>
       </Portal>

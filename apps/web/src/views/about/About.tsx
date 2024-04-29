@@ -1,3 +1,12 @@
+import RegisterModal from "@authFeat/components/modals/register/RegisterModal";
+
 export default function About() {
-  return <div>About</div>;
+  return (
+    <main>
+      About
+      <div>
+        <RegisterModal />
+      </div>
+    </main>
+  );
 }

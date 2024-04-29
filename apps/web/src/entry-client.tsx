@@ -1,16 +1,23 @@
-import ReactDOM from "react-dom/client";
-import { BrowserRouter } from "react-router-dom";
+import { hydrateRoot } from "react-dom/client";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { routes } from "./App";
 
-import { Provider } from "react-redux";
+import { Provider as ReduxProvider } from "react-redux";
 import { store } from "@redux/store";
 
-import App from "./App";
+import { ResourceLoader } from "@components/loaders";
 
-ReactDOM.hydrateRoot(
-  document.getElementById("root")!,
-  <Provider store={store}>
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
-  </Provider>
-);
+function hydrate() {
+  const router = createBrowserRouter(routes);
+
+  return hydrateRoot(
+    document.getElementById("root")!,
+    <ReduxProvider store={store}>
+      <ResourceLoader>
+        <RouterProvider router={router} fallbackElement={null} />
+      </ResourceLoader>
+    </ReduxProvider>
+  );
+}
+
+hydrate();

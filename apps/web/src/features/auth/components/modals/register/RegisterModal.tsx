@@ -1,4 +1,4 @@
-import { useFormAction, useSubmit } from "react-router-dom";
+import { useFormAction, useSubmit, Form } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { Content } from "@radix-ui/react-dialog";
 
@@ -27,7 +27,12 @@ export default function RegisterModal() {
               <span>*</span> <span>Required</span>
             </div>
           </div>
-          <form method="POST" action="" autoComplete="off" noValidate>
+          <Form
+          // method="post"
+          // action="/action/register"
+          // autoComplete="off"
+          // noValidate
+          >
             <div className={s.inputs}>
               <div role="group">
                 <Input
@@ -50,21 +55,21 @@ export default function RegisterModal() {
                 />
               </div>
               <Input
-                label="Username"
-                intent="primary"
-                size="lrg"
-                id="username"
-                name="username"
-                required
-                //   error={error?.name}
-              />
-              <Input
                 label="Email"
                 intent="primary"
                 size="lrg"
                 id="email"
                 name="email"
                 type="email"
+                required
+                //   error={error?.name}
+              />
+              <Input
+                label="Username"
+                intent="primary"
+                size="lrg"
+                id="username"
+                name="username"
                 required
                 //   error={error?.name}
               />
@@ -115,8 +120,8 @@ export default function RegisterModal() {
                   label="Code"
                   intent="callingCode"
                   size="lrg"
-                  id="state"
-                  name="state"
+                  id="callingCode"
+                  name="callingCode"
                   required
                   //   error={error?.name}
                 >
@@ -172,7 +177,7 @@ export default function RegisterModal() {
                 Google
               </span>
             </Button>
-          </form>
+          </Form>
 
           <span>
             Already have a account? <Link to="/login">Log In</Link>
