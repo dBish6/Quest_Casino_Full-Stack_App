@@ -1,4 +1,4 @@
-import { useFormAction, useSubmit, Form } from "react-router-dom";
+import { useFetcher } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { Content } from "@radix-ui/react-dialog";
 
@@ -11,6 +11,8 @@ import { Icon } from "@components/common/icon";
 import s from "./registerModal.module.css";
 
 export default function RegisterModal() {
+  const fetcher = useFetcher();
+
   return (
     <ModalTemplate query="register" btnText="Register">
       {({ close }) => (
@@ -27,11 +29,11 @@ export default function RegisterModal() {
               <span>*</span> <span>Required</span>
             </div>
           </div>
-          <Form
-          // method="post"
-          // action="/action/register"
-          // autoComplete="off"
-          // noValidate
+          <fetcher.Form
+            method="post"
+            action="/action/register"
+            autoComplete="off"
+            noValidate
           >
             <div className={s.inputs}>
               <div role="group">
@@ -42,7 +44,7 @@ export default function RegisterModal() {
                   id="firstName"
                   name="firstName"
                   required
-                  //   error={error?.name}
+                  error={fetcher.data?.errors?.firstName}
                 />
                 <Input
                   label="Last Name"
@@ -51,7 +53,7 @@ export default function RegisterModal() {
                   id="lastName"
                   name="lastName"
                   required
-                  //   error={error?.name}
+                  error={fetcher.data?.errors?.lastName}
                 />
               </div>
               <Input
@@ -62,7 +64,7 @@ export default function RegisterModal() {
                 name="email"
                 type="email"
                 required
-                //   error={error?.name}
+                error={fetcher.data?.errors?.email}
               />
               <Input
                 label="Username"
@@ -71,7 +73,7 @@ export default function RegisterModal() {
                 id="username"
                 name="username"
                 required
-                //   error={error?.name}
+                error={fetcher.data?.errors?.username}
               />
               <div role="group">
                 <Input
@@ -82,7 +84,7 @@ export default function RegisterModal() {
                   name="password"
                   type="password"
                   required
-                  //   error={error?.name}
+                  error={fetcher.data?.errors?.password}
                 />
                 <Input
                   label="Confirm Password"
@@ -92,7 +94,7 @@ export default function RegisterModal() {
                   name="conPassword"
                   type="password"
                   required
-                  //   error={error?.name}
+                  error={fetcher.data?.errors?.conPassword}
                 />
               </div>
               <div role="group">
@@ -103,7 +105,7 @@ export default function RegisterModal() {
                   id="country"
                   name="country"
                   required
-                  //   error={error?.name}
+                  error={fetcher.data?.errors?.country}
                 />
                 <Select
                   label="State"
@@ -111,8 +113,7 @@ export default function RegisterModal() {
                   size="lrg"
                   id="state"
                   name="state"
-                  required
-                  //   error={error?.name}
+                  error={fetcher.data?.errors?.state}
                 />
               </div>
               <div role="group">
@@ -122,8 +123,7 @@ export default function RegisterModal() {
                   size="lrg"
                   id="callingCode"
                   name="callingCode"
-                  required
-                  //   error={error?.name}
+                  // error={fetcher.data?.errors?.callingCode}
                 >
                   {COUNTRIES.map((country) => (
                     <option key={country.name} value={country.callingCode}>
@@ -138,8 +138,7 @@ export default function RegisterModal() {
                   id="phoneNumber"
                   name="phoneNumber"
                   type="number"
-                  required
-                  //   error={error?.name}
+                  // error={fetcher.data?.errors?.phoneNumber}
                 />
               </div>
             </div>
@@ -177,7 +176,7 @@ export default function RegisterModal() {
                 Google
               </span>
             </Button>
-          </Form>
+          </fetcher.Form>
 
           <span>
             Already have a account? <Link to="/login">Log In</Link>
