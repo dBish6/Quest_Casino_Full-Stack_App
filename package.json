@@ -21,7 +21,7 @@
     "build": "turbo run build",
     "dev": "turbo run dev",
     "lint": "turbo run lint",
-    "clean": "rm -rf node_modules && npm run clean --workspace @qc/vite-config --workspace web --workspace server && rm -rf package-lock.json"
+    "clean": "rm -rf node_modules && rm -rf package-lock.json"
   },
   "devDependencies": {
     "turbo": "^1.13.2"
