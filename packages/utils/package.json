@@ -2,11 +2,22 @@
   "name": "@qc/utils",
   "version": "0.0.0",
   "license": "CC-BY-4.0",
-  "peerDependencies": {
-    "@qc/typescript-config": "*"
+  "type": "module",
+  "main": "./build/bundle.js",
+  "types": "./build/logger.d.ts",
+  "scripts": {
+    "build": "rollup -c",
+    "clean": "rm -rf node_modules"
   },
-  "exports": {
-    ".": "./index.ts"
+  "devDependencies": {
+    "@rollup/plugin-babel": "^6.0.4",
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-terser": "^0.4.4",
+    "@rollup/plugin-typescript": "^11.1.6",
+    "@types/node": "^20.12.5",
+    "rollup": "^4.17.2",
+    "tslib": "^2.6.2"
   },
   "publishConfig": {
     "access": "public"

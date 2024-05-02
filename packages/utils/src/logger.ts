@@ -5,23 +5,25 @@ class Logger {
     this.disableAll = disableAll;
   }
 
-  info(message?: any, ...optionalParams: any[]) {
+  info(message: any, ...optionalParams: any[]) {
     if (!this.disableAll && process.env.NODE_ENV !== "production")
       console.info(message, ...optionalParams);
   }
 
-  debug(message?: any, ...optionalParams: any[]) {
+  debug(message: any, ...optionalParams: any[]) {
     if (!this.disableAll && process.env.NODE_ENV !== "production")
       console.debug(message, ...optionalParams);
   }
 
-  warn(message?: any, ...optionalParams: any[]) {
+  warn(message: any, ...optionalParams: any[]) {
     if (!this.disableAll) console.warn(message, ...optionalParams);
   }
 
-  error(message?: any, ...optionalParams: any[]) {
+  error(message: any, ...optionalParams: any[]) {
     if (!this.disableAll) console.error(message, ...optionalParams);
   }
 }
 
-export default new Logger(false);
+const logger = new Logger(false);
+
+export { logger };

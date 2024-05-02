@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "ES5",
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "skipLibCheck": true,
+    "outDir": "build",
+    // "sourceMap": true,
+
+    "esModuleInterop": true,
+    "isolatedModules": true,
+
+    "strict": true
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "build"]
+}

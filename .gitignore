@@ -37,7 +37,8 @@ credentials.json.dev
 /dist/
 /nbdist/
 /.nb-gradle/
-build/
+apps/serverCore/**/build/
+apps/web/**/build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 
@@ -188,5 +189,6 @@ Card Sound Effects All Sounds.mp3
 # End of https://www.toptal.com/developers/gitignore/api/node
 
 *.old*
+notes.txt
 *storybook.log
 stories
