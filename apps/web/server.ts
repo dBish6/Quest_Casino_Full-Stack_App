@@ -80,7 +80,10 @@ async function setupServer() {
           if (error.statusCode === 404) {
             return res.redirect("/error-404");
           } else if (error.location.pathname === "/") {
-            const incomingIp = req.socket.remoteAddress || req.ip;
+            const incomingIp =
+              (req.headers["x-forwarded-for"] as string)?.split(",")[0] ||
+              req.socket.remoteAddress ||
+              req.ip;
             if (ip !== incomingIp) {
               ip = incomingIp;
               return res.redirect("/about");
