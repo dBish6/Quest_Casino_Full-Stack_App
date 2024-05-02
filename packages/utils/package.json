@@ -1,0 +1,11 @@
+{
+  "name": "@qc/utils",
+  "version": "0.0.0",
+  "license": "CC-BY-4.0",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
