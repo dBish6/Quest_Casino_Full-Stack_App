@@ -4,7 +4,7 @@
  *
  * Author: David Bishop
  * Creation Date: April 16, 2024
- * Last Updated: April 29, 2024
+ * Last Updated: May 3, 2024
  *
  * Description:
  * .
@@ -20,7 +20,13 @@ import { type RouteObject } from "react-router-dom";
 
 import { Dashboard } from "@components/partials";
 import { About, Home, Profile, Settings, Support } from "@views/index";
-import { Error404, Error500 } from "@views/errors";
+import {
+  Error401,
+  Error403,
+  Error404,
+  Error429,
+  Error500,
+} from "@views/errors";
 
 import registerAction from "@authFeat/actions/register";
 
@@ -46,7 +52,7 @@ export const routes: RouteObject[] = [
         path: "/profile",
         children: [
           {
-            path: "profile",
+            path: "",
             element: <Profile />,
           },
           {
@@ -60,11 +66,23 @@ export const routes: RouteObject[] = [
         element: <Support />,
       },
       {
-        path: "/error-404",
+        path: "error-401",
+        element: <Error401 />,
+      },
+      {
+        path: "error-403",
+        element: <Error403 />,
+      },
+      {
+        path: "error-404",
         element: <Error404 />,
       },
       {
-        path: "/error-500",
+        path: "error-429",
+        element: <Error429 />,
+      },
+      {
+        path: "error-500",
         element: <Error500 />,
       },
     ],
