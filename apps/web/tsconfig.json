@@ -19,6 +19,10 @@
 
       "@redux/*": ["./src/redux/*"],
 
+      "@services/*": ["./src/services/*"],
+
+      "@typings/*": ["./src/typings/*"],
+
       "@utils/*": ["./src/utils/*"],
 
       "@views/*": ["./src/views/*"]
