@@ -1,5 +1,5 @@
 ## 🚀🚀 Active Development
-The development of the complete overhaul of Quest Casino is now underway and we're now in the very early stages. The previous version (v1.2.8) will still remain available online for the time being, you can access the previous version through the releases section or the quest_casino_v1.2.8 branch. Quest Casino version 2 is a highly ambitious upgrade that promises to surpass its predecessor in every way. Stay Tuned! 🎰
+The development of the complete overhaul of Quest Casino is now underway and we're now in the very early stages. The previous version (v1.2.8) will remain available online for the time being, you can access the previous version through the releases section or the quest_casino_v1.2.8 branch. Quest Casino version 2 is a highly ambitious upgrade that promises to surpass its predecessor in every way. Stay Tuned! 🎰
 
 # Quest_Casino_Full-Stack_App
 This is a fun casino app that has different kinds of casino games. From the sound of the name, in addition, it has some quests/challenges to complete for some extra moolah!
@@ -11,9 +11,7 @@ Quest Casino has transitioned to a `monoRepo`, which is very scalable. This setu
 The `web` directory is a `TypeSript React` app which uses `Vite` and custom an `SSR server` for SEO, `Framer Motion` for dynamic animations, `Redux` for state management, `Storybook` for testing and component management with the help from `Class Variance Authority` for variants and `Radix UI` here and there to ensure accessibility and other benefits. `PostCSS` and `CSS modules` handles styling.
 
 ### serverCore
-The `serverCore` directory contains the core API and socket connections via `socket.io`, developed using `TypeScript Express`. Despite considering alternative options, Quest Casino remains integrated with `Firebase`, I thought there was no reason to move the current `Firestore` database to some other document-oriented database, so we will still have the advantages of Firebase. FIX
-
-_This is the plan as of now._
+The `serverCore` directory contains the core API and WebSocket connections via `socket.io`, developed using `TypeScript Express`. I finally decided to remove Firebase, mid-development. I felt that all I really needed from Firebase was Firestore and all the additional features felt like unnecessary 'bloat' and also the 'hand-holding' began to annoy me. So, after I made up this tech stack, I decided to remove Firebase and use a different document-oriented database, MongoDB. Our database is now MongoDB complemented with an Object Data Modeling (ODM), Mongoose, for a structured schema approach.
 
 ## First Steps
 I'm going to start with the `user authentication` and then move to the new `chat feature`.
@@ -36,7 +34,7 @@ If you want to know more about Quest Casino, take a look at the design case stud
 $ npm install
 $ npm run dev
 ```
-- Running `npm run dev` would run every project in the repo. If you want to run a specific project, use the --workspace flag. The _\<project\>_ would be the name in the package.json for a project.
+- Running `npm run dev` would run every project in the repo. If you want to run a specific project, use the --workspace flag. The _\<project\>_ would be the name in the package.json of a project.
 ```
 $ npm run dev --workspace <project>
 ```
@@ -44,7 +42,6 @@ $ npm run dev --workspace <project>
 ```
 $ npm install <package> --workspace <project>
 ```
-- Also, please note that you need `service account credentials` to use Firebase for severCore.
 
 ## Directory Structure
 ...
