@@ -17,6 +17,8 @@
 
       "@model/*": ["./src/v2/model/*"],
 
+      "@typings/*": ["./src/v2/typings/*"],
+
       "@utils/*": ["./src/v2/utils/*"]
     }
   }

@@ -1,3 +1,5 @@
+import { logger } from "@qc/utils";
+
 export class ApiError extends Error {
   statusCode?: number;
   from: string;
@@ -15,10 +17,13 @@ export class ApiError extends Error {
 export default function sendError(
   err: any,
   from: string,
-  message?: string,
-  statusCode?: number
+  statusCode?: number,
+  message?: string
 ) {
+  const errorMessage = message || err.message;
+
+  logger.error(`${from}\n`, errorMessage);
   return err instanceof ApiError
     ? err
-    : new ApiError(from, !message ? err.message : message, statusCode);
+    : new ApiError(from, errorMessage, statusCode);
 }

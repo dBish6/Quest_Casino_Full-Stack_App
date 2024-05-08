@@ -22,8 +22,14 @@ export default function initializeSocketIo(
   });
 
   // *Namespaces*
+  io.of("/auth").on("connection", (socket) => {
+    console.log(`Auth namespace connected; ${socket.id}.`);
+
+    chatNamespace(socket, io.of("/auth"));
+  });
+
   io.of("/chat").on("connection", (socket) => {
-    console.log(`Socket connected; ${socket.id}.`);
+    console.log(`Chat namespace connected; ${socket.id}.`);
 
     chatNamespace(socket, io.of("/chat"));
   });

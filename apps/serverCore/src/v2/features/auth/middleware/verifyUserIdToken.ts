@@ -1,5 +1,4 @@
-import { Request, Response, NextFunction } from "express";
-import { auth } from "@model/firebase";
+import type { Request, Response, NextFunction } from "express";
 
 /**
  * Verifies the user's ID token before the login; this middleware is exclusively for the login.
@@ -21,18 +20,18 @@ export default async function verifyUserIdToken(
   }
 
   try {
-    const jwt = authHeader.split(" ")[1],
-      decodedClaims = await auth.verifyIdToken(jwt);
+    // const jwt = authHeader.split(" ")[1],
+    // decodedClaims = await auth.verifyIdToken(jwt);
 
     // We know the token is compromised if the token creation time is greater than 3 minutes ago.
-    if (new Date().getTime() / 1000 - decodedClaims.auth_time > 3 * 60) {
-      return res.status(401).json({
-        message: "User authentication has expired.",
-      });
-    }
+    // if (new Date().getTime() / 1000 - decodedClaims.auth_time > 3 * 60) {
+    //   return res.status(403).json({
+    //     message: "User authentication has expired.",
+    //   });
+    // }
 
-    req.userIdToken = jwt;
-    req.decodedClaims = decodedClaims;
+    // req.userIdToken = jwt;
+    // req.decodedClaims = decodedClaims;
 
     console.log("User ID token successfully verified.");
     next();

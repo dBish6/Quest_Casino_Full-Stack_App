@@ -4,13 +4,16 @@
  *
  * Author: David Bishop
  * Creation Date: April 16, 2024
- * Last Updated: April 16, 2024
+ * Last Updated: May 8, 2024
  *
  * Description:
  * ...
  *
  * Features:
- *  - Authentication using Json Web Tokens.
+ *  - Authentication:
+ *    - Json Web Tokens and cookies for session.
+ *    - Support for multiple sessions.
+ *    - Access and refresh tokens.
  *  - Real-time chat using Socket.io.
  *  ...
  *
@@ -20,6 +23,7 @@
 
 import { createServer } from "http";
 
+import Db from "@model/Db";
 import establishRedisConnection from "./cache";
 import initializeApi from "./api";
 import initializeSocket from "./socket";
@@ -32,6 +36,9 @@ export const setupServer = async () => {
       credentials: true,
     };
 
+  const db = new Db();
+  db.connectBaseCluster();
+
   await establishRedisConnection();
 
   const app = initializeApi(corsOptions),
@@ -39,7 +46,7 @@ export const setupServer = async () => {
 
   initializeSocket(httpServer, corsOptions);
 
-  httpServer.listen(PORT, HOST, async () => {
+  httpServer.listen(PORT, HOST!, async () => {
     try {
       console.log(
         `Server is running on ${PROTOCOL}${HOST}:${PORT}; Ctrl-C to terminate...`

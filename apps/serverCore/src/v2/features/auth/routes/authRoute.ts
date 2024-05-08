@@ -9,6 +9,9 @@ const router = Router();
 router.get("/users", verifySessionCookie, authController.getUsers);
 router.get("/user", verifySessionCookie, authController.getUser);
 
+router.get("/users", authController.getUsers);
+router.get("/current-user", authController.getUser);
+
 router.post("/register", authController.register);
 // router.post("/register/google", verifyCsrfToken, authController.register);
 router.post("/login", verifyUserIdToken, verifyCsrfToken, authController.login);
