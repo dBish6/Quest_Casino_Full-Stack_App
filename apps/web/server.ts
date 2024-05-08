@@ -64,9 +64,9 @@ async function setupServer() {
         render = (await import("./build/ssr/entry-server")).render;
       }
 
-      const preloadedStateScript = getInitialReduxState();
+      const { preloadedStateScript, store } = getInitialReduxState();
       try {
-        const appHtml = await render(req, res),
+        const appHtml = await render(req, res, store),
           html = template
             .replace("<!--ssr-outlet-->", appHtml)
             .replace("<!--init-state-->", preloadedStateScript);
@@ -121,9 +121,11 @@ function getInitialReduxState() {
     reducer: stateReducer,
   });
 
-  return `<script>window.__PRELOADED_STATE__ = ${JSON.stringify(
+  const preloadedStateScript = `<script>window.__PRELOADED_STATE__ = ${JSON.stringify(
     store.getState()
   ).replace(/</g, "\\u003c")}</script>`;
+
+  return { preloadedStateScript, store };
 }
 
 setupServer().then((app) =>

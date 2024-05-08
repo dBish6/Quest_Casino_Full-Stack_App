@@ -193,11 +193,14 @@
   --c-purple-900: #281c4b;
   --c-purple-border: rgba(95, 67, 178, 0.45);
 
+  --c-magenta-200: #dca9dc;
   --c-magenta-300: #cb81cb;
   --c-magenta-400: #c169c1;
   --c-magenta-500: #b243b2;
   --c-magenta-600: #a23da2;
   --c-magenta-700: #7e307e;
+  --c-magenta-800: #622562;
+  --c-magenta-900: #4b1c4b;
 
   --c-lvl-1: #131313;
   --c-lvl-2: #160f29;
@@ -310,7 +313,8 @@ h5 {
   color: var(--c-heading1);
 }
 
-p {
+p,
+small {
   /* font-size: var(--para-regular-clamp); */
   letter-spacing: var(--para-letter-spaceing);
 }

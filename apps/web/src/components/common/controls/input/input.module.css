@@ -2,13 +2,13 @@
   & :global(.input) {
     &:global(.primary) {
       background-color: var(--c-lvl-2);
-      &[focused="true"] {
+      &[data-focused="true"] {
         background-color: var(--c-lvl-3);
         & input {
           color: var(--c-heading-2);
         }
       }
-      &[typing="true"] {
+      &[data-typing="true"] {
         & label {
           background-color: var(--c-lvl-2);
         }

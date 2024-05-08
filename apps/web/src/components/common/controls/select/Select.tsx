@@ -24,17 +24,22 @@ const select = cva("select", {
 });
 
 export interface SelectProps
-  extends Omit<React.ComponentProps<"select">, "size">,
+  extends Omit<
+      React.ComponentProps<"select">,
+      "size" | "onBlur" | "onKeyDown" | "onChange"
+    >,
     VariantProps<typeof select> {
   label: string;
   name: string;
   id: string;
   error?: string;
+  Loader?: () => React.ReactElement;
+  loaderTrigger?: boolean;
 }
 
 // prettier-ignore
 export const Input = forwardRef<HTMLSelectElement,React.PropsWithChildren<SelectProps>>(
-  ({ children, label, className, intent, size = "lrg", style, error, ...props }, ref) => {
+  ({ children, label, className, intent, size, style, error, Loader, loaderTrigger, ...props }, ref) => {
     const selectContainerRef = useRef<HTMLDivElement>(null);
 
     return (
@@ -42,17 +47,18 @@ export const Input = forwardRef<HTMLSelectElement,React.PropsWithChildren<Select
         role="presentation"
         aria-live="assertive"
         className={`control ${s.container}`}
-        style={style}
       >
         <div
           ref={selectContainerRef}
           className={select({ className, intent, size })}
+          style={style}
           onClick={() => {
             const selectContainer = selectContainerRef.current!;
-            selectContainer.getAttribute("focused")
-              ? selectContainerRef.current!.removeAttribute("focused")
-              : selectContainerRef.current!.setAttribute("focused", "true");
+            selectContainer.getAttribute("data-focused")
+              ? selectContainerRef.current!.removeAttribute("data-focused")
+              : selectContainerRef.current!.setAttribute("data-focused", "true");
           }}
+          data-disabled={props.disabled}
         >
           <Label htmlFor={props.id}>
             {label}
@@ -65,9 +71,10 @@ export const Input = forwardRef<HTMLSelectElement,React.PropsWithChildren<Select
           <select
             aria-describedby="formError"
             {...(error && { "aria-invalid": true })}
+            {...(Loader && {"aria-busy": loaderTrigger})}
             ref={ref}
             onBlur={() =>
-              selectContainerRef.current!.removeAttribute("focused")
+              selectContainerRef.current!.removeAttribute("data-focused")
             }
             onKeyDown={(e) =>
               e.key === " " && selectContainerRef.current!.click()
@@ -75,8 +82,8 @@ export const Input = forwardRef<HTMLSelectElement,React.PropsWithChildren<Select
             onChange={(e) => {
               const selectContainer = selectContainerRef.current!;
               !e.target.value.length
-                ? selectContainer.removeAttribute("selected")
-                : selectContainer.setAttribute("selected", "true");
+                ? selectContainer.removeAttribute("data-selected")
+                : selectContainer.setAttribute("data-selected", "true");
             }}
             {...props}
           >
@@ -92,11 +99,14 @@ export const Input = forwardRef<HTMLSelectElement,React.PropsWithChildren<Select
                 : "expand-14"
             }
           />
+
+          {Loader && (loaderTrigger && <Loader />)}
         </div>
+        
         {error && (
-          <span role="status" id="formError" className={s.error}>
+          <small role="status" id="formError" className={s.error}>
             {error}
-          </span>
+          </small>
         )}
       </div>
     );

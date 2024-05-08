@@ -1,105 +1,126 @@
+/* FIXME: Need a better way for appling a background-color on the label. */
+
 /* [typing="true"] is for .input and [selected="true"] is for .select. */
-.input,
-.select {
-  --_input-fade: rgba(239, 239, 239, 0.85);
+.control {
+  & small {
+    display: block;
+    margin-top: 4px;
+    font: var(--para-small);
+    line-height: 20px;
+    color: var(--c-status-red);
+  }
 
-  &.primary,
-  &.callingCode {
-    position: relative;
-    border: 2px solid var(--c-purple-800);
-    border-radius: 6px;
-    transition:
-      0.28s ease-in-out background-color,
-      0.28s ease-in-out border-color;
-    &[focused="true"],
-    &[typing="true"],
-    &[selected="true"] {
-      & label {
-        top: -3%;
-        left: calc(1rem - 4px);
-        padding-inline: 4px;
-      }
-    }
-    &[focused="true"] {
-      border-color: var(--c-purple-700);
-      & label {
-        background-color: var(--c-lvl-3) !important;
-        color: var(--c-heading-2);
-        & .required {
-          color: var(--c-status-red);
-        }
-      }
-      & label {
-        color: var(--c-heading-2);
-        & .required {
-          color: var(--c-status-red);
-        }
-      }
-    }
+  & .input,
+  & .select {
+    --_input-fade: rgba(239, 239, 239, 0.85);
 
-    & label,
-    & > svg {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-    }
-    & label {
-      left: 1rem;
-      color: var(--_input-fade);
-      pointer-events: none;
+    &.primary,
+    &.callingCode {
+      position: relative;
+      border: 2px solid var(--c-purple-800);
+      border-radius: 6px;
       transition:
-        0.28s ease-in-out color,
         0.28s ease-in-out background-color,
-        0.28s ease-in-out top,
-        0.38s ease-in-out font-size;
-      & .required {
-        color: rgba(198, 59, 80, 0.85);
-        transition: 0.28s ease-in-out color;
+        0.28s ease-in-out border-color;
+      &[data-focused="true"],
+      &[data-typing="true"],
+      &[data-selected="true"] {
+        & label {
+          top: -3%;
+          left: calc(1rem - 4px);
+          padding-inline: 4px;
+        }
       }
-    }
-    & input,
-    & select {
-      width: 100%;
-      height: 100%;
-      border-radius: 3px;
-      outline: none;
-    }
+      &[data-focused="true"] {
+        border-color: var(--c-purple-700);
+        & label {
+          background-color: var(--c-lvl-3) !important;
+          color: var(--c-heading-2);
+          & .required {
+            color: var(--c-status-red);
+          }
+        }
+        & label {
+          color: var(--c-heading-2);
+          & .required {
+            color: var(--c-status-red);
+          }
+        }
+      }
 
-    &.md {
-      height: 32px;
-      & select,
+      &[data-disabled="true"] {
+        & label,
+        & input,
+        & select,
+        & svg {
+          opacity: 0.48;
+        }
+      }
+
+      & label,
+      & > svg {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+      }
       & label {
-        font: var(--para-small);
+        left: 1rem;
+        color: var(--_input-fade);
+        pointer-events: none;
+        transition:
+          0.28s ease-in-out color,
+          0.28s ease-in-out background-color,
+          0.28s ease-in-out top,
+          0.38s ease-in-out font-size;
+        & .required {
+          color: rgba(198, 59, 80, 0.85);
+          transition: 0.28s ease-in-out color;
+        }
       }
-      &[focused="true"] label,
-      &[typing="true"] label,
-      &[selected="true"] label {
-        font-size: 12px;
-      }
-    }
-    &.lrg {
-      height: 40px;
       & input,
-      & select,
-      & label {
-        font: var(--para-regular);
+      & select {
+        width: 100%;
+        height: 100%;
+        border-radius: 3px;
+        outline: none;
       }
-      &[focused="true"] label,
-      &[typing="true"] label,
-      &[selected="true"] label {
-        font-size: 14px;
+
+      &.md {
+        height: 32px;
+        & select,
+        & label {
+          font: var(--para-small);
+        }
+        &[data-focused="true"] label,
+        &[data-typing="true"] label,
+        &[data-selected="true"] label {
+          font-size: 12px;
+        }
       }
-    }
-    &.xl {
-      height: 48px;
-      & input,
-      & label {
-        font: var(--para-medium);
+      &.lrg {
+        height: 40px;
+        & input,
+        & select,
+        & label {
+          font: var(--para-regular);
+        }
+        &[data-focused="true"] label,
+        &[data-typing="true"] label,
+        &[data-selected="true"] label {
+          font-size: 14px;
+        }
       }
-      &[focused="true"] label,
-      &[typing="true"] label,
-      &[selected="true"] label {
-        font-size: 16px;
+      &.xl {
+        height: 48px;
+        & input,
+        & label {
+          font: var(--para-medium);
+        }
+        &[data-focused="true"] label,
+        &[data-typing="true"] label,
+        &[data-selected="true"] label {
+          font-size: 16px;
+        }
       }
     }
   }

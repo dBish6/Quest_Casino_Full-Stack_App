@@ -18,12 +18,15 @@ const input = cva("input", {
     },
   },
   defaultVariants: {
-    size: "xl",
+    size: "lrg",
   },
 });
 
 export interface InputProps
-  extends Omit<React.ComponentProps<"input">, "size">,
+  extends Omit<
+      React.ComponentProps<"input">,
+      "size" | "onFocus" | "onBlur" | "onChange"
+    >,
     VariantProps<typeof input> {
   label: string;
   name: string;
@@ -34,7 +37,7 @@ export interface InputProps
 
 // prettier-ignore
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ label, className, intent, size = "lrg", style, Button, error, ...props }, ref) => {
+  ({ label, className, intent, size, style, Button, error, ...props }, ref) => {
     const inputContainerRef = useRef<HTMLDivElement>(null);
 
     return (
@@ -42,11 +45,11 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         role="presentation"
         aria-live="assertive"
         className={`control ${s.container}`}
-        style={style}
       >
         <div
           ref={inputContainerRef}
           className={`${input({ className, intent, size })}${Button ? " " + s.button : ""}`}
+          style={style}
         >
           <Label htmlFor={props.id}>
             {label}
@@ -61,23 +64,24 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             {...(error && { "aria-invalid": true })}
             ref={ref}
             onFocus={() =>
-              inputContainerRef.current!.setAttribute("focused", "true")
+              inputContainerRef.current!.setAttribute("data-focused", "true")
             }
-            onBlur={() => inputContainerRef.current!.removeAttribute("focused")}
+            onBlur={() => inputContainerRef.current!.removeAttribute("data-focused")}
             onChange={(e) => {
               const inputContainer = inputContainerRef.current!;
               !e.target.value.length
-                ? inputContainer.removeAttribute("typing")
-                : inputContainer.setAttribute("typing", "true");
+                ? inputContainer.removeAttribute("data-typing")
+                : inputContainer.setAttribute("data-typing", "true");
             }}
             {...props}
           />
           {Button && <Button />}
         </div>
+
         {error && (
-          <span role="status" id="formError" className={s.error}>
+          <small role="status" id="formError" className={s.error}>
             {error}
-          </span>
+          </small>
         )}
       </div>
     );

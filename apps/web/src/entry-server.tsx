@@ -1,4 +1,5 @@
-import { Request as ERequest, Response as EResponse } from "express";
+import type { Request as ERequest, Response as EResponse } from "express";
+import type { Store } from "@reduxjs/toolkit";
 
 import { renderToString } from "react-dom/server";
 import {
@@ -6,11 +7,11 @@ import {
   createStaticRouter,
   StaticRouterProvider,
 } from "react-router-dom/server";
-// import { isbot } from "isbot";
+import { Provider as ReduxProvider } from "react-redux";
 
 import { routes } from "./App";
 
-export async function render(req: ERequest, res: EResponse) {
+export async function render(req: ERequest, res: EResponse, store: Store) {
   const { query, dataRoutes } = createStaticHandler(routes),
     request = createFetchRequest(req, res),
     context = await query(request);
@@ -25,7 +26,13 @@ export async function render(req: ERequest, res: EResponse) {
 
   const router = createStaticRouter(dataRoutes, context);
   return renderToString(
-    <StaticRouterProvider router={router} context={context} nonce="the-nonce" />
+    <ReduxProvider store={store}>
+      <StaticRouterProvider
+        router={router}
+        context={context}
+        nonce="the-nonce"
+      />
+    </ReduxProvider>
   );
 }
 

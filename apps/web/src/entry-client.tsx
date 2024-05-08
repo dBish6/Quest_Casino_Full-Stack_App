@@ -1,10 +1,10 @@
 import { hydrateRoot } from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import { routes } from "./App";
 
 import { Provider as ReduxProvider } from "react-redux";
 import { store } from "@redux/store";
 
+import { routes } from "./App";
 import { ResourceLoader } from "@components/loaders";
 
 function hydrate() {

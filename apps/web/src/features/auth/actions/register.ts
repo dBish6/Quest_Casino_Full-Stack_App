@@ -1,23 +1,10 @@
-import { type ActionFunction, json } from "react-router-dom";
+import type { ActionFunction } from "react-router-dom";
+import type RegisterRequestDto from "@authFeat/dtos/RegisterRequestDto";
+
+import { json } from "react-router-dom";
 import capitalize from "@utils/capitalize";
 
-interface RegisterRequest {
-  type: "standard" | "google";
-  legalName: { first: string; last: string };
-  username?: string;
-  email?: string;
-  password?: string;
-  country?: string;
-  state?: string;
-  phoneNumber?: string;
-}
-
-const optionalFields = new Set([
-  "state",
-  "callingCode",
-  "phoneNumber",
-  "country",
-]);
+const optionalFields = new Set(["region", "callingCode", "phoneNumber"]);
 
 const registerAction: ActionFunction = async ({ request }) => {
   const formData = await request.formData(),
@@ -132,7 +119,7 @@ function validatePhoneNumber(phoneNumber: string, callingCode: string) {
 }
 
 function createRequestBodyObject(formData: FormData) {
-  const obj: RegisterRequest = {} as RegisterRequest;
+  const obj: RegisterRequestDto = {} as RegisterRequestDto;
 
   for (const [key, value] of formData.entries()) {
     if (key === "conPassword" || key === "callingCode") continue;
@@ -148,7 +135,7 @@ function createRequestBodyObject(formData: FormData) {
       };
     } else {
       // prettier-ignore
-      obj[key as keyof Omit<RegisterRequest, "type" | "legalName">] =
+      obj[key as keyof Omit<RegisterRequestDto, "type" | "legalName">] =
         optionalFields.has(key) ? fieldValue ? fieldValue : undefined : fieldValue;
     }
   }

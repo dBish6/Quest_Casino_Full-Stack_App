@@ -23,7 +23,7 @@ const button = cva(s.button, {
   },
   defaultVariants: {
     intent: "primary",
-    size: "md",
+    size: "xl",
   },
 });
 
@@ -36,7 +36,7 @@ export interface ButtonProps
 
 // prettier-ignore
 const Button = forwardRef<HTMLButtonElement, React.PropsWithChildren<ButtonProps>>(
-  ({ children, className, intent = "primary", size = "lrg", asChild, iconBtn, ...props }, ref) => {
+  ({ children, className, intent = "primary", size, asChild, iconBtn, ...props }, ref) => {
     const Element = asChild ? Slot : "button";
 
     return (
@@ -73,9 +73,9 @@ const Button = forwardRef<HTMLButtonElement, React.PropsWithChildren<ButtonProps
 );
 export default Button;
 
-const keyPress = (
+function keyPress(
   e: React.KeyboardEvent<HTMLButtonElement>,
   callback: () => void
-) => {
+) {
   if (e.key === "Enter" || e.key === " ") callback();
-};
+}

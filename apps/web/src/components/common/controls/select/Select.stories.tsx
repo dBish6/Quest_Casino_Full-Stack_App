@@ -1,9 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { fn } from "@storybook/test";
+import type Country from "@authFeat/typings/Country";
 
-import COUNTRIES from "@authFeat/constants/COUNTRIES";
+import { fn } from "@storybook/test";
+import { useState } from "react";
 
 import Select from "./Select";
+import { Spinner } from "@components/loaders";
 
 const meta: Meta<typeof Select> = {
   title: "Components/Controls/Select",
@@ -43,7 +45,7 @@ export const Medium: Story = {
       required: true,
     },
     render: (args) => (
-      <Select style={{ width: "182px" }} {...args}>
+      <Select {...args} style={{ width: "182px" }}>
         {mockOptions.map((option) => (
           <option key={option} value={option}>
             {option}
@@ -60,7 +62,7 @@ export const Medium: Story = {
       required: true,
     },
     render: (args) => (
-      <Select style={{ width: "208px" }} {...args}>
+      <Select {...args} style={{ width: "208px" }}>
         {mockOptions.map((option) => (
           <option key={option} value={option}>
             {option}
@@ -76,13 +78,33 @@ export const CallingCode: Story = {
     intent: "callingCode",
     size: "lrg",
   },
-  render: (args) => (
-    <Select style={{ width: "126px" }} {...args}>
-      {COUNTRIES.map((country) => (
-        <option key={country.name} value={country.callingCode}>
-          {country.abbr} {country.callingCode}
-        </option>
-      ))}
-    </Select>
-  ),
+  render: (args) => {
+    const [data, setData] = useState<Country[] | null>(null);
+
+    return (
+      <Select
+        {...args}
+        Loader={() => <Spinner intent="primary" size="sm" />}
+        loaderTrigger={!!data && !data.length}
+        style={{ width: "126px" }}
+        onFocus={async () => {
+          if (!data?.length) {
+            setData([]);
+            const data = (await import("@authFeat/constants/COUNTRIES"))
+              .default;
+            setTimeout(() => {
+              setData(data);
+            }, 1500);
+          }
+        }}
+      >
+        {data?.length &&
+          data.map((country) => (
+            <option key={country.name} value={country.callingCode}>
+              {country.abbr} {country.callingCode}
+            </option>
+          ))}
+      </Select>
+    );
+  },
 };

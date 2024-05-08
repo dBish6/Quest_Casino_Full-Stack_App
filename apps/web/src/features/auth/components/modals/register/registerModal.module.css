@@ -82,7 +82,6 @@
           }
         }
         & > :global(.control):last-of-type :global(.input) {
-          position: relative;
           right: 2px;
           width: calc(100% + 2px) !important;
           border-top-left-radius: 0;

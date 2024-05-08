@@ -2,12 +2,12 @@
   & :global(.select) {
     &:global(.primary),
     &:global(.callingCode) {
-      &[focused="true"][selected="true"] {
+      &[data-focused="true"][data-selected="true"] {
         & select {
           color: var(--c-heading-2);
         }
       }
-      &[focused="true"] {
+      &[data-focused="true"] {
         & select {
           color: var(--c-heading-2);
         }
@@ -21,7 +21,7 @@
           }
         }
       }
-      &[selected="true"] {
+      &[data-selected="true"] {
         & select {
           color: var(--_input-fade);
         }
@@ -58,6 +58,11 @@
           fill: var(--_input-fade);
           transition: 0.28s ease-in-out fill;
         }
+      }
+
+      & span[role="status"] {
+        margin: 0.5rem 38px 0 auto;
+        z-index: 2;
       }
     }
 
