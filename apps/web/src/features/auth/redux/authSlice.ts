@@ -1,4 +1,4 @@
-import type UserCredentials from "../typings/User";
+import type UserCredentials from "../typings/UserCredentials";
 
 import { createSlice } from "@reduxjs/toolkit";
 
@@ -40,9 +40,8 @@ export const chatSlice = createSlice({
 });
 
 export const {
+  name,
+  reducer: authReducer,
   // SET_TOKEN,
-  SET_USER,
-  CLEAR_USER,
-} = chatSlice.actions;
-
-export default chatSlice.reducer;
+  ...actions
+} = chatSlice;

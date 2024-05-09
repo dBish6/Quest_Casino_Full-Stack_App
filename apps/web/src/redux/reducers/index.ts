@@ -1,7 +1,7 @@
 import { combineReducers } from "@reduxjs/toolkit";
-import { stateReducer } from "./stateReducer";
-import { rtkReducer } from "./rtkReducer";
+import { stateReducers } from "./stateReducer";
+import { rtkReducers } from "./rtkReducer";
 
 export const rootReducer = combineReducers({
-    ...stateReducer, ...rtkReducer
+    ...stateReducers, ...rtkReducers
 });

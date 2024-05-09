@@ -8,7 +8,7 @@ import { logger } from "@qc/utils";
 const authApi = createApi({
   reducerPath: "authApi",
   // baseQuery: fetchBaseQuery({ baseUrl: "/api/v2" }),
-  baseQuery,
+  baseQuery: baseQuery(),
   endpoints: (builder) => ({
     register: builder.mutation<any, any>({
       // TODO: User type.
@@ -78,10 +78,10 @@ const authApi = createApi({
 });
 
 export const {
-  endpoints,
-  reducerPath,
-  reducer,
-  middleware,
+  endpoints: authEndpoints,
+  reducerPath: authApiReducerPath,
+  reducer: authApiReducer,
+  middleware: authMiddleware,
   useRegisterMutation,
   useLoginMutation,
   useGetUsersQuery,

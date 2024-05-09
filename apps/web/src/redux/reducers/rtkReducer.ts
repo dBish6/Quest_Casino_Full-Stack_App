@@ -1,6 +1,5 @@
-import { combineReducers } from "@reduxjs/toolkit";
-import {reducerPath as authApiReducerPath, reducer as authApiReducer} from "@authFeat/services/authApi";
+import { authApiReducerPath, authApiReducer } from "@authFeat/services/authApi";
 
-export const rtkReducer = combineReducers({
+export const rtkReducers = {
   [authApiReducerPath]: authApiReducer,
-});
+}

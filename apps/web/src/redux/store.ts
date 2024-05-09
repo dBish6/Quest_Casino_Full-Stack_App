@@ -2,7 +2,7 @@ import { configureStore, type Middleware } from "@reduxjs/toolkit";
 import { setupListeners } from "@reduxjs/toolkit/query";
 import { rootReducer } from "./reducers";
 import { apiErrorHandler } from "@services/apiErrorHandler";
-import { middleware as authMiddleware } from "@authFeat/services/authApi";
+import { authMiddleware } from "@authFeat/services/authApi";
 
 const preloadedState = window.__PRELOADED_STATE__ || {};
 delete window.__PRELOADED_STATE__;
