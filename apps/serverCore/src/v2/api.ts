@@ -20,7 +20,6 @@ import apiErrorHandler from "@middleware/apiErrorHandler";
 
 import authRouter from "@authFeat/routes/authRoute";
 // import chatRouter from "@chatFeat/routes/chatRoute";
-// import csrfRouter from "@csrfFeat/routes/csrfRoute";
 
 const initializeApi = (corsOptions: CorsOptions) => {
   const app = express(),
@@ -59,10 +58,9 @@ const initializeApi = (corsOptions: CorsOptions) => {
   // *Routers*
   app.use(`${baseUrl}/auth`, authRouter);
   // app.use(`${baseUrl}/chat`, chatRouter);
-  // app.use(`${baseUrl}/csrf`, csrfRouter);
 
   // Test Entry Route
-  app.get("/", async (req, res) => {
+  app.get(`${baseUrl}/`, async (req, res) => {
     res.json({ message: "Quest Casino api online!" });
   });
 
