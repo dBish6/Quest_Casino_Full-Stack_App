@@ -1,15 +1,15 @@
 import type { Request, Response, NextFunction } from "express";
-import RegisterRequestDto from "@authFeat/dtos/RegisterRequestDto";
-// import GetUserDto from "../dtos/GetUserDto";
+import type RegisterRequestDto from "@authFeat/dtos/RegisterRequestDto";
+import type { UserToClaims } from "@authFeat/typings/User";
 
-import sendError from "@utils/CustomError";
+import { CLIENT_USER_FIELDS } from "@authFeat/constants/USER_QUERIES";
 
-import * as authService from "../services/authService";
-import * as jwtService from "../services/jwtService";
-import {
-  deleteCsrfToken,
-  deleteAllCsrfTokens,
-} from "@csrfFeat/services/csrfService";
+import { logger } from "@qc/utils";
+import { createApiError } from "@utils/CustomError";
+import initializeSession from "@authFeat/utils/initializeSession";
+
+import * as authService from "@authFeat/services/authService";
+import { deleteCsrfToken } from "@authFeat/services/csrfService";
 
 export async function getUsers(
   req: Request,
@@ -17,28 +17,32 @@ export async function getUsers(
   next: NextFunction
 ) {
   try {
-    const users = await authService.getUsers(req.decodedClaims!.sub);
+    const users = await authService.getUsers();
 
     return res.status(200).json(users);
   } catch (error: any) {
-    next(sendError(error, "getUsers controller error.", 500));
+    next(createApiError(error, "getUsers controller error.", 500));
   }
 }
 
 export async function getUser(req: Request, res: Response, next: NextFunction) {
   try {
-    const user = await authService.getUser(req.decodedClaims!.sub);
+    const user = (await authService.getUser(
+      "_id",
+      req.decodedClaims!.sub,
+      CLIENT_USER_FIELDS
+    )) as UserToClaims;
     if (!user)
       return res.status(404).send({
         message: "User doesn't exist.",
       });
 
-    // const passwordlessUser = {user.password, ...user}
+    // console.log("user", user);
 
-    return res.status(200).json(user);
+    return res.status(200).json({ user });
   } catch (error: any) {
     error.reason = "failed to send specified user.";
-    next(sendError(error, "getUser controller error.", 500));
+    next(createApiError(error, "getUser controller error.", 500));
   }
 }
 
@@ -47,38 +51,36 @@ export async function register(
   res: Response,
   next: NextFunction
 ) {
-  // logger.debug("/auth/api/firebase/register body:", req.body);
+  logger.debug("/auth/register body:", req.body);
 
   try {
-    const user = await authService.getUser(req.body.email);
-    if (!user)
+    const user = await authService.getUser("email", req.body.email);
+    if (user)
       return res.status(404).send({
-        message: "User doesn't exist, incorrect email.",
+        message: "User already exists.",
       });
 
     await authService.registerStandardUser(req);
 
-    return res.status(200).json(user);
+    return res.status(200).json({
+      message:
+        "Successfully registered, proceed to log in with your newly created profile!",
+    });
   } catch (error: any) {
-    next(sendError(error, "register controller error.", 500));
+    next(createApiError(error, "register controller error.", 500));
   }
 }
 
 export async function login(req: Request, res: Response, next: NextFunction) {
   try {
-    // const sessionCookie = await jwtService.initializeSession(req.userIdToken!);
-    // return res
-    //   .status(200)
-    //   .cookie("session", sessionCookie, {
-    //     path: "/",
-    //     // maxAge: 1000 * 60 * 15, // 15 minutes.
-    //     httpOnly: true,
-    //     secure: true,
-    //     sameSite: "none",
-    //   })
-    //   .json({ message: "User session created successfully." });
+    const clientUser = await initializeSession(res, req.decodedClaims!.sub);
+
+    return res.status(200).json({
+      message: "User session created successfully.",
+      user: clientUser,
+    });
   } catch (error: any) {
-    next(sendError(error, "login controller error.", 500));
+    next(createApiError(error, "login controller error.", 500));
   }
 }
 
@@ -88,12 +90,11 @@ export async function emailVerify(
   next: NextFunction
 ) {
   try {
-    // FIXME: Email should not be optional.
-    const user = await authService.emailVerify(req.decodedClaims!.email!);
+    const user = await authService.emailVerify(req.decodedClaims!.email);
 
     return res.status(200).json(user);
   } catch (error: any) {
-    next(sendError(error, "emailVerify controller error.", 500));
+    next(createApiError(error, "emailVerify controller error.", 500));
   }
 }
 
@@ -109,7 +110,22 @@ export async function logout(req: Request, res: Response, next: NextFunction) {
       .clearCookie("session")
       .json({ message: "Session cleared, log out successful." });
   } catch (error: any) {
-    next(sendError(error, "logout controller error.", 500));
+    next(createApiError(error, "logout controller error.", 500));
+  }
+}
+
+/**
+ * Clears every session, csrf token and cookies.
+ */
+export async function clear(req: Request, res: Response, next: NextFunction) {
+  try {
+    await authService.wipeUser(req.decodedClaims!.sub);
+
+    return res.status(200).clearCookie("session").clearCookie("refresh").json({
+      message: "All refresh and csrf tokens successfully removed.",
+    });
+  } catch (error: any) {
+    next(createApiError(error, "clearSessions controller error.", 500));
   }
 }
 
@@ -127,30 +143,6 @@ export async function deleteUser(
       .status(200)
       .json({ message: `User ${userId} successfully deleted.` });
   } catch (error: any) {
-    next(sendError(error, "deleteUser controller error.", 500));
-  }
-}
-
-/**
- * Clears every session.
- */
-export async function clearSessions(
-  req: Request,
-  res: Response,
-  next: NextFunction
-) {
-  try {
-    const userId = req.decodedClaims!.sub;
-
-    // await Promise.all([
-    //   authService.clearAllSessions(userId),
-    //   deleteAllCsrfTokens(userId),
-    // ]);
-
-    return res.status(200).clearCookie("session").json({
-      message: "All refresh and csrf tokens successfully removed.",
-    });
-  } catch (error: any) {
-    next(sendError(error, "clearSessions controller error.", 500));
+    next(createApiError(error, "deleteUser controller error.", 500));
   }
 }

@@ -1,11 +1,12 @@
 import { Request, Response, NextFunction } from "express";
 import { compare } from "bcrypt";
-import sendError from "@utils/CustomError";
+import { createApiError } from "@utils/CustomError";
 import { redisClient } from "@cache";
 
 /**
+ * @middleware
  * Verifies the Cross-Site Request Forgery (CSRF) token; this middleware should be used on routes
- * that manipulate data (POST, PATCH, PUT, DELETE).
+ * that manipulate data (e.g. POST, PATCH, PUT, DELETE).
  */
 export default async function verifyCsrfToken(
   req: Request,
@@ -35,12 +36,7 @@ export default async function verifyCsrfToken(
     next();
   } catch (error: any) {
     next(
-      sendError(
-        error,
-        "verifyCsrfToken middleware unexpected error.",
-        error.message,
-        500
-      )
+      createApiError(error, "verifyCsrfToken middleware unexpected error.", 500)
     );
   }
 }

@@ -1,26 +1,35 @@
-import RegisterRequestDto from "../dtos/RegisterRequestDto";
+import { ObjectId, Types } from "mongoose";
+import type RegisterRequestDto from "../dtos/RegisterRequestDto";
 
 import { hash } from "bcrypt";
 
-import { ApiError } from "@utils/CustomError";
+import { logger } from "@qc/utils";
+import { createApiError } from "@utils/CustomError";
 import sendEmail from "@utils/sendEmail";
 
-import { User } from "@authFeat/models";
-import { redisClient } from "@cache";
+import { User, UserStatistics, UserActivity } from "@authFeat/models";
+import { clearAllSessions } from "./jwtService";
+import { deleteAllCsrfTokens } from "./csrfService";
 
-export async function getUsers(id: string) {
-  try {
-    return await User.findById(id);
-  } catch (error: any) {
-    throw new ApiError("getUsers service error.", error.message);
-  }
-}
-
-export async function getUser(id: string) {
+export async function getUsers() {
   try {
     return await User.find();
   } catch (error: any) {
-    throw new ApiError("getUser service error.", error.message);
+    throw createApiError(error, "getUsers service error.", 500);
+  }
+}
+
+export async function getUser(
+  by: "_id" | "email",
+  value: ObjectId | string,
+  fields?: string
+) {
+  try {
+    let userQuery = User.findOne({ [by]: value });
+    if (fields) userQuery = userQuery.select(fields);
+    return await userQuery.exec();
+  } catch (error: any) {
+    throw createApiError(error, "getUser service error.", 500);
   }
 }
 
@@ -29,10 +38,25 @@ export async function registerStandardUser({ body: user }: RegisterRequestDto) {
     if (user.type === "standard") user.password = await hash(user.password, 12);
     else user.password = `${user.type} provided`;
 
-    const newUser = new User(user);
-    newUser.save();
+    const newUser = new User({
+        _id: new Types.ObjectId(),
+        ...user,
+      }),
+      userStatistics = new UserStatistics({ _id: newUser._id }),
+      userActivity = new UserActivity({ _id: newUser._id });
+
+    Promise.all([newUser.save(), userStatistics.save(), userActivity.save()]);
+
+    await newUser.updateOne({
+      statistics: userStatistics._id,
+      activity: userActivity._id,
+    });
+
+    logger.info(
+      `User ${newUser._id} was successfully registered in the database.`
+    );
   } catch (error: any) {
-    throw new ApiError("register service error.", error.message);
+    throw createApiError(error, "register service error.", 500);
   }
 }
 // export async function registerGoogleUser(idToken: string) {
@@ -55,11 +79,11 @@ export async function emailVerify(email: string) {
 
     const info = await sendEmail(email, "Email Verification", "html");
   } catch (error: any) {
-    throw new ApiError("deleteCsrfToken service error.", error.message);
+    throw createApiError(error, "deleteCsrfToken service error.", 500);
   }
 }
 
-export async function updateActivityTimestamp(userId: string) {
+export async function updateActivityTimestamp(userId: ObjectId | string) {
   try {
     await User.findOneAndUpdate(
       { _id: userId },
@@ -67,25 +91,28 @@ export async function updateActivityTimestamp(userId: string) {
       { runValidators: true }
     );
   } catch (error: any) {
-    throw new ApiError("updateActivityTimestamp service error.", error.message);
+    throw createApiError(error, "updateActivityTimestamp service error.", 500);
   }
 }
 
-export async function deleteUser(id: string) {
+export async function wipeUser(userId: ObjectId | string) {
   try {
-    // await Promise.all([
-    //   auth.deleteUser(id),
-    //   db.collection("user").doc(id).delete(),
-    //   auth.revokeRefreshTokens(id),
-    // ]);
+    await Promise.all([
+      clearAllSessions(userId.toString()),
+      deleteAllCsrfTokens(userId.toString()),
+    ]);
   } catch (error: any) {
-    throw new ApiError("deleteUser service error.", error.message);
+    throw createApiError(error, "deleteUser service error.", 500);
   }
 }
-// export async function clearAllSessions(id: string) {
-//   try {
-//     await auth.revokeRefreshTokens(id);
-//   } catch (error: any) {
-//     throw new ApiError("clearAllSessions service error.", error.message);
-//   }
-// }
+
+export async function deleteUser(userId: ObjectId | string) {
+  try {
+    await Promise.all([
+      User.deleteOne({ _id: userId }),
+      clearAllSessions(userId.toString()),
+    ]);
+  } catch (error: any) {
+    throw createApiError(error, "deleteUser service error.", 500);
+  }
+}

@@ -5,77 +5,84 @@
  * Handles functionally of the user's token.
  */
 
-import type User from "@authFeat/typings/UserDoc";
+import type { Secret, SignOptions } from "jsonwebtoken";
+import type { UserToClaims } from "@authFeat/typings/User";
+
 import jwt from "jsonwebtoken";
-import { ApiError } from "@utils/CustomError";
+
+import { createApiError } from "@utils/CustomError";
 import { redisClient } from "@cache";
 
-export const generateJWT = {
-  accessToken: (user: User) => {
-    const { _id, ...userData } = user;
+export class GenerateUserJWT {
+  user: UserToClaims;
 
+  constructor(user: UserToClaims) {
+    this.user = user;
+  }
+
+  #token(secret: Secret, options?: SignOptions) {
+    return jwt.sign({ sub: this.user._id.toString(), ...this.user }, secret, {
+      algorithm: "HS256",
+      expiresIn: "15m",
+      ...options,
+    });
+  }
+
+  accessToken(options?: SignOptions) {
     try {
-      return jwt.sign(
-        { sub: _id, ...userData },
-        process.env.ACCESS_TOKEN_SECRET!,
-        {
-          algorithm: "HS256",
-          expiresIn: "15m",
-        }
-      );
+      return this.#token(process.env.ACCESS_TOKEN_SECRET!, options);
     } catch (error: any) {
-      throw new ApiError(
+      throw createApiError(
+        error,
         "generateJWT service error; generating access token.",
-        error.message
+        500
       );
     }
-  },
+  }
 
-  refreshToken: async (user: User) => {
-    const { _id, ...userData } = user;
-
+  async refreshToken(options?: SignOptions) {
     try {
-      const refreshToken = jwt.sign(
-        { sub: _id, ...userData },
+      const refreshToken = this.#token(
         process.env.REFRESH_TOKEN_SECRET!,
-        {
-          algorithm: "HS256",
-          expiresIn: "7d",
-        }
+        options
       );
-      // Cache the refresh token to Redis for verification afterwards.
-      await redisClient.sAdd(`user:${_id}:refresh_tokens`, refreshToken);
+      // For verification afterwards.
+      await redisClient.sAdd(
+        `user:${this.user._id.toString()}:refresh_tokens`,
+        refreshToken
+      );
 
       return refreshToken;
     } catch (error: any) {
-      throw new ApiError(
+      throw createApiError(
+        error,
         "generateJWT service error; generating refresh token.",
-        error.message
+        500
       );
     }
-  },
-};
+  }
+}
 
 export const isRefreshTokenValid = async (userId: string, token: string) => {
   try {
-    return await redisClient.sIsMember(`user:${userId}:refreshTokens`, token);
+    return await redisClient.sIsMember(`user:${userId}:refresh_tokens`, token);
   } catch (error: any) {
-    throw new ApiError("isRefreshTokenValid service error.", error.message);
+    throw createApiError(error, "isRefreshTokenValid service error.", 500);
   }
 };
 
 export async function clearSession(userId: string, refreshToken: string) {
   try {
-    await redisClient.sRem(`user:${userId}:refreshTokens`, refreshToken);
+    await redisClient.sRem(`user:${userId}:refresh_tokens`, refreshToken);
   } catch (error: any) {
-    throw new ApiError("clearSession service error.", error.message);
+    throw createApiError(error, "clearSession service error.", 500);
   }
 }
 
 export async function clearAllSessions(userId: string) {
   try {
-    await redisClient.del(`user:${userId}:refreshTokens`);
+    await redisClient.del(`user:${userId}:refresh_tokens`);
   } catch (error: any) {
-    throw new ApiError("clearAllSessions service error.", error.message);
+    throw createApiError(error, "clearAllSessions service error.", 500);
   }
 }

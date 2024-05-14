@@ -1,22 +1,13 @@
 import { model } from "mongoose";
-import userSchema from "./userSchema";
-import { ApiError } from "@utils/CustomError";
+import mongooseAutopopulate from "mongoose-autopopulate";
+import userSchema, {
+  userStatisticsSchema,
+  userActivitySchema,
+} from "./schemas/userSchema";
+import "./middleware";
 
-userSchema.pre("save", (next) => {
-  const user = this as any;
+userSchema.plugin(mongooseAutopopulate);
 
-  if (user.isModified("_id")) {
-    throw new ApiError(
-      "userSchema middleware error.",
-      "Unexpected change occurred within the user document",
-      400
-    );
-  }
-
-  user.updated_at = new Date();
-  next();
-});
-
-const User = model("user", userSchema);
-
-export { User };
+export const User = model("user", userSchema),
+  UserStatistics = model("userStatistics", userStatisticsSchema),
+  UserActivity = model("userActivity", userActivitySchema);

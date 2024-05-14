@@ -1,5 +1,5 @@
 import nodemailer from "nodemailer";
-import { ApiError } from "./CustomError";
+import { createApiError } from "./CustomError";
 
 export default async function sendEmail(
   to: string,
@@ -25,7 +25,7 @@ export default async function sendEmail(
     if (error) {
       const errorMsg = "sendEmail verification error:\n" + error.message;
       console.error(errorMsg);
-      throw new ApiError("sendEmail verification error.", errorMsg);
+      throw createApiError("sendEmail verification error.", errorMsg, 500);
     }
   });
 

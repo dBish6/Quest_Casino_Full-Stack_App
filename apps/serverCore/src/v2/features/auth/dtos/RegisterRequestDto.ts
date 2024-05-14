@@ -1,14 +1,6 @@
-import { Request } from "express";
+import type { Request } from "express";
+import type { UserToClaims } from "@authFeat/typings/User";
 
 export default interface RegisterRequestDto extends Request {
-  body: {
-    type: "standard" | "google";
-    legalName: { first: string; last: string };
-    username: string;
-    email: string;
-    password: string;
-    country: string;
-    state?: string;
-    phoneNumber?: string;
-  };
+  body: Omit<UserToClaims, "_id"> & { password: string };
 }
