@@ -25,13 +25,31 @@ export interface UserClaims extends JwtPayload {
 
 export interface ClientUser {
   type: "standard" | "google";
-  legalName: { first: string; last: string };
+  avatar_url: string;
+  legal_name: { first: string; last: string };
   username: string;
   email: string;
-  password: string;
   country: string;
   region?: string;
-  phoneNumber?: string;
+  phone_number?: string;
+  balance: number;
+  statistics: {
+    losses: {
+      total: number;
+      table: number;
+      slots: number;
+      dice: number;
+    };
+    wins: {
+      total: number;
+      table: number;
+      slots: number;
+      dice: number;
+      streak: number;
+      win_rate: number;
+    };
+    completed_quests: Map<string, boolean>;
+  };
 }
 
 interface SharedDocFields {

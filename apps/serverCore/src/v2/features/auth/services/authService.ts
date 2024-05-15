@@ -1,6 +1,7 @@
-import { ObjectId, Types } from "mongoose";
-import type RegisterRequestDto from "../dtos/RegisterRequestDto";
+import type { ObjectId } from "mongoose";
+import type RegisterRequestDto from "@authFeat/dtos/RegisterRequestDto";
 
+import { Types } from "mongoose";
 import { hash } from "bcrypt";
 
 import { logger } from "@qc/utils";
@@ -11,9 +12,26 @@ import { User, UserStatistics, UserActivity } from "@authFeat/models";
 import { clearAllSessions } from "./jwtService";
 import { deleteAllCsrfTokens } from "./csrfService";
 
-export async function getUsers() {
+const CLIENT_USER_SHARED_EXCLUDE = "-_id -created_at -updated_at",
+  CLIENT_USER_FIELDS = `${CLIENT_USER_SHARED_EXCLUDE} -password -activity`;
+
+function populateUser(userQuery: any, forClient?: boolean) {
+  if (forClient) {
+    return userQuery.select(CLIENT_USER_FIELDS).populate({
+      path: "statistics",
+      select: CLIENT_USER_SHARED_EXCLUDE,
+    });
+  } else {
+    return userQuery.populate("statistics activity");
+  }
+}
+
+export async function getUsers(forClient?: boolean) {
   try {
-    return await User.find();
+    let query = User.find();
+    query = populateUser(query, forClient);
+
+    return await query.exec();
   } catch (error: any) {
     throw createApiError(error, "getUsers service error.", 500);
   }
@@ -22,12 +40,13 @@ export async function getUsers() {
 export async function getUser(
   by: "_id" | "email",
   value: ObjectId | string,
-  fields?: string
+  forClient?: boolean
 ) {
   try {
-    let userQuery = User.findOne({ [by]: value });
-    if (fields) userQuery = userQuery.select(fields);
-    return await userQuery.exec();
+    let query = User.findOne({ [by]: value });
+    query = populateUser(query, forClient);
+
+    return await query.exec();
   } catch (error: any) {
     throw createApiError(error, "getUser service error.", 500);
   }
@@ -45,7 +64,11 @@ export async function registerStandardUser({ body: user }: RegisterRequestDto) {
       userStatistics = new UserStatistics({ _id: newUser._id }),
       userActivity = new UserActivity({ _id: newUser._id });
 
-    Promise.all([newUser.save(), userStatistics.save(), userActivity.save()]);
+    await Promise.all([
+      newUser.save(),
+      userStatistics.save(),
+      userActivity.save(),
+    ]);
 
     await newUser.updateOne({
       statistics: userStatistics._id,

@@ -130,12 +130,12 @@ const userSchema = new Schema<UserDoc, Model<UserDoc>>(
     balance: { type: Number, default: 0 },
     statistics: {
       type: Schema.ObjectId,
-      ref: "userStatistics",
+      ref: "statistics",
       autopopulate: true,
     },
     activity: {
       type: Schema.ObjectId,
-      ref: "userActivity",
+      ref: "activity",
       autopopulate: true,
     },
   },

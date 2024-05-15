@@ -1,8 +1,12 @@
+/**
+ * Auth Controller
+ *
+ * Description:
+ * Handles user authentication-related HTTP requests.
+ */
+
 import type { Request, Response, NextFunction } from "express";
 import type RegisterRequestDto from "@authFeat/dtos/RegisterRequestDto";
-import type { UserToClaims } from "@authFeat/typings/User";
-
-import { CLIENT_USER_FIELDS } from "@authFeat/constants/USER_QUERIES";
 
 import { logger } from "@qc/utils";
 import { createApiError } from "@utils/CustomError";
@@ -11,13 +15,17 @@ import initializeSession from "@authFeat/utils/initializeSession";
 import * as authService from "@authFeat/services/authService";
 import { deleteCsrfToken } from "@authFeat/services/csrfService";
 
+/**
+ * Send all users as client formatted users.
+ * @controller
+ */
 export async function getUsers(
   req: Request,
   res: Response,
   next: NextFunction
 ) {
   try {
-    const users = await authService.getUsers();
+    const users = await authService.getUsers(true);
 
     return res.status(200).json(users);
   } catch (error: any) {
@@ -25,19 +33,23 @@ export async function getUsers(
   }
 }
 
+/**
+ * Send a client formatted user or current user.
+ * @controller
+ */
 export async function getUser(req: Request, res: Response, next: NextFunction) {
+  const query = req.query.email;
+
   try {
-    const user = (await authService.getUser(
-      "_id",
-      req.decodedClaims!.sub,
-      CLIENT_USER_FIELDS
-    )) as UserToClaims;
+    const user = await authService.getUser(
+      query ? "email" : "_id",
+      req.query.email || req.decodedClaims!.sub,
+      true
+    );
     if (!user)
       return res.status(404).send({
         message: "User doesn't exist.",
       });
-
-    // console.log("user", user);
 
     return res.status(200).json({ user });
   } catch (error: any) {
@@ -46,6 +58,11 @@ export async function getUser(req: Request, res: Response, next: NextFunction) {
   }
 }
 
+/**
+ * Registers a user and checks if the user already exits within the database.
+ * @controller
+ * @returns A success message, bad request, or ApiError.
+ */
 export async function register(
   req: RegisterRequestDto,
   res: Response,
@@ -55,10 +72,12 @@ export async function register(
 
   try {
     const user = await authService.getUser("email", req.body.email);
-    if (user)
-      return res.status(404).send({
+    if (user) {
+      return res.status(400).send({
         message: "User already exists.",
       });
+    }
+    // TODO: Unique usernames.
 
     await authService.registerStandardUser(req);
 
@@ -71,6 +90,11 @@ export async function register(
   }
 }
 
+/**
+ * Initializes the current user session.
+ * @controller
+ * @returns The client formatted user and success message or ApiError.
+ */
 export async function login(req: Request, res: Response, next: NextFunction) {
   try {
     const clientUser = await initializeSession(res, req.decodedClaims!.sub);
@@ -84,6 +108,11 @@ export async function login(req: Request, res: Response, next: NextFunction) {
   }
 }
 
+/**
+ * ...
+ * @controller
+ * @returns ...
+ */
 export async function emailVerify(
   req: Request,
   res: Response,
@@ -98,6 +127,11 @@ export async function emailVerify(
   }
 }
 
+/**
+ * Clears the session cookie and deletes the csrf token.
+ * @controller
+ * @returns A success message or ApiError.
+ */
 export async function logout(req: Request, res: Response, next: NextFunction) {
   try {
     await deleteCsrfToken(
@@ -115,7 +149,9 @@ export async function logout(req: Request, res: Response, next: NextFunction) {
 }
 
 /**
- * Clears every session, csrf token and cookies.
+ * Clears every refresh token, csrf token and cookies.
+ * @controller
+ * @returns A success message or ApiError.
  */
 export async function clear(req: Request, res: Response, next: NextFunction) {
   try {
@@ -129,6 +165,11 @@ export async function clear(req: Request, res: Response, next: NextFunction) {
   }
 }
 
+/**
+ * Deletes the current user.
+ * @controller
+ * @returns A success message or ApiError.
+ */
 export async function deleteUser(
   req: Request,
   res: Response,

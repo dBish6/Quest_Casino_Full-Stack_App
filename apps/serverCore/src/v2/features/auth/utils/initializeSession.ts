@@ -1,6 +1,6 @@
 import type { Response } from "express";
 import type { ObjectId } from "mongoose";
-import type { UserDoc } from "@authFeat/typings/User";
+import type { UserDoc, ClientUser } from "@authFeat/typings/User";
 
 import { createApiError } from "@utils/CustomError";
 
@@ -20,7 +20,7 @@ export default async function initializeSession(
     const user = await getUser("_id", userId);
     if (!user) return "User doesn't exist.";
 
-    const userToClaims = createUserToClaims(user),
+    const userToClaims = formatUserToClaims(user),
       generateUserJWT = new GenerateUserJWT(userToClaims);
 
     const accessToken = generateUserJWT.accessToken(),
@@ -29,6 +29,7 @@ export default async function initializeSession(
         generateCsrfToken(user.id),
       ]);
 
+    // TODO: Might need to do this every time?
     if (csrfToken) deleteCsrfToken(user.id, csrfToken);
 
     res
@@ -48,13 +49,13 @@ export default async function initializeSession(
       })
       .setHeader("x-xsrf-token", newCsrfToken);
 
-    return createClientUser(user);
+    return formatClientUser(user) as ClientUser;
   } catch (error: any) {
     throw createApiError(error, "initializeSession error.", 500);
   }
 }
 
-function createUserToClaims(user: UserDoc) {
+function formatUserToClaims(user: UserDoc) {
   return {
     _id: user._id,
     type: user.type as "standard" | "google",
@@ -67,13 +68,16 @@ function createUserToClaims(user: UserDoc) {
   };
 }
 
-function createClientUser(user: UserDoc) {
-  const { _id, ...shared } = createUserToClaims(user);
+function formatClientUser(user: UserDoc) {
+  const { _id, ...shared } = formatUserToClaims(user);
   return {
     ...shared,
-    avatarUrl: user.avatar_url,
+    avatar_url: user.avatar_url,
     balance: user.balance,
-    losses: user.statistics.losses,
-    wins: user.statistics.wins,
+    statistics: {
+      losses: user.statistics.losses,
+      wins: user.statistics.wins,
+      completed_quests: user.statistics.completed_quests,
+    },
   };
 }
