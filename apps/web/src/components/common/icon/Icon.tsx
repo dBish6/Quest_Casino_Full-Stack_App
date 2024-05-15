@@ -43,6 +43,12 @@ const iconLib = {
     "aria-label": "Notifications",
   },
 
+  "check-mark-24": {
+    id: "check-mark-24",
+    size: { width: "24", height: "16.961" },
+    "aria-label": "Success",
+  },
+
   "edit-24": {
     id: "edit-24",
     size: { width: "24", height: "24.073" },
@@ -89,8 +95,14 @@ const iconLib = {
 
   "google-24": {
     id: "google-24",
-    size: { width: "24", height: "24.484" },
+    size: { width: "24.002", height: "24.484" },
     "aria-label": "Google Icon",
+  },
+
+  "info-24": {
+    id: "info-24",
+    size: { width: "24", height: "24" },
+    "aria-label": "Info",
   },
 
   "send-24": {
@@ -102,5 +114,11 @@ const iconLib = {
     id: "send-18",
     size: { width: "18", height: "18.028" },
     "aria-label": "Send",
+  },
+
+  "warning-24": {
+    id: "warning-24",
+    size: { width: "24", height: "24.327" },
+    "aria-label": "Warning",
   },
 };
