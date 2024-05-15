@@ -1,0 +1,20 @@
+& .link {
+  position: relative;
+  color: inherit;
+
+  &.primary {
+    font-weight: 600;
+    text-decoration: underline inherit;
+  }
+
+  &:hover,
+  &:focus-visible,
+  &:active,
+  &[data-key-press="true"] {
+    color: var(--c-heading-1);
+  }
+  &:active,
+  &[data-key-press="true"] {
+    top: 1.7px;
+  }
+}

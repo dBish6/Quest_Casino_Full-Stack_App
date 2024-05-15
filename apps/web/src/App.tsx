@@ -4,7 +4,7 @@
  *
  * Author: David Bishop
  * Creation Date: April 16, 2024
- * Last Updated: May 3, 2024
+ * Last Updated: May 15, 2024
  *
  * Description:
  * .
@@ -16,7 +16,7 @@
  * The log is in the changelog.txt file at the base of this web directory.
  */
 
-import { type RouteObject } from "react-router-dom";
+import { Navigate, type RouteObject } from "react-router-dom";
 
 import { Dashboard } from "@components/partials";
 import { About, Home, Profile, Settings, Support } from "@views/index";
@@ -84,6 +84,12 @@ export const routes: RouteObject[] = [
       {
         path: "error-500",
         element: <Error500 />,
+      },
+      {
+        ...(typeof window !== "undefined" && {
+          path: "*",
+          element: <Navigate to="/error-404" replace />,
+        }),
       },
     ],
   },

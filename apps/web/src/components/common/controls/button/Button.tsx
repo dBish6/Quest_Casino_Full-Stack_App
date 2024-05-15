@@ -1,6 +1,10 @@
+import type { VariantProps } from "class-variance-authority";
+
 import { forwardRef } from "react";
 import { Slot } from "@radix-ui/react-slot";
-import { cva, type VariantProps } from "class-variance-authority";
+import { cva } from "class-variance-authority";
+
+import keyPress from "@utils/keyPress";
 
 import { Icon } from "@components/common/icon";
 
@@ -36,27 +40,29 @@ export interface ButtonProps
 
 // prettier-ignore
 const Button = forwardRef<HTMLButtonElement, React.PropsWithChildren<ButtonProps>>(
-  ({ children, className, intent = "primary", size, asChild, iconBtn, ...props }, ref) => {
+  ({ children, className, intent, size, asChild, iconBtn, ...props }, ref) => {
     const Element = asChild ? Slot : "button";
 
     return (
       <Element
         ref={ref}
         className={`${button({ className, intent, size })}${iconBtn ? " " + s.icon : ""}`}
-        onKeyDown={(e) =>
+        {...props}
+        onKeyDown={(e) => {
           keyPress(e, () =>
             (e.target as HTMLButtonElement).setAttribute(
               "data-key-press",
               "true"
             )
-          )
-        }
-        onKeyUp={(e) =>
+          );
+          if (props.onKeyDown) props.onKeyDown(e);
+        }}
+        onKeyUp={(e) => {
           keyPress(e, () =>
             (e.target as HTMLButtonElement).removeAttribute("data-key-press")
-          )
-        }
-        {...props}
+          );
+          if (props.onKeyDown) props.onKeyDown(e);
+        }}
       >
         {intent === "exit" ? (
           size === "xl" ? (
@@ -72,10 +78,3 @@ const Button = forwardRef<HTMLButtonElement, React.PropsWithChildren<ButtonProps
   }
 );
 export default Button;
-
-function keyPress(
-  e: React.KeyboardEvent<HTMLButtonElement>,
-  callback: () => void
-) {
-  if (e.key === "Enter" || e.key === " ") callback();
-}
