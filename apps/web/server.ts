@@ -16,7 +16,7 @@ import sirv from "sirv";
 import { installGlobals } from "@remix-run/node";
 
 import { configureStore } from "@reduxjs/toolkit";
-import { stateReducers } from "@redux/reducers/stateReducer";
+import { rootReducer } from "@redux/reducers";
 
 installGlobals();
 
@@ -118,7 +118,7 @@ async function setupServer() {
  */
 function getInitialReduxState() {
   const store = configureStore({
-    reducer: { ...stateReducers },
+    reducer: rootReducer,
   });
 
   const preloadedStateScript = `<script>window.__PRELOADED_STATE__ = ${JSON.stringify(

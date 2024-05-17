@@ -5,26 +5,26 @@ import { createSlice } from "@reduxjs/toolkit";
 interface AuthState {
   user: {
     credentials: UserCredentials | null;
-    token: string | null;
+    // token: string | null;
   };
 }
 
 export const initialState: AuthState = {
   user: {
     credentials: null,
-    token: null,
+    // token: null,
   },
   // user: null,
 };
 
-export const chatSlice = createSlice({
+const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
     SET_USER: (state, action) => {
       state.user = {
         credentials: action.payload.user,
-        token: action.payload.token,
+        // token: action.payload.token,
       };
     },
     // SET_TOKEN: (state, action) => {
@@ -33,15 +33,17 @@ export const chatSlice = createSlice({
     CLEAR_USER: (state) => {
       state.user = {
         credentials: null,
-        token: null,
+        // token: null,
       };
     },
   },
 });
 
 export const {
-  name,
+  name: authName,
   reducer: authReducer,
   // SET_TOKEN,
   ...actions
-} = chatSlice;
+} = authSlice;
+
+export default authSlice;

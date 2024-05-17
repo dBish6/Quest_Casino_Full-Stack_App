@@ -10,7 +10,6 @@
     "url": "git+https://github.com/dBish6/Quest_Casino.git"
   },
   "type": "module",
-  "proxy": "http://localhost:4000",
   "scripts": {
     "dev": "dotenv -e .env.development tsx ./server.ts",
     "build": "tsc && vite build",
