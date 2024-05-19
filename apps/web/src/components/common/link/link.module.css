@@ -1,6 +1,7 @@
 & .link {
   position: relative;
   color: inherit;
+  transition: 0.22s ease-in-out color;
 
   &.primary {
     font-weight: 600;

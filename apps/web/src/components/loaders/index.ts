@@ -1,2 +1,2 @@
 export { default as ResourceLoader } from "./resource/ResourceLoader";
-export { default as Spinner } from "./spinner/Spinner";
+export { type SpinnerProps, default as Spinner } from "./spinner/Spinner";

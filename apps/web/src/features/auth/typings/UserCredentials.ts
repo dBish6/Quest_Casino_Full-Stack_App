@@ -1,26 +1,29 @@
 export default interface UserCredentials {
   type: "standard" | "google";
   avatar_url: string;
-  legalName: { first: string; last: string };
+  legal_name: { first: string; last: string };
   username: string;
   email: string;
+  email_verified: boolean;
   country: string;
-  state?: string;
-  phoneNumber?: string;
+  region?: string;
+  phone_number?: string;
   balance: number;
-  losses: {
-    total: number;
-    table: number;
-    slots: number;
-    dice: number;
+  statistics: {
+    losses: {
+      total: number;
+      table: number;
+      slots: number;
+      dice: number;
+    };
+    wins: {
+      total: number;
+      table: number;
+      slots: number;
+      dice: number;
+      streak: number;
+      win_rate: number;
+    };
+    completed_quests: Map<string, boolean>;
   };
-  wins: {
-    total: number;
-    table: number;
-    slots: number;
-    dice: number;
-    streak: number;
-    win_rate: number;
-  };
-  completedQuests: boolean[];
 }

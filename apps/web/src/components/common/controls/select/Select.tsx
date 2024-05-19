@@ -1,6 +1,8 @@
+import type { VariantProps } from "class-variance-authority";
+
 import { forwardRef, useRef } from "react";
 import { Label } from "@radix-ui/react-label";
-import { cva, type VariantProps } from "class-variance-authority";
+import { cva } from "class-variance-authority";
 
 import { Icon } from "@components/common/icon";
 
@@ -69,8 +71,7 @@ export const Input = forwardRef<HTMLSelectElement,React.PropsWithChildren<Select
             )}
           </Label>
           <select
-            aria-describedby="formError"
-            {...(error && { "aria-invalid": true })}
+            {...(error && { "aria-errormessage": "formError", "aria-invalid": true })}
             {...(Loader && {"aria-busy": loaderTrigger})}
             ref={ref}
             onBlur={() =>
@@ -104,7 +105,7 @@ export const Input = forwardRef<HTMLSelectElement,React.PropsWithChildren<Select
         </div>
         
         {error && (
-          <small role="status" id="formError" className={s.error}>
+          <small role="alert" id="formError" className={s.error}>
             {error}
           </small>
         )}

@@ -1,10 +1,9 @@
 .button {
-  position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  z-index: 1;
+  &.icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 
   &.primary:not(.icon),
   &.secondary:not(.icon),
@@ -19,7 +18,9 @@
     border-radius: 6px;
   }
   &.primary {
+    position: relative;
     background: linear-gradient(180deg, var(--c-purple-500), #302259);
+    z-index: 1;
     transition: 0.22s ease-in-out border-color;
     &::before,
     &::after {
@@ -29,7 +30,7 @@
       border-radius: 6px;
       z-index: -1;
       opacity: 0;
-      transition: opacity 0.2s ease-in-out;
+      transition: opacity 0.22s ease-in-out;
     }
     &::before {
       background: linear-gradient(180deg, var(--c-purple-600), #2b1f51);

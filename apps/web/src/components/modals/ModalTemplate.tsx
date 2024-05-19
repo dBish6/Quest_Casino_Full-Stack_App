@@ -1,6 +1,8 @@
+import type { Variants } from "framer-motion";
+
 import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { type Variants, AnimatePresence, m } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 import { Root, Trigger, Portal, Overlay } from "@radix-ui/react-dialog";
 
 import preventScroll from "@utils/preventScroll";

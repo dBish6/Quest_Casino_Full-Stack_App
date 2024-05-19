@@ -9,7 +9,7 @@ interface AuthState {
   };
 }
 
-export const initialState: AuthState = {
+const initialState: AuthState = {
   user: {
     credentials: null,
     // token: null,
@@ -39,11 +39,11 @@ const authSlice = createSlice({
   },
 });
 
-export const {
-  name: authName,
-  reducer: authReducer,
-  // SET_TOKEN,
-  ...actions
-} = authSlice;
+export const { name: authName, reducer: authReducer } = authSlice,
+  {
+    SET_USER,
+    // SET_TOKEN,
+    CLEAR_USER,
+  } = authSlice.actions;
 
 export default authSlice;

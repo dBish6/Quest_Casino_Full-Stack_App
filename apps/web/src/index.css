@@ -207,9 +207,12 @@
   --c-lvl-modal: rgba(22, 15, 41, 0.45);
   --c-lvl-3: #19112f;
   --c-lvl-4: #1c1435;
+  --c-lvl-5: #1f163b;
+  --c-lvl-6: #221841;
 
   --c-status-red: #c63b50;
   --c-status-green: #43b25f;
+  --c-status-blue: #3f5ae2;
 
   --c-heading-1: #f5f5f5;
   --c-heading-2: #efefef;
@@ -223,7 +226,8 @@
   --h1: 700 42px/59px "Enzo OT", sans-serif;
   --h2: 700 32px/45px "Enzo OT", sans-serif;
   --h3: 700 24px/34px "Enzo OT", sans-serif;
-  --h4: italic 500 18px/26px "Enzo OT", sans-serif;
+  --h4: 700 18px/26px "Enzo OT", sans-serif;
+  --h4-it: italic 500 18px/26px "Enzo OT", sans-serif;
 
   /* 
   --h1-clamp: clamp(
@@ -279,7 +283,7 @@
   --z-overlay: 10;
 
   background: var(--c-bg);
-  color-scheme: light;
+  color-scheme: dark;
   min-height: 100vh;
 }
 
@@ -310,7 +314,7 @@ h3,
 h4,
 h5 {
   font-family: "Enzo OT", sans-serif;
-  color: var(--c-heading1);
+  color: var(--c-heading-1);
 }
 
 p,
@@ -318,33 +322,15 @@ small {
   /* font-size: var(--para-regular-clamp); */
   letter-spacing: var(--para-letter-spaceing);
 }
-/* li {
-  list-style-position: inside;
-} */
 
-a {
-  position: relative;
-  color: inherit;
-
-  & .underline {
-    font-weight: 600;
-    text-decoration: underline inherit;
-  }
-
-  &:hover,
-  &:focus-visible,
-  &:active,
-  &[data-key-press="true"] {
-    color: var(--c-heading-2);
-  }
-  &:active,
-  &[data-key-press="true"] {
-    top: 2px;
-  }
+ul,
+ol {
+  list-style: none;
 }
 
 button {
   background: none;
+  cursor: pointer;
 }
 
 /* @media (--medium-viewport) {

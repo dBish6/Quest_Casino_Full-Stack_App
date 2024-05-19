@@ -1,3 +1,3 @@
-import { useAppSelector } from "@redux/hooks";
+import type { RootState } from "@redux/store";
 
-export const selectToasts = useAppSelector((state) => state.toast.count);
+export const selectToasts = (state: RootState) => state.toast.count;

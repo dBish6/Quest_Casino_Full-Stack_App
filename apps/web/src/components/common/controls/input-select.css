@@ -2,7 +2,7 @@
 
 /* [typing="true"] is for .input and [selected="true"] is for .select. */
 .control {
-  & small {
+  & small[role="alert"] {
     display: block;
     margin-top: 4px;
     font: var(--para-small);

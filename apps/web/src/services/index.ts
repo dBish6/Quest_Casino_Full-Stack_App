@@ -1,3 +1,4 @@
+import type { FetchBaseQueryArgs } from "@reduxjs/toolkit/dist/query/fetchBaseQuery";
 import type { RootState } from "@redux/store";
 
 import {
@@ -12,13 +13,13 @@ export const createApi = buildCreateApi(
   reactHooksModule({ unstable__sideEffectsInRender: true })
 );
 
-export const baseQuery = (ext: string = "") =>
+export const baseQuery = (ext: string = "", options?: FetchBaseQueryArgs) =>
   fetchBaseQuery({
     baseUrl: `/api/v2${ext}`,
     prepareHeaders: (headers, { getState }) => {
       // const token = (getState() as RootState).auth.token
-      const authToken = (getState() as any).auth.user.token;
-      if (authToken) headers.set("authorization", `Bearer ${authToken}`);
+      // const authToken = (getState() as any).auth.user.token;
+      // if (authToken) headers.set("authorization", `Bearer ${authToken}`);
 
       const csrfToken = localStorage.getItem("csrf");
       if (csrfToken) headers.set("x-xsrf-token", csrfToken);
@@ -28,4 +29,5 @@ export const baseQuery = (ext: string = "") =>
     },
     credentials: "same-origin", // TODO: Check.
     timeout: 10000,
+    ...options,
   });

@@ -1,8 +1,9 @@
-import { type ButtonProps } from "../button/Button";
+import type { VariantProps } from "class-variance-authority";
+import type { ButtonProps } from "../button/Button";
 
 import { forwardRef, useRef } from "react";
 import { Label } from "@radix-ui/react-label";
-import { cva, type VariantProps } from "class-variance-authority";
+import { cva } from "class-variance-authority";
 
 import "../input-select.css";
 import s from "./input.module.css";
@@ -60,8 +61,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             )}
           </Label>
           <input
-            aria-describedby="formError"
-            {...(error && { "aria-invalid": true })}
+            {...(error && { "aria-errormessage": "formError", "aria-invalid": true })}
             ref={ref}
             onFocus={() =>
               inputContainerRef.current!.setAttribute("data-focused", "true")
@@ -79,7 +79,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         </div>
 
         {error && (
-          <small role="status" id="formError" className={s.error}>
+          <small role="alert" id="formError" className={s.error}>
             {error}
           </small>
         )}

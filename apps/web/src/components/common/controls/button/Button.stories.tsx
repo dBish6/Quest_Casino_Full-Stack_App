@@ -133,7 +133,6 @@ export const Icon: Story = {
     args: {
       intent: "exit",
       size: "xl",
-      iconBtn: true,
     },
     render: (args) => <Button {...args} />,
   };

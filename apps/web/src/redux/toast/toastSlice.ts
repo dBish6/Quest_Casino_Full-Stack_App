@@ -1,17 +1,19 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { nanoid } from "@reduxjs/toolkit";
 
-interface ToastPayload {
+export interface ToastPayload {
   id: string;
+  title?: string;
   message: string;
-  intent: string;
+  intent: "error" | "success" | "info";
 }
 
-interface ToastState {
+export interface ToastState {
   count: ToastPayload[];
 }
 
-export const initialState: ToastState = {
+const initialState: ToastState = {
+  // count: [],
   count: [],
 };
 
@@ -20,9 +22,7 @@ const toastSlice = createSlice({
   initialState,
   reducers: {
     ADD_TOAST: (state, action: PayloadAction<ToastPayload>) => {
-      const { message, intent } = action.payload;
-
-      state.count = [...state.count, { id: nanoid(), message, intent }];
+      state.count = [...state.count, { ...action.payload, id: nanoid() }];
     },
     REMOVE_TOAST: (state, action: PayloadAction<{ id: string }>) => {
       state.count = state.count.filter(
@@ -32,10 +32,7 @@ const toastSlice = createSlice({
   },
 });
 
-export const {
-  name: toastName,
-  reducer: toastReducer,
-  ...actions
-} = toastSlice;
+export const { name: toastName, reducer: toastReducer } = toastSlice,
+  { ADD_TOAST, REMOVE_TOAST } = toastSlice.actions;
 
 export default toastSlice;

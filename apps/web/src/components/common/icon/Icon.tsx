@@ -1,4 +1,4 @@
-interface IconProps extends React.SVGProps<SVGSVGElement> {
+export interface IconProps extends React.SVGProps<SVGSVGElement> {
   id: keyof typeof iconLib;
 }
 

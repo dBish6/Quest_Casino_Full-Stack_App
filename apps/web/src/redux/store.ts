@@ -7,7 +7,7 @@ import { authMiddleware } from "@authFeat/services/authApi";
 const preloadedState = window.__PRELOADED_STATE__ || {};
 delete window.__PRELOADED_STATE__;
 
-export const store = configureStore({
+const store = configureStore({
   reducer: rootReducer,
   preloadedState,
   middleware: (getDefaultMiddleware) =>
@@ -19,5 +19,6 @@ export const store = configureStore({
 
 setupListeners(store.dispatch);
 
+export default store;
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;

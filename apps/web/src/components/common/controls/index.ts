@@ -1,3 +1,3 @@
-export { default as Button, type ButtonProps } from "./button/Button";
-export { default as Input, type InputProps } from "./input/Input";
-export { default as Select, type SelectProps } from "./select/Select";
+export { type ButtonProps, default as Button } from "./button/Button";
+export { type InputProps, default as Input } from "./input/Input";
+export { type SelectProps, default as Select } from "./select/Select";

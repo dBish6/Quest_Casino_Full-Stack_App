@@ -25,10 +25,6 @@ const button = cva(s.button, {
       xl: s.xl,
     },
   },
-  defaultVariants: {
-    intent: "primary",
-    size: "xl",
-  },
 });
 
 export interface ButtonProps
