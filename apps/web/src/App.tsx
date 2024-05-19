@@ -4,7 +4,7 @@
  *
  * Author: David Bishop
  * Creation Date: April 16, 2024
- * Last Updated: May 15, 2024
+ * Last Updated: May 17, 2024
  *
  * Description:
  * .
@@ -18,6 +18,7 @@
 
 import { Navigate, type RouteObject } from "react-router-dom";
 
+import HistoryProvider from "@utils/History";
 import { Dashboard } from "@components/partials";
 import { About, Home, Profile, Settings, Support } from "@views/index";
 import {
@@ -37,7 +38,12 @@ const restricted = new Set(["/profile"]);
 export const routes: RouteObject[] = [
   {
     path: "/",
-    element: <Dashboard />,
+    element: (
+      <>
+        <HistoryProvider />
+        <Dashboard />
+      </>
+    ),
     children: [
       {
         index: true,

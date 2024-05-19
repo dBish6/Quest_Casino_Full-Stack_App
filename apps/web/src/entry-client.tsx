@@ -6,6 +6,7 @@ import { store } from "@redux/store";
 
 import { routes } from "./App";
 import { ResourceLoader } from "@components/loaders";
+import { ToastsProvider } from "@components/toast";
 
 function hydrate() {
   const router = createBrowserRouter(routes);
@@ -15,6 +16,7 @@ function hydrate() {
     <ReduxProvider store={store}>
       <ResourceLoader>
         <RouterProvider router={router} fallbackElement={null} />
+        <ToastsProvider />
       </ResourceLoader>
     </ReduxProvider>
   );
