@@ -62,6 +62,7 @@ function formatUserToClaims(user: UserDoc) {
     legal_name: user.legal_name,
     username: user.username,
     email: user.email,
+    verification_token: user.verification_token, // Safe to include in the claims since the token is short-lived, the original verification token is in the cache, and its purpose is for email verification.
     country: user.country,
     region: user.region,
     phone_number: user.phone_number,
@@ -69,10 +70,11 @@ function formatUserToClaims(user: UserDoc) {
 }
 
 function formatClientUser(user: UserDoc) {
-  const { _id, ...shared } = formatUserToClaims(user);
+  const { _id, verification_token, ...shared } = formatUserToClaims(user);
   return {
     ...shared,
     avatar_url: user.avatar_url,
+    email_verified: user.email_verified,
     balance: user.balance,
     statistics: {
       losses: user.statistics.losses,

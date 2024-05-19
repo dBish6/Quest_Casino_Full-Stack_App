@@ -1,19 +1,31 @@
+/**
+ * Auth Service
+ *
+ * Description:
+ * Handles functionalities related to user authentication and management.
+ */
+
 import type { ObjectId } from "mongoose";
 import type RegisterRequestDto from "@authFeat/dtos/RegisterRequestDto";
 
 import { Types } from "mongoose";
 import { hash } from "bcrypt";
+import { randomUUID } from "crypto";
+import fs from "fs";
+import path from "path";
 
 import { logger } from "@qc/utils";
 import { createApiError } from "@utils/CustomError";
 import sendEmail from "@utils/sendEmail";
 
 import { User, UserStatistics, UserActivity } from "@authFeat/models";
+import { redisClient } from "@cache";
+
 import { clearAllSessions } from "./jwtService";
 import { deleteAllCsrfTokens } from "./csrfService";
 
 const CLIENT_USER_SHARED_EXCLUDE = "-_id -created_at -updated_at",
-  CLIENT_USER_FIELDS = `${CLIENT_USER_SHARED_EXCLUDE} -password -activity`;
+  CLIENT_USER_FIELDS = `${CLIENT_USER_SHARED_EXCLUDE} -verification_token -password -activity`;
 
 function populateUser(userQuery: any, forClient?: boolean) {
   if (forClient) {
@@ -26,6 +38,9 @@ function populateUser(userQuery: any, forClient?: boolean) {
   }
 }
 
+/**
+ * Gets all users from the database.
+ */
 export async function getUsers(forClient?: boolean) {
   try {
     let query = User.find();
@@ -37,6 +52,9 @@ export async function getUsers(forClient?: boolean) {
   }
 }
 
+/**
+ * Gets a user from the database based on the specified criteria.
+ */
 export async function getUser(
   by: "_id" | "email",
   value: ObjectId | string,
@@ -52,24 +70,34 @@ export async function getUser(
   }
 }
 
+/**
+ * Registers a new standard user in the database.
+ */
 export async function registerStandardUser({ body: user }: RegisterRequestDto) {
   try {
     if (user.type === "standard") user.password = await hash(user.password, 12);
     else user.password = `${user.type} provided`;
 
+    const userId = new Types.ObjectId(),
+      verificationToken = randomUUID(); // For email verification link.
+    await redisClient.set(
+      `user:${userId}:verification_token`,
+      verificationToken
+    );
+
     const newUser = new User({
-        _id: new Types.ObjectId(),
+        _id: userId,
+        verification_token: verificationToken,
         ...user,
       }),
-      userStatistics = new UserStatistics({ _id: newUser._id }),
-      userActivity = new UserActivity({ _id: newUser._id });
+      userStatistics = new UserStatistics({ _id: userId }),
+      userActivity = new UserActivity({ _id: userId });
 
     await Promise.all([
       newUser.save(),
       userStatistics.save(),
       userActivity.save(),
     ]);
-
     await newUser.updateOne({
       statistics: userStatistics._id,
       activity: userActivity._id,
@@ -82,6 +110,7 @@ export async function registerStandardUser({ body: user }: RegisterRequestDto) {
     throw createApiError(error, "register service error.", 500);
   }
 }
+// TODO: Confirm password for google?
 // export async function registerGoogleUser(idToken: string) {
 //   try {
 
@@ -90,22 +119,69 @@ export async function registerStandardUser({ body: user }: RegisterRequestDto) {
 //   }
 // }
 
-export async function emailVerify(email: string) {
+/**
+ * Verifies the user's verification token that was used to create the unique verification link
+ * and returns the verified user.
+ */
+export async function emailVerify(userId: string, verificationToken: string) {
   try {
-    // const link = await auth.generateEmailVerificationLink(email);
+    let query = User.findOne({
+      verification_token: verificationToken,
+    });
+    query = await populateUser(query, true).exec();
+    if (!query) return "User doesn't exist.";
 
-    // const html = `Greetings, thank you so much for your endeavour through Quest Casino.<br><br>
-    //   To verify your email, <a href="${link}"> click here </a>.`,
+    const cachedToken = await redisClient.get(
+      `user:${userId}:verification_token`
+    );
+    if (verificationToken !== cachedToken)
+      return "Verification token disparity.";
 
-    // template = fs.readFileSync(path.resolve("./src/index.html"), "utf-8");
-    // const html = template.replace("<!--ssr-outlet-->", appHtml);
-
-    const info = await sendEmail(email, "Email Verification", "html");
+    return await query.updateOne({ email_verified: true }, { new: true });
   } catch (error: any) {
-    throw createApiError(error, "deleteCsrfToken service error.", 500);
+    throw createApiError(error, "emailVerify service error.", 500);
+  }
+}
+/**
+ * Sends an email with a verification link to the specified email address.
+ */
+export async function sendVerifyEmail(
+  email: string,
+  verificationToken: string
+) {
+  try {
+    const template = fs.readFileSync(
+        path.resolve("../emails/templates/verifyEmail.html"),
+        "utf-8"
+      ),
+      footerPartial = fs.readFileSync(
+        "/src/v2/features/auth/emails/templates.verifyEmail.html",
+        "utf-8"
+      );
+
+    const html = template
+      .replace(
+        "<!--link-->",
+        `<a class="verifyLink" aria-describedby="txt" href="http://localhost:3000/about?verify=${verificationToken}">Verify Email</a`
+      )
+      .replace("<!--footer-->", footerPartial);
+
+    const info = await sendEmail(email, "Email Verification", html);
+    if (info.rejected)
+      throw createApiError(
+        null,
+        "sendVerifyEmail service error.",
+        541,
+        "Your email was rejected by our SMTP server during sending. Please consider using a different email address. If the issue persists, feel free to reach out to support."
+      );
+  } catch (error: any) {
+    throw createApiError(error, "sendVerifyEmail service error.", 500);
   }
 }
 
+/**
+ * Updates the date of a user's activity_timestamp.
+ */
 export async function updateActivityTimestamp(userId: ObjectId | string) {
   try {
     await User.findOneAndUpdate(
@@ -118,6 +194,9 @@ export async function updateActivityTimestamp(userId: ObjectId | string) {
   }
 }
 
+/**
+ * Deletes the user's refresh tokens and csrf tokens.
+ */
 export async function wipeUser(userId: ObjectId | string) {
   try {
     await Promise.all([
@@ -129,6 +208,9 @@ export async function wipeUser(userId: ObjectId | string) {
   }
 }
 
+/**
+ * Deletes a user from the database and their refresh tokens.
+ */
 export async function deleteUser(userId: ObjectId | string) {
   try {
     await Promise.all([

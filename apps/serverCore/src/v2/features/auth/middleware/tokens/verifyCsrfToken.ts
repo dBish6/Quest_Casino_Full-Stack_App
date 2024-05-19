@@ -4,9 +4,8 @@ import { createApiError } from "@utils/CustomError";
 import { redisClient } from "@cache";
 
 /**
- * @middleware
- * Verifies the Cross-Site Request Forgery (CSRF) token; this middleware should be used on routes
- * that manipulate data (e.g. POST, PATCH, PUT, DELETE).
+ * Verifies the Cross-Site Request Forgery (CSRF) token
+ * @middleware This should be used on routes that manipulate data (e.g. POST, PATCH, PUT, DELETE).
  */
 export default async function verifyCsrfToken(
   req: Request,

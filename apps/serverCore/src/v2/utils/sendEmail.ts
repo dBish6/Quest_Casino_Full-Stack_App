@@ -4,35 +4,36 @@ import { createApiError } from "./CustomError";
 export default async function sendEmail(
   to: string,
   subject: string,
-  emailHtml: string
+  html: string
 ) {
-  const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, SMTP_FROM } =
-    process.env;
+  try {
+    const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, SMTP_FROM } =
+      process.env;
 
-  const transporter = nodemailer.createTransport({
-    host: SMTP_HOST,
-    port: Number(SMTP_PORT),
-    secure: true,
-    auth: {
-      user: SMTP_USER,
-      pass: SMTP_PASSWORD,
-    },
-    debug: true,
-    logger: true,
-  });
+    const transporter = nodemailer.createTransport({
+      host: SMTP_HOST,
+      port: Number(SMTP_PORT),
+      secure: true,
+      auth: {
+        user: SMTP_USER,
+        pass: SMTP_PASSWORD,
+      },
+      debug: true,
+      logger: true,
+    });
 
-  transporter.verify((error: any) => {
-    if (error) {
-      const errorMsg = "sendEmail verification error:\n" + error.message;
-      console.error(errorMsg);
-      throw createApiError("sendEmail verification error.", errorMsg, 500);
-    }
-  });
+    transporter.verify((error: any) => {
+      if (error)
+        throw createApiError(error, "sendEmail verify SMTP error.", 500);
+    });
 
-  return await transporter.sendMail({
-    from: `"David Bishop - the Dev :D" <${SMTP_FROM}>`,
-    to: to,
-    subject: subject,
-    html: emailHtml,
-  });
+    return await transporter.sendMail({
+      from: `"David Bishop - the Dev :D" <${SMTP_FROM}>`,
+      to,
+      subject,
+      html,
+    });
+  } catch (error) {
+    throw createApiError(error, "sendEmail error.", 500);
+  }
 }

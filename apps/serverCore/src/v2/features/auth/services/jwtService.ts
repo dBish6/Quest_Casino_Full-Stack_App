@@ -2,7 +2,7 @@
  * JWT Service
  *
  * Description:
- * Handles functionally of the user's token.
+ * Handles functionally of the user's access and refresh tokens.
  */
 
 import type { Secret, SignOptions } from "jsonwebtoken";

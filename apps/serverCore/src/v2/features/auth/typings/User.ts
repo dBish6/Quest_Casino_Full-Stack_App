@@ -18,6 +18,7 @@ export interface UserClaims extends JwtPayload {
   legal_name: { first: string; last: string };
   username: string;
   email: string;
+  verification_token: string;
   country: string;
   region?: string;
   phone_number?: string;
@@ -29,6 +30,7 @@ export interface ClientUser {
   legal_name: { first: string; last: string };
   username: string;
   email: string;
+  email_verified: boolean;
   country: string;
   region?: string;
   phone_number?: string;
@@ -103,6 +105,8 @@ export interface UserDoc extends SharedDocFields {
   };
   username: string;
   email: string;
+  email_verified: boolean;
+  verification_token: string;
   password: string;
   country: string;
   region?: string;

@@ -5,14 +5,15 @@ import * as authController from "../controllers/authController";
 const router = Router();
 
 router.get("/users", verifyUserToken, authController.getUsers);
-router.get("/current-user", verifyUserToken, authController.getUser);
+router.get("/user", verifyUserToken, authController.getUser);
 
 router.post("/register", authController.register);
 // router.post("/register/google", verifyCsrfToken, authController.register);
 router.post("/login", verifyUserToken, verifyCsrfToken, authController.login);
 // router.post("/login/google", verifyCsrfToken, verifyUserIdToken, authController.login);
 // router.post("/refresh", verifyCsrfToken, verifyTokens.verifyRefreshToken, authController.refresh);
-router.get("/email/verify", verifyUserToken, authController.emailVerify);
+router.post("/email-verify", verifyUserToken, verifyCsrfToken, authController.emailVerify);
+router.post("/email-verify/send", verifyUserToken, verifyCsrfToken, authController.sendVerifyEmail);
 
 router.post("/logout", verifyUserToken, verifyCsrfToken, authController.logout);
 

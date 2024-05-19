@@ -15,17 +15,16 @@ import initializeSession from "@authFeat/utils/initializeSession";
 const { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET } = process.env;
 
 /**
- * @middleware
  * Verifies the access token and also refreshes the session if needed.
- *
- * This should only be used on routes where the user should already be logged in for.
+ * @middleware This should only be used on routes where the user should already be logged in for.
  */
 export default async function verifyAccessToken(
   req: Request,
   res: Response,
   next: NextFunction
 ) {
-  const { session: accessToken, refresh: refreshToken } = req.cookies;
+  const accessToken = req.cookies?.session,
+    refreshToken = req.cookies?.refresh;
   // console.log("accessToken", accessToken);
   try {
     if (!accessToken) {

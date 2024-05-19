@@ -113,6 +113,8 @@ const userSchema = new Schema<UserDoc, Model<UserDoc>>(
       required: true,
     },
     email: { type: String, lowercase: true, trim: true, required: true },
+    email_verified: { type: Boolean, default: false },
+    verification_token: { type: String, required: true },
     password: { type: String, required: true },
     country: { type: String, required: true },
     region: { type: String },

@@ -2,7 +2,7 @@
  * Auth Controller
  *
  * Description:
- * Handles user authentication-related HTTP requests.
+ * Handles user authentication-related HTTP requests and responses.
  */
 
 import type { Request, Response, NextFunction } from "express";
@@ -18,6 +18,7 @@ import { deleteCsrfToken } from "@authFeat/services/csrfService";
 /**
  * Send all users as client formatted users.
  * @controller
+ * @response ClientUser[] or ApiError.
  */
 export async function getUsers(
   req: Request,
@@ -36,18 +37,19 @@ export async function getUsers(
 /**
  * Send a client formatted user or current user.
  * @controller
+ * @response ClientUser or ApiError.
  */
 export async function getUser(req: Request, res: Response, next: NextFunction) {
-  const query = req.query.email;
+  const query = req.query.email as string;
 
   try {
     const user = await authService.getUser(
       query ? "email" : "_id",
-      req.query.email || req.decodedClaims!.sub,
+      query || req.decodedClaims!.sub,
       true
     );
     if (!user)
-      return res.status(404).send({
+      return res.status(404).json({
         message: "User doesn't exist.",
       });
 
@@ -59,9 +61,9 @@ export async function getUser(req: Request, res: Response, next: NextFunction) {
 }
 
 /**
- * Registers a user and checks if the user already exits within the database.
+ * Starts the user registration and checks if the user already exits within the database.
  * @controller
- * @returns A success message, bad request, or ApiError.
+ * @response A success message, bad request, or ApiError.
  */
 export async function register(
   req: RegisterRequestDto,
@@ -72,18 +74,17 @@ export async function register(
 
   try {
     const user = await authService.getUser("email", req.body.email);
-    if (user) {
-      return res.status(400).send({
+    if (user)
+      return res.status(400).json({
         message: "User already exists.",
       });
-    }
     // TODO: Unique usernames.
 
     await authService.registerStandardUser(req);
 
     return res.status(200).json({
       message:
-        "Successfully registered, proceed to log in with your newly created profile!",
+        "Successfully registered! To complete the process and log in with your newly created profile, we've sent a verification email to your specified email address. If you don't see it in your inbox, please check your junk/spam folder or resend.",
     });
   } catch (error: any) {
     next(createApiError(error, "register controller error.", 500));
@@ -93,7 +94,7 @@ export async function register(
 /**
  * Initializes the current user session.
  * @controller
- * @returns The client formatted user and success message or ApiError.
+ * @response The client formatted user and success message or ApiError.
  */
 export async function login(req: Request, res: Response, next: NextFunction) {
   try {
@@ -109,9 +110,9 @@ export async function login(req: Request, res: Response, next: NextFunction) {
 }
 
 /**
- * ...
+ * Initiates email address verification.
  * @controller
- * @returns ...
+ * @response A success message, not found, forbidden, or ApiError.
  */
 export async function emailVerify(
   req: Request,
@@ -119,9 +120,37 @@ export async function emailVerify(
   next: NextFunction
 ) {
   try {
-    const user = await authService.emailVerify(req.decodedClaims!.email);
+    const { sub, verification_token } = req.decodedClaims!;
+    const result = await authService.emailVerify(sub, verification_token);
+    if (typeof result === "string")
+      return res.status(result === "User doesn't exist." ? 404 : 403).json({
+        message: result,
+      });
 
-    return res.status(200).json(user);
+    return res
+      .status(200)
+      .json({ message: "Email address successfully verified.", user: result });
+  } catch (error: any) {
+    next(createApiError(error, "emailVerify controller error.", 500));
+  }
+}
+/**
+ * Initiates the email verification process.
+ * @controller
+ * @response A success message or ApiError.
+ */
+export async function sendVerifyEmail(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    const { email, verification_token } = req.decodedClaims!;
+    await authService.sendVerifyEmail(email, verification_token);
+
+    return res
+      .status(200)
+      .json({ message: "Verification email successfully sent." });
   } catch (error: any) {
     next(createApiError(error, "emailVerify controller error.", 500));
   }
@@ -130,7 +159,7 @@ export async function emailVerify(
 /**
  * Clears the session cookie and deletes the csrf token.
  * @controller
- * @returns A success message or ApiError.
+ * @response A success message or ApiError.
  */
 export async function logout(req: Request, res: Response, next: NextFunction) {
   try {
@@ -151,7 +180,7 @@ export async function logout(req: Request, res: Response, next: NextFunction) {
 /**
  * Clears every refresh token, csrf token and cookies.
  * @controller
- * @returns A success message or ApiError.
+ * @response A success message or ApiError.
  */
 export async function clear(req: Request, res: Response, next: NextFunction) {
   try {
@@ -168,7 +197,7 @@ export async function clear(req: Request, res: Response, next: NextFunction) {
 /**
  * Deletes the current user.
  * @controller
- * @returns A success message or ApiError.
+ * @response A success message or ApiError.
  */
 export async function deleteUser(
   req: Request,
