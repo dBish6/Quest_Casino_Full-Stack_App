@@ -47,7 +47,7 @@ $ npm install <package> --workspace <project>
 ...
 
 ## Thanks!
-I hope my work can inspire you too, thank you for your interest in the app!
+I hope my work can inspire you, thank you for your interest in the app!
 
 _**Deployed Stable Version (Version 1):** [www.questcasino.xyz](https://www.questcasino.xyz)_
 
