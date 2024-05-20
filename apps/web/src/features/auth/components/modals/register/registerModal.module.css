@@ -3,17 +3,17 @@
   max-width: 496px;
   max-height: 774.5px;
   padding: 2rem;
-  /* FIXME: I can't make the modal scrollable... */
   /* @media (width <= 460px) {
     @media (height >= 997px) {
       overflow: scroll;
     }
   } */
+  overflow: auto;
 
-  & > button {
+  & button.exit {
     position: absolute;
-    top: -8px;
-    right: -8px;
+    top: -10px;
+    right: -10px;
   }
 
   & .head {
@@ -27,7 +27,6 @@
       gap: 0.75rem;
       & h2 {
         font: var(--h1);
-        color: var(--c-heading-1);
       }
     }
     & > div {
@@ -37,6 +36,35 @@
       & span:last-child {
         font-style: italic;
         color: var(--c-heading-2);
+      }
+    }
+  }
+
+  & .message,
+  > span[role="alert"] {
+    display: block;
+    margin-bottom: 1rem;
+    font: var(--para-regular);
+  }
+  & .message {
+    color: var(--c-status-green);
+    & a {
+      &:hover,
+      &:focus-visible,
+      &:active,
+      &[data-key-press="true"] {
+        color: #3eca61;
+      }
+    }
+  }
+  & > span[role="alert"] {
+    color: var(--c-status-red);
+    & a {
+      &:hover,
+      &:focus-visible,
+      &:active,
+      &[data-key-press="true"] {
+        color: #df2b46;
       }
     }
   }
@@ -94,6 +122,11 @@
       & button {
         width: 100%;
         margin-bottom: 4px;
+        &[disabled] {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
       }
       & p {
         font: var(--para-x-small);
@@ -103,38 +136,40 @@
         }
       }
     }
-    & .or {
-      position: relative;
+  }
+
+  & .or {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-block: 1.25rem 1rem;
+    & hr {
+      width: 100%;
+      border-top: 1px solid var(--c-purple-border);
+    }
+    & span {
+      color: var(--c-heading-2);
+      background-color: inherit;
+      white-space: nowrap;
+    }
+  }
+  & button.google {
+    width: 100%;
+    & span {
       display: flex;
+      justify-content: center;
       align-items: center;
       gap: 0.5rem;
-      margin-block: 1.25rem 1rem;
-      & hr {
-        width: 100%;
-        border-top: 1px solid var(--c-purple-border);
-      }
-      & span {
-        color: var(--c-heading-2);
-        background-color: inherit;
-        white-space: nowrap;
-      }
-    }
-    & > button {
-      width: 100%;
-      & span {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        & svg {
-          & use {
-            fill: var(--c-heading-2);
-          }
+      & svg {
+        & use {
+          fill: var(--c-heading-2);
         }
       }
     }
   }
 
-  & > span {
+  & .already {
     font: var(--para-small);
     color: var(--c-para-faded);
     & a {

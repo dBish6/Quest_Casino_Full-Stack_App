@@ -26,6 +26,7 @@
       "@utils/*": ["./src/utils/*"],
 
       "@views/*": ["./src/views/*"]
-    }
+    },
+    "types": ["vite/client"]
   }
 }

@@ -7,8 +7,7 @@ import { logger } from "@qc/utils";
 
 const authApi = createApi({
   reducerPath: "authApi",
-  // baseQuery: fetchBaseQuery({ baseUrl: "/api/v2" }),
-  baseQuery: baseQuery(),
+  baseQuery: baseQuery("/auth"),
   endpoints: (builder) => ({
     register: builder.mutation<any, any>({
       // TODO: User type.

@@ -16,6 +16,9 @@
   &.secondary {
     border: 2px solid var(--c-purple-900);
     border-radius: 6px;
+    &:not([aria-live])[disabled] {
+      opacity: 0.48;
+    }
   }
   &.primary {
     position: relative;

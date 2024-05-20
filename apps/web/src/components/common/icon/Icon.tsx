@@ -92,6 +92,11 @@ const iconLib = {
     size: { width: "14", height: "14" },
     "aria-label": "Exit",
   },
+  "exit-10": {
+    id: "exit-10",
+    size: { width: "10", height: "10" },
+    "aria-label": "Exit",
+  },
 
   "google-24": {
     id: "google-24",

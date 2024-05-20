@@ -4,15 +4,15 @@ import type RegisterRequestDto from "@authFeat/dtos/RegisterRequestDto";
 import { json } from "react-router-dom";
 import capitalize from "@utils/capitalize";
 
-const optionalFields = new Set(["region", "callingCode", "phoneNumber"]);
+const optionalFields = new Set(["region", "callingCode", "phone_number"]);
 
 const registerAction: ActionFunction = async ({ request }) => {
   const formData = await request.formData(),
     isValid = validate(formData);
 
   if (typeof isValid === "string") {
-    const data = createRequestBodyObject(formData);
-    return json({ message: isValid, data }, { status: 200 });
+    const user = createRequestBodyObject(formData);
+    return json({ message: isValid, user }, { status: 200 });
   } else {
     return json({ errors: isValid }, { status: 400 });
   }
@@ -34,7 +34,7 @@ function validate(formData: FormData) {
           errors.conPassword = errorMsg;
         } else {
           errors[
-            key === "phoneNumber" && errorMsg.includes("calling code", -1)
+            key === "phone_number" && errorMsg.includes("calling code", -1)
               ? "callingCode"
               : key
           ] = errorMsg;
@@ -61,7 +61,7 @@ function validateField(key: string, value: string, formData: FormData) {
       return validatePassword(value);
     case "conPassword":
       return confirmPassword(value, formData.get("password")!.toString());
-    case "phoneNumber":
+    case "phone_number":
       return validatePhoneNumber(value, formData.get("callingCode")!.toString());
     default:
       return null;
@@ -126,16 +126,16 @@ function createRequestBodyObject(formData: FormData) {
     const fieldValue = value.toString();
     obj.type = "standard";
 
-    if (fieldValue && key === "phoneNumber") {
-      obj.phoneNumber = `${formData.get("callingCode")} ${fieldValue}`;
+    if (fieldValue && key === "phone_number") {
+      obj.phone_number = `${formData.get("callingCode")} ${fieldValue}`;
     } else if (fieldValue && (key === "firstName" || key === "lastName")) {
-      obj.legalName = {
-        ...(obj.legalName || {}),
+      obj.legal_name = {
+        ...(obj.legal_name || {}),
         [key.split("N")[0]]: fieldValue,
       };
     } else {
       // prettier-ignore
-      obj[key as keyof Omit<RegisterRequestDto, "type" | "legalName">] =
+      obj[key as keyof Omit<RegisterRequestDto, "type" | "legal_name">] =
         optionalFields.has(key) ? fieldValue ? fieldValue : undefined : fieldValue;
     }
   }

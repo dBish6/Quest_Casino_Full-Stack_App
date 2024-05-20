@@ -1,25 +1,27 @@
 import type Country from "@authFeat/typings/Country";
 import type { Region, Regions } from "@authFeat/typings/Region";
 
-import { useFetcher, Link } from "react-router-dom";
+import { useFetcher, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Content } from "@radix-ui/react-dialog";
 
 import formatPhoneNumber from "@authFeat/utils/formatPhoneNumber";
 import getSelectedRegion from "@authFeat/utils/getSelectedRegion";
+import { isFetchBaseQueryError } from "@utils/isFetchBaseQueryError";
 
 import { useRegisterMutation } from "@authFeat/services/authApi";
 
 import ModalTemplate from "@components/modals/ModalTemplate";
 import { Button, Input, Select } from "@components/common/controls";
 import { Icon } from "@components/common/icon";
+import { Link } from "@components/common/link";
 import { Spinner } from "@components/loaders";
 
 import s from "./registerModal.module.css";
 
 export default function RegisterModal() {
-  const fetcher = useFetcher();
-  console.log("fetcher", fetcher);
+  const fetcher = useFetcher(),
+    location = useLocation();
 
   const [worldData, setWorldData] = useState<{
       countries: Country[] | null;
@@ -32,13 +34,15 @@ export default function RegisterModal() {
 
   const [
     register,
-    { data: postData, error, isLoading: registerLoading, isSuccess },
+    { data: registerData, error, isLoading: registerLoading, isSuccess },
   ] = useRegisterMutation();
 
   const countriesLoading = !!worldData.countries && !worldData.countries.length,
     regionsLoading = !!selected.country && !selected.regions.length;
 
-  async function getCountries() {
+  const processingForm = registerLoading || fetcher.state === "loading";
+
+  const getCountries = async () => {
     if (!worldData.countries?.length) {
       setWorldData((prev) => ({
         ...prev,
@@ -46,16 +50,14 @@ export default function RegisterModal() {
       }));
       const countriesData = (await import("@authFeat/constants/COUNTRIES"))
         .default;
-      setTimeout(() => {
-        setWorldData((prev) => ({
-          ...prev,
-          countries: countriesData,
-        }));
-      }, 2000);
+      setWorldData((prev) => ({
+        ...prev,
+        countries: countriesData,
+      }));
     }
-  }
+  };
 
-  async function getRegions() {
+  const getRegions = async () => {
     if (!worldData.regions?.length) {
       setWorldData((prev) => ({
         ...prev,
@@ -67,7 +69,7 @@ export default function RegisterModal() {
         regions: regionsData,
       }));
     }
-  }
+  };
 
   useEffect(() => {
     if (selected.country && worldData.regions?.length) {
@@ -80,19 +82,32 @@ export default function RegisterModal() {
 
   useEffect(() => {
     (async () => {
-      console.log("fetcher.state", fetcher.state);
-      if (fetcher.data) {
-        const res = await register(fetcher.data);
-        console.log("RES", res);
-      }
+      if (!fetcher.data?.errors) await register(fetcher.data.user);
     })();
   }, [fetcher.data]);
+
+  const successMessage = () => {
+    const parts = registerData?.message.split("log in");
+
+    return (
+      parts &&
+      (parts[1] ? (
+        <>
+          {parts[0]}
+          <Link to={`${location.pathname}?login=true`}>log in</Link>
+          {parts[1]}
+        </>
+      ) : (
+        registerData?.message
+      ))
+    );
+  };
 
   return (
     <ModalTemplate query="register" btnText="Register">
       {({ close }) => (
         <Content className={s.modal}>
-          <Button intent="exit" size="xl" onClick={close} />
+          <Button intent="exit" size="xl" className={s.exit} onClick={close} />
 
           <div className={s.head}>
             <hgroup>
@@ -107,17 +122,31 @@ export default function RegisterModal() {
 
           {fetcher.state !== "submitting" &&
             (isSuccess ? (
-              <small>{postData.message}</small>
+              <span className={s.message}>{successMessage()}</span>
             ) : (
               error && (
-                <small>
-                  An unexpected internal error occurred. Please try refreshing
-                  the page. If the error persists, reach out to{" "}
-                  <Link to="/support">support</Link>.
-                </small>
+                <span role="alert" id="globalFormError">
+                  {isFetchBaseQueryError(error) ? (
+                    error.status === 400 ? (
+                      error.data?.message
+                    ) : (
+                      <>
+                        An unexpected server error occurred. Please try
+                        refreshing the page. If the error persists, feel free to
+                        reach out to <Link to="/support">support</Link>.
+                      </>
+                    )
+                  ) : (
+                    <>
+                      {error.message} If the error persists, feel free to reach
+                      out to <Link to="/support">support</Link>.
+                    </>
+                  )}
+                </span>
               )
             ))}
           <fetcher.Form
+            aria-errormessage="globalFormError"
             method="post"
             action="/action/register"
             autoComplete="off"
@@ -133,7 +162,7 @@ export default function RegisterModal() {
                   name="firstName"
                   required
                   error={fetcher.data?.errors?.firstName}
-                  disabled={registerLoading}
+                  disabled={processingForm}
                 />
                 <Input
                   label="Last Name"
@@ -143,7 +172,7 @@ export default function RegisterModal() {
                   name="lastName"
                   required
                   error={fetcher.data?.errors?.lastName}
-                  disabled={registerLoading}
+                  disabled={processingForm}
                 />
               </div>
               <Input
@@ -155,7 +184,7 @@ export default function RegisterModal() {
                 type="email"
                 required
                 error={fetcher.data?.errors?.email}
-                disabled={registerLoading}
+                disabled={processingForm}
               />
               <Input
                 label="Username"
@@ -165,7 +194,7 @@ export default function RegisterModal() {
                 name="username"
                 required
                 error={fetcher.data?.errors?.username}
-                disabled={registerLoading}
+                disabled={processingForm}
               />
               <div role="group">
                 <Input
@@ -177,7 +206,7 @@ export default function RegisterModal() {
                   type="password"
                   required
                   error={fetcher.data?.errors?.password}
-                  disabled={registerLoading}
+                  disabled={processingForm}
                 />
                 <Input
                   label="Confirm Password"
@@ -188,7 +217,7 @@ export default function RegisterModal() {
                   type="password"
                   required
                   error={fetcher.data?.errors?.conPassword}
-                  disabled={registerLoading}
+                  disabled={processingForm}
                 />
               </div>
               <div role="group">
@@ -202,7 +231,7 @@ export default function RegisterModal() {
                   error={fetcher.data?.errors?.country}
                   Loader={() => <Spinner intent="primary" size="sm" />}
                   loaderTrigger={countriesLoading}
-                  disabled={registerLoading}
+                  disabled={processingForm}
                   onFocus={() => {
                     getCountries();
                     getRegions();
@@ -235,7 +264,7 @@ export default function RegisterModal() {
                   }
                   Loader={() => <Spinner intent="primary" size="sm" />}
                   loaderTrigger={regionsLoading}
-                  disabled={!selected.country || registerLoading}
+                  disabled={!selected.country || processingForm}
                   onFocus={getRegions}
                 >
                   {selected.regions.length &&
@@ -247,6 +276,7 @@ export default function RegisterModal() {
                     ))}
                 </Select>
               </div>
+
               <div role="group">
                 <Select
                   label="Code"
@@ -255,9 +285,10 @@ export default function RegisterModal() {
                   id="callingCode"
                   name="callingCode"
                   error={fetcher.data?.errors?.callingCode}
+                  // FIXME:
                   Loader={() => <Spinner intent="primary" size="sm" />}
                   loaderTrigger={countriesLoading}
-                  disabled={registerLoading}
+                  disabled={processingForm}
                   onFocus={getCountries}
                 >
                   {worldData.countries?.length &&
@@ -271,26 +302,30 @@ export default function RegisterModal() {
                   label="Phone Number"
                   intent="primary"
                   size="lrg"
-                  id="phoneNumber"
-                  name="phoneNumber"
+                  id="phone_number"
+                  name="phone_number"
                   type="tel"
                   error={fetcher.data?.errors?.phoneNumber}
                   onInput={(e) =>
                     formatPhoneNumber(e.target as HTMLInputElement)
                   }
-                  disabled={registerLoading}
+                  disabled={processingForm}
                 />
               </div>
             </div>
 
             <div className={s.submit}>
               <Button
+                aria-live="polite"
                 intent="primary"
                 size="xl"
-                // type="submit"
-                disabled={registerLoading}
+                disabled={processingForm}
               >
-                Register
+                {processingForm ? (
+                  <Spinner intent="primary" size="md" />
+                ) : (
+                  "Register"
+                )}
               </Button>
               <p>
                 By Registering a profile, you agree to Quest Casino's{" "}
@@ -298,34 +333,37 @@ export default function RegisterModal() {
                   Terms
                 </Link>{" "}
                 and{" "}
-                <Link to="/terms" className="">
+                <Link to="/privacy-policy" className="">
                   Privacy Policy
                 </Link>
                 .
               </p>
             </div>
-            <div className={s.or}>
-              <hr />
-              <span id="logWit" aria-details="" aria-description="">
-                Or Login With
-              </span>
-              <hr aria-hidden="true" />
-            </div>
-            <Button
-              aria-describedby="logWit"
-              intent="secondary"
-              size="xl"
-              disabled={registerLoading}
-            >
-              <span>
-                <Icon id="google-24" />
-                Google
-              </span>
-            </Button>
           </fetcher.Form>
 
-          <span>
-            Already have a account? <Link to="/login">Log In</Link>
+          <div className={s.or}>
+            <hr />
+            <span id="logWit" aria-details="" aria-description="">
+              Or Login With
+            </span>
+            <hr aria-hidden="true" />
+          </div>
+          <Button
+            aria-describedby="logWit"
+            intent="secondary"
+            size="xl"
+            className={s.google}
+            disabled={processingForm}
+          >
+            <span>
+              <Icon id="google-24" />
+              Google
+            </span>
+          </Button>
+
+          <span className={s.already}>
+            Already have a account?{" "}
+            <Link to={`${location.pathname}?login=true`}>Log In</Link>
           </span>
         </Content>
       )}
