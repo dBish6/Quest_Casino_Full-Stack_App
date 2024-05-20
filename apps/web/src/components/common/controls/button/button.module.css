@@ -70,12 +70,12 @@
 
   &.ghost {
     background-color: transparent;
-    padding-inline: 16px;
+    border-radius: 6px;
     transition:
       0.22s ease-in-out background-color,
       0.22s ease-in-out color;
     &:not(.icon) {
-      border-radius: 6px;
+      padding-inline: 16px;
     }
     &:hover,
     &:focus-visible {
@@ -88,7 +88,7 @@
     }
   }
 
-  &.exit:not(.sm) {
+  &.exit:not(.ghost) {
     border: 2px solid #52396e;
     border-radius: 6px;
     background-color: var(--c-magenta-500);

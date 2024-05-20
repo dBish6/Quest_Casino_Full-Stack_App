@@ -17,6 +17,7 @@ const button = cva(s.button, {
       secondary: s.secondary,
       ghost: s.ghost,
       exit: `${s.icon} ${s.exit}`,
+      "exit ghost": `${s.icon} ${s.exit} ${s.ghost}`,
     },
     size: {
       sm: s.sm,
@@ -38,6 +39,7 @@ export interface ButtonProps
 const Button = forwardRef<HTMLButtonElement, React.PropsWithChildren<ButtonProps>>(
   ({ children, className, intent, size, asChild, iconBtn, ...props }, ref) => {
     const Element = asChild ? Slot : "button";
+    const iconFill = intent?.includes("ghost") ? "var(--c-status-red)" : "var(--c-purple-800)"
 
     return (
       <Element
@@ -60,11 +62,13 @@ const Button = forwardRef<HTMLButtonElement, React.PropsWithChildren<ButtonProps
           if (props.onKeyDown) props.onKeyDown(e);
         }}
       >
-        {intent === "exit" ? (
+        {intent?.includes("exit") ? (
           size === "xl" ? (
-            <Icon id="exit-19" fill="var(--c-purple-800)" />
+            <Icon id="exit-19" fill={iconFill} />
+          ) : intent.includes("ghost") ? (
+            <Icon id="exit-14" fill={iconFill} />
           ) : (
-            <Icon id="exit-14" fill="var(--c-status-red)" />
+            <Icon id="exit-10" fill={iconFill} />
           )
         ) : (
           children

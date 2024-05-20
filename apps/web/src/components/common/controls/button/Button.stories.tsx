@@ -127,7 +127,7 @@ export const Icon: Story = {
   },
   IconExit: Story = {
     argTypes: {
-      intent: { table: { disable: true } },
+      intent: { options: ["exit", "exit ghost"] },
       size: { options: ["xl", "sm"] },
     },
     args: {

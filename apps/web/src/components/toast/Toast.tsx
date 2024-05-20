@@ -34,12 +34,6 @@ const toast = cva(s.toast, {
       error: s.error,
       info: s.info,
     },
-    // size: {
-    //   sm: s.sm,
-    //   md: s.md,
-    //   lrg: s.lrg,
-    //   xl: s.xl,
-    // },
     defaultVariants: {
       intent: "info",
     },
@@ -81,7 +75,7 @@ export default function Toast({
         </svg>
       </div>
       <Close asChild>
-        <Button intent="exit" size="xl" />
+        <Button intent="exit" size="sm" />
       </Close>
 
       <div>
