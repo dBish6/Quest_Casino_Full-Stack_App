@@ -13,7 +13,6 @@ export interface ToastState {
 }
 
 const initialState: ToastState = {
-  // count: [],
   count: [],
 };
 
@@ -29,10 +28,13 @@ const toastSlice = createSlice({
         (toast) => toast.id !== action.payload.id
       );
     },
+    CLEAR_TOASTS: (state) => {
+      state.count = [];
+    },
   },
 });
 
 export const { name: toastName, reducer: toastReducer } = toastSlice,
-  { ADD_TOAST, REMOVE_TOAST } = toastSlice.actions;
+  { ADD_TOAST, REMOVE_TOAST, CLEAR_TOASTS } = toastSlice.actions;
 
 export default toastSlice;

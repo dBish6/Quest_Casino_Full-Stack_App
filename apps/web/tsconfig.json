@@ -9,7 +9,7 @@
     "jsx": "react-jsx",
     // "allowImportingTsExtensions": true,
     "paths": {
-      "@routes/*": ["./src/routes/*"],
+      "@storybook/*": ["./.storybook/*"],
 
       "@authFeat/*": ["./src/features/auth/*"],
       "@chatFeat/*": ["./src/features/chat/*"],
