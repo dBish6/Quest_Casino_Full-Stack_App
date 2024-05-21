@@ -1,3 +1,4 @@
+import type { DialogContentProps } from "@radix-ui/react-dialog";
 import type { Variants } from "framer-motion";
 
 import { useState } from "react";
@@ -11,7 +12,10 @@ import fadeInOut from "@utils/animations/fadeInOut";
 import s from "./modalTemplate.module.css";
 
 export interface ModalTemplateProps {
-  children: (props: { close: () => void }) => React.ReactNode;
+  children: (props: {
+    close: () => void;
+    contentProps: DialogContentProps;
+  }) => React.ReactNode;
   query: string;
   btnText: string;
 }
@@ -93,7 +97,14 @@ export default function ModalTemplate({
                 animate="visible"
                 exit="hidden"
               >
-                {children({ close: handleToggle })}
+                {children({
+                  close: handleToggle,
+                  contentProps: {
+                    onInteractOutside: (e) => {
+                      e.preventDefault();
+                    },
+                  },
+                })}
               </m.div>
             </m.div>
           )}

@@ -1,25 +1,22 @@
-.modal {
+.modal :global(.viewport) {
   width: 100%;
   max-width: 496px;
-  max-height: 774.5px;
-  padding: 2rem;
-  /* @media (width <= 460px) {
-    @media (height >= 997px) {
-      overflow: scroll;
-    }
-  } */
-  overflow: auto;
+  max-height: 759px;
+  padding: 2rem 2rem 1rem 2rem;
 
   & button.exit {
     position: absolute;
     top: -10px;
     right: -10px;
+    z-index: 1;
   }
 
   & .head {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
+    column-gap: 1rem;
     margin-bottom: 2rem;
     & hgroup {
       display: flex;
@@ -72,9 +69,6 @@
   & form {
     margin-bottom: 1.5rem;
     & .inputs {
-      /* @media (width <= 460px) {
-        left: 2.5rem;
-      } */
       & > :global(.control) {
         margin-bottom: 1.5rem;
       }
@@ -156,6 +150,7 @@
   }
   & button.google {
     width: 100%;
+    margin-bottom: 1.25rem;
     & span {
       display: flex;
       justify-content: center;
@@ -173,7 +168,6 @@
     font: var(--para-small);
     color: var(--c-para-faded);
     & a {
-      font-weight: 600;
       color: var(--c-para);
     }
   }
