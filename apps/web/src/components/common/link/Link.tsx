@@ -16,9 +16,6 @@ const link = cva(s.link, {
       primary: s.primary,
     },
   },
-  defaultVariants: {
-    intent: "primary",
-  },
 });
 
 export interface LinkProps extends RouterLinkProps, VariantProps<typeof link> {

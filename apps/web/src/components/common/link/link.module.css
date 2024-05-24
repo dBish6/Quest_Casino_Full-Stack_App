@@ -2,6 +2,9 @@
   position: relative;
   color: inherit;
   transition: 0.22s ease-in-out color;
+  &:not(.primary) {
+    text-decoration: none;
+  }
 
   &.primary {
     font-weight: 600;
