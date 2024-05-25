@@ -1,0 +1,28 @@
+.successMsg,
+.errorMsg {
+  display: block;
+  margin-bottom: 1rem;
+  font: var(--para-regular);
+}
+.successMsg {
+  color: var(--c-status-green);
+  & a {
+    &:hover,
+    &:focus-visible,
+    &:active,
+    &[data-key-press="true"] {
+      color: #3eca61;
+    }
+  }
+}
+.errorMsg {
+  color: var(--c-status-red);
+  & a {
+    &:hover,
+    &:focus-visible,
+    &:active,
+    &[data-key-press="true"] {
+      color: #df2b46;
+    }
+  }
+}
