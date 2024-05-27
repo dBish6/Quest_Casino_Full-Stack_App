@@ -1,6 +1,7 @@
 import type { Response } from "express";
 import type { ObjectId } from "mongoose";
-import type { UserDoc, ClientUser } from "@authFeat/typings/User";
+import type UserCredentials from "@qc/typescript/typings/UserCredentials";
+import type { UserDoc, RegistrationTypes } from "@authFeat/typings/User";
 
 import { createApiError } from "@utils/CustomError";
 
@@ -13,12 +14,19 @@ import {
 
 export default async function initializeSession(
   res: Response,
-  userId: ObjectId | string,
+  userId?: ObjectId | string | null,
+  // TODO: ?
+  user?: any,
   csrfToken?: string
 ) {
   try {
-    const user = await getUser("_id", userId);
-    if (!user) return "User doesn't exist.";
+    if (!user) {
+      if (!userId)
+        throw Error("userId must be provided when no user is passed.");
+
+      user = await getUser("_id", userId);
+      if (!user) return "User doesn't exist.";
+    }
 
     const userToClaims = formatUserToClaims(user),
       generateUserJWT = new GenerateUserJWT(userToClaims);
@@ -49,7 +57,7 @@ export default async function initializeSession(
       })
       .setHeader("x-xsrf-token", newCsrfToken);
 
-    return formatClientUser(user) as ClientUser;
+    return formatClientUser(user) as UserCredentials;
   } catch (error: any) {
     throw createApiError(error, "initializeSession error.", 500);
   }
@@ -58,7 +66,7 @@ export default async function initializeSession(
 function formatUserToClaims(user: UserDoc) {
   return {
     _id: user._id,
-    type: user.type as "standard" | "google",
+    type: user.type as RegistrationTypes,
     legal_name: user.legal_name,
     username: user.username,
     email: user.email,

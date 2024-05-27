@@ -1,5 +1,5 @@
 {
-  "extends": "../../packages/typescript-config/tsconfig.base.json",
+  "extends": "../../packages/typescript/tsconfig.base.json",
   "include": ["./**/*.ts*"],
   "compilerOptions": {
     "target": "ES6",

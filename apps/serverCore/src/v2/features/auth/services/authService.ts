@@ -6,7 +6,7 @@
  */
 
 import type { ObjectId } from "mongoose";
-import type RegisterRequestDto from "@authFeat/dtos/RegisterRequestDto";
+import type { InitializeUser } from "@authFeat/typings/User";
 
 import { Types } from "mongoose";
 import { hash } from "bcrypt";
@@ -71,23 +71,31 @@ export async function getUser(
 }
 
 /**
- * Registers a new standard user in the database.
+ * Registers a new user in the database.
  */
-export async function registerStandardUser({ body: user }: RegisterRequestDto) {
+export async function registerUser(user: InitializeUser) {
+  const userId = new Types.ObjectId();
+  let verificationToken: string = "";
+
   try {
-    if (user.type === "standard") user.password = await hash(user.password, 12);
+    if (user.password && user.type === "standard")
+      user.password = await hash(user.password, 12); // prettier-ignore
     else user.password = `${user.type} provided`;
 
-    const userId = new Types.ObjectId(),
+    if (!user.email_verified) {
       verificationToken = randomUUID(); // For email verification link.
-    await redisClient.set(
-      `user:${userId}:verification_token`,
-      verificationToken
-    );
+      await redisClient.set(
+        `user:${userId}:verification_token`,
+        verificationToken
+      );
+    }
 
     const newUser = new User({
         _id: userId,
-        verification_token: verificationToken,
+        legal_name: { first: user.first_name, last: user.last_name },
+        ...(verificationToken && { verification_token: verificationToken }),
+        statistics: userId,
+        activity: userId,
         ...user,
       }),
       userStatistics = new UserStatistics({ _id: userId }),
@@ -98,26 +106,14 @@ export async function registerStandardUser({ body: user }: RegisterRequestDto) {
       userStatistics.save(),
       userActivity.save(),
     ]);
-    await newUser.updateOne({
-      statistics: userStatistics._id,
-      activity: userActivity._id,
-    });
 
     logger.info(
       `User ${newUser._id} was successfully registered in the database.`
     );
   } catch (error: any) {
-    throw createApiError(error, "register service error.", 500);
+    throw createApiError(error, "registerUser service error.", 500);
   }
 }
-// TODO: Confirm password for google?
-// export async function registerGoogleUser(idToken: string) {
-//   try {
-
-//   } catch (error: any) {
-//     throw new ApiError("login service error.", error.message);
-//   }
-// }
 
 /**
  * Verifies the user's verification token that was used to create the unique verification link
@@ -169,10 +165,11 @@ export async function sendVerifyEmail(
     const info = await sendEmail(email, "Email Verification", html);
     if (info.rejected)
       throw createApiError(
-        null,
+        Error(
+          "Your email was rejected by our SMTP server during sending. Please consider using a different email address. If the issue persists, feel free to reach out to support."
+        ),
         "sendVerifyEmail service error.",
-        541,
-        "Your email was rejected by our SMTP server during sending. Please consider using a different email address. If the issue persists, feel free to reach out to support."
+        541
       );
   } catch (error: any) {
     throw createApiError(error, "sendVerifyEmail service error.", 500);

@@ -14,26 +14,27 @@ import cors from "cors";
 import helmet from "helmet";
 import hpp from "hpp";
 import rateLimit from "express-rate-limit";
-import morgan from "morgan";
 
-import apiErrorHandler from "@middleware/apiErrorHandler";
+import morgan from "morgan";
 
 import authRouter from "@authFeat/routes/authRoute";
 // import chatRouter from "@chatFeat/routes/chatRoute";
+
+import apiErrorHandler from "@middleware/apiErrorHandler";
 
 const initializeApi = (corsOptions: CorsOptions) => {
   const app = express(),
     baseUrl = "/api/v2";
 
-  // **Middleware**
+  // *Parser Middleware*
   app.use(bodyParser.urlencoded({ extended: true }));
   app.use(bodyParser.json());
 
-  // *Security*
-  app.use(cors(corsOptions));
-  app.use(helmet()); // Protects various HTTP headers that can help defend against common web hacks.
+  // *Security Middleware*
+  app.use(cors(corsOptions)); // Enables CORS with the specified options.
+  app.use(helmet()); // Sets various HTTP headers that can help defend against common web hacks.
   app.use(hpp()); // Protects against HTTP Parameter Pollution attacks.
-  // Rate-limiting - used to limit repeated requests.
+  // Rate-limiting; used to limit repeated requests.
   app.use(
     rateLimit({
       windowMs: 60 * 60 * 1000, // 60 Minutes
@@ -42,8 +43,9 @@ const initializeApi = (corsOptions: CorsOptions) => {
         "Too many requests made from this IP, please try again after an hour.",
     })
   );
+  app.disable("x-powered-by"); // Can reduce the ability of attackers to determine the software that a server uses.
 
-  // Request logger.
+  // *Logger Middleware*
   // morgan.token("all-headers", (req) => {
   //   return JSON.stringify(req.headers, null, 2);
   // });
@@ -52,17 +54,17 @@ const initializeApi = (corsOptions: CorsOptions) => {
   // );
   app.use(morgan("dev"));
 
-  // Custom error handler for responses.
-  app.use(apiErrorHandler);
-
   // *Routers*
   app.use(`${baseUrl}/auth`, authRouter);
   // app.use(`${baseUrl}/chat`, chatRouter);
 
-  // Test Entry Route
+  // Test entry route.
   app.get(`${baseUrl}/`, async (req, res) => {
     res.json({ message: "Quest Casino api online!" });
   });
+
+  // *Error Handling Middleware*
+  app.use(apiErrorHandler);
 
   return app;
 };

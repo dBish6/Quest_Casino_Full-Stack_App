@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { verifyUserToken, verifyCsrfToken } from "../middleware/tokens";
+import { validateRegister, validateGoogleRegister } from "@authFeat/middleware/formValidation";
 import * as authController from "../controllers/authController";
 
 const router = Router();
@@ -7,11 +8,11 @@ const router = Router();
 router.get("/users", verifyUserToken, authController.getUsers);
 router.get("/user", verifyUserToken, authController.getUser);
 
-router.post("/register", authController.register);
-// router.post("/register/google", verifyCsrfToken, authController.register);
-router.post("/login", verifyUserToken, verifyCsrfToken, authController.login);
-// router.post("/login/google", verifyCsrfToken, verifyUserIdToken, authController.login);
-// router.post("/refresh", verifyCsrfToken, verifyTokens.verifyRefreshToken, authController.refresh);
+router.post("/register", validateRegister, authController.register);
+router.post("/register/google", validateGoogleRegister, authController.registerGoogle);
+router.post("/login", authController.login);
+// router.post("/login/google", authController.googleLogin);
+// router.post("/refresh", authController.refresh);
 router.post("/email-verify", verifyUserToken, verifyCsrfToken, authController.emailVerify);
 router.post("/email-verify/send", verifyUserToken, verifyCsrfToken, authController.sendVerifyEmail);
 

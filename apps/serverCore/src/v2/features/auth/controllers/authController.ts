@@ -6,19 +6,25 @@
  */
 
 import type { Request, Response, NextFunction } from "express";
-import type RegisterRequestDto from "@authFeat/dtos/RegisterRequestDto";
+import type {
+  RegisterRequestDto,
+  GoogleRegisterRequestDto,
+} from "@authFeat/dtos/RegisterRequestDto";
+
+import USER_ALREADY_EXISTS_MESSAGE from "@authFeat/constants/USER_ALREADY_EXISTS_MESSAGE";
 
 import { logger } from "@qc/utils";
 import { createApiError } from "@utils/CustomError";
 import initializeSession from "@authFeat/utils/initializeSession";
 
 import * as authService from "@authFeat/services/authService";
+import { registerGoogleUser } from "@authFeat/services/googleService";
 import { deleteCsrfToken } from "@authFeat/services/csrfService";
 
 /**
  * Send all users as client formatted users.
  * @controller
- * @response ClientUser[] or ApiError.
+ * @response `success` with all users formatted for the client, or `ApiError`.
  */
 export async function getUsers(
   req: Request,
@@ -28,7 +34,9 @@ export async function getUsers(
   try {
     const users = await authService.getUsers(true);
 
-    return res.status(200).json(users);
+    return res
+      .status(200)
+      .json({ message: "Successfully retrieved all users.", users });
   } catch (error: any) {
     next(createApiError(error, "getUsers controller error.", 500));
   }
@@ -37,7 +45,7 @@ export async function getUsers(
 /**
  * Send a client formatted user or current user.
  * @controller
- * @response ClientUser or ApiError.
+ * @response `success` with the current user formatted for the client, or `ApiError`.
  */
 export async function getUser(req: Request, res: Response, next: NextFunction) {
   const query = req.query.email as string;
@@ -50,12 +58,13 @@ export async function getUser(req: Request, res: Response, next: NextFunction) {
     );
     if (!user)
       return res.status(404).json({
-        message: "User doesn't exist.",
+        ERROR: "User doesn't exist.",
       });
 
-    return res.status(200).json({ user });
+    return res
+      .status(200)
+      .json({ message: "Successfully retrieved the current user.", user });
   } catch (error: any) {
-    error.reason = "failed to send specified user.";
     next(createApiError(error, "getUser controller error.", 500));
   }
 }
@@ -63,7 +72,7 @@ export async function getUser(req: Request, res: Response, next: NextFunction) {
 /**
  * Starts the user registration and checks if the user already exits within the database.
  * @controller
- * @response A success message, bad request, or ApiError.
+ * @response `success`, `bad request`, or `ApiError`.
  */
 export async function register(
   req: RegisterRequestDto,
@@ -75,26 +84,52 @@ export async function register(
   try {
     const user = await authService.getUser("email", req.body.email);
     if (user)
-      return res.status(400).json({
-        message: "User already exists.",
+      return res.status(409).json({
+        ERROR: USER_ALREADY_EXISTS_MESSAGE,
       });
     // TODO: Unique usernames.
-
-    await authService.registerStandardUser(req);
+    await authService.registerUser({ ...req.body, type: "standard" });
 
     return res.status(200).json({
       message:
-        "Successfully registered! To complete the process and log in with your newly created profile, we've sent a verification email to your specified email address. If you don't see it in your inbox, please check your junk/spam folder or resend.",
+        "Successfully registered! You can now log in with your newly created profile.",
     });
   } catch (error: any) {
     next(createApiError(error, "register controller error.", 500));
+  }
+}
+/**
+ * Starts the google user registration process.
+ * @controller
+ * @response `success`, `conflict`, `forbidden`, or `ApiError`.
+ */
+export async function registerGoogle(
+  req: GoogleRegisterRequestDto,
+  res: Response,
+  next: NextFunction
+) {
+  logger.debug("/auth/register/google body:", req.body);
+
+  try {
+    const errorMsg = await registerGoogleUser(req.body);
+    if (errorMsg)
+      return res.status(409).json({
+        ERROR: errorMsg,
+      });
+
+    return res.status(200).json({
+      message:
+        "Successfully registered! You can now log in with your newly created profile.",
+    });
+  } catch (error: any) {
+    next(createApiError(error, "googleLogin controller error.", 500));
   }
 }
 
 /**
  * Initializes the current user session.
  * @controller
- * @response The client formatted user and success message or ApiError.
+ * @response `success` with the client formatted user, or `ApiError`.
  */
 export async function login(req: Request, res: Response, next: NextFunction) {
   try {
@@ -112,7 +147,7 @@ export async function login(req: Request, res: Response, next: NextFunction) {
 /**
  * Initiates email address verification.
  * @controller
- * @response A success message, not found, forbidden, or ApiError.
+ * @response A `success`, `not found`, `forbidden`, or `ApiError`.
  */
 export async function emailVerify(
   req: Request,
@@ -124,7 +159,7 @@ export async function emailVerify(
     const result = await authService.emailVerify(sub, verification_token);
     if (typeof result === "string")
       return res.status(result === "User doesn't exist." ? 404 : 403).json({
-        message: result,
+        ERROR: result,
       });
 
     return res
@@ -137,7 +172,7 @@ export async function emailVerify(
 /**
  * Initiates the email verification process.
  * @controller
- * @response A success message or ApiError.
+ * @response `success`, `SMTP rejected` or `ApiError`.
  */
 export async function sendVerifyEmail(
   req: Request,
@@ -159,7 +194,7 @@ export async function sendVerifyEmail(
 /**
  * Clears the session cookie and deletes the csrf token.
  * @controller
- * @response A success message or ApiError.
+ * @response `success` or `ApiError`.
  */
 export async function logout(req: Request, res: Response, next: NextFunction) {
   try {
@@ -180,7 +215,7 @@ export async function logout(req: Request, res: Response, next: NextFunction) {
 /**
  * Clears every refresh token, csrf token and cookies.
  * @controller
- * @response A success message or ApiError.
+ * @response `success` or `ApiError`.
  */
 export async function clear(req: Request, res: Response, next: NextFunction) {
   try {
@@ -197,7 +232,7 @@ export async function clear(req: Request, res: Response, next: NextFunction) {
 /**
  * Deletes the current user.
  * @controller
- * @response A success message or ApiError.
+ * @response `success` or `ApiError`.
  */
 export async function deleteUser(
   req: Request,

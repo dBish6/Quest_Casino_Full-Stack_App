@@ -1,12 +1,27 @@
 import type { ObjectId } from "mongoose";
 import type { JwtPayload } from "jsonwebtoken";
+import { RegisterBodyDto } from "@qc/typescript/dtos/RegisterBodyDto";
+
+export type RegistrationTypes = "standard" | "google";
+
+/**
+ * Type for creating a initial user in the database.
+ */
+export interface InitializeUser
+  extends Omit<RegisterBodyDto, "con_password" | "calling_code"> {
+  type: RegistrationTypes;
+  avatar_url?: string;
+  first_name: string;
+  last_name: string;
+  email_verified?: boolean;
+}
 
 export interface UserToClaims {
   _id: ObjectId;
-  type: "standard" | "google";
+  type: RegistrationTypes;
   legal_name: { first: string; last: string };
-  username: string;
   email: string;
+  username: string;
   country: string;
   region?: string;
   phone_number?: string;
@@ -14,44 +29,14 @@ export interface UserToClaims {
 
 export interface UserClaims extends JwtPayload {
   sub: string; // (_id) There is always a subject for the user token.
-  type: "standard" | "google";
+  type: RegistrationTypes;
   legal_name: { first: string; last: string };
-  username: string;
   email: string;
+  username: string;
   verification_token: string;
   country: string;
   region?: string;
   phone_number?: string;
-}
-
-export interface ClientUser {
-  type: "standard" | "google";
-  avatar_url: string;
-  legal_name: { first: string; last: string };
-  username: string;
-  email: string;
-  email_verified: boolean;
-  country: string;
-  region?: string;
-  phone_number?: string;
-  balance: number;
-  statistics: {
-    losses: {
-      total: number;
-      table: number;
-      slots: number;
-      dice: number;
-    };
-    wins: {
-      total: number;
-      table: number;
-      slots: number;
-      dice: number;
-      streak: number;
-      win_rate: number;
-    };
-    completed_quests: Map<string, boolean>;
-  };
 }
 
 interface SharedDocFields {
@@ -103,10 +88,10 @@ export interface UserDoc extends SharedDocFields {
     first: string;
     last: string;
   };
-  username: string;
   email: string;
   email_verified: boolean;
-  verification_token: string;
+  username: string;
+  verification_token?: string;
   password: string;
   country: string;
   region?: string;

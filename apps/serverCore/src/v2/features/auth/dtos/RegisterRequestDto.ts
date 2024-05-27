@@ -1,6 +1,13 @@
 import type { Request } from "express";
-import type { UserToClaims } from "@authFeat/typings/User";
+import type {
+  RegisterBodyDto,
+  RegisterGoogleBodyDto,
+} from "@qc/typescript/dtos/RegisterBodyDto";
 
-export default interface RegisterRequestDto extends Request {
-  body: Omit<UserToClaims, "_id"> & { password: string };
+export interface RegisterRequestDto extends Request {
+  body: RegisterBodyDto;
+}
+
+export interface GoogleRegisterRequestDto extends Request {
+  body: RegisterGoogleBodyDto;
 }

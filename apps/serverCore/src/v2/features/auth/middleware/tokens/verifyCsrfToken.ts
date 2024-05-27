@@ -1,5 +1,4 @@
 import { Request, Response, NextFunction } from "express";
-import { compare } from "bcrypt";
 import { createApiError } from "@utils/CustomError";
 import { redisClient } from "@cache";
 
@@ -19,16 +18,14 @@ export default async function verifyCsrfToken(
       receivedToken = req.headers["x-xsrf-token"];
 
     if (!cachedTokens || !receivedToken)
-      return res.status(403).json({
+      return res.status(401).json({
         ERROR: "CSRF token is missing.",
       });
 
-    const match = cachedTokens.some((token) =>
-      compare(token, receivedToken as string)
-    );
+    const match = cachedTokens.some((token) => token === receivedToken);
     if (!match)
       return res.status(403).json({
-        ERROR: "CSRF token does not match.",
+        ERROR: "CSRF token is invalid.",
       });
 
     console.log("Csrf token successfully verified.");

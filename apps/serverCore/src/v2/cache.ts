@@ -3,6 +3,7 @@
  */
 
 import { createClient } from "redis";
+import { logger } from "@qc/utils";
 
 export const redisClient = createClient({
   url:
@@ -12,7 +13,7 @@ export const redisClient = createClient({
 });
 
 redisClient.on("connect", () => {
-  console.log("Redis server is successfully running!");
+  logger.info("Redis server is successfully running!");
 });
 
 redisClient.on("error", (error) => {

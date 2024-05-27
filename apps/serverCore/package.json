@@ -1,7 +1,7 @@
 {
   "name": "server",
-  "private": true,
   "version": "2.0.0",
+  "private": true,
   "license": "CC-BY-4.0",
   "author": "David Bishop",
   "description": "",
@@ -12,17 +12,16 @@
   "main": "src/v2/index.ts",
   "type": "module",
   "scripts": {
-    "dev": "dotenv -e .env.development tsx watch ./src/v2",
-    "build": "tsc",
-    "start": "",
-    "start:staging": "dotenv -e .env.staging node index.js",
+    "dev": "dotenv -e .env -e .env.development tsx watch src/v2",
     "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc",
+    "start": "dotenv -e .env -e .env.production node index.js",
+    "start:staging": "dotenv -e .env -e .env.staging node index.js",
     "clean": "rm -rf node_modules"
   },
   "dependencies": {
     "@qc/server": "*",
     "@qc/utils": "*",
-    "bcrypt": "^5.1.1",
     "body-parser": "^1.20.2",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
@@ -38,8 +37,7 @@
   "devDependencies": {
     "@qc/eslint-config": "*",
     "@qc/server-dev": "*",
-    "@qc/typescript-config": "*",
-    "@types/bcrypt": "^5.0.2",
+    "@qc/typescript": "*",
     "@types/body-parser": "^1.19.3",
     "@types/cookie-parser": "^1.4.4",
     "@types/cors": "^2.8.14",

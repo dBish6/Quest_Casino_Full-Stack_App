@@ -34,7 +34,7 @@ export default async function verifyAccessToken(
           refreshToken,
           REFRESH_TOKEN_SECRET!
         );
-        // console.log("decodedClaims", decodedClaims);
+        logger.debug("decodedClaims refresh token found.", decodedClaims);
         if (!decodedClaims)
           return res.status(403).json({
             message: "Refresh token is invalid.",
@@ -63,7 +63,7 @@ export default async function verifyAccessToken(
       accessToken,
       ACCESS_TOKEN_SECRET!
     );
-    // console.log("decodedClaims", decodedClaims);
+    logger.debug("decodedClaims access token found.", decodedClaims);
     if (!decodedClaims)
       return res.status(403).json({
         message: "Access token is invalid.",
@@ -119,7 +119,12 @@ async function refreshSession(
     const isTokenValid = await isRefreshTokenValid(user.sub, refreshToken);
     if (!isTokenValid) return "Refresh token was not found.";
 
-    await initializeSession(res, user.sub);
+    await initializeSession(
+      res,
+      user.sub,
+      null,
+      (req.headers["x-xsrf-token"] as string) || ""
+    );
 
     req.decodedClaims = user;
     logger.info("Session was refreshed successfully verified.");
