@@ -6,6 +6,7 @@
  */
 
 import type { Request, Response as EResponse, NextFunction } from "express";
+import type { AuthState } from "@authFeat/redux/authSlice";
 
 import express from "express";
 import { createServer as createViteServer, ViteDevServer } from "vite";
@@ -14,8 +15,10 @@ import fs from "fs";
 import path from "path";
 import sirv from "sirv";
 import { installGlobals } from "@remix-run/node";
+import { hashSync } from "bcrypt";
+import { logger } from "@qc/utils";
 
-import { configureStore } from "@reduxjs/toolkit";
+import { configureStore, nanoid } from "@reduxjs/toolkit";
 import { rootReducer } from "@redux/reducers";
 
 installGlobals();
@@ -64,15 +67,13 @@ async function setupServer() {
         render = (await import("./build/ssr/entry-server")).render;
       }
 
-      const { preloadedStateScript, store } = getInitialReduxState();
       try {
+        const { preloadedStateScript, store } = getInitialReduxState();
+
         const appHtml = await render(req, res, store),
           html = template
             .replace("<!--ssr-outlet-->", appHtml)
             .replace("<!--init-state-->", preloadedStateScript);
-
-        // console.log("appHtml", appHtml + "\n\n");
-        // console.log("html", html);
 
         return res.status(200).setHeader("Content-Type", "text/html").end(html);
       } catch (error: any) {
@@ -114,15 +115,32 @@ async function setupServer() {
 }
 
 /**
- * Preloads the initial redux state for the client.
+ * Preloads the initial redux state for the client and also generates the initial oState token for the google register.
  */
 function getInitialReduxState() {
   const store = configureStore({
-    reducer: rootReducer,
-  });
+      reducer: rootReducer,
+    }),
+    state = store.getState(),
+    userState = state.auth.user;
+
+  let initialState;
+  if (!userState.credentials && !userState.token.oState) {
+    const initialAuthState: AuthState = {
+      user: {
+        credentials: null,
+        token: { oState: hashSync(nanoid(), 6), csrf: null },
+      },
+    };
+
+    initialState = {
+      ...state,
+      auth: initialAuthState,
+    };
+  }
 
   const preloadedStateScript = `<script>window.__PRELOADED_STATE__ = ${JSON.stringify(
-    store.getState()
+    initialState
   ).replace(/</g, "\\u003c")}</script>`;
 
   return { preloadedStateScript, store };
@@ -130,7 +148,7 @@ function getInitialReduxState() {
 
 setupServer().then((app) =>
   app.listen(PORT, HOST!, () =>
-    console.log(
+    logger.info(
       `Server is running on ${PROTOCOL}${HOST}:${PORT}; Ctrl-C to terminate...`
     )
   )

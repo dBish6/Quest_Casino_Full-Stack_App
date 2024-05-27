@@ -27,7 +27,7 @@ export const baseQuery = (ext: string = "", options?: FetchBaseQueryArgs) =>
       headers.set("content-type", `application/json`);
       return headers;
     },
-    credentials: "same-origin", // TODO: Check.
+    credentials: "same-origin",
     timeout: 10000,
     ...options,
   });

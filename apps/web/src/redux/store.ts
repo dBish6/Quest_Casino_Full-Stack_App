@@ -7,6 +7,7 @@ import { authMiddleware } from "@authFeat/services/authApi";
 const preloadedState = window.__PRELOADED_STATE__ || {};
 delete window.__PRELOADED_STATE__;
 
+// TODO: Need to persist user tokens.
 const store = configureStore({
   reducer: rootReducer,
   preloadedState,

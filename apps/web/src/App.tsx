@@ -4,7 +4,7 @@
  *
  * Author: David Bishop
  * Creation Date: April 16, 2024
- * Last Updated: May 17, 2024
+ * Last Updated: May 27, 2024
  *
  * Description:
  * .
@@ -28,8 +28,6 @@ import {
   Error429,
   Error500,
 } from "@views/errors";
-
-import registerAction from "@authFeat/actions/register";
 
 import "./index.css";
 
@@ -96,15 +94,6 @@ export const routes: RouteObject[] = [
           path: "*",
           element: <Navigate to="/error-404" replace />,
         }),
-      },
-    ],
-  },
-  {
-    path: "/action",
-    children: [
-      {
-        path: "register",
-        action: registerAction,
       },
     ],
   },

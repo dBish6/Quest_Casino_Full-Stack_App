@@ -33,7 +33,7 @@ export interface InputProps
   name: string;
   id: string;
   Button?: () => React.ReactElement<ButtonProps>;
-  error?: string;
+  error?: string | null;
 }
 
 // prettier-ignore
@@ -51,6 +51,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           ref={inputContainerRef}
           className={`${input({ className, intent, size })}${Button ? " " + s.button : ""}`}
           style={style}
+          data-disabled={props.disabled}
         >
           <Label htmlFor={props.id}>
             {label}

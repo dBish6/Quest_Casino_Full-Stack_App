@@ -7,7 +7,7 @@ import { AnimatePresence, m } from "framer-motion";
 import { Root, Trigger, Portal, Overlay } from "@radix-ui/react-dialog";
 
 import preventScroll from "@utils/preventScroll";
-import fadeInOut from "@utils/animations/fadeInOut";
+import { fadeInOut } from "@utils/animations";
 
 import s from "./modalTemplate.module.css";
 

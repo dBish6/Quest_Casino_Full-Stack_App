@@ -1,15 +1,15 @@
-import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
+import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
+import { ErrorResponse } from "@typings/ApiResponse";
 
-interface Window {
-  __PRELOADED_STATE__: any;
+declare global {
+  interface Window {
+    __PRELOADED_STATE__: any;
+  }
 }
 
 declare module "@reduxjs/toolkit/query" {
   interface FetchBaseQueryError {
-    status: number
-    data?: {
-      message: string;
-      ERROR?: string;
-    };
+    status: number;
+    data?: ErrorResponse;
   }
 }

@@ -34,7 +34,7 @@ export interface SelectProps
   label: string;
   name: string;
   id: string;
-  error?: string;
+  error?: string | null;
   Loader?: () => React.ReactElement;
   loaderTrigger?: boolean;
 }

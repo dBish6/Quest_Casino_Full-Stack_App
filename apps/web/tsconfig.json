@@ -1,5 +1,5 @@
 {
-  "extends": "../../packages/typescript-config/tsconfig.base.json",
+  "extends": "../../packages/typescript/tsconfig.base.json",
   "include": ["./**/*.ts*"],
   "compilerOptions": {
     // "baseUrl": ".",
@@ -17,6 +17,8 @@
 
       "@components/*": ["./src/components/*"],
 
+      "@hooks/*": ["./src/hooks/*"],
+
       "@redux/*": ["./src/redux/*"],
 
       "@services/*": ["./src/services/*"],
@@ -26,7 +28,6 @@
       "@utils/*": ["./src/utils/*"],
 
       "@views/*": ["./src/views/*"]
-    },
-    "types": ["vite/client"]
+    }
   }
 }

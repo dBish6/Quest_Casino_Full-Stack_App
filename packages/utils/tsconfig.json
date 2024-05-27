@@ -1,16 +1,9 @@
 {
+  "extends": "../../packages/typescript/tsconfig.base.json",
   "compilerOptions": {
     "target": "ES6",
-    "module": "ESNext",
-    "moduleResolution": "Node",
-    "skipLibCheck": true,
-    "outDir": "build",
+    "outDir": "build"
     // "sourceMap": true,
-
-    "esModuleInterop": true,
-    "isolatedModules": true,
-
-    "strict": true
   },
   "include": ["src"],
   "exclude": ["node_modules", "build"]

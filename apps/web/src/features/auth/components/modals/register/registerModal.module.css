@@ -3,172 +3,144 @@
   max-width: 496px;
   max-height: 759px;
   padding: 2rem 2rem 1rem 2rem;
+  & > div {
+    & button.exit {
+      position: absolute;
+      top: -10px;
+      right: -10px;
+      z-index: 1;
+    }
 
-  & button.exit {
-    position: absolute;
-    top: -10px;
-    right: -10px;
-    z-index: 1;
-  }
-
-  & .head {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    column-gap: 1rem;
-    margin-bottom: 2rem;
-    & hgroup {
+    & .head {
       display: flex;
+      justify-content: space-between;
       align-items: center;
-      gap: 0.75rem;
-      & h2 {
-        font: var(--h1);
-      }
-    }
-    & > div {
-      & span:first-child {
-        color: var(--c-status-red);
-      }
-      & span:last-child {
-        font-style: italic;
-        color: var(--c-heading-2);
-      }
-    }
-  }
-
-  & .message,
-  > span[role="alert"] {
-    display: block;
-    margin-bottom: 1rem;
-    font: var(--para-regular);
-  }
-  & .message {
-    color: var(--c-status-green);
-    & a {
-      &:hover,
-      &:focus-visible,
-      &:active,
-      &[data-key-press="true"] {
-        color: #3eca61;
-      }
-    }
-  }
-  & > span[role="alert"] {
-    color: var(--c-status-red);
-    & a {
-      &:hover,
-      &:focus-visible,
-      &:active,
-      &[data-key-press="true"] {
-        color: #df2b46;
-      }
-    }
-  }
-
-  & form {
-    margin-bottom: 1.5rem;
-    & .inputs {
-      & > :global(.control) {
-        margin-bottom: 1.5rem;
-      }
-      & :global(.control) {
-        width: 100%;
-        & input[type="number"] {
-          -webkit-appearance: none;
-          -moz-appearance: textfield;
-        }
-      }
-      & div[role="group"] {
+      flex-wrap: wrap;
+      column-gap: 1rem;
+      margin-bottom: 2rem;
+      & hgroup {
         display: flex;
-        margin-bottom: 1.5rem;
-      }
-      & div[role="group"]:not(:last-of-type) {
-        @media (width >= 461px) {
-          gap: 1rem;
-        }
-        @media (width <= 460px) {
-          flex-direction: column;
-          gap: 1.5rem;
+        align-items: center;
+        gap: 0.75rem;
+        & h2 {
+          font: var(--h1);
         }
       }
-      & div[role="group"]:last-of-type {
-        & > :global(.control):first-of-type {
-          max-width: 126px;
-          & :global(.select) {
-            border-top-right-radius: 0;
-            border-bottom-right-radius: 0;
-            & label :global(.required) {
-              display: none;
-            }
+      & > div {
+        & span:first-child {
+          color: var(--c-status-red);
+        }
+        & span:last-child {
+          font-style: italic;
+          color: var(--c-heading-2);
+        }
+      }
+    }
+
+    & form {
+      margin-bottom: 1.5rem;
+      & .inputs {
+        & > :global(.control) {
+          margin-bottom: 1.5rem;
+        }
+        & :global(.control) {
+          width: 100%;
+          & input[type="number"] {
+            -webkit-appearance: none;
+            -moz-appearance: textfield;
           }
         }
-        & > :global(.control):last-of-type :global(.input) {
-          right: 2px;
-          width: calc(100% + 2px) !important;
-          border-top-left-radius: 0;
-          border-bottom-left-radius: 0;
-        }
-      }
-    }
-
-    & .submit {
-      & button {
-        width: 100%;
-        margin-bottom: 4px;
-        &[disabled] {
+        & div[role="group"] {
           display: flex;
-          justify-content: center;
-          align-items: center;
+          margin-bottom: 1.5rem;
+        }
+        & div[role="group"]:not(:last-of-type) {
+          @media (width >= 461px) {
+            gap: 1rem;
+          }
+          @media (width <= 460px) {
+            flex-direction: column;
+            gap: 1.5rem;
+          }
+        }
+        & div[role="group"]:last-of-type {
+          & > :global(.control):first-of-type {
+            max-width: 126px;
+            & :global(.select) {
+              border-top-right-radius: 0;
+              border-bottom-right-radius: 0;
+              & label :global(.required) {
+                display: none;
+              }
+            }
+          }
+          & > :global(.control):last-of-type :global(.input) {
+            right: 2px;
+            width: calc(100% + 2px) !important;
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+          }
         }
       }
-      & p {
-        font: var(--para-x-small);
-        color: var(--c-para-faded);
-        & a {
-          color: var(--c-para);
-        }
-      }
-    }
-  }
 
-  & .or {
-    position: relative;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-block: 1.25rem 1rem;
-    & hr {
-      width: 100%;
-      border-top: 1px solid var(--c-purple-border);
+      & .submit {
+        & button {
+          width: 100%;
+          margin-bottom: 4px;
+          &[disabled] {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+          }
+        }
+        & p {
+          font: var(--para-x-small);
+          color: var(--c-para-faded);
+          & a {
+            color: var(--c-para);
+          }
+        }
+      }
     }
-    & span {
-      color: var(--c-heading-2);
-      background-color: inherit;
-      white-space: nowrap;
-    }
-  }
-  & button.google {
-    width: 100%;
-    margin-bottom: 1.25rem;
-    & span {
+
+    & .or {
+      position: relative;
       display: flex;
-      justify-content: center;
       align-items: center;
       gap: 0.5rem;
-      & svg {
-        & use {
-          fill: var(--c-heading-2);
+      margin-block: 1.25rem 1rem;
+      & hr {
+        width: 100%;
+        border-top: 1px solid var(--c-purple-border);
+      }
+      & span {
+        color: var(--c-heading-2);
+        background-color: inherit;
+        white-space: nowrap;
+      }
+    }
+    & button.google {
+      width: 100%;
+      margin-bottom: 1.25rem;
+      & span {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0.5rem;
+        & svg {
+          & use {
+            fill: var(--c-heading-2);
+          }
         }
       }
     }
-  }
 
-  & .already {
-    font: var(--para-small);
-    color: var(--c-para-faded);
-    & a {
-      color: var(--c-para);
+    & .already {
+      font: var(--para-small);
+      color: var(--c-para-faded);
+      & a {
+        color: var(--c-para);
+      }
     }
   }
 }

@@ -1,15 +1,9 @@
-// TODO:
-export interface Response<Data extends object> {
-  data: Data;
-  isError: boolean;
-}
-
 export interface SuccessResponse {
-  data: any;
-  isError: boolean;
+  message: string;
+  [key: string]: any;
 }
 
 export interface ErrorResponse {
-  data: any;
-  isError: boolean;
+  message?: string;
+  ERROR: string | Record<string, string>;
 }

@@ -27,37 +27,45 @@ const Form = forwardRef<HTMLFormElement, React.PropsWithChildren<FormProps>>(
           (resSuccessMsg ? (
             <span className={s.successMsg}>{resSuccessMsg}</span>
           ) : (
-            resError && (
-              <span role="alert" id="globalFormError" className={s.errorMsg}>
-                {isFetchBaseQueryError(resError) ? (
-                  resError.status === 400 ? (
-                    resError.data?.message
-                  ) : (
-                    <>
-                      An unexpected server error occurred. Please try refreshing
-                      the page. If the error persists, feel free to reach out to{" "}
-                      <Link intent="primary" to="/support">
-                        support
-                      </Link>
-                      .
-                    </>
-                  )
-                ) : (
-                  <>
-                    {resError.message} If the error persists, feel free to reach
-                    out to{" "}
+            resError &&
+            (isFetchBaseQueryError(resError) ? (
+              resError.status === 409 &&
+              typeof resError.data?.ERROR === "string" ? (
+                <span role="alert" id="globalFormError" className={s.errorMsg}>
+                  {resError.data?.ERROR}
+                </span>
+              ) : (
+                (resError.status >= 500 ||
+                  (typeof resError.data?.ERROR === "string" &&
+                    resError.data?.ERROR.startsWith("No form field"))) && (
+                  <span
+                    role="alert"
+                    id="globalFormError"
+                    className={s.errorMsg}
+                  >
+                    An unexpected server error occurred. Please try refreshing
+                    the page. If the error persists, feel free to reach out to{" "}
                     <Link intent="primary" to="/support">
                       support
                     </Link>
                     .
-                  </>
-                )}
+                  </span>
+                )
+              )
+            ) : (
+              <span role="alert" id="globalFormError" className={s.errorMsg}>
+                {resError.message}. If the error persists, feel free to reach
+                out to{" "}
+                <Link intent="primary" to="/support">
+                  support
+                </Link>
+                .
               </span>
-            )
+            ))
           ))}
         <form
           ref={ref}
-          aria-errormessage="globalFormError"
+          {...(resError && { "aria-errormessage": "globalFormError" })}
           autoComplete="off"
           noValidate
           {...props}
