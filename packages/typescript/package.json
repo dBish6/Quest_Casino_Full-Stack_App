@@ -1,12 +1,17 @@
 {
-  "name": "@qc/typescript-config",
+  "name": "@qc/typescript",
   "version": "0.0.0",
   "private": true,
   "license": "CC-BY-4.0",
+  "type": "module",
   "devDependencies": {
     "typescript": "^5.4.4"
   },
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "files": [
+    "typings",
+    "dtos"
+  ]
 }
