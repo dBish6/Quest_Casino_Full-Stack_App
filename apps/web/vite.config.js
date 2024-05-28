@@ -22,8 +22,8 @@ export default defineConfig(({ mode }) => {
           localsConvention: "camelCaseOnly",
           generateScopedName:
             mode === "production"
-              ? "[hash:base64:2]"
-              : "[local]_[hash:base64:2]",
+              ? "[hash:base64:5]"
+              : "[local]_[hash:base64:5]",
         },
       },
       plugins: [react()],
