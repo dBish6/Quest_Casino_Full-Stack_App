@@ -28,12 +28,13 @@ const select = cva("select", {
 export interface SelectProps
   extends Omit<
       React.ComponentProps<"select">,
-      "size" | "onBlur" | "onKeyDown" | "onChange"
+      "size" | "required" | "onBlur" | "onKeyDown" | "onChange"
     >,
     VariantProps<typeof select> {
   label: string;
   name: string;
   id: string;
+  required?: boolean | "show";
   error?: string | null;
   Loader?: () => React.ReactElement;
   loaderTrigger?: boolean;
@@ -41,7 +42,7 @@ export interface SelectProps
 
 // prettier-ignore
 export const Input = forwardRef<HTMLSelectElement,React.PropsWithChildren<SelectProps>>(
-  ({ children, label, className, intent, size, style, error, Loader, loaderTrigger, ...props }, ref) => {
+  ({ children, label, className, intent, size, style, required, error, Loader, loaderTrigger, ...props }, ref) => {
     const selectContainerRef = useRef<HTMLDivElement>(null);
 
     return (
@@ -64,7 +65,7 @@ export const Input = forwardRef<HTMLSelectElement,React.PropsWithChildren<Select
         >
           <Label htmlFor={props.id}>
             {label}
-            {props.required && (
+            {required === "show" && (
               <span aria-hidden="true" className="required">
                 *
               </span>
@@ -74,6 +75,7 @@ export const Input = forwardRef<HTMLSelectElement,React.PropsWithChildren<Select
             {...(error && { "aria-errormessage": "formError", "aria-invalid": true })}
             {...(Loader && {"aria-busy": loaderTrigger})}
             ref={ref}
+            required={required ? true : false}
             onBlur={() =>
               selectContainerRef.current!.removeAttribute("data-focused")
             }

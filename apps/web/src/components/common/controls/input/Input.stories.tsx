@@ -22,6 +22,10 @@ const meta: Meta<typeof Input> = {
       control: { type: "select" },
       options: ["lrg", "xl"],
     },
+    required: {
+      control: { type: "radio" },
+      options: ["true", "false", "show"],
+    },
   },
   args: { onClick: fn() },
 };

@@ -26,19 +26,20 @@ const input = cva("input", {
 export interface InputProps
   extends Omit<
       React.ComponentProps<"input">,
-      "size" | "onFocus" | "onBlur" | "onChange"
+      "size" | "required" | "onFocus" | "onBlur" | "onChange"
     >,
     VariantProps<typeof input> {
   label: string;
   name: string;
   id: string;
+  required?: boolean | "show";
   Button?: () => React.ReactElement<ButtonProps>;
   error?: string | null;
 }
 
 // prettier-ignore
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ label, className, intent, size, style, Button, error, ...props }, ref) => {
+  ({ label, className, intent, size, style, Button, required, error, ...props }, ref) => {
     const inputContainerRef = useRef<HTMLDivElement>(null);
 
     return (
@@ -55,7 +56,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         >
           <Label htmlFor={props.id}>
             {label}
-            {props.required && (
+            {required === "show" && (
               <span aria-hidden="true" className="required">
                 *
               </span>
@@ -64,6 +65,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           <input
             {...(error && { "aria-errormessage": "formError", "aria-invalid": true })}
             ref={ref}
+            required={required ? true : false}
             onFocus={() =>
               inputContainerRef.current!.setAttribute("data-focused", "true")
             }

@@ -51,8 +51,7 @@ export default function RegisterModal() {
   const storedOState = useAppSelector(selectUserOStateToken), // The initial oState token for the google register for verification.
     redirectUri = `${import.meta.env.VITE_APP_URL}/about?register=google`;
 
-  const { form, setLoading, setError, setErrors, clearError } =
-    useForm<RegisterBodyDto>();
+  const { form, setLoading, setError, setErrors } = useForm<RegisterBodyDto>();
 
   const [worldData, setWorldData] = useState<{
       countries: Country[] | null;
@@ -153,21 +152,28 @@ export default function RegisterModal() {
   };
 
   return (
-    <ModalTemplate query={QUERY} btnText="Register">
+    <ModalTemplate query={QUERY} btnText="Register" maxWidth="496px">
       {({ close, contentProps }) => (
         <Content
           aria-description="Register a profile at Quest Casino by providing the details below or by pressing the google button."
+          onEscapeKeyDown={() => setErrors({})}
           {...contentProps}
         >
-          <ScrollArea className={s.modal} orientation="vertical">
+          <ScrollArea
+            className={`modal scrollArea ${s.modal}`}
+            orientation="vertical"
+          >
             <Button
               intent="exit"
               size="xl"
-              className={s.exit}
-              onClick={close}
+              className="exitXl"
+              onClick={() => {
+                close();
+                setErrors({});
+              }}
             />
 
-            <div className={s.head}>
+            <div className="head">
               <hgroup>
                 <Icon id="badge-48" />
                 <Title asChild>
@@ -187,7 +193,7 @@ export default function RegisterModal() {
                   resError={registerError}
                   onSubmit={handleSubmit}
                 >
-                  <div className={s.inputs}>
+                  <div className="inputs">
                     <div role="group">
                       <Input
                         label="First Name"
@@ -195,10 +201,10 @@ export default function RegisterModal() {
                         size="lrg"
                         id="first_name"
                         name="first_name"
-                        required
+                        required="show"
                         error={form.error.first_name}
                         disabled={processingForm}
-                        onInput={() => clearError("first_name")}
+                        onInput={() => setError("first_name", "")}
                       />
                       <Input
                         label="Last Name"
@@ -206,10 +212,10 @@ export default function RegisterModal() {
                         size="lrg"
                         id="last_name"
                         name="last_name"
-                        required
+                        required="show"
                         error={form.error.last_name}
                         disabled={processingForm}
-                        onInput={() => clearError("last_name")}
+                        onInput={() => setError("last_name", "")}
                       />
                     </div>
                     <Input
@@ -219,10 +225,10 @@ export default function RegisterModal() {
                       id="email"
                       name="email"
                       type="email"
-                      required
+                      required="show"
                       error={form.error.email}
                       disabled={processingForm}
-                      onInput={() => clearError("email")}
+                      onInput={() => setError("email", "")}
                     />
                     <Input
                       label="Username"
@@ -230,10 +236,10 @@ export default function RegisterModal() {
                       size="lrg"
                       id="username"
                       name="username"
-                      required
+                      required="show"
                       error={form.error.username}
                       disabled={processingForm}
-                      onInput={() => clearError("username")}
+                      onInput={() => setError("username", "")}
                     />
                     <div role="group">
                       <Input
@@ -243,10 +249,10 @@ export default function RegisterModal() {
                         id="password"
                         name="password"
                         type="password"
-                        required
+                        required="show"
                         error={form.error.password}
                         disabled={processingForm}
-                        onInput={() => clearError("password")}
+                        onInput={() => setError("password", "")}
                       />
                       <Input
                         label="Confirm Password"
@@ -255,10 +261,10 @@ export default function RegisterModal() {
                         id="con_password"
                         name="con_password"
                         type="password"
-                        required
+                        required="show"
                         error={form.error.con_password}
                         disabled={processingForm}
-                        onInput={() => clearError("con_password")}
+                        onInput={() => setError("con_password", "")}
                       />
                     </div>
                     <div role="group">
@@ -268,7 +274,7 @@ export default function RegisterModal() {
                         size="lrg"
                         id="country"
                         name="country"
-                        required
+                        required="show"
                         error={form.error.country}
                         Loader={() => <Spinner intent="primary" size="sm" />}
                         loaderTrigger={countriesLoading}
@@ -278,7 +284,7 @@ export default function RegisterModal() {
                           getRegions();
                         }}
                         onInput={(e) => {
-                          clearError("country");
+                          setError("country", "");
                           setSelected((prev) => ({
                             ...prev,
                             country: (e.target as HTMLSelectElement).value,
@@ -331,7 +337,7 @@ export default function RegisterModal() {
                         loaderTrigger={countriesLoading}
                         disabled={processingForm}
                         onFocus={getCountries}
-                        onInput={() => clearError("calling_code")}
+                        onInput={() => setError("calling_code", "")}
                       >
                         {worldData.countries?.length &&
                           worldData.countries.map((country) => (
@@ -352,7 +358,7 @@ export default function RegisterModal() {
                         type="tel"
                         error={form.error.phone_number}
                         onInput={(e) => {
-                          clearError("phone_number");
+                          setError("phone_number", "");
                           formatPhoneNumber(e.target as HTMLInputElement);
                         }}
                         disabled={processingForm}
@@ -367,9 +373,9 @@ export default function RegisterModal() {
                   <hr />
                   <span
                     id="logWit"
-                    aria-description="Log in with other third party services."
+                    aria-description="Register with other third party services."
                   >
-                    Or Login With
+                    Or Register With
                   </span>
                   <hr aria-hidden="true" />
                 </div>
@@ -423,7 +429,7 @@ function GoogleCallback({
   storedOState,
   redirectUri,
 }: GoogleCallbackProps) {
-  const { form, setLoading, setErrors, clearError } = useForm<{
+  const { form, setLoading, setError, setErrors } = useForm<{
     password: string;
     con_password: string;
   }>();
@@ -482,7 +488,7 @@ function GoogleCallback({
       resError={registerGoogleError}
       onSubmit={handleSubmit}
     >
-      <div className={s.inputs}>
+      <div className="inputs">
         <Input
           label="Password"
           intent="primary"
@@ -490,10 +496,10 @@ function GoogleCallback({
           id="password"
           name="password"
           type="password"
-          required
+          required="show"
           error={form.error.password}
           disabled={processingForm}
-          onInput={() => clearError("password")}
+          onInput={() => setError("password", "")}
         />
         <Input
           label="Confirm Password"
@@ -502,10 +508,10 @@ function GoogleCallback({
           id="con_password"
           name="con_password"
           type="password"
-          required
+          required="show"
           error={form.error.con_password}
           disabled={processingForm}
-          onInput={() => clearError("con_password")}
+          onInput={() => setError("con_password", "")}
         />
       </div>
 

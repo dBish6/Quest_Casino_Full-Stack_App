@@ -9,7 +9,7 @@ import { Root, Trigger, Portal, Overlay } from "@radix-ui/react-dialog";
 import preventScroll from "@utils/preventScroll";
 import { fadeInOut } from "@utils/animations";
 
-import s from "./modalTemplate.module.css";
+import "./modalTemplate.css";
 
 export interface ModalTemplateProps {
   children: (props: {
@@ -18,6 +18,7 @@ export interface ModalTemplateProps {
   }) => React.ReactNode;
   query: string;
   btnText: string;
+  maxWidth: React.CSSProperties["maxWidth"];
 }
 
 const ANIMATION_DURATION = 1100,
@@ -44,6 +45,7 @@ export default function ModalTemplate({
   children,
   query,
   btnText,
+  maxWidth,
 }: ModalTemplateProps) {
   const [searchParams, setSearchParams] = useSearchParams(),
     [modal, setModal] = useState(() => {
@@ -81,7 +83,7 @@ export default function ModalTemplate({
             <m.div
               role="presentation"
               key="backdrop"
-              className={s.backdrop}
+              className="modalBackdrop"
               variants={fadeVariant}
               initial="hidden"
               animate="visible"
@@ -91,7 +93,8 @@ export default function ModalTemplate({
               <m.div
                 role="presentation"
                 key="modal"
-                className={s.modal}
+                className="modalContainer"
+                style={{ maxWidth: maxWidth }}
                 variants={modalPopInOut}
                 initial="hidden"
                 animate="visible"

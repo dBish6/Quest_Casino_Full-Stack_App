@@ -6,21 +6,21 @@ export interface FormState<T = Partial<Record<string, string>>> {
 }
 
 /**
- * A custom hook to manage form state, including error handling and processing status.
+ * A hook to manage form state, including error handling and processing status.
  *
- * @template T - The type of the error object. Defaults to a partial record of strings.
- *
- * @example
- * // Basic usage with default error type
- * const { form, setLoading, setErrors, clearError } = useForm();
+ * @template T The type of the error object. Defaults to a partial record of strings.
  *
  * @example
- * // Custom usage with a specific error type
+ * // Basic usage with default error type.
+ * const { form, setLoading, setErrors } = useForm();
+ *
+ * @example
+ * // Custom usage with a specific error type.
  * interface CustomError {
  *   username: string;
  *   password: string;
  * }
- * const { form, setLoading, setErrors, clearError } = useForm<CustomError>();
+ * const { form, setLoading, setErrors } = useForm<CustomError>();
  */
 export default function useForm<T = Partial<Record<string, string>>>() {
   const [form, setForm] = useState<FormState<T>>({
@@ -44,15 +44,6 @@ export default function useForm<T = Partial<Record<string, string>>>() {
         [key]: value,
       },
     }));
-  const clearError = (key: keyof T) => {
-    setForm((prev) => ({
-      ...prev,
-      error: {
-        ...prev.error,
-        [key]: "",
-      },
-    }));
-  };
 
-  return { form, setLoading, setError, setErrors, clearError };
+  return { form, setLoading, setError, setErrors };
 }
