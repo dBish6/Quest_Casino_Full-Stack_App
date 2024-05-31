@@ -1,3 +1,8 @@
+/**
+ * Capitalizes each word in a string that is in snake case.
+ */
+export declare function capitalize(txt: string): string;
+
 declare class Logger {
     disableAll: boolean;
     constructor(disableAll: boolean);
@@ -8,3 +13,4 @@ declare class Logger {
 }
 declare const logger: Logger;
 export { logger };
+

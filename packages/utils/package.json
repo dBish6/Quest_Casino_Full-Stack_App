@@ -5,11 +5,12 @@
   "license": "CC-BY-4.0",
   "type": "module",
   "main": "./build/bundle.js",
-  "types": "./build/logger.d.ts",
+  "types": "./build/bundle.d.ts",
   "scripts": {
-    "build": "rollup -c"
+    "build": "rollup -c && node combineDeclarations.js"
   },
   "devDependencies": {
+    "@rollup/plugin-multi-entry": "^6.0.1",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^11.1.6",
