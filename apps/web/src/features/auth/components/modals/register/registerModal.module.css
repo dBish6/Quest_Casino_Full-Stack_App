@@ -71,38 +71,6 @@
       }
     }
 
-    & .or {
-      position: relative;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      margin-block: 1.25rem 1rem;
-      & hr {
-        width: 100%;
-        border-top: 1px solid var(--c-purple-border);
-      }
-      & span {
-        color: var(--c-heading-2);
-        background-color: inherit;
-        white-space: nowrap;
-      }
-    }
-    & button.google {
-      width: 100%;
-      margin-bottom: 1.25rem;
-      & span {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 0.5rem;
-        & svg {
-          & use {
-            fill: var(--c-heading-2);
-          }
-        }
-      }
-    }
-
     & .already {
       font: var(--para-small);
       color: var(--c-para-faded);

@@ -55,15 +55,26 @@ const iconLib = {
     "aria-label": "Edit Item",
   },
 
-  "eye-18": {
-    id: "eye-18",
-    size: { width: "18.002", height: "9.061" },
-    "aria-label": "Hide Password",
+  "enter-45": {
+    id: "enter-45",
+    size: { width: "45", height: "45.562" },
+    "aria-label": "Enter",
   },
-  "eye-closed-18": {
-    id: "eye-closed-18",
-    size: { width: "17.998", height: "15.007" },
-    "aria-label": "Show Password",
+
+  "exit-19": {
+    id: "exit-19",
+    size: { width: "19", height: "19" },
+    "aria-label": "Exit",
+  },
+  "exit-14": {
+    id: "exit-14",
+    size: { width: "14", height: "14" },
+    "aria-label": "Exit",
+  },
+  "exit-10": {
+    id: "exit-10",
+    size: { width: "10", height: "10" },
+    "aria-label": "Exit",
   },
 
   "expand-18": {
@@ -82,20 +93,15 @@ const iconLib = {
     "aria-label": "Expand",
   },
 
-  "exit-19": {
-    id: "exit-19",
-    size: { width: "19", height: "19" },
-    "aria-label": "Exit",
+  "eye-18": {
+    id: "eye-18",
+    size: { width: "18.002", height: "9.061" },
+    "aria-label": "Hide Password",
   },
-  "exit-14": {
-    id: "exit-14",
-    size: { width: "14", height: "14" },
-    "aria-label": "Exit",
-  },
-  "exit-10": {
-    id: "exit-10",
-    size: { width: "10", height: "10" },
-    "aria-label": "Exit",
+  "eye-closed-18": {
+    id: "eye-closed-18",
+    size: { width: "17.998", height: "15.007" },
+    "aria-label": "Show Password",
   },
 
   "google-24": {

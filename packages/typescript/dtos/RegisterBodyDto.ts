@@ -1,4 +1,4 @@
-export interface RegisterBodyDto {
+export default interface RegisterBodyDto {
   first_name: string;
   last_name: string;
   email: string;
@@ -9,13 +9,4 @@ export interface RegisterBodyDto {
   region?: string | null;
   phone_number?: string | null;
   calling_code?: string | null;
-}
-
-export interface RegisterGoogleBodyDto {
-  code: string;
-  state: string;
-  stored_state: string;
-  redirect_uri: string;
-  password: string;
-  con_password: string;
 }

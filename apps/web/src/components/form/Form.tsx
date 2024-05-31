@@ -1,7 +1,7 @@
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import type { SerializedError } from "@reduxjs/toolkit";
 
-import { forwardRef } from "react";
+import { forwardRef, useEffect } from "react";
 
 import { isFetchBaseQueryError } from "@utils/isFetchBaseQueryError";
 
@@ -12,15 +12,23 @@ import s from "./form.module.css";
 export interface FormProps
   extends Omit<React.ComponentProps<"form">, "aria-errormessage"> {
   formLoading: boolean;
-  resSuccessMsg: any;
+  resSuccessMsg?: any;
   resError: FetchBaseQueryError | SerializedError | undefined;
+  clearErrors: () => void;
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
   // TODO:
   ErrorsAsToasts?: boolean;
 }
 
 const Form = forwardRef<HTMLFormElement, React.PropsWithChildren<FormProps>>(
-  ({ children, formLoading, resSuccessMsg, resError, ...props }, ref) => {
+  (
+    { children, formLoading, resSuccessMsg, resError, clearErrors, ...props },
+    ref
+  ) => {
+    useEffect(() => {
+      if (resSuccessMsg) clearErrors();
+    }, [resSuccessMsg]);
+
     return (
       <>
         {!formLoading &&
@@ -29,7 +37,7 @@ const Form = forwardRef<HTMLFormElement, React.PropsWithChildren<FormProps>>(
           ) : (
             resError &&
             (isFetchBaseQueryError(resError) ? (
-              resError.status === 409 &&
+              [404, 409].includes(resError.status) &&
               typeof resError.data?.ERROR === "string" ? (
                 <span role="alert" id="globalFormError" className={s.errorMsg}>
                   {resError.data?.ERROR}

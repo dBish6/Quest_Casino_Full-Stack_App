@@ -8,7 +8,7 @@
 
   &.primary {
     font-weight: 600;
-    text-decoration: underline inherit;
+    text-decoration: underline;
   }
 
   &:hover,

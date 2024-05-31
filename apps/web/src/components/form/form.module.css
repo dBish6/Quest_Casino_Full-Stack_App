@@ -11,7 +11,7 @@
     &:focus-visible,
     &:active,
     &[data-key-press="true"] {
-      color: #3eca61;
+      color: #3eca61 !important;
     }
   }
 }
@@ -22,7 +22,7 @@
     &:focus-visible,
     &:active,
     &[data-key-press="true"] {
-      color: #df2b46;
+      color: #df2b46 !important;
     }
   }
 }

@@ -17,14 +17,10 @@ export const baseQuery = (ext: string = "", options?: FetchBaseQueryArgs) =>
   fetchBaseQuery({
     baseUrl: `/api/v2${ext}`,
     prepareHeaders: (headers, { getState }) => {
-      // const token = (getState() as RootState).auth.token
-      // const authToken = (getState() as any).auth.user.token;
-      // if (authToken) headers.set("authorization", `Bearer ${authToken}`);
-
-      const csrfToken = localStorage.getItem("csrf");
+      const csrfToken = (getState() as RootState).auth.user.token.csrf;
       if (csrfToken) headers.set("x-xsrf-token", csrfToken);
 
-      headers.set("content-type", `application/json`);
+      headers.set("content-type", "application/json");
       return headers;
     },
     credentials: "same-origin",

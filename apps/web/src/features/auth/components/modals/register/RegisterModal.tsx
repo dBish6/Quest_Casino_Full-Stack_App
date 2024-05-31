@@ -1,29 +1,22 @@
-import type {
-  RegisterBodyDto,
-  RegisterGoogleBodyDto,
-} from "@qc/typescript/dtos/RegisterBodyDto";
+import type RegisterBodyDto from "@qc/typescript/dtos/RegisterBodyDto";
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import type Country from "@authFeat/typings/Country";
 import type { Region, Regions } from "@authFeat/typings/Region";
 import type NullablePartial from "@qc/typescript/typings/NullablePartial";
 
-import { useLocation, useSearchParams } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Content, Title } from "@radix-ui/react-dialog";
 
 import formatPhoneNumber from "@authFeat/utils/formatPhoneNumber";
 import getSelectedRegion from "@authFeat/utils/getSelectedRegion";
+import { capitalize } from "@qc/utils";
 import { isFormValidationError } from "@utils/forms";
-import { isFetchBaseQueryError } from "@utils/isFetchBaseQueryError";
-import { history } from "@utils/History";
-
-import { useAppSelector } from "@redux/hooks";
-import { selectUserOStateToken } from "@authFeat/redux/authSelectors";
 
 import useForm from "@hooks/useForm";
 import {
   useRegisterMutation,
-  useRegisterGoogleMutation,
+  useLoginGoogleMutation,
 } from "@authFeat/services/authApi";
 
 import ModalTemplate from "@components/modals/ModalTemplate";
@@ -32,24 +25,13 @@ import { Form } from "@components/form";
 import { Button, Input, Select } from "@components/common/controls";
 import { Icon } from "@components/common/icon";
 import { Link } from "@components/common/link";
+import { LoginWithGoogle } from "@authFeat/components/loginWithGoogle";
 import { Spinner } from "@components/loaders";
 
 import s from "./registerModal.module.css";
 
-interface GoogleCallbackProps {
-  searchParams: URLSearchParams;
-  storedOState: string;
-  redirectUri: string;
-}
-
-const QUERY = "register";
-
 export default function RegisterModal() {
-  const [searchParams] = useSearchParams(),
-    location = useLocation();
-
-  const storedOState = useAppSelector(selectUserOStateToken), // The initial oState token for the google register for verification.
-    redirectUri = `${import.meta.env.VITE_APP_URL}/about?register=google`;
+  const location = useLocation();
 
   const { form, setLoading, setError, setErrors } = useForm<RegisterBodyDto>();
 
@@ -72,18 +54,22 @@ export default function RegisterModal() {
     },
   ] = useRegisterMutation();
 
+  const [googleLoading, setGoogleLoading] = useState(false),
+    [
+      loginGoogle,
+      {
+        data: loginGoogleData,
+        error: loginGoogleError,
+        isLoading: loginGoogleLoading,
+        isSuccess: loginGoogleSuccess,
+      },
+    ] = useLoginGoogleMutation();
+
   const countriesLoading = !!worldData.countries && !worldData.countries.length,
     regionsLoading = !!selected.country && !selected.regions.length;
 
-  const processingForm = registerLoading || form.processing;
-
-  const createGoogleOAuthUrl = () => {
-    const redirectUri = `${import.meta.env.VITE_APP_URL}/about?register=google`,
-      scope = "email profile",
-      state = storedOState;
-
-    return `https://accounts.google.com/o/oauth2/auth?client_id=${import.meta.env.VITE_GOOGLE_OAUTH_CLIENT_ID}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}&state=${state}`;
-  };
+  const processingForm = registerLoading || form.processing,
+    processing = processingForm || loginGoogleLoading || googleLoading;
 
   const getCountries = async () => {
     if (!worldData.countries?.length) {
@@ -127,32 +113,78 @@ export default function RegisterModal() {
     }
   }, [selected.country, worldData.regions]);
 
+  const optionalFields = new Set([
+    "country",
+    "region",
+    "calling_code",
+    "phone_number",
+  ]);
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
 
-    const fields = (e.target as HTMLFormElement).querySelectorAll<
-      HTMLInputElement | HTMLSelectElement
-    >("input, select");
+    const form = e.target as HTMLFormElement,
+      fields = form.querySelectorAll<HTMLInputElement | HTMLSelectElement>(
+        "input, select"
+      );
 
-    let reqBody: NullablePartial<RegisterBodyDto> = {} as any;
-    for (const field of fields) {
-      reqBody[field.name as keyof RegisterBodyDto] = field.value || null;
+    try {
+      let errors: Partial<RegisterBodyDto> = {},
+        reqBody: NullablePartial<RegisterBodyDto> = {} as any;
+      for (const field of fields) {
+        const key = field.name as keyof RegisterBodyDto;
+
+        if (!field.value.length && !optionalFields.has(key)) {
+          errors[key] =
+            key === "con_password"
+              ? "Please confirm your password."
+              : `${capitalize(field.name)} is required.`;
+          continue;
+        }
+        reqBody[key] = field.value || null;
+      }
+
+      if (Object.keys(errors).length) {
+        setErrors(errors);
+      } else {
+        register(reqBody as RegisterBodyDto).then((res) => {
+          // prettier-ignore
+          if (isFormValidationError(res.error))
+            return setErrors(
+              ((res.error as FetchBaseQueryError).data?.ERROR as Record<string,string>) || {}
+            );
+
+          if (res.data?.message.startsWith("Successfully")) form.reset();
+        });
+      }
+    } finally {
+      setLoading(false);
     }
+  };
 
-    register(reqBody as RegisterBodyDto)
-      .then((res) => {
-        // prettier-ignore
-        if (isFormValidationError(res.error)) 
-        setErrors(
-          ((res.error as FetchBaseQueryError).data?.ERROR as Record<string, string>) || {}
-        );
-      })
-      .finally(() => setLoading(false));
+  const successMessage = (resSuccess: boolean, data: any) => {
+    if (resSuccess) {
+      const parts = data?.message.split("log in");
+
+      return (
+        parts &&
+        (parts[1] ? (
+          <>
+            {parts[0]}
+            <Link intent="primary" to={`${location.pathname}?login=true`}>
+              log in
+            </Link>
+            {parts[1]}
+          </>
+        ) : (
+          data?.message
+        ))
+      );
+    }
   };
 
   return (
-    <ModalTemplate query={QUERY} btnText="Register" maxWidth="496px">
+    <ModalTemplate query="register" btnText="Register" maxWidth="496px">
       {({ close, contentProps }) => (
         <Content
           aria-description="Register a profile at Quest Casino by providing the details below or by pressing the google button."
@@ -185,228 +217,225 @@ export default function RegisterModal() {
               </div>
             </div>
 
-            {!searchParams.has(QUERY, "google") ? (
-              <>
-                <Form
-                  formLoading={processingForm}
-                  resSuccessMsg={successMessage(registerSuccess, registerData)}
-                  resError={registerError}
-                  onSubmit={handleSubmit}
-                >
-                  <div className="inputs">
-                    <div role="group">
-                      <Input
-                        label="First Name"
-                        intent="primary"
-                        size="lrg"
-                        id="first_name"
-                        name="first_name"
-                        required="show"
-                        error={form.error.first_name}
-                        disabled={processingForm}
-                        onInput={() => setError("first_name", "")}
-                      />
-                      <Input
-                        label="Last Name"
-                        intent="primary"
-                        size="lrg"
-                        id="last_name"
-                        name="last_name"
-                        required="show"
-                        error={form.error.last_name}
-                        disabled={processingForm}
-                        onInput={() => setError("last_name", "")}
-                      />
-                    </div>
-                    <Input
-                      label="Email"
-                      intent="primary"
-                      size="lrg"
-                      id="email"
-                      name="email"
-                      type="email"
-                      required="show"
-                      error={form.error.email}
-                      disabled={processingForm}
-                      onInput={() => setError("email", "")}
-                    />
-                    <Input
-                      label="Username"
-                      intent="primary"
-                      size="lrg"
-                      id="username"
-                      name="username"
-                      required="show"
-                      error={form.error.username}
-                      disabled={processingForm}
-                      onInput={() => setError("username", "")}
-                    />
-                    <div role="group">
-                      <Input
-                        label="Password"
-                        intent="primary"
-                        size="lrg"
-                        id="password"
-                        name="password"
-                        type="password"
-                        required="show"
-                        error={form.error.password}
-                        disabled={processingForm}
-                        onInput={() => setError("password", "")}
-                      />
-                      <Input
-                        label="Confirm Password"
-                        intent="primary"
-                        size="lrg"
-                        id="con_password"
-                        name="con_password"
-                        type="password"
-                        required="show"
-                        error={form.error.con_password}
-                        disabled={processingForm}
-                        onInput={() => setError("con_password", "")}
-                      />
-                    </div>
-                    <div role="group">
-                      <Select
-                        label="Country"
-                        intent="primary"
-                        size="lrg"
-                        id="country"
-                        name="country"
-                        required="show"
-                        error={form.error.country}
-                        Loader={() => <Spinner intent="primary" size="sm" />}
-                        loaderTrigger={countriesLoading}
-                        disabled={processingForm}
-                        onFocus={() => {
-                          getCountries();
-                          getRegions();
-                        }}
-                        onInput={(e) => {
-                          setError("country", "");
-                          setSelected((prev) => ({
-                            ...prev,
-                            country: (e.target as HTMLSelectElement).value,
-                          }));
-                        }}
-                      >
-                        {worldData.countries?.length &&
-                          worldData.countries.map((country) => (
-                            <option key={country.name} value={country.name}>
-                              {country.name}
-                            </option>
-                          ))}
-                      </Select>
-                      <Select
-                        label="Region"
-                        intent="primary"
-                        size="lrg"
-                        id="region"
-                        name="region"
-                        error={
-                          typeof selected.regions === "string"
-                            ? selected.regions
-                            : undefined
-                        }
-                        Loader={() => <Spinner intent="primary" size="sm" />}
-                        loaderTrigger={regionsLoading}
-                        disabled={!selected.country || processingForm}
-                        onFocus={getRegions}
-                      >
-                        {selected.regions.length &&
-                          typeof selected.regions !== "string" &&
-                          selected.regions.map((region) => (
-                            <option key={region.name} value={region.name}>
-                              {region.name}
-                            </option>
-                          ))}
-                      </Select>
-                    </div>
-
-                    <div role="group">
-                      <Select
-                        label="Code"
-                        intent="callingCode"
-                        size="lrg"
-                        id="calling_code"
-                        name="calling_code"
-                        error={form.error.calling_code}
-                        // FIXME:
-                        Loader={() => <Spinner intent="primary" size="sm" />}
-                        loaderTrigger={countriesLoading}
-                        disabled={processingForm}
-                        onFocus={getCountries}
-                        onInput={() => setError("calling_code", "")}
-                      >
-                        {worldData.countries?.length &&
-                          worldData.countries.map((country) => (
-                            <option
-                              key={country.name}
-                              value={country.callingCode}
-                            >
-                              {country.abbr} {country.callingCode}
-                            </option>
-                          ))}
-                      </Select>
-                      <Input
-                        label="Phone Number"
-                        intent="primary"
-                        size="lrg"
-                        id="phone_number"
-                        name="phone_number"
-                        type="tel"
-                        error={form.error.phone_number}
-                        onInput={(e) => {
-                          setError("phone_number", "");
-                          formatPhoneNumber(e.target as HTMLInputElement);
-                        }}
-                        disabled={processingForm}
-                      />
-                    </div>
-                  </div>
-
-                  <Submit processingForm={processingForm} />
-                </Form>
-
-                <div className={s.or}>
-                  <hr />
-                  <span
-                    id="logWit"
-                    aria-description="Register with other third party services."
-                  >
-                    Or Register With
-                  </span>
-                  <hr aria-hidden="true" />
+            <Form
+              formLoading={processing}
+              resSuccessMsg={
+                successMessage(registerSuccess, registerData) ||
+                (loginGoogleSuccess &&
+                  `Welcome ${loginGoogleData.user.username}! You're all set, continue to use Google to log in to use your profile. Best of luck and have fun!`)
+              }
+              resError={registerError || loginGoogleError}
+              clearErrors={() => setErrors({})}
+              onSubmit={handleSubmit}
+            >
+              <div className="inputs">
+                <div role="group">
+                  <Input
+                    label="First Name"
+                    intent="primary"
+                    size="lrg"
+                    id="first_name"
+                    name="first_name"
+                    required="show"
+                    error={form.error.first_name}
+                    disabled={processing}
+                    onInput={() => setError("first_name", "")}
+                  />
+                  <Input
+                    label="Last Name"
+                    intent="primary"
+                    size="lrg"
+                    id="last_name"
+                    name="last_name"
+                    required="show"
+                    error={form.error.last_name}
+                    disabled={processing}
+                    onInput={() => setError("last_name", "")}
+                  />
                 </div>
+                <Input
+                  label="Email"
+                  intent="primary"
+                  size="lrg"
+                  id="email"
+                  name="email"
+                  type="email"
+                  required="show"
+                  error={form.error.email}
+                  disabled={processing}
+                  onInput={() => setError("email", "")}
+                />
+                <Input
+                  label="Username"
+                  intent="primary"
+                  size="lrg"
+                  id="username"
+                  name="username"
+                  required="show"
+                  error={form.error.username}
+                  disabled={processing}
+                  onInput={() => setError("username", "")}
+                />
+                <div role="group">
+                  <Input
+                    label="Password"
+                    intent="primary"
+                    size="lrg"
+                    id="password"
+                    name="password"
+                    type="password"
+                    required="show"
+                    error={form.error.password}
+                    disabled={processing}
+                    onInput={() => setError("password", "")}
+                  />
+                  <Input
+                    label="Confirm Password"
+                    intent="primary"
+                    size="lrg"
+                    id="con_password"
+                    name="con_password"
+                    type="password"
+                    required="show"
+                    error={form.error.con_password}
+                    disabled={processing}
+                    onInput={() => setError("con_password", "")}
+                  />
+                </div>
+                <div role="group">
+                  <Select
+                    label="Country"
+                    intent="primary"
+                    size="lrg"
+                    id="country"
+                    name="country"
+                    error={form.error.country}
+                    Loader={() => <Spinner intent="primary" size="sm" />}
+                    loaderTrigger={countriesLoading}
+                    disabled={processing}
+                    onFocus={() => {
+                      getCountries();
+                      getRegions();
+                    }}
+                    onInput={(e) => {
+                      setError("country", "");
+                      setSelected((prev) => ({
+                        ...prev,
+                        country: (e.target as HTMLSelectElement).value,
+                      }));
+                    }}
+                  >
+                    {worldData.countries?.length &&
+                      worldData.countries.map((country) => (
+                        <option key={country.name} value={country.name}>
+                          {country.name}
+                        </option>
+                      ))}
+                  </Select>
+                  <Select
+                    label="Region"
+                    intent="primary"
+                    size="lrg"
+                    id="region"
+                    name="region"
+                    error={
+                      typeof selected.regions === "string"
+                        ? selected.regions
+                        : undefined
+                    }
+                    Loader={() => <Spinner intent="primary" size="sm" />}
+                    loaderTrigger={regionsLoading}
+                    disabled={!selected.country || processing}
+                    onFocus={getRegions}
+                  >
+                    {selected.regions.length &&
+                      typeof selected.regions !== "string" &&
+                      selected.regions.map((region) => (
+                        <option key={region.name} value={region.name}>
+                          {region.name}
+                        </option>
+                      ))}
+                  </Select>
+                </div>
+
+                <div role="group">
+                  <Select
+                    label="Code"
+                    intent="callingCode"
+                    size="lrg"
+                    id="calling_code"
+                    name="calling_code"
+                    error={form.error.calling_code}
+                    // FIXME:
+                    Loader={() => <Spinner intent="primary" size="sm" />}
+                    loaderTrigger={countriesLoading}
+                    disabled={processing}
+                    onFocus={getCountries}
+                    onInput={() => setError("calling_code", "")}
+                  >
+                    {worldData.countries?.length &&
+                      worldData.countries.map((country) => (
+                        <option key={country.name} value={country.callingCode}>
+                          {country.abbr} {country.callingCode}
+                        </option>
+                      ))}
+                  </Select>
+                  <Input
+                    label="Phone Number"
+                    intent="primary"
+                    size="lrg"
+                    id="phone_number"
+                    name="phone_number"
+                    type="tel"
+                    error={form.error.phone_number}
+                    onInput={(e) => {
+                      setError("phone_number", "");
+                      formatPhoneNumber(e.target as HTMLInputElement);
+                    }}
+                    disabled={processing}
+                  />
+                </div>
+              </div>
+
+              <div className={s.submit}>
                 <Button
-                  aria-describedby="logWit"
-                  intent="secondary"
+                  aria-label="Register"
+                  aria-live="polite"
+                  intent="primary"
                   size="xl"
-                  className={s.google}
-                  disabled={processingForm}
-                  onClick={() =>
-                    window.open(
-                      createGoogleOAuthUrl(),
-                      "_blank",
-                      "noopener,noreferrer"
-                    )
-                  }
+                  type="submit"
+                  disabled={processing}
+                  style={{ opacity: googleLoading ? 0.48 : 1 }}
                 >
-                  <span>
-                    <Icon id="google-24" />
-                    Google
-                  </span>
+                  {processingForm ? (
+                    <Spinner intent="primary" size="md" />
+                  ) : (
+                    "Register"
+                  )}
                 </Button>
-              </>
-            ) : (
-              //  Prompts the user to set a password, so they can log in with email. This causes the back-end to skip a step when email is the main login.
-              <GoogleCallback
-                searchParams={searchParams}
-                storedOState={storedOState || ""}
-                redirectUri={redirectUri}
-              />
-            )}
+                <p>
+                  By Registering a profile, you agree to Quest Casino's{" "}
+                  <Link intent="primary" to="/terms">
+                    Terms
+                  </Link>{" "}
+                  and{" "}
+                  <Link intent="primary" to="/privacy-policy">
+                    Privacy Policy
+                  </Link>
+                  .
+                </p>
+              </div>
+            </Form>
+
+            <LoginWithGoogle
+              loginGoogle={loginGoogle}
+              setGoogleLoading={setGoogleLoading}
+              processing={{
+                google: googleLoading,
+                form: processingForm,
+                all: processing,
+              }}
+            />
 
             <span className={s.already}>
               Already have a account?{" "}
@@ -419,151 +448,4 @@ export default function RegisterModal() {
       )}
     </ModalTemplate>
   );
-}
-
-/**
- * Handles the new form when a user is redirected back by a register with google button.
- */
-function GoogleCallback({
-  searchParams,
-  storedOState,
-  redirectUri,
-}: GoogleCallbackProps) {
-  const { form, setLoading, setError, setErrors } = useForm<{
-    password: string;
-    con_password: string;
-  }>();
-
-  const [
-    registerGoogle,
-    {
-      data: registerGoogleData,
-      error: registerGoogleError,
-      isLoading: registerGoogleLoading,
-      isSuccess: registerGoogleSuccess,
-    },
-  ] = useRegisterGoogleMutation();
-
-  const processingForm = registerGoogleLoading || form.processing;
-
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setLoading(true);
-
-    const fields = (
-      e.target as HTMLFormElement
-    ).querySelectorAll<HTMLInputElement>("input");
-
-    let reqBody: NullablePartial<RegisterGoogleBodyDto> = {} as any;
-    for (const field of fields) {
-      reqBody[field.name as keyof RegisterGoogleBodyDto] = field.value || null;
-    }
-    reqBody = {
-      ...reqBody,
-      code: searchParams.get("code") || "",
-      state: searchParams.get("state") || "",
-      stored_state: storedOState,
-      redirect_uri: redirectUri,
-    };
-
-    registerGoogle(reqBody)
-      .then((res) => {
-        // prettier-ignore
-        if (isFetchBaseQueryError(res.error)) {
-          [401, 403].includes(res.error.status)
-            ? history.push(`/error-${res.error.status.toString()}`) // TODO: Probably don't need this with apiErrorHandler.
-            : setErrors(
-                ((res.error as FetchBaseQueryError).data?.ERROR as Record<string,string>) || {}
-              );
-        }
-      })
-      .finally(() => setLoading(false));
-    setLoading(false);
-  };
-
-  return (
-    <Form
-      formLoading={processingForm}
-      resSuccessMsg={successMessage(registerGoogleSuccess, registerGoogleData)}
-      resError={registerGoogleError}
-      onSubmit={handleSubmit}
-    >
-      <div className="inputs">
-        <Input
-          label="Password"
-          intent="primary"
-          size="lrg"
-          id="password"
-          name="password"
-          type="password"
-          required="show"
-          error={form.error.password}
-          disabled={processingForm}
-          onInput={() => setError("password", "")}
-        />
-        <Input
-          label="Confirm Password"
-          intent="primary"
-          size="lrg"
-          id="con_password"
-          name="con_password"
-          type="password"
-          required="show"
-          error={form.error.con_password}
-          disabled={processingForm}
-          onInput={() => setError("con_password", "")}
-        />
-      </div>
-
-      <Submit processingForm={processingForm} />
-    </Form>
-  );
-}
-
-function Submit({ processingForm }: { processingForm: boolean }) {
-  return (
-    <div className={s.submit}>
-      <Button
-        aria-live="polite"
-        intent="primary"
-        size="xl"
-        type="submit"
-        disabled={processingForm}
-      >
-        {processingForm ? <Spinner intent="primary" size="md" /> : "Register"}
-      </Button>
-      <p>
-        By Registering a profile, you agree to Quest Casino's{" "}
-        <Link intent="primary" to="/terms">
-          Terms
-        </Link>{" "}
-        and{" "}
-        <Link intent="primary" to="/privacy-policy">
-          Privacy Policy
-        </Link>
-        .
-      </p>
-    </div>
-  );
-}
-
-function successMessage(resSuccess: boolean, data: any) {
-  if (resSuccess) {
-    const parts = data?.message.split("log in");
-
-    return (
-      parts &&
-      (parts[1] ? (
-        <>
-          {parts[0]}
-          <Link intent="primary" to={`${location.pathname}?login=true`}>
-            log in
-          </Link>
-          {parts[1]}
-        </>
-      ) : (
-        data?.message
-      ))
-    );
-  }
 }
