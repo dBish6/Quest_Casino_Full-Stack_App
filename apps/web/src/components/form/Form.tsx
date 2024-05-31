@@ -37,8 +37,8 @@ const Form = forwardRef<HTMLFormElement, React.PropsWithChildren<FormProps>>(
           ) : (
             resError &&
             (isFetchBaseQueryError(resError) ? (
-              [404, 409].includes(resError.status) &&
-              typeof resError.data?.ERROR === "string" ? (
+              typeof resError.data?.ERROR === "string" &&
+              [400, 404, 409].includes(resError.status) ? (
                 <span role="alert" id="globalFormError" className={s.errorMsg}>
                   {resError.data?.ERROR}
                 </span>
