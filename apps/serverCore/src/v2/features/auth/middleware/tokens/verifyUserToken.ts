@@ -17,6 +17,7 @@ const { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET } = process.env;
 /**
  * Verifies the access token and also refreshes the session if needed.
  * @middleware This should only be used on routes where the user should already be logged in for.
+ * @response `unauthorized`, `forbidden`, or `ApiError`.
  */
 export default async function verifyAccessToken(
   req: Request,
@@ -34,10 +35,10 @@ export default async function verifyAccessToken(
           refreshToken,
           REFRESH_TOKEN_SECRET!
         );
-        logger.debug("decodedClaims refresh token found.", decodedClaims);
+        logger.debug("Refresh token decodedClaims: ", decodedClaims);
         if (!decodedClaims)
           return res.status(403).json({
-            message: "Refresh token is invalid.",
+            ERROR: "Refresh token is invalid.",
           });
 
         const errorMsg = await refreshSession(
@@ -48,14 +49,14 @@ export default async function verifyAccessToken(
         );
         if (errorMsg) {
           return res.status(401).json({
-            message: errorMsg,
+            ERROR: errorMsg,
           });
         }
 
         next();
       }
       return res.status(401).json({
-        message: "Access token is missing.",
+        ERROR: "Access token is missing.",
       });
     }
 
@@ -63,10 +64,10 @@ export default async function verifyAccessToken(
       accessToken,
       ACCESS_TOKEN_SECRET!
     );
-    logger.debug("decodedClaims access token found.", decodedClaims);
+    logger.debug("Access token decodedClaims: ", decodedClaims);
     if (!decodedClaims)
       return res.status(403).json({
-        message: "Access token is invalid.",
+        ERROR: "Access token is invalid.",
       });
 
     const tokenExpiry = decodedClaims.exp! * 1000,
@@ -82,14 +83,14 @@ export default async function verifyAccessToken(
       );
       if (errorMsg) {
         return res.status(401).json({
-          message: errorMsg,
+          ERROR: errorMsg,
         });
       }
 
       next();
     } else if (tokenExpiry <= currentTime) {
       return res.status(403).json({
-        message: "Access token is expired.",
+        ERROR: "Access token is expired.",
       });
     }
 
@@ -121,9 +122,8 @@ async function refreshSession(
 
     await initializeSession(
       res,
-      user.sub,
-      null,
-      (req.headers["x-xsrf-token"] as string) || ""
+      { by: "_id", value: user.sub },
+      req.headers["x-xsrf-token"] as string
     );
 
     req.decodedClaims = user;

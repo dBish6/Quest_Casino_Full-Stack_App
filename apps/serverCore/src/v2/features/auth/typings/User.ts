@@ -1,8 +1,9 @@
 import type { ObjectId } from "mongoose";
 import type { JwtPayload } from "jsonwebtoken";
-import { RegisterBodyDto } from "@qc/typescript/dtos/RegisterBodyDto";
+import RegisterBodyDto from "@qc/typescript/dtos/RegisterBodyDto";
 
 export type RegistrationTypes = "standard" | "google";
+export type GetUserBy = "_id" | "email" | "username";
 
 /**
  * Type for creating a initial user in the database.
@@ -22,7 +23,7 @@ export interface UserToClaims {
   legal_name: { first: string; last: string };
   email: string;
   username: string;
-  country: string;
+  country?: string;
   region?: string;
   phone_number?: string;
 }
@@ -34,7 +35,7 @@ export interface UserClaims extends JwtPayload {
   email: string;
   username: string;
   verification_token: string;
-  country: string;
+  country?: string;
   region?: string;
   phone_number?: string;
 }
@@ -93,7 +94,7 @@ export interface UserDoc extends SharedDocFields {
   username: string;
   verification_token?: string;
   password: string;
-  country: string;
+  country?: string;
   region?: string;
   phone_number?: string;
   balance: number;

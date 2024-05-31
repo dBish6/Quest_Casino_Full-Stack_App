@@ -117,7 +117,7 @@ const userSchema = new Schema<UserDoc, Model<UserDoc>>(
     },
     verification_token: { type: String },
     password: { type: String, required: true },
-    country: { type: String, required: true },
+    country: { type: String },
     region: { type: String },
     phone_number: {
       type: String,

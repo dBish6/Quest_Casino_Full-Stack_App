@@ -6,7 +6,7 @@
  */
 
 import type { ObjectId } from "mongoose";
-import type { InitializeUser } from "@authFeat/typings/User";
+import type { GetUserBy, InitializeUser } from "@authFeat/typings/User";
 
 import { Types } from "mongoose";
 import { hash } from "bcrypt";
@@ -56,7 +56,7 @@ export async function getUsers(forClient?: boolean) {
  * Gets a user from the database based on the specified criteria.
  */
 export async function getUser(
-  by: "_id" | "email",
+  by: GetUserBy,
   value: ObjectId | string,
   forClient?: boolean
 ) {
@@ -79,7 +79,7 @@ export async function registerUser(user: InitializeUser) {
 
   try {
     if (user.password && user.type === "standard")
-      user.password = await hash(user.password, 12); // prettier-ignore
+      user.password = await hash(user.password, 12);
     else user.password = `${user.type} provided`;
 
     if (!user.email_verified) {
@@ -133,6 +133,7 @@ export async function emailVerify(userId: string, verificationToken: string) {
     if (verificationToken !== cachedToken)
       return "Verification token disparity.";
 
+    // TODO: Check if this actually returns the client formatted user.
     return await query.updateOne({ email_verified: true }, { new: true });
   } catch (error: any) {
     throw createApiError(error, "emailVerify service error.", 500);

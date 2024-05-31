@@ -5,6 +5,7 @@ import { redisClient } from "@cache";
 /**
  * Verifies the Cross-Site Request Forgery (CSRF) token
  * @middleware This should be used on routes that manipulate data (e.g. POST, PATCH, PUT, DELETE).
+ * @response `unauthorized`, `forbidden`, or `ApiError`.
  */
 export default async function verifyCsrfToken(
   req: Request,
@@ -31,8 +32,6 @@ export default async function verifyCsrfToken(
     console.log("Csrf token successfully verified.");
     next();
   } catch (error: any) {
-    next(
-      createApiError(error, "verifyCsrfToken middleware unexpected error.", 500)
-    );
+    next(createApiError(error, "verifyCsrfToken middleware error.", 500));
   }
 }

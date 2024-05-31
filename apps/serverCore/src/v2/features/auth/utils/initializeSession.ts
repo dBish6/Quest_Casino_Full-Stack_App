@@ -1,7 +1,11 @@
 import type { Response } from "express";
 import type { ObjectId } from "mongoose";
 import type UserCredentials from "@qc/typescript/typings/UserCredentials";
-import type { UserDoc, RegistrationTypes } from "@authFeat/typings/User";
+import type {
+  GetUserBy,
+  UserDoc,
+  RegistrationTypes,
+} from "@authFeat/typings/User";
 
 import { createApiError } from "@utils/CustomError";
 
@@ -12,21 +16,27 @@ import {
   generateCsrfToken,
 } from "@authFeat/services/csrfService";
 
+interface Identifier {
+  by: GetUserBy;
+  value: ObjectId | string;
+}
+
+/**
+ * Initializes a user session by generating and setting JWT access and refresh tokens as cookies,
+ * replaces the old CSRF token if it exists with a new one.
+ * @param res Express response object.
+ * @param identifier Object containing user get by and value.
+ * @param csrfToken Replaces the current user's csrf token with a new one.
+ * @returns client formatted user.
+ */
 export default async function initializeSession(
   res: Response,
-  userId?: ObjectId | string | null,
-  // TODO: ?
-  user?: any,
-  csrfToken?: string
+  identifier: Identifier,
+  csrfToken: string | undefined
 ) {
   try {
-    if (!user) {
-      if (!userId)
-        throw Error("userId must be provided when no user is passed.");
-
-      user = await getUser("_id", userId);
-      if (!user) return "User doesn't exist.";
-    }
+    const user = await getUser(identifier.by, identifier.value);
+    if (!user) return "User doesn't exist."; // TODO: Better message?
 
     const userToClaims = formatUserToClaims(user),
       generateUserJWT = new GenerateUserJWT(userToClaims);
@@ -37,7 +47,6 @@ export default async function initializeSession(
         generateCsrfToken(user.id),
       ]);
 
-    // TODO: Might need to do this every time?
     if (csrfToken) deleteCsrfToken(user.id, csrfToken);
 
     res

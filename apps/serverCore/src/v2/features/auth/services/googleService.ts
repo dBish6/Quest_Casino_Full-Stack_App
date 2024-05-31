@@ -1,13 +1,14 @@
-import type { RegisterGoogleBodyDto } from "@qc/typescript/dtos/RegisterBodyDto";
+import type { Response } from "express";
+import type { GoogleLoginRequestDto } from "@authFeat/dtos/LoginRequestDto";
+import type UserCredentials from "@qc/typescript/typings/UserCredentials";
 import type { InitializeUser } from "@authFeat/typings/User";
 
 import querystring from "querystring";
 
-import USER_ALREADY_EXISTS_MESSAGE from "@authFeat/constants/USER_ALREADY_EXISTS_MESSAGE";
-
 import { logger } from "@qc/utils";
 import { createApiError } from "@utils/CustomError";
-import { getUser, registerUser } from "./authService";
+import { registerUser } from "./authService";
+import initializeSession from "@authFeat/utils/initializeSession";
 
 interface FetchAccessTokenSuccessDataDto {
   access_token: string;
@@ -29,38 +30,48 @@ interface FetchUserInfoSuccessDataDto {
 }
 
 /**
- * Registers a user using Google OAuth.
+ * Authenticates a user using Google OAuth. Initializes the user session or registers them if
+ * they don't already exist.
  */
-export async function registerGoogleUser(body: RegisterGoogleBodyDto) {
+export async function loginWithGoogle(
+  res: Response,
+  req: GoogleLoginRequestDto
+) {
   try {
-    const { code, redirect_uri, password } = body;
+    const { code, redirect_uri = "" } = req.body;
 
     const token = await fetchAccessTokenToken(code, redirect_uri),
-      userInfo = await fetchUserInfo(token);
+      userInfo = await fetchUserInfo(token),
+      { email, email_verified } = userInfo;
 
-    const { name, given_name, family_name, picture, email, email_verified } =
-      userInfo;
-
-    const user = await getUser("email", email);
-    if (user) {
-      return USER_ALREADY_EXISTS_MESSAGE;
-    } else {
+    const clientUser = await initializeSession(
+      res,
+      { by: "email", value: email },
+      req.headers["x-xsrf-token"] as string
+    );
+    if (typeof clientUser === "string") {
       const regUser: InitializeUser = {
         type: "google",
-        avatar_url: picture,
-        first_name: given_name,
-        last_name: family_name,
-        username: name,
+        avatar_url: userInfo.picture,
+        first_name: userInfo.given_name,
+        last_name: userInfo.family_name,
+        username: userInfo.name,
         email,
         email_verified,
-        password,
-        country: "Canada", // TODO: Prompt user to enter this or just default it and tell them in a toast?
+        password: "",
       };
-
       await registerUser(regUser);
+
+      return (await initializeSession(
+        res,
+        { by: "email", value: email },
+        req.headers["x-xsrf-token"] as string
+      )) as UserCredentials;
+    } else {
+      return clientUser;
     }
   } catch (error: any) {
-    throw createApiError(error, "register service error.", 500);
+    throw createApiError(error, "loginWithGoogle service error.", 500);
   }
 }
 
@@ -83,9 +94,7 @@ async function fetchAccessTokenToken(code: string, redirectUri: string) {
         }),
       }),
       data = (await res.json()) as FetchAccessTokenSuccessDataDto;
-
-    logger.debug("fetchIdToken res", res);
-    logger.debug("fetchIdToken data", data);
+    logger.info("google fetchAccessTokenToken", res.status);
 
     if (!res.ok)
       throw createApiError(
@@ -110,6 +119,7 @@ async function fetchUserInfo(token: string) {
         },
       }),
       data = (await res.json()) as FetchUserInfoSuccessDataDto;
+    logger.info("google fetchUserInfo", res.status);
 
     if (!res.ok)
       throw createApiError(
@@ -117,9 +127,6 @@ async function fetchUserInfo(token: string) {
         "fetchUserInfo error",
         500
       );
-
-    logger.debug("fetchUserInfo res", res);
-    logger.debug("fetchUserInfo data", data);
 
     return data;
   } catch (error) {

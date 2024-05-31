@@ -1,42 +1,46 @@
 import type { Response, NextFunction } from "express";
-import type { RegisterBodyDto } from "@qc/typescript/dtos/RegisterBodyDto";
-import type { RegisterRequestDto } from "@authFeat/dtos/RegisterRequestDto";
+import type RegisterBodyDto from "@qc/typescript/dtos/RegisterBodyDto";
+import type RegisterRequestDto from "@authFeat/dtos/RegisterRequestDto";
 
 import { logger } from "@qc/utils";
-import capitalize from "@utils/capitalize";
-
-const optionalFields = new Set(["region", "calling_code", "phone_number"]);
+import { createApiError } from "@utils/CustomError";
+import validateEmail from "@authFeat/utils/validateEmail";
 
 /**
  * Validates the standard register form fields.
  * @middleware
+ * @response `bad request`, or `ApiError`.
  */
 export default async function validateRegister(
   req: RegisterRequestDto,
   res: Response,
   next: NextFunction
 ) {
-  const body = req.body,
-    keys = Object.keys(body) as (keyof RegisterBodyDto)[];
+  try {
+    const body = req.body,
+      keys = Object.keys(body) as (keyof RegisterBodyDto)[];
 
-  if (!keys.length || !body)
-    return res.status(400).json({
-      ERROR: "No form field values was given.",
-    });
+    if (!keys.length || !body)
+      return res.status(400).json({
+        ERROR: "No form field values was given.",
+      });
 
-  const isValid = validate(body);
-  if (typeof isValid === "string") {
-    req.body = keys.reduce((acc, key) => {
-      acc[key] = body[key] === null ? undefined : body[key];
-      return acc;
-    }, {} as any);
+    const isValid = validate(body);
+    if (typeof isValid === "string") {
+      req.body = keys.reduce((acc, key) => {
+        acc[key] = body[key] === null ? undefined : body[key];
+        return acc;
+      }, {} as any);
 
-    logger.info(isValid);
-    next();
-  } else {
-    return res.status(400).json({
-      ERROR: isValid,
-    });
+      logger.info(isValid);
+      next();
+    } else {
+      return res.status(400).json({
+        ERROR: isValid,
+      });
+    }
+  } catch (error) {
+    next(createApiError(error, "validateRegister middleware error.", 500));
   }
 }
 
@@ -67,11 +71,6 @@ function validate(formData: RegisterBodyDto) {
           ] = errorMsg;
         }
       }
-    } else if (!optionalFields.has(key)) {
-      errors[key] =
-        key === "con_password"
-          ? "Please confirm your password."
-          : `${capitalize(key)} is required.`;
     }
   }
 
@@ -107,22 +106,9 @@ function validateField(
  * - Max of 24 characters.
  */
 function validateUsername(username: string) {
-  if (username.length < 3) return "You can make a better username then that...";
+  if (username.length < 3) return "You can make a better username then that.";
   else if (username.length > 24)
     return "Username can't be no more than 24 characters";
-}
-
-/**
- * Constraints:
- * - Valid email format.
- */
-function validateEmail(email: string) {
-  if (
-    !/^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(
-      email
-    )
-  )
-    return "Invalid email.";
 }
 
 /**

@@ -1,13 +1,6 @@
 import type { Request } from "express";
-import type {
-  RegisterBodyDto,
-  RegisterGoogleBodyDto,
-} from "@qc/typescript/dtos/RegisterBodyDto";
+import type RegisterBodyDto from "@qc/typescript/dtos/RegisterBodyDto";
 
-export interface RegisterRequestDto extends Request {
+export default interface RegisterRequestDto extends Request {
   body: RegisterBodyDto;
-}
-
-export interface GoogleRegisterRequestDto extends Request {
-  body: RegisterGoogleBodyDto;
 }
