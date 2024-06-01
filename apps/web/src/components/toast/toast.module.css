@@ -7,10 +7,8 @@
   justify-content: center;
   flex-wrap: wrap;
   gap: 1rem;
-  /* FIXME: viewports makes it so you can't press anything behind it. */
-  /* pointer-events: none; */
-  /* width: max-content; */
   width: 100%;
+  pointer-events: none;
   & .toast {
     position: relative;
     width: 100%;
@@ -20,22 +18,12 @@
     border: 2px solid var(--c-purple-border);
     border-radius: 0.75rem;
     background-color: var(--c-lvl-6);
-    /* FIXME: */
+    pointer-events: auto;
     &[data-state="open"] {
-      animation: slideIn 150ms cubic-bezier(0.16, 1, 0.3, 1);
+      animation: fadeIn ease-out 0.5s forwards;
     }
     &[data-state="closed"] {
-      animation: hide 100ms ease-in;
-    }
-    &[data-swipe="move"] {
-      transform: translateX(var(--radix-toast-swipe-move-x));
-    }
-    &[data-swipe="cancel"] {
-      transform: translateX(0);
-      transition: transform 200ms ease-out;
-    }
-    &[data-swipe="end"] {
-      animation: swipeOut 100ms ease-out;
+      animation: fadeOut ease-out 0.5s backwards;
     }
 
     & div:first-child {
@@ -120,47 +108,30 @@
   }
 }
 
-/* .viewport .toast[data-state="open"] {
-  animation: slideIn 150ms cubic-bezier(0.16, 1, 0.3, 1);
-} */
-.ToastRoot[data-state="closed"] {
-  animation: hide 100ms ease-in;
-}
-.ToastRoot[data-swipe="move"] {
-  transform: translateX(var(--radix-toast-swipe-move-x));
-}
-.ToastRoot[data-swipe="cancel"] {
-  transform: translateX(0);
-  transition: transform 200ms ease-out;
-}
-.ToastRoot[data-swipe="end"] {
-  animation: swipeOut 100ms ease-out;
-}
-
-@keyframes hide {
-  from {
-    opacity: 1;
-  }
-  to {
+@keyframes fadeIn {
+  0% {
+    transform: translateY(-180px);
     opacity: 0;
   }
-}
-
-@keyframes slideIn {
-  from {
-    /* transform: translateX(calc(100% + var(--viewport-padding))); */
-    transform: translateY(-100%);
+  70% {
+    transform: translateY(10px);
   }
-  to {
+  100% {
     transform: translateY(0);
+    opacity: 1;
   }
 }
 
-@keyframes swipeOut {
-  from {
-    transform: translateX(var(--radix-toast-swipe-end-x));
+@keyframes fadeOut {
+  0% {
+    transform: translateY(0);
+    opacity: 1;
   }
-  to {
-    transform: translateX(calc(100% + var(--viewport-padding)));
+  20% {
+    transform: translateY(10px);
+  }
+  100% {
+    transform: translateY(-135px);
+    opacity: 0;
   }
 }

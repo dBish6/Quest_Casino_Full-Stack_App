@@ -2,7 +2,7 @@ import type { ToastProps as RadixToastProps } from "@radix-ui/react-toast";
 import type { VariantProps } from "class-variance-authority";
 import type { ToastPayload } from "@redux/toast/toastSlice";
 
-import { Fragment } from "react";
+import { useRef, Fragment } from "react";
 import {
   Provider,
   Root,
@@ -50,6 +50,8 @@ export interface ToastProps
   close: () => void;
 }
 
+const ANIMATION_DURATION = 500;
+
 export default function Toast({
   message,
   close,
@@ -59,6 +61,7 @@ export default function Toast({
   options,
   ...props
 }: ToastProps) {
+  const toastRef = useRef<HTMLLIElement>(null);
   const { link, button } = options || {};
 
   let messageParts = [message];
@@ -67,9 +70,13 @@ export default function Toast({
 
   return (
     <Root
+      ref={toastRef}
       className={toast({ className, intent })}
       open
-      onOpenChange={close}
+      onOpenChange={() => {
+        toastRef.current?.setAttribute("data-state", "closed");
+        close();
+      }}
       {...props}
     >
       <div>
@@ -93,7 +100,7 @@ export default function Toast({
           <Icon id="warning-24" />
         ) : (
           <Icon id="info-24" />
-        )}{" "}
+        )}
       </div>
       <Title asChild>
         <h3>{title ?? defaultTitles[intent || "info"]}</h3>
@@ -143,7 +150,11 @@ export function ToastsProvider() {
           return (
             <Toast
               key={id}
-              close={() => dispatch(REMOVE_TOAST({ id: id! }))}
+              close={() => {
+                setTimeout(() => {
+                  dispatch(REMOVE_TOAST({ id: id! }));
+                }, ANIMATION_DURATION);
+              }}
               duration={toast.duration || 5000000000000000}
               {...rest}
             />
