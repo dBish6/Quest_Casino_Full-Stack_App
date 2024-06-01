@@ -28,9 +28,14 @@ const Link = forwardRef<HTMLAnchorElement, React.PropsWithChildren<LinkProps>>(
   ({ children, to, className, intent, asChild, external, ...props }, ref) => {
     const Element = asChild ? Slot : external ? "a" : RouterLink;
 
+    const ignoreTo = () => {
+      const ignore = Element === RouterLink && ({ to: to } as unknown);
+      return ignore as { to: string };
+    };
+
     return (
       <Element
-        to={to}
+        {...ignoreTo()}
         {...(external &&
           (Element !== "a"
             ? {

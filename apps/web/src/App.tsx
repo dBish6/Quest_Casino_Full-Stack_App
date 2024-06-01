@@ -4,7 +4,7 @@
  *
  * Author: David Bishop
  * Creation Date: April 16, 2024
- * Last Updated: May 27, 2024
+ * Last Updated: May 31, 2024
  *
  * Description:
  * .
@@ -19,6 +19,7 @@
 import { Navigate, type RouteObject } from "react-router-dom";
 
 import HistoryProvider from "@utils/History";
+import { ToastsProvider } from "@components/toast";
 import { Dashboard } from "@components/partials";
 import { About, Home, Profile, Settings, Support } from "@views/index";
 import {
@@ -39,6 +40,7 @@ export const routes: RouteObject[] = [
     element: (
       <>
         <HistoryProvider />
+        <ToastsProvider />
         <Dashboard />
       </>
     ),
