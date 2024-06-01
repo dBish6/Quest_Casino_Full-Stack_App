@@ -10,7 +10,7 @@ export const apiErrorHandler: Middleware =
       const [reducerName, actionType] = action.type.split("/");
 
       if (import.meta.env.MODE === "development")
-        console.log("action.error", action.error);
+        console.error("action.error", action.error);
 
       const payload = action.payload as any;
 
@@ -24,6 +24,21 @@ export const apiErrorHandler: Middleware =
           history.push("/error-401");
           break;
         case 403:
+          if (payload.data.ERROR === "Access token is expired.")
+            return api.dispatch(
+              ADD_TOAST({
+                title: "Session Expired",
+                message: "Your login session has expired, log in.",
+                intent: "error",
+                options: {
+                  link: {
+                    sequence: "log in",
+                    to: `${window.location.pathname}?login=true`,
+                  },
+                },
+              })
+            );
+
           history.push("/error-403");
           break;
         case 429:

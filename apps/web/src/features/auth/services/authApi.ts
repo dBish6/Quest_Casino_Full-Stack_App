@@ -6,8 +6,16 @@ import {
 } from "@qc/typescript/dtos/LoginBodyDto";
 
 import { createApi, baseQuery } from "@services/index";
+import {
+  SET_USER_CREDENTIALS,
+  SET_CSRF_TOKEN,
+} from "@authFeat/redux/authSlice";
+import { ADD_TOAST } from "@redux/toast/toastSlice";
 
 import { logger } from "@qc/utils";
+import handleSendVerifyEmail from "./handleSendVerifyEmail";
+import { ThunkDispatch, UnknownAction } from "@reduxjs/toolkit";
+import UserCredentials from "@qc/typescript/typings/UserCredentials";
 
 const authApi = createApi({
   reducerPath: "authApi",
@@ -18,8 +26,9 @@ const authApi = createApi({
         url: "/register",
         method: "POST",
         body: user,
+        // TODO: ?
         // validateStatus: (response, result) =>
-        //   response.status === 200 && !result.isError,
+        //   response.status === 500,
       }),
     }),
 
@@ -29,19 +38,16 @@ const authApi = createApi({
         method: "POST",
         body: credentials,
       }),
-      onQueryStarted: async (credentials, { dispatch, queryFulfilled }) => {
+      onQueryStarted: async (_, { dispatch, queryFulfilled }) => {
         try {
           const { data, meta } = await queryFulfilled;
 
-          console.log("data", data);
-          console.log("meta", meta);
-
           if (meta?.response?.ok) {
-            // handleLoginSuccess(
-            //   dispatch,
-            //   data.user,
-            //   meta.response.headers.get("x-xsrf-token")!
-            // );
+            handleLoginSuccess(
+              dispatch,
+              data.user,
+              meta.response.headers.get("x-xsrf-token")!
+            );
           }
         } catch (error: any) {
           logger.error("authApi login onQueryStarted error:\n", error.message);
@@ -54,20 +60,16 @@ const authApi = createApi({
         method: "POST",
         body: user,
       }),
-      onQueryStarted: async (credentials, { dispatch, queryFulfilled }) => {
+      onQueryStarted: async (_, { dispatch, queryFulfilled }) => {
         try {
           const { data, meta } = await queryFulfilled;
 
-          console.log("data", data);
-          console.log("meta", meta);
-
-          if (meta?.response?.ok) {
-          }
-          // handleLoginSuccess(
-          //   dispatch,
-          //   data.user,
-          //   meta.response.headers.get("x-xsrf-token")!
-          // );
+          if (meta?.response?.ok)
+            handleLoginSuccess(
+              dispatch,
+              data.user,
+              meta.response.headers.get("x-xsrf-token")!
+            );
         } catch (error: any) {
           logger.error(
             "authApi loginGoogle onQueryStarted error:\n",
@@ -81,6 +83,7 @@ const authApi = createApi({
       query: () => ({
         url: "/email-verify/send",
         method: "POST",
+        // TODO:
         validateStatus: (response, result) => response.status === 541,
       }),
     }),
@@ -104,6 +107,40 @@ const authApi = createApi({
     }),
   }),
 });
+
+function handleLoginSuccess(
+  dispatch: ThunkDispatch<any, any, UnknownAction>,
+  user: UserCredentials,
+  token: string
+) {
+  dispatch(SET_USER_CREDENTIALS(user));
+  dispatch(SET_CSRF_TOKEN(token));
+
+  if (!user.email_verified) {
+    dispatch(
+      ADD_TOAST({
+        title: "Welcome Issue",
+        message: `Welcome back ${user.username}! We've noticed that your profile hasn't been verified yet, please try to resend the verification email.`,
+        intent: "success",
+        options: {
+          button: {
+            sequence: "resend the verification email.",
+            onClick: () => handleSendVerifyEmail(dispatch),
+          },
+        },
+      })
+    );
+  } else {
+    dispatch(
+      ADD_TOAST({
+        title: "Welcome",
+        message: `Welcome back ${user.username}!`,
+        intent: "success",
+        duration: 65000,
+      })
+    );
+  }
+}
 
 export const {
   endpoints: authEndpoints,
