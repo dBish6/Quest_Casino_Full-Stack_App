@@ -1,11 +1,24 @@
 import { type PayloadAction, createSlice } from "@reduxjs/toolkit";
 import { nanoid } from "@reduxjs/toolkit";
 
+export interface ToastOptions {
+  link?: {
+    sequence: string;
+    to: string;
+  };
+  button?: {
+    sequence: string;
+    onClick: () => void;
+  };
+}
+
 export interface ToastPayload {
-  id: string;
+  id?: string;
   title?: string;
   message: string;
-  intent: "error" | "success" | "info";
+  intent?: "error" | "success" | "info";
+  duration?: number;
+  options?: ToastOptions;
 }
 
 export interface ToastState {

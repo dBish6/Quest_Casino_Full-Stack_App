@@ -1,6 +1,8 @@
 import type { ToastProps as RadixToastProps } from "@radix-ui/react-toast";
 import type { VariantProps } from "class-variance-authority";
+import type { ToastPayload } from "@redux/toast/toastSlice";
 
+import { Fragment } from "react";
 import {
   Provider,
   Root,
@@ -18,6 +20,7 @@ import { REMOVE_TOAST } from "@redux/toast/toastSlice";
 
 import { Button } from "@components/common/controls";
 import { Icon } from "@components/common/icon";
+import { Link } from "@components/common/link";
 
 import s from "./toast.module.css";
 
@@ -42,21 +45,26 @@ const toast = cva(s.toast, {
 
 export interface ToastProps
   extends RadixToastProps,
-    VariantProps<typeof toast> {
-  title?: string;
-  message: string;
+    VariantProps<typeof toast>,
+    Omit<ToastPayload, "id" | "intent"> {
   close: () => void;
-  intent: "success" | "error" | "info";
 }
 
 export default function Toast({
-  title,
   message,
   close,
-  intent,
   className,
+  title,
+  intent,
+  options,
   ...props
 }: ToastProps) {
+  const { link, button } = options || {};
+
+  let messageParts = [message];
+  if (link || button)
+    messageParts = message.split(link?.sequence || button?.sequence || "");
+
   return (
     <Root
       className={toast({ className, intent })}
@@ -75,7 +83,7 @@ export default function Toast({
         </svg>
       </div>
       <Close asChild>
-        <Button intent="exit" size="sm" />
+        <Button intent="exit" size="sm" className={s.exit} />
       </Close>
 
       <div>
@@ -88,10 +96,35 @@ export default function Toast({
         )}{" "}
       </div>
       <Title asChild>
-        <h3>{title ?? defaultTitles[intent]}</h3>
+        <h3>{title ?? defaultTitles[intent || "info"]}</h3>
       </Title>
       <Description asChild>
-        <p>{message}</p>
+        <p>
+          {messageParts.map((part, index) => (
+            <Fragment key={index}>
+              {part}
+              {index < messageParts.length - 1 && (
+                <>
+                  {(link || button) && (
+                    <Link
+                      {...(button && { asChild: true })}
+                      intent="primary"
+                      to={link ? link.to : ""}
+                    >
+                      {link
+                        ? link.sequence
+                        : button && (
+                            <Button onClick={button.onClick}>
+                              {button.sequence}
+                            </Button>
+                          )}
+                    </Link>
+                  )}
+                </>
+              )}
+            </Fragment>
+          ))}
+        </p>
       </Description>
     </Root>
   );
@@ -101,20 +134,21 @@ export function ToastsProvider() {
   const toasts = useAppSelector(selectToasts),
     dispatch = useAppDispatch();
 
-  console.log("toasts", toasts);
-
   return (
-    <Provider duration={5000000000000000}>
+    <Provider>
       {toasts.length > 0 &&
-        toasts.map((toast) => (
-          <Toast
-            key={toast.id}
-            title={toast.title}
-            message={toast.message}
-            close={() => dispatch(REMOVE_TOAST({ id: toast.id }))}
-            intent={toast.intent}
-          />
-        ))}
+        toasts.map((toast) => {
+          const { id, ...rest } = toast;
+
+          return (
+            <Toast
+              key={id}
+              close={() => dispatch(REMOVE_TOAST({ id: id! }))}
+              duration={toast.duration || 5000000000000000}
+              {...rest}
+            />
+          );
+        })}
       <Viewport className={s.viewport} />
     </Provider>
   );

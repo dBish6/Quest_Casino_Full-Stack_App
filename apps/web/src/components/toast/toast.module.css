@@ -7,6 +7,8 @@
   justify-content: center;
   flex-wrap: wrap;
   gap: 1rem;
+  /* FIXME: viewports makes it so you can't press anything behind it. */
+  /* pointer-events: none; */
   /* width: max-content; */
   width: 100%;
   & .toast {
@@ -48,7 +50,7 @@
       }
     }
 
-    & button {
+    & button.exit {
       position: absolute;
       top: -8px;
       right: -8px;
@@ -70,7 +72,8 @@
     & h3 {
       font: var(--h4);
     }
-    & p {
+    & p,
+    & p button {
       font: var(--para-x-small);
       line-height: 16px;
     }
@@ -145,10 +148,11 @@
 
 @keyframes slideIn {
   from {
-    transform: translateX(calc(100% + var(--viewport-padding)));
+    /* transform: translateX(calc(100% + var(--viewport-padding))); */
+    transform: translateY(-100%);
   }
   to {
-    transform: translateX(0);
+    transform: translateY(0);
   }
 }
 
