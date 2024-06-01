@@ -3,7 +3,7 @@ import { UserClaims } from "@authFeat/typings/User";
 
 declare module "express-serve-static-core" {
   interface Request {
-    userIdToken?: string;
+    loginMethod?: "email" | "username";
     decodedClaims?: UserClaims;
   }
 }

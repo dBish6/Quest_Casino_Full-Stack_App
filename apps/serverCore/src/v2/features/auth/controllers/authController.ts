@@ -14,7 +14,6 @@ import {
 
 import { logger } from "@qc/utils";
 import { createApiError } from "@utils/CustomError";
-import validateEmail from "@authFeat/utils/validateEmail";
 import initializeSession from "@authFeat/utils/initializeSession";
 
 import * as authService from "@authFeat/services/authService";
@@ -113,19 +112,19 @@ export async function login(
   next: NextFunction
 ) {
   try {
-    const isEmail = validateEmail(req.body.email_username);
-
     const clientUser = await initializeSession(
       res,
       {
-        by: isEmail ? "email" : "username",
+        by: req.loginMethod!,
         value: req.body.email_username,
       },
       req.headers["x-xsrf-token"] as string
     );
+    delete req.loginMethod;
     if (typeof clientUser === "string")
-      return res.status(404).json({
-        ERROR: clientUser,
+      // Status 500 because this should never happen.
+      return res.status(500).json({
+        ERROR: `${clientUser} Unexpectedly couldn't find the user after validation.`,
       });
 
     return res.status(200).json({
