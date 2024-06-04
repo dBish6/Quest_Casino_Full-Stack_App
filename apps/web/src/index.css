@@ -203,8 +203,9 @@
   --c-magenta-900: #4b1c4b;
 
   --c-lvl-1: #131313;
+  --c-lvl-1-trns: rgba(19, 19, 19, 0.4);
   --c-lvl-2: #160f29;
-  --c-lvl-modal: rgba(22, 15, 41, 0.45);
+  --c-lvl-2-trns: rgba(22, 15, 41, 0.45); /* 0.4 */
   --c-lvl-3: #19112f;
   --c-lvl-4: #1c1435;
   --c-lvl-5: #1f163b;
@@ -280,8 +281,9 @@
 
   /* Indices */
   --z-dropdown: 5;
-  --z-overlay: 10;
+  --z-modal: 10;
   --z-toast: 15;
+  --z-overlay: 99;
 
   background: var(--c-bg);
   color-scheme: dark;
