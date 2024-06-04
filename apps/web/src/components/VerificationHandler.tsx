@@ -6,7 +6,7 @@ import { selectUser } from "@authFeat/redux/authSelectors";
 
 import { useEmailVerifyMutation } from "@authFeat/services/authApi";
 
-import OverlayLoader from "./loaders/overlay/OverlayLoader";
+import { OverlayLoader } from "@components/loaders";
 
 export default function VerificationHandler() {
   const [searchParams] = useSearchParams(),

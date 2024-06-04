@@ -1,0 +1,28 @@
+.portal {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100vw;
+  height: 100vh;
+  background: var(--c-bg);
+  z-index: var(--z-overlay);
+  .loader {
+    @media (width >= 171px) {
+      min-width: 153.663px;
+    }
+    padding: 1.125rem 1rem 0.5rem 1rem;
+    margin: 0.5rem;
+    border: 2px solid var(--c-purple-border);
+    border-radius: 12px;
+    background-color: var(--c-lvl-5);
+    text-align: center;
+    & span:first-child {
+      margin: 0 auto 0.5rem auto;
+    }
+    & span:last-child {
+      font-style: italic;
+    }
+  }
+}
