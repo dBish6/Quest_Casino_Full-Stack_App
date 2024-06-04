@@ -162,7 +162,7 @@ export async function loginGoogle(
 /**
  * Initiates email address verification.
  * @controller
- * @response A `success`, `not found`, `forbidden`, or `ApiError`.
+ * @response `success`, `not found`, `forbidden`, or `ApiError`.
  */
 export async function emailVerify(
   req: Request,
@@ -198,9 +198,10 @@ export async function sendVerifyEmail(
     const { email, verification_token } = req.decodedClaims!;
     await authService.sendVerifyEmail(email, verification_token);
 
-    return res
-      .status(200)
-      .json({ message: "Verification email successfully sent." });
+    return res.status(200).json({
+      message:
+        "Verification email successfully sent. If you can't find it in your inbox, please check your spam or junk folder.",
+    });
   } catch (error: any) {
     next(createApiError(error, "sendVerifyEmail controller error.", 500));
   }

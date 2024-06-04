@@ -78,7 +78,6 @@ export async function loginWithGoogle(
 async function fetchAccessTokenToken(code: string, redirectUri: string) {
   try {
     const { GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_CLIENT_SECRET } = process.env;
-    console.log("GOOGLE_OAUTH_CLIENT_ID", GOOGLE_OAUTH_CLIENT_ID);
 
     const res = await fetch("https://oauth2.googleapis.com/token", {
         method: "POST",
@@ -96,12 +95,14 @@ async function fetchAccessTokenToken(code: string, redirectUri: string) {
       data = (await res.json()) as FetchAccessTokenSuccessDataDto;
     logger.info("google fetchAccessTokenToken", res.status);
 
-    if (!res.ok)
+    if (!res.ok) {
+      logger.error("fetchAccessTokenToken error:", data);
       throw createApiError(
         Error("Received a bad status from token request."),
-        "fetchUserInfo error.",
+        "fetchAccessTokenToken error.",
         403
       );
+    }
 
     return data.access_token;
   } catch (error) {

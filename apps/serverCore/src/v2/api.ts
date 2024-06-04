@@ -9,6 +9,7 @@ import { CorsOptions } from "cors";
 import express from "express";
 
 import bodyParser from "body-parser";
+import cookieParser from "cookie-parser";
 
 import cors from "cors";
 import helmet from "helmet";
@@ -29,6 +30,7 @@ const initializeApi = (corsOptions: CorsOptions) => {
   // *Parser Middleware*
   app.use(bodyParser.urlencoded({ extended: true }));
   app.use(bodyParser.json());
+  app.use(cookieParser());
 
   // *Security Middleware*
   app.use(cors(corsOptions)); // Enables CORS with the specified options.

@@ -11,8 +11,9 @@ import type { GetUserBy, InitializeUser } from "@authFeat/typings/User";
 import { Types } from "mongoose";
 import { hash } from "bcrypt";
 import { randomUUID } from "crypto";
-import fs from "fs";
-import path from "path";
+import { readFileSync } from "fs";
+import { dirname, resolve } from "path";
+import { fileURLToPath } from "url";
 
 import { logger } from "@qc/utils";
 import { createApiError } from "@utils/CustomError";
@@ -121,20 +122,23 @@ export async function registerUser(user: InitializeUser) {
  */
 export async function emailVerify(userId: string, verificationToken: string) {
   try {
-    let query = User.findOne({
-      verification_token: verificationToken,
-    });
-    query = await populateUser(query, true).exec();
-    if (!query) return "User doesn't exist.";
-
     const cachedToken = await redisClient.get(
       `user:${userId}:verification_token`
     );
     if (verificationToken !== cachedToken)
       return "Verification token disparity.";
 
-    // TODO: Check if this actually returns the client formatted user.
-    return await query.updateOne({ email_verified: true }, { new: true });
+    let query = User.findOneAndUpdate(
+      {
+        verification_token: verificationToken,
+      },
+      { email_verified: true },
+      { new: true }
+    );
+    query = await populateUser(query, true).exec();
+    if (!query) return "User doesn't exist.";
+
+    return query;
   } catch (error: any) {
     throw createApiError(error, "emailVerify service error.", 500);
   }
@@ -146,13 +150,15 @@ export async function sendVerifyEmail(
   email: string,
   verificationToken: string
 ) {
+  const __dirname = dirname(fileURLToPath(import.meta.url));
+
   try {
-    const template = fs.readFileSync(
-        path.resolve("../emails/templates/verifyEmail.html"),
+    const template = readFileSync(
+        resolve(__dirname, "../emails/templates/verifyEmail.html"),
         "utf-8"
       ),
-      footerPartial = fs.readFileSync(
-        "/src/v2/features/auth/emails/templates.verifyEmail.html",
+      footerPartial = readFileSync(
+        resolve(__dirname, "../../../emails/partials/footer.html"),
         "utf-8"
       );
 
@@ -164,7 +170,7 @@ export async function sendVerifyEmail(
       .replace("<!--footer-->", footerPartial);
 
     const info = await sendEmail(email, "Email Verification", html);
-    if (info.rejected)
+    if (info.rejected.length)
       throw createApiError(
         Error(
           "Your email was rejected by our SMTP server during sending. Please consider using a different email address. If the issue persists, feel free to reach out to support."

@@ -8,6 +8,7 @@ const router = Router();
 
 router.get("/users", verifyUserToken, authController.getUsers);
 router.get("/user", verifyUserToken, authController.getUser); 
+router.post("/user/clear", verifyUserToken, verifyCsrfToken, authController.clear);
 
 router.post("/register", validateRegister, authController.register);
 
@@ -18,8 +19,6 @@ router.post("/email-verify", verifyUserToken, verifyCsrfToken, authController.em
 router.post("/email-verify/send", verifyUserToken, verifyCsrfToken, authController.sendVerifyEmail);
 
 router.post("/logout", verifyUserToken, verifyCsrfToken, authController.logout);
-
-router.post("/current-user/clear", verifyUserToken, verifyCsrfToken, authController.clear);
 
 router.delete("/delete", verifyUserToken, verifyCsrfToken, authController.logout);
 
