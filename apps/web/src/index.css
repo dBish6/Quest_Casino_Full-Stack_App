@@ -281,6 +281,7 @@
   /* Indices */
   --z-dropdown: 5;
   --z-overlay: 10;
+  --z-toast: 15;
 
   background: var(--c-bg);
   color-scheme: dark;

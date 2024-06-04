@@ -4,7 +4,7 @@
  *
  * Author: David Bishop
  * Creation Date: April 16, 2024
- * Last Updated: May 31, 2024
+ * Last Updated: June 2, 2024
  *
  * Description:
  * .
@@ -20,7 +20,9 @@ import { Navigate, type RouteObject } from "react-router-dom";
 
 import HistoryProvider from "@utils/History";
 import { ToastsProvider } from "@components/toast";
+
 import { Dashboard } from "@components/partials";
+import VerificationHandler from "@components/VerificationHandler";
 import { About, Home, Profile, Settings, Support } from "@views/index";
 import {
   Error401,
@@ -32,6 +34,7 @@ import {
 
 import "./index.css";
 
+// TODO: Could just make a prop?
 const restricted = new Set(["/profile"]);
 
 export const routes: RouteObject[] = [
@@ -41,7 +44,9 @@ export const routes: RouteObject[] = [
       <>
         <HistoryProvider />
         <ToastsProvider />
+
         <Dashboard />
+        <VerificationHandler />
       </>
     ),
     children: [

@@ -1,3 +1,5 @@
+import type { StateUser } from "@authFeat/redux/authSlice";
+
 import { configureStore } from "@reduxjs/toolkit";
 import { setupListeners } from "@reduxjs/toolkit/query";
 import { throttle } from "tiny-throttle";
@@ -23,13 +25,20 @@ const store = configureStore({
 
 store.subscribe(
   throttle(() => {
-    const state = store.getState();
+    const state = store.getState(),
+      user = state.auth.user;
 
-    const targetPersistAuth = state.auth,
-      persisted = {
-        auth: targetPersistAuth,
-      };
+    const targetPersistAuth: StateUser = {
+      ...user,
+      token: {
+        csrf: user.token.csrf,
+        ...(user.token.oState ? { oState: user.token.oState } : {}),
+      },
+    };
 
+    const persisted = {
+      auth: { user: targetPersistAuth },
+    };
     saveState(persisted);
   }, 1000)
 );

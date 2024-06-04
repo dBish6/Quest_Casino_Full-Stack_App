@@ -87,10 +87,10 @@ async function setupServer() {
               req.ip;
             if (ip !== incomingIp) {
               ip = incomingIp;
-              return res.redirect("/about");
+              return res.redirect(url.replace(req.path, "/about"));
             }
 
-            return res.redirect("/home");
+            return res.redirect(url.replace(req.path, "/home"));
           }
         } else if (
           error instanceof Response &&
@@ -115,32 +115,29 @@ async function setupServer() {
 }
 
 /**
- * Preloads the initial redux state for the client and also generates the initial oState token for the google register.
+ * Preloads the initial redux state for the client and also generates the initial oState token for the google login.
  */
 function getInitialReduxState() {
   const store = configureStore({
       reducer: rootReducer,
     }),
-    state = store.getState(),
-    userState = state.auth.user;
+    oStateToken = nanoid();
 
-  let initialState;
-  if (!userState.credentials && !userState.token.oState) {
-    const initialAuthState: AuthState = {
-      user: {
-        credentials: null,
-        token: { oState: hashSync(nanoid(), 6), csrf: null },
+  const initialAuthState: AuthState = {
+    user: {
+      credentials: null,
+      token: {
+        oState: { original: oStateToken, secret: hashSync(oStateToken, 6) },
+        csrf: null,
       },
-    };
-
-    initialState = {
-      ...state,
-      auth: initialAuthState,
-    };
-  }
+    },
+  };
 
   const preloadedStateScript = `<script>window.__PRELOADED_STATE__ = ${JSON.stringify(
-    initialState
+    {
+      ...store.getState(),
+      auth: initialAuthState,
+    }
   ).replace(/</g, "\\u003c")}</script>`;
 
   return { preloadedStateScript, store };

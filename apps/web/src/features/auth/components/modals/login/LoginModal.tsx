@@ -88,7 +88,7 @@ export default function LoginModal() {
             ((res.error as FetchBaseQueryError).data?.ERROR as Record<string, string>) || {}
           );
 
-          if (res.data?.message.endsWith("successfully.")) form.reset();
+          if (res.data?.message?.endsWith("successfully.")) form.reset();
         });
     } finally {
       setLoading(false);
@@ -161,6 +161,7 @@ export default function LoginModal() {
             </Button>
 
             <LoginWithGoogle
+              query="login"
               loginGoogle={loginGoogle}
               setGoogleLoading={setGoogleLoading}
               processing={{

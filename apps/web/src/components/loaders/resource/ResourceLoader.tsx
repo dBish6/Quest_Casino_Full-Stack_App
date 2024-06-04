@@ -3,6 +3,7 @@ import { useRef, useState, useLayoutEffect } from "react";
 
 import delay from "@utils/delay";
 
+import OverlayLoader from "../overlay/OverlayLoader";
 import { Button } from "@components/common/controls";
 
 import s from "./resourceLoader.module.css";
@@ -35,9 +36,7 @@ export default function ResourceLoader({
 
   const { LazyMotion, domAnimation } = FramerFeatureBundleRef.current;
   return !loaded ? (
-    <div role="status">
-      <span>Just a moment...</span>
-    </div>
+    <OverlayLoader />
   ) : LazyMotion ? (
     <LazyMotion features={domAnimation} strict>
       {children}
