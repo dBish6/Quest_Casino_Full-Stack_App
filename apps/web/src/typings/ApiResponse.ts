@@ -6,4 +6,7 @@ export interface SuccessResponse {
 export interface ErrorResponse {
   message?: string;
   ERROR: string | Record<string, string>;
+  allow?: boolean
 }
+
+export type ApiResponse = SuccessResponse | ErrorResponse;

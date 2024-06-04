@@ -6,6 +6,6 @@ export interface LoginBodyDto {
 export interface LoginGoogleBodyDto {
   code: string;
   state: string;
-  stored_state: string;
+  secret?: string;
   redirect_uri: string;
 }

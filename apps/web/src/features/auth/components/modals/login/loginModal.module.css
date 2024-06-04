@@ -1,0 +1,11 @@
+.modal {
+  padding-bottom: 1rem !important;
+
+  & .haveAcc {
+    font: var(--para-small);
+    color: var(--c-para-faded);
+    & a {
+      color: var(--c-para);
+    }
+  }
+}

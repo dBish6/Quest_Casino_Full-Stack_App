@@ -155,7 +155,7 @@ export function ToastsProvider() {
                   dispatch(REMOVE_TOAST({ id: id! }));
                 }, ANIMATION_DURATION);
               }}
-              duration={toast.duration || 5000000000000000}
+              duration={toast.duration || Infinity}
               {...rest}
             />
           );

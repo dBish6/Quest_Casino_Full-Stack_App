@@ -6,17 +6,17 @@
   align-items: center;
   /* TODO: Or however big the dashboard is. */
   width: 100vw;
-  min-height: 100vh;
+  height: 100vh;
   background-color: rgba(19, 19, 19, 0.35);
   backdrop-filter: blur(6px);
-  z-index: var(--z-overlay);
+  z-index: var(--z-modal);
 
   & .modalContainer {
     width: 100%;
     margin: 0.5rem;
     border: 2px solid var(--c-purple-border);
     border-radius: 12px;
-    background-color: var(--c-lvl-modal);
+    background-color: var(--c-lvl-2-trns);
     backdrop-filter: blur(40px);
 
     & .modal {

@@ -16,8 +16,6 @@ export interface FormProps
   resError: FetchBaseQueryError | SerializedError | undefined;
   clearErrors: () => void;
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
-  // TODO:
-  ErrorsAsToasts?: boolean;
 }
 
 const Form = forwardRef<HTMLFormElement, React.PropsWithChildren<FormProps>>(
@@ -62,8 +60,8 @@ const Form = forwardRef<HTMLFormElement, React.PropsWithChildren<FormProps>>(
               )
             ) : (
               <span role="alert" id="globalFormError" className={s.errorMsg}>
-                {resError.message}. If the error persists, feel free to reach
-                out to{" "}
+                {resError.message || "Serialization error"}. If the error
+                persists, feel free to reach out to{" "}
                 <Link intent="primary" to="/support">
                   support
                 </Link>

@@ -3,6 +3,8 @@ import react from "@vitejs/plugin-react";
 import { defaults } from "../../packages/vite-config";
 
 export default defineConfig(({ mode }) => {
+  // const env = loadEnv(mode, process.cwd(), "");
+
   return mergeConfig(
     defaults,
     defineConfig({
@@ -17,12 +19,15 @@ export default defineConfig(({ mode }) => {
           },
         },
       },
+      // define: {
+      //   __APP_ENV__: JSON.stringify(env.APP_ENV),
+      // },
       css: {
         modules: {
           localsConvention: "camelCaseOnly",
           generateScopedName:
             mode === "production"
-              ? "[hash:base64:5]"
+              ? "[hash:base64:8]"
               : "[local]_[hash:base64:5]",
         },
       },
