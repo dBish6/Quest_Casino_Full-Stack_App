@@ -6,10 +6,10 @@
  */
 
 import type { Request, Response as EResponse, NextFunction } from "express";
+import type { ViteDevServer } from "vite";
 import type { AuthState } from "@authFeat/redux/authSlice";
 
 import express from "express";
-import { createServer as createViteServer, ViteDevServer } from "vite";
 import morgan from "morgan";
 import fs from "fs";
 import path from "path";
@@ -28,10 +28,11 @@ const { PROTOCOL, HOST, PORT: ENV_PORT } = process.env,
 
 async function setupServer() {
   const app = express();
-  let vite: ViteDevServer, ip: string | undefined;
+  let vite: ViteDevServer | undefined, ip: string | undefined;
 
   if (process.env.NODE_ENV === "development") {
-    vite = await createViteServer({
+    const { createServer } = await import("vite");
+    vite = await createServer({
       server: { middlewareMode: true },
       appType: "custom",
     });
@@ -56,8 +57,8 @@ async function setupServer() {
         template = fs.readFileSync(path.resolve("./index.html"), "utf-8");
         // console.log("template", template);
 
-        template = await vite.transformIndexHtml(url, template);
-        render = (await vite.ssrLoadModule("./src/entry-server.tsx")).render;
+        template = await vite!.transformIndexHtml(url, template);
+        render = (await vite!.ssrLoadModule("./src/entry-server.tsx")).render;
       } else {
         template = fs.readFileSync(
           path.resolve("./build/client/index.html"),
@@ -106,7 +107,7 @@ async function setupServer() {
         throw error;
       }
     } catch (error: any) {
-      process.env.NODE_ENV === "development" && vite.ssrFixStacktrace(error);
+      process.env.NODE_ENV === "development" && vite!.ssrFixStacktrace(error);
       next(error);
     }
   });
