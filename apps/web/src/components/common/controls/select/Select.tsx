@@ -41,7 +41,7 @@ export interface SelectProps
 }
 
 // prettier-ignore
-export const Input = forwardRef<HTMLSelectElement,React.PropsWithChildren<SelectProps>>(
+export const Select = forwardRef<HTMLSelectElement,React.PropsWithChildren<SelectProps>>(
   ({ children, label, className, intent, size, style, required, error, Loader, loaderTrigger, ...props }, ref) => {
     const selectContainerRef = useRef<HTMLDivElement>(null);
 
@@ -116,4 +116,4 @@ export const Input = forwardRef<HTMLSelectElement,React.PropsWithChildren<Select
   }
 );
 
-export default Input;
+export default Select;
