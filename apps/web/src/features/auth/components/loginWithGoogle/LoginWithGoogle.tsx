@@ -92,7 +92,7 @@ export default function LoginWithGoogle({
             <Spinner intent="primary" size="md" />
           ) : (
             <>
-              <Icon id="google-24" /> Google
+              <Icon aria-hidden="true" id="google-24" /> Google
             </>
           )}
         </span>
