@@ -1,5 +1,7 @@
+export type IconIds = keyof typeof iconLib;
+
 export interface IconProps extends React.SVGProps<SVGSVGElement> {
-  id: keyof typeof iconLib;
+  id: IconIds;
 }
 
 /**
@@ -26,6 +28,12 @@ export default function Icon({id, fill = "var(--c-purple-50)", ...props}: IconPr
  * The collection icons with their IDs to access the icons and default aria-labels.
  */
 const iconLib = {
+  "adjust-16": {
+    id: "adjust-16",
+    size: { width: "16", height: "16.656" },
+    "aria-label": "Settings",
+  },
+
   "badge-48": {
     id: "badge-48",
     size: { width: "48.003", height: "39.507" },
@@ -49,9 +57,15 @@ const iconLib = {
     "aria-label": "Success",
   },
 
-  "edit-24": {
-    id: "edit-24",
-    size: { width: "24", height: "24.073" },
+  "discord-20": {
+    id: "discord-20",
+    size: { width: "19.997", height: "15.21" },
+    "aria-label": "Discord",
+  },
+
+  "edit-16": {
+    id: "edit-16",
+    size: { width: "16", height: "16.049" },
     "aria-label": "Edit Item",
   },
 
@@ -104,16 +118,68 @@ const iconLib = {
     "aria-label": "Show Password",
   },
 
+  "facebook-18": {
+    id: "facebook-18",
+    size: { width: "18", height: "18" },
+    "aria-label": "Facebook",
+  },
+
+  "gift-16": {
+    id: "gift-16",
+    size: { width: "15.996", height: "16.714" },
+    "aria-label": "Bonuses",
+  },
+
   "google-24": {
     id: "google-24",
     size: { width: "24.002", height: "24.484" },
-    "aria-label": "Google Icon",
+    "aria-label": "Google",
   },
 
   "info-24": {
     id: "info-24",
     size: { width: "24", height: "24" },
     "aria-label": "Info",
+  },
+
+  "instagram-18": {
+    id: "instagram-18",
+    size: { width: "18", height: "18" },
+    "aria-label": "Instagram",
+  },
+
+  "joystick-16": {
+    id: "joystick-16",
+    size: { width: "15.996", height: "17.714" },
+    "aria-label": "Games",
+  },
+
+  "list-16": {
+    id: "list-16",
+    size: { width: "15.998", height: "16.328" },
+    "aria-label": "Leaderboard",
+  },
+
+  "quote-16": {
+    id: "quote-16",
+    size: { width: "16.003", height: "12.609" },
+    "aria-label": "Quote",
+  },
+  "quote-12": {
+    id: "quote-12",
+    size: { width: "12", height: "9.455" },
+    "aria-label": "Quote",
+  },
+
+  "scroll-28": {
+    id: "scroll-28",
+    size: { width: "28", height: "25.333" },
+    "aria-label": "Quests",
+  },
+  "scroll-16": {
+    id: "scroll-28",
+    size: { width: "16", height: "14.476" },
+    "aria-label": "Quests",
   },
 
   "send-24": {

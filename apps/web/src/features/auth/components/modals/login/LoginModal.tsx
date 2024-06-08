@@ -107,7 +107,7 @@ export default function LoginModal() {
           <Button intent="exit" size="xl" className="exitXl" onClick={close} />
 
           <hgroup className="head">
-            <Icon id="enter-45" />
+            <Icon aria-hidden="true" id="enter-45" />
             <Title asChild>
               <h2>Login</h2>
             </Title>

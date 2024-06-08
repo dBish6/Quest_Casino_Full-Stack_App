@@ -208,7 +208,7 @@ export default function RegisterModal() {
 
             <div className="head">
               <hgroup>
-                <Icon id="badge-48" />
+                <Icon aria-hidden="true" id="badge-48" />
                 <Title asChild>
                   <h2>Register</h2>
                 </Title>
