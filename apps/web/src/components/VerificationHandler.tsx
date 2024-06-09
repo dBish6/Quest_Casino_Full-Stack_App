@@ -2,7 +2,7 @@ import { useSearchParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 
 import { useAppSelector } from "@redux/hooks";
-import { selectUser } from "@authFeat/redux/authSelectors";
+import { selectUserCredentials } from "@authFeat/redux/authSelectors";
 
 import { useEmailVerifyMutation } from "@authFeat/services/authApi";
 
@@ -12,11 +12,11 @@ export default function VerificationHandler() {
   const [searchParams] = useSearchParams(),
     [loading, setLoading] = useState(false);
 
-  const user = useAppSelector(selectUser),
+  const user = useAppSelector(selectUserCredentials),
     [verify] = useEmailVerifyMutation();
 
   useEffect(() => {
-    if (user.credentials?.email_verified === false) {
+    if (user?.email_verified === false) {
       const token = searchParams.get("verify");
 
       if (token) {
