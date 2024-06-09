@@ -24,7 +24,7 @@ export interface LinkProps extends RouterLinkProps, VariantProps<typeof link> {
   external?: boolean;
 }
 
-const Link = forwardRef<HTMLAnchorElement, React.PropsWithChildren<LinkProps>>(
+const Link = forwardRef<HTMLAnchorElement, LinkProps>(
   ({ children, to, className, intent, asChild, external, ...props }, ref) => {
     const Element = asChild ? Slot : external ? "a" : RouterLink;
 
