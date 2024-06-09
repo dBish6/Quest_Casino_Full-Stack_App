@@ -10,6 +10,7 @@
   width: 100%;
   pointer-events: none;
   z-index: var(--z-toast);
+
   & .toast {
     position: relative;
     width: 100%;
