@@ -16,7 +16,6 @@
 }
 button.google {
   width: 100%;
-  margin-bottom: 1.25rem;
   & span {
     display: flex;
     justify-content: center;

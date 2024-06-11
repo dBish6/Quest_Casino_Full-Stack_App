@@ -16,11 +16,13 @@ export default async function handleSendVerifyEmail(
 
     if (error && isFetchBaseQueryError(error)) {
       if (error.status === 541) {
-        ADD_TOAST({
-          title: "SMTP Rejected",
-          message: error.data!.ERROR as string,
-          intent: "error",
-        });
+        dispatch(
+          ADD_TOAST({
+            title: "SMTP Rejected",
+            message: error.data!.ERROR as string,
+            intent: "error",
+          })
+        );
       }
     } else if (data && data.message?.includes("successfully", -1)) {
       dispatch(

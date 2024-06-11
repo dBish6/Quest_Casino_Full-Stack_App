@@ -1,24 +1,34 @@
 import type { DialogContentProps } from "@radix-ui/react-dialog";
 import type { Variants } from "framer-motion";
 
-import { useState } from "react";
+import { forwardRef, useState, useLayoutEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { AnimatePresence, m } from "framer-motion";
-import { Root, Trigger, Portal, Overlay } from "@radix-ui/react-dialog";
+import {
+  Root,
+  Trigger as RTrigger,
+  Portal,
+  Overlay,
+  Content,
+} from "@radix-ui/react-dialog";
 
 import preventScroll from "@utils/preventScroll";
 import { fadeInOut } from "@utils/animations";
 
+import { useAppSelector, useAppDispatch } from "@redux/hooks";
+import { selectUserCredentials } from "@authFeat/redux/authSelectors";
+import { ADD_TOAST } from "@redux/toast/toastSlice";
+
+import { ScrollArea } from "@components/scrollArea";
+
 import "./modalTemplate.css";
 
-export interface ModalTemplateProps {
-  children: (props: {
-    close: () => void;
-    contentProps: DialogContentProps;
-  }) => React.ReactNode;
-  query: string;
-  btnText: string;
-  maxWidth: React.CSSProperties["maxWidth"];
+export interface ModalTemplateProps
+  extends Omit<DialogContentProps, "children" | "onInteractOutside"> {
+  children: (props: { close: () => void }) => React.ReactNode;
+  queryKey: string;
+  width: React.CSSProperties["maxWidth"];
+  Trigger: (() => React.ReactElement) | null;
 }
 
 const ANIMATION_DURATION = 1100,
@@ -41,78 +51,101 @@ const ANIMATION_DURATION = 1100,
     },
   };
 
-export default function ModalTemplate({
-  children,
-  query,
-  btnText,
-  maxWidth,
-}: ModalTemplateProps) {
-  const [searchParams, setSearchParams] = useSearchParams(),
-    [modal, setModal] = useState(() => {
-      const showModal = Boolean(searchParams.get(query));
-      return { show: showModal, render: showModal };
-    });
+const ModalTemplate = forwardRef<HTMLDivElement, ModalTemplateProps>(
+  ({ children, className, style, queryKey, width, Trigger, ...props }, ref) => {
+    const [searchParams, setSearchParams] = useSearchParams();
 
-  const fadeVariant = fadeInOut({ in: 0.5, out: 1.75 });
+    const [modal, setModal] = useState({ show: false, render: false }),
+      fadeVariant = fadeInOut({ in: 0.5, out: 1.75 });
 
-  const handleToggle = () => {
-    const toggle = !modal.show;
+    const dispatch = useAppDispatch(),
+      user = useAppSelector(selectUserCredentials);
 
-    if (toggle) {
-      searchParams.set(query, "true");
-    } else {
-      searchParams.delete(query);
+    const handleToggle = () => {
+      const toggle = !modal.show;
+      if (toggle) searchParams.set(queryKey, "true");
+      else searchParams.delete(queryKey);
 
-      setTimeout(
-        () => setModal((prev) => ({ ...prev, render: false })),
-        ANIMATION_DURATION
-      );
-    }
-    preventScroll(toggle);
+      preventScroll(toggle);
+      setSearchParams(searchParams);
+    };
 
-    setSearchParams(searchParams);
-    setModal({ show: toggle, render: true });
-  };
+    useLayoutEffect(() => {
+      const incomingQuery = searchParams.get(queryKey);
+      if (incomingQuery === "register" && user) {
+        dispatch(
+          ADD_TOAST({
+            message:
+              "You're already logged in, you cannot access this content.",
+            intent: "error",
+            duration: 65000,
+          })
+        );
+      } else {
+        let timeout: NodeJS.Timeout;
+        const showModal = Boolean(incomingQuery);
+        if (!showModal) {
+          timeout = setTimeout(
+            () => setModal((prev) => ({ ...prev, render: false })),
+            ANIMATION_DURATION
+          );
+        }
+        setModal({ show: showModal, render: true });
 
-  return (
-    <Root open={modal.render} onOpenChange={handleToggle} modal>
-      <Trigger aria-pressed={modal.render}>{btnText}</Trigger>
-      <Portal>
-        <AnimatePresence>
-          {modal.show && (
-            <m.div
-              role="presentation"
-              key="backdrop"
-              className="modalBackdrop"
-              variants={fadeVariant}
-              initial="hidden"
-              animate="visible"
-              exit="hidden"
-            >
-              <Overlay />
+        return () => timeout && clearTimeout(timeout);
+      }
+    }, [searchParams]);
+
+    return (
+      <Root open={modal.render} onOpenChange={handleToggle} modal>
+        {Trigger && (
+          <RTrigger aria-pressed={modal.render}>
+            <Trigger />
+          </RTrigger>
+        )}
+        <Portal>
+          <AnimatePresence>
+            {modal.show && (
               <m.div
                 role="presentation"
-                key="modal"
-                className="modalContainer"
-                style={{ maxWidth: maxWidth }}
-                variants={modalPopInOut}
+                key="backdrop"
+                className="modalBackdrop"
+                variants={fadeVariant}
                 initial="hidden"
                 animate="visible"
                 exit="hidden"
               >
-                {children({
-                  close: handleToggle,
-                  contentProps: {
-                    onInteractOutside: (e) => {
-                      e.preventDefault();
-                    },
-                  },
-                })}
+                <Overlay />
+                <m.div
+                  role="presentation"
+                  key="modal"
+                  className="modalContainer"
+                  style={{ maxWidth: width }}
+                  variants={modalPopInOut}
+                  initial="hidden"
+                  animate="visible"
+                  exit="hidden"
+                >
+                  <Content
+                    ref={ref}
+                    onInteractOutside={(e) => e.preventDefault()}
+                    {...props}
+                  >
+                    <ScrollArea
+                      className={`modal ${className ? " " + className : ""}`}
+                      orientation="vertical"
+                    >
+                      {children({ close: handleToggle })}
+                    </ScrollArea>
+                  </Content>
+                </m.div>
               </m.div>
-            </m.div>
-          )}
-        </AnimatePresence>
-      </Portal>
-    </Root>
-  );
-}
+            )}
+          </AnimatePresence>
+        </Portal>
+      </Root>
+    );
+  }
+);
+
+export default ModalTemplate;

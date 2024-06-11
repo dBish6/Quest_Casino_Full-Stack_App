@@ -130,6 +130,10 @@ const userSchema = new Schema<UserDoc, Model<UserDoc>>(
         message: (props: any) => `${props.value} is not a valid phone number.`,
       },
     },
+    bio: {
+      type: String,
+      max: [338, "bio field exceeds the max of 338 characters."],
+    },
     balance: { type: Number, default: 0 },
     statistics: {
       type: Schema.ObjectId,

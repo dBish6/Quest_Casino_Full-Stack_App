@@ -23,9 +23,18 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Primary: Story = {
-  args: {
-    to: "",
-    intent: "primary",
-    children: "Link",
+    args: {
+      intent: "primary",
+      to: "",
+      external: false,
+      children: "Link",
+    },
   },
-};
+  External: Story = {
+    args: {
+      intent: "primary",
+      to: "https://www.davidbishop.info",
+      external: true,
+      children: "Link",
+    },
+  };

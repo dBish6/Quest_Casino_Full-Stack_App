@@ -30,8 +30,6 @@ export interface InputProps
     >,
     VariantProps<typeof input> {
   label: string;
-  name: string;
-  id: string;
   required?: boolean | "show";
   Button?: () => React.ReactElement<ButtonProps>;
   error?: string | null;
@@ -66,6 +64,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             {...(error && { "aria-errormessage": "formError", "aria-invalid": true })}
             ref={ref}
             required={required ? true : false}
+            {...props}
+
             onFocus={() =>
               inputContainerRef.current!.setAttribute("data-focused", "true")
             }
@@ -76,7 +76,6 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
                 ? inputContainer.removeAttribute("data-typing")
                 : inputContainer.setAttribute("data-typing", "true");
             }}
-            {...props}
           />
           {Button && <Button />}
         </div>

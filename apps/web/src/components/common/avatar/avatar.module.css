@@ -1,0 +1,114 @@
+.avatar {
+  & div,
+  & div::before,
+  & img {
+    border-radius: 50%;
+  }
+  &.primary {
+    border-radius: 50%;
+    background-color: var(--c-lvl-2);
+    & div {
+      border: 2px solid rgba(95, 67, 178, 0.7);
+    }
+
+    &.sm {
+      width: 24px;
+      height: 24px;
+    }
+    &.md {
+      width: 40px;
+      height: 40px;
+    }
+    &.lrg {
+      width: 64px;
+      height: 64px;
+    }
+    &.xl {
+      width: 90px;
+      height: 90px;
+    }
+    &.xxl {
+      width: 116px;
+      height: 116px;
+    }
+  }
+}
+
+.profileCard {
+  background-color: var(--c-lvl-4);
+
+  & .arrow {
+    fill: var(--c-purple-border);
+  }
+  & > div :global(.viewport) {
+    border: 2px solid var(--c-purple-border);
+    border-radius: 12px;
+    width: 100%;
+    & hgroup {
+      word-break: break-all;
+      margin-bottom: 5px;
+      & div {
+        position: relative;
+      }
+    }
+  }
+
+  &.sm > div :global(.viewport),
+  &.md > div :global(.viewport),
+  &.lrg > div :global(.viewport) {
+    padding: 5px 0.75rem;
+    & hgroup {
+      word-break: break-all;
+      & h4 {
+        font: var(--h4);
+      }
+      & div {
+        bottom: 6px;
+        margin-bottom: -6px;
+        & span {
+          font: var(--para-small);
+        }
+      }
+    }
+    & p {
+      font: var(--para-x-small);
+    }
+  }
+  &.xl > div :global(.viewport),
+  &.xxl > div :global(.viewport) {
+    padding: 0.5rem 1rem;
+    & hgroup {
+      word-break: break-all;
+      & h4 {
+        font: var(--h3);
+      }
+      & div {
+        bottom: 4px;
+        margin-bottom: -4px;
+      }
+    }
+    & p {
+      font: var(--para-small);
+    }
+  }
+  &.sm > div :global(.viewport) {
+    max-width: 196px;
+    max-height: 82px;
+  }
+  &.md > div :global(.viewport) {
+    max-width: 216px;
+    max-height: 102px;
+  }
+  &.lrg > div :global(.viewport) {
+    max-width: 240px;
+    max-height: 122px;
+  }
+  &.xl > div :global(.viewport) {
+    max-width: 264px;
+    max-height: 128px;
+  }
+  &.xxl > div :global(.viewport) {
+    max-width: 320px;
+    max-height: 148px;
+  }
+}

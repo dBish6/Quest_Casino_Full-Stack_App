@@ -1,11 +1,17 @@
-.modal {
+.modal :global(.viewport) {
   padding-bottom: 1rem !important;
+  max-height: 484px;
+  & > div {
+    & > button:last-of-type {
+      margin-bottom: 1.5rem;
+    }
 
-  & .haveAcc {
-    font: var(--para-small);
-    color: var(--c-para-faded);
-    & a {
-      color: var(--c-para);
+    & .haveAcc {
+      font: var(--para-small);
+      color: var(--c-para-faded);
+      & a {
+        color: var(--c-para);
+      }
     }
   }
 }

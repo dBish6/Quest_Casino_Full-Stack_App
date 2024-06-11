@@ -71,6 +71,10 @@
       }
     }
 
+    & > button:last-of-type {
+      margin-bottom: 1.25rem;
+    }
+
     & .already {
       font: var(--para-small);
       color: var(--c-para-faded);

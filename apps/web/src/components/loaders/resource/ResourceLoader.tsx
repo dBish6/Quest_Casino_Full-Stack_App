@@ -36,7 +36,7 @@ export default function ResourceLoader({
 
   const { LazyMotion, domAnimation } = FramerFeatureBundleRef.current;
   return !loaded ? (
-    <OverlayLoader />
+    <OverlayLoader message="Loading resources..." />
   ) : LazyMotion ? (
     <LazyMotion features={domAnimation} strict>
       {children}

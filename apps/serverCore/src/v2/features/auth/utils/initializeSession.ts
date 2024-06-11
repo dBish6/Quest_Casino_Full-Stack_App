@@ -66,7 +66,7 @@ export default async function initializeSession(
       })
       .setHeader("x-xsrf-token", newCsrfToken);
 
-    return formatClientUser(user) as UserCredentials;
+    return formatClientUser(user);
   } catch (error: any) {
     throw createApiError(error, "initializeSession error.", 500);
   }
@@ -79,19 +79,21 @@ function formatUserToClaims(user: UserDoc) {
     legal_name: user.legal_name,
     username: user.username,
     email: user.email,
-    verification_token: user.verification_token, // Safe to include in the claims since the token is short-lived, the original verification token is in the cache, and its purpose is for email verification.
+    verification_token: user.verification_token,
     country: user.country,
     region: user.region,
     phone_number: user.phone_number,
   };
 }
 
-function formatClientUser(user: UserDoc) {
-  const { _id, verification_token, ...shared } = formatUserToClaims(user);
+function formatClientUser(user: UserDoc): UserCredentials {
+  const { _id, email, verification_token, ...shared } =
+    formatUserToClaims(user);
   return {
     ...shared,
     avatar_url: user.avatar_url,
     email_verified: user.email_verified,
+    ...(user.email_verified && { verification_token }),
     balance: user.balance,
     statistics: {
       losses: user.statistics.losses,

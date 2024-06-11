@@ -84,6 +84,7 @@ export default function Toast({
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 402 12.775"
           preserveAspectRatio="xMidYMin meet"
+          aria-hidden="true"
           className={s.borderTop}
         >
           <path d="M.025 12.775A12.33 12.33 0 0 1 0 12 12 12 0 0 1 12 0h378a12 12 0 0 1 12 12c0 .253-.008.509-.024.76A10.531 10.531 0 0 0 391.5 3h-381A10.525 10.525 0 0 0 .025 12.775Z" />

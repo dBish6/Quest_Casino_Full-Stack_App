@@ -32,8 +32,6 @@ export interface SelectProps
     >,
     VariantProps<typeof select> {
   label: string;
-  name: string;
-  id: string;
   required?: boolean | "show";
   error?: string | null;
   Loader?: () => React.ReactElement;
@@ -76,6 +74,8 @@ export const Select = forwardRef<HTMLSelectElement,React.PropsWithChildren<Selec
             {...(Loader && {"aria-busy": loaderTrigger})}
             ref={ref}
             required={required ? true : false}
+            {...props}
+
             onBlur={() =>
               selectContainerRef.current!.removeAttribute("data-focused")
             }
@@ -88,7 +88,6 @@ export const Select = forwardRef<HTMLSelectElement,React.PropsWithChildren<Selec
                 ? selectContainer.removeAttribute("data-selected")
                 : selectContainer.setAttribute("data-selected", "true");
             }}
-            {...props}
           >
             <option value="" />
             {children}

@@ -1,0 +1,50 @@
+.container {
+  position: relative;
+  height: fit-content;
+  width: fit-content;
+
+  & img {
+    display: block;
+  }
+
+  &.load {
+    background-color: var(--c-purple-200);
+    filter: blur(8px);
+    & img {
+      opacity: 0;
+      transition: 0.38s ease-in-out opacity;
+    }
+
+    &::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      animation: pulse ease 2.5s infinite;
+      background-color: var(--c-magenta-200);
+    }
+    &[data-loaded="true"] {
+      background-color: transparent;
+      filter: blur(0);
+      & img {
+        opacity: 1;
+      }
+      &::before {
+        content: none;
+        animation: none;
+      }
+    }
+  }
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 0.28;
+  }
+  100% {
+    opacity: 0;
+  }
+}
