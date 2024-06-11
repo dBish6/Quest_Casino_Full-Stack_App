@@ -84,7 +84,7 @@ export interface UserDocActivity extends SharedDocFields {
 export interface UserDoc extends SharedDocFields {
   _id: ObjectId;
   type: string;
-  avatar_url: string;
+  avatar_url?: string;
   legal_name: {
     first: string;
     last: string;
@@ -92,11 +92,15 @@ export interface UserDoc extends SharedDocFields {
   email: string;
   email_verified: boolean;
   username: string;
+  /**
+   * Used as a verification token for generating a unique verification link. When verified, this becomes the user's link to their public profile.
+   */
   verification_token?: string;
   password: string;
   country?: string;
   region?: string;
   phone_number?: string;
+  bio?: string;
   balance: number;
   statistics: UserDocStatistics;
   activity: UserDocStatistics;

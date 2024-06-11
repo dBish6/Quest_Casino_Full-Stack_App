@@ -76,25 +76,24 @@ export async function getUser(
  */
 export async function registerUser(user: InitializeUser) {
   const userId = new Types.ObjectId();
-  let verificationToken: string = "";
+  let verificationToken = randomUUID(); // For email verification link.
 
   try {
     if (user.password && user.type === "standard")
       user.password = await hash(user.password, 12);
     else user.password = `${user.type} provided`;
 
-    if (!user.email_verified) {
-      verificationToken = randomUUID(); // For email verification link.
+    if (user.email_verified === false)
       await redisClient.set(
         `user:${userId}:verification_token`,
         verificationToken
       );
-    }
+    else verificationToken = `/profile/${verificationToken}`;
 
     const newUser = new User({
         _id: userId,
         legal_name: { first: user.first_name, last: user.last_name },
-        ...(verificationToken && { verification_token: verificationToken }),
+        verification_token: verificationToken,
         statistics: userId,
         activity: userId,
         ...user,
@@ -132,7 +131,10 @@ export async function emailVerify(userId: string, verificationToken: string) {
       {
         verification_token: verificationToken,
       },
-      { email_verified: true },
+      {
+        email_verified: true,
+        verification_token: `/profile/${verificationToken}`,
+      },
       { new: true }
     );
     query = await populateUser(query, true).exec();
