@@ -92,18 +92,28 @@ const iconLib = {
     "aria-label": "Exit",
   },
 
+  "expand-23": {
+    id: "expand-wide",
+    size: { width: "23", height: "12" },
+    "aria-label": "Expand",
+  },
+  "expand-22": {
+    id: "expand-wide",
+    size: { width: "22", height: "12" },
+    "aria-label": "Expand",
+  },
   "expand-18": {
-    id: "expand",
+    id: "expand-sharp",
     size: { width: "18", height: "10" },
     "aria-label": "Expand",
   },
   "expand-16": {
-    id: "expand",
+    id: "expand-sharp",
     size: { width: "16", height: "8.889" },
     "aria-label": "Expand",
   },
   "expand-14": {
-    id: "expand",
+    id: "expand-sharp",
     size: { width: "14", height: "7.778" },
     "aria-label": "Expand",
   },
@@ -128,6 +138,11 @@ const iconLib = {
   "gift-48": {
     id: "gift",
     size: { width: "48", height: "50.155" },
+    "aria-label": "Bonuses",
+  },
+  "gift-20": {
+    id: "gift",
+    size: { width: "20", height: "20.898" },
     "aria-label": "Bonuses",
   },
   "gift-16": {
@@ -175,6 +190,11 @@ const iconLib = {
     size: { width: "47.996", height: "48.41" },
     "aria-label": "Leaderboard",
   },
+  "list-20": {
+    id: "list",
+    size: { width: "19.999", height: "20.411" },
+    "aria-label": "Leaderboard",
+  },
   "list-16": {
     id: "list",
     size: { width: "15.998", height: "16.328" },
@@ -204,7 +224,7 @@ const iconLib = {
   },
   "scroll-20": {
     id: "scroll",
-    size: { width: "16", height: "14.476" },
+    size: { width: "19.999", height: "18.094" },
     "aria-label": "Quests",
   },
   "scroll-16": {
