@@ -5,9 +5,10 @@
     border-radius: 50%;
   }
   &.primary {
+    border-radius: 50%;
+    background-color: var(--c-lvl-2);
     & div {
       border: 2px solid rgba(95, 67, 178, 0.7);
-      background-color: var(--c-lvl-2);
     }
 
     &.sm {

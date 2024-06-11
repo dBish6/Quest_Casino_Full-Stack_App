@@ -13,7 +13,7 @@ import s from "./loginWithGoogle.module.css";
 import { LoginGoogleTriggerType } from "@authFeat/services/authApi";
 
 export interface LoginWithGoogleProps {
-  query: "register" | "login";
+  queryKey: "register" | "login";
   loginGoogle: LoginGoogleTriggerType;
   setGoogleLoading: React.Dispatch<React.SetStateAction<boolean>>;
   processing: {
@@ -29,7 +29,7 @@ export interface LoginWithGoogleProps {
  * Meant to be used with a Form.
  */
 export default function LoginWithGoogle({
-  query,
+  queryKey,
   loginGoogle,
   setGoogleLoading,
   processing,
@@ -37,7 +37,7 @@ export default function LoginWithGoogle({
   const [searchParams] = useSearchParams();
 
   const storedOState = useAppSelector(selectUserOStateToken),
-    redirectUri = `${import.meta.env.VITE_APP_URL}/?${query}=true`;
+    redirectUri = `${import.meta.env.VITE_APP_URL}/?${queryKey}=true`;
 
   const createGoogleOAuthUrl = () => {
     const scope = "email profile",
@@ -74,6 +74,7 @@ export default function LoginWithGoogle({
         </span>
         <hr aria-hidden="true" />
       </div>
+      {/* TODO: Try button asChild and use a link????? */}
       <Button
         aria-label="Google"
         aria-describedby="logWit"

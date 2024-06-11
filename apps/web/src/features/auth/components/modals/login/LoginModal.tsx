@@ -2,9 +2,8 @@ import type { LoginBodyDto } from "@qc/typescript/dtos/LoginBodyDto";
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import type NullablePartial from "@qc/typescript/typings/NullablePartial";
 
-import { useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { Content, Title } from "@radix-ui/react-dialog";
+import { Title } from "@radix-ui/react-dialog";
 
 import { capitalize } from "@qc/utils";
 import { isFormValidationError } from "@utils/forms";
@@ -26,8 +25,6 @@ import { Spinner } from "@components/loaders";
 import s from "./loginModal.module.css";
 
 export default function LoginModal() {
-  const location = useLocation();
-
   const { form, setLoading, setError, setErrors } = useForm<LoginBodyDto>();
 
   const [
@@ -74,7 +71,7 @@ export default function LoginModal() {
         const key = field.name as keyof LoginBodyDto;
 
         if (!field.value.length) {
-          setError(key, `${capitalize(field.name)} is required.`);
+          setError(key, `${capitalize(key)} is required.`);
           continue;
         }
         reqBody[key] = field.value || null;
@@ -96,14 +93,20 @@ export default function LoginModal() {
   };
 
   return (
-    <ModalTemplate query="login" btnText="Log In" maxWidth="368px">
-      {({ close, contentProps }) => (
-        <Content
-          className={`modal ${s.modal}`}
-          aria-description="Login with your Quest Casino profile by providing the details below."
-          onEscapeKeyDown={() => setErrors({})}
-          {...contentProps}
-        >
+    <ModalTemplate
+      aria-description="Login with your Quest Casino profile by providing the details below."
+      queryKey="login"
+      width="368px"
+      className={`modal ${s.modal}`}
+      onEscapeKeyDown={() => setErrors({})}
+      Trigger={() => (
+        <Link intent="primary" to={{ search: "?login=true" }}>
+          Login
+        </Link>
+      )}
+    >
+      {({ close }) => (
+        <>
           <Button intent="exit" size="xl" className="exitXl" onClick={close} />
 
           <hgroup className="head">
@@ -159,26 +162,26 @@ export default function LoginModal() {
                 "Log In"
               )}
             </Button>
-
-            <LoginWithGoogle
-              query="login"
-              loginGoogle={loginGoogle}
-              setGoogleLoading={setGoogleLoading}
-              processing={{
-                google: googleLoading,
-                form: processingForm,
-                all: processing,
-              }}
-            />
           </Form>
+
+          <LoginWithGoogle
+            queryKey="login"
+            loginGoogle={loginGoogle}
+            setGoogleLoading={setGoogleLoading}
+            processing={{
+              google: googleLoading,
+              form: processingForm,
+              all: processing,
+            }}
+          />
 
           <span className={s.haveAcc}>
             Don't have an account?{" "}
-            <Link intent="primary" to={`${location.pathname}?register=true`}>
+            <Link intent="primary" to={{ search: "?register=true" }}>
               Register
             </Link>
           </span>
-        </Content>
+        </>
       )}
     </ModalTemplate>
   );

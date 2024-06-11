@@ -2,7 +2,11 @@ import type { LinkProps as RouterLinkProps } from "react-router-dom";
 import type { VariantProps } from "class-variance-authority";
 
 import { forwardRef } from "react";
-import { Link as RouterLink } from "react-router-dom";
+import {
+  useLocation,
+  Link as RouterLink,
+  NavLink as RouterNavLink,
+} from "react-router-dom";
 import { Slot } from "@radix-ui/react-slot";
 import { cva } from "class-variance-authority";
 
@@ -18,31 +22,47 @@ const link = cva(s.link, {
   },
 });
 
-export interface LinkProps extends RouterLinkProps, VariantProps<typeof link> {
-  to: string;
+export interface LinkProps
+  extends Omit<RouterLinkProps, "to">,
+    VariantProps<typeof link> {
+  to: string | { pathname?: string; search?: string };
   asChild?: boolean;
   external?: boolean;
+  nav?: boolean;
 }
 
+// prettier-ignore
 const Link = forwardRef<HTMLAnchorElement, LinkProps>(
-  ({ children, to, className, intent, asChild, external, ...props }, ref) => {
-    const Element = asChild ? Slot : external ? "a" : RouterLink;
+  ({ children, to, className, intent, asChild, external, nav, ...props }, ref) => {
+    const location = useLocation(),
+      path = typeof to === "string" ? to : to.pathname && to.pathname
 
-    const ignoreTo = () => {
-      const ignore = Element === RouterLink && ({ to: to } as unknown);
+    const Element = asChild ? Slot : external ? "a" : nav ? RouterNavLink : RouterLink;
+
+    const handleTo = () => {
+      const search = location.search,
+        newSearch =
+          typeof to !== "string" &&
+          (search && to.search ? `${search}${to.search.replace("?", "&")}` : to.search && to.search);
+
+      const ignore =
+        Element === RouterLink &&
+        ({ to: { ...(path && { pathname: path }), ...(search && { search: newSearch }) } } as unknown);
+
       return ignore as { to: string };
     };
 
     return (
       <Element
-        {...ignoreTo()}
+        {...handleTo()}
         {...(external &&
           (Element !== "a"
             ? {
-                onClick: () => window.open(to, "_blank", "noopener,noreferrer"),
+                onClick: () =>
+                  window.open(to as string, "_blank", "noopener,noreferrer"),
               }
             : {
-                href: to,
+                href: to as string,
                 target: "_blank",
                 rel: "noopener noreferrer",
               }))}

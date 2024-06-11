@@ -106,18 +106,20 @@ const authApi = createApi({
             })
           );
         } else if (res?.status === 404) {
-          ADD_TOAST({
-            title: "Unexpected Error",
-            message:
-              "We couldn't find your profile on our server. If the error persists, feel free to reach out to support.",
-            intent: "error",
-            options: {
-              link: {
-                sequence: "support",
-                to: "/support",
+          dispatch(
+            ADD_TOAST({
+              title: "Unexpected Error",
+              message:
+                "We couldn't find your profile on our server. If the error persists, feel free to reach out to support.",
+              intent: "error",
+              options: {
+                link: {
+                  sequence: "support",
+                  to: "/support",
+                },
               },
-            },
-          });
+            })
+          );
         }
       },
     }),

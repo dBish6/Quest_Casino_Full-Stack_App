@@ -12,62 +12,60 @@
   z-index: var(--z-modal);
 
   & .modalContainer {
+    position: relative;
     width: 100%;
     margin: 0.5rem;
-    border: 2px solid var(--c-purple-border);
-    border-radius: 12px;
-    background-color: var(--c-lvl-2-trns);
-    backdrop-filter: blur(40px);
-
     & .modal {
-      &:not(.scrollArea) {
-        padding: 2rem;
-      }
+      border: 2px solid var(--c-purple-border);
+      border-radius: 12px;
+      background-color: var(--c-lvl-2-trns);
+      backdrop-filter: blur(40px);
       & .viewport {
+        height: calc(100vh - 1rem);
         padding: 2rem;
-      }
 
-      & button.exitXl {
-        position: absolute;
-        top: -10px;
-        right: -10px;
-        z-index: 1;
-      }
+        & button.exitXl {
+          position: absolute;
+          top: -10px;
+          right: -10px;
+          z-index: 1;
+        }
 
-      & .head {
-        display: flex;
-        align-items: center;
-        margin-bottom: 2rem;
-        &hgroup {
+        & .head {
+          display: flex;
+          align-items: center;
+          margin-bottom: 2rem;
+          &hgroup {
+            gap: 0.75rem;
+          }
+          & h2 {
+            font: var(--h1);
+          }
+        }
+        & .head hgroup {
+          display: flex;
+          align-items: center;
           gap: 0.75rem;
         }
-        & h2 {
-          font: var(--h1);
-        }
-      }
-      & .head hgroup {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-      }
 
-      & form {
-        margin-bottom: 1.5rem;
-        & .inputs {
-          & > .control {
-            margin-bottom: 1.5rem;
+        & form {
+          margin-bottom: 1.5rem;
+          & .inputs {
+            & > .control {
+              margin-bottom: 1.5rem;
+            }
+            & .control {
+              width: 100%;
+            }
           }
-          & .control {
+
+          & button {
             width: 100%;
-          }
-        }
-
-        & button {
-          width: 100%;
-          &[disabled] {
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            &[disabled] {
+              display: flex;
+              justify-content: center;
+              align-items: center;
+            }
           }
         }
       }
