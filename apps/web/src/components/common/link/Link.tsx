@@ -22,10 +22,7 @@ const link = cva(s.link, {
   },
 });
 
-export interface LinkProps
-  extends Omit<RouterLinkProps, "to">,
-    VariantProps<typeof link> {
-  to: string | { pathname?: string; search?: string };
+export interface LinkProps extends RouterLinkProps, VariantProps<typeof link> {
   asChild?: boolean;
   external?: boolean;
   nav?: boolean;
@@ -40,14 +37,24 @@ const Link = forwardRef<HTMLAnchorElement, LinkProps>(
     const Element = asChild ? Slot : external ? "a" : nav ? RouterNavLink : RouterLink;
 
     const handleTo = () => {
-      const search = location.search,
-        newSearch =
-          typeof to !== "string" &&
-          (search && to.search ? `${search}${to.search.replace("?", "&")}` : to.search && to.search);
+      const search = location.search;
+      let newSearch: string | undefined;
+      let hash: string | undefined;
+
+      if (typeof to !== "string") {
+        newSearch = search && to.search ? `${search}${to.search.replace("?", "&")}` : to.search && to.search;
+        hash = to.hash
+      }
 
       const ignore =
-        Element === RouterLink &&
-        ({ to: { ...(path && { pathname: path }), ...(search && { search: newSearch }) } } as unknown);
+      (Element === RouterLink || Element === RouterNavLink) &&
+      ({
+        to: {
+          ...(path && { pathname: path }),
+          ...((newSearch || search) && { search: newSearch || search }),
+          ...(hash && { hash: hash }),
+        },
+      } as unknown);
 
       return ignore as { to: string };
     };

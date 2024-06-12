@@ -15,18 +15,20 @@ export default function OverlayLoader({
 }: OverlayLoaderProps) {
   const loaderRef = useRef<HTMLDivElement>(null);
 
-  useLayoutEffect(() => {
-    const content = document.getElementById("root")!;
-    content.setAttribute("aria-hidden", "true");
+  if (typeof window !== "undefined") {
+    useLayoutEffect(() => {
+      const content = document.getElementById("root")!;
+      content.setAttribute("aria-hidden", "true");
 
-    const prevFocus = document.activeElement as HTMLElement;
-    loaderRef.current?.focus();
+      const prevFocus = document.activeElement as HTMLElement;
+      loaderRef.current?.focus();
 
-    return () => {
-      content.removeAttribute("aria-hidden");
-      if (prevFocus) prevFocus.focus();
-    };
-  }, []);
+      return () => {
+        content.removeAttribute("aria-hidden");
+        if (prevFocus) prevFocus.focus();
+      };
+    }, []);
+  }
 
   return (
     <Portal className={s.portal}>

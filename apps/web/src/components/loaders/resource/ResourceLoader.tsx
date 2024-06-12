@@ -17,22 +17,24 @@ export default function ResourceLoader({
     }>({}),
     [loaded, setLoaded] = useState(false);
 
-  useLayoutEffect(() => {
-    if (!loaded) {
-      (async () => {
-        const { LazyMotion, domAnimation } = await import("framer-motion");
+  if (typeof window !== "undefined") {
+    useLayoutEffect(() => {
+      if (!loaded) {
+        (async () => {
+          const { LazyMotion, domAnimation } = await import("framer-motion");
 
-        await delay(700, () => {
-          FramerFeatureBundleRef.current = {
-            LazyMotion: LazyMotion,
-            domAnimation: domAnimation,
-          };
+          await delay(700, () => {
+            FramerFeatureBundleRef.current = {
+              LazyMotion: LazyMotion,
+              domAnimation: domAnimation,
+            };
 
-          setLoaded(true);
-        });
-      })();
-    }
-  }, []);
+            setLoaded(true);
+          });
+        })();
+      }
+    }, []);
+  }
 
   const { LazyMotion, domAnimation } = FramerFeatureBundleRef.current;
   return !loaded ? (
