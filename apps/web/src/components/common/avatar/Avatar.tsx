@@ -48,7 +48,14 @@ const Avatar = forwardRef<HTMLDivElement, AvatarProps>(
     const Container = user && showProfile ? ProfileHoverCard : Fragment;
 
     return (
-      <Container intent={intent || "primary"} size={size || "sm"} user={user!}>
+      // @ts-ignore
+      <Container
+        {...(Container !== Fragment && {
+          intent: intent || "primary",
+          size: size || "sm",
+          user: user,
+        })}
+      >
         <Link to={user?.verification_token || ""}>
           <div
             ref={ref}
@@ -86,20 +93,23 @@ function ProfileHoverCard({
         <Content
           className={`${s.profileCard} ${s[intent!]} ${s[size!]}`}
           sideOffset={6}
+          asChild
         >
-          <Arrow className={s.arrow} />
-          <ScrollArea orientation="vertical">
-            <hgroup>
-              <h4>{user.username}</h4>
-              <div role="presentation">
-                <span>{`${legalName.first} ${legalName.last}`}</span>
-                {/* TODO: Country flags. */}
-                {/* {user.country} */}
-              </div>
-            </hgroup>
+          <article>
+            <Arrow className={s.arrow} />
+            <ScrollArea orientation="vertical">
+              <hgroup>
+                <h4>{user.username}</h4>
+                <div role="presentation">
+                  <span>{`${legalName.first} ${legalName.last}`}</span>
+                  {/* TODO: Country flags. */}
+                  {/* {user.country} */}
+                </div>
+              </hgroup>
 
-            {user.bio && <p>{user.bio}</p>}
-          </ScrollArea>
+              {user.bio && <p>{user.bio}</p>}
+            </ScrollArea>
+          </article>
         </Content>
       </Portal>
     </Root>

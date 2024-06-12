@@ -1,3 +1,4 @@
+import { useLayoutEffect, useRef } from "react";
 import { Portal } from "@radix-ui/react-portal";
 
 import Spinner from "../spinner/Spinner";
@@ -12,9 +13,33 @@ export default function OverlayLoader({
   message,
   ...props
 }: OverlayLoaderProps) {
+  const loaderRef = useRef<HTMLDivElement>(null);
+
+  if (typeof window !== "undefined") {
+    useLayoutEffect(() => {
+      const content = document.getElementById("root")!;
+      content.setAttribute("aria-hidden", "true");
+
+      const prevFocus = document.activeElement as HTMLElement;
+      loaderRef.current?.focus();
+
+      return () => {
+        content.removeAttribute("aria-hidden");
+        if (prevFocus) prevFocus.focus();
+      };
+    }, []);
+  }
+
   return (
     <Portal className={s.portal}>
-      <div role="status" className={s.loader} {...props}>
+      <div
+        ref={loaderRef}
+        role="status"
+        tabIndex={-1}
+        className={s.loader}
+        style={{ outline: "none" }}
+        {...props}
+      >
         <Spinner role="" intent="primary" size="xxl" />
         <span>{message ? message : "Just a moment..."}</span>
       </div>
