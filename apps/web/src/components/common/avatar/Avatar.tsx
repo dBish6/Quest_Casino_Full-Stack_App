@@ -48,7 +48,14 @@ const Avatar = forwardRef<HTMLDivElement, AvatarProps>(
     const Container = user && showProfile ? ProfileHoverCard : Fragment;
 
     return (
-      <Container intent={intent || "primary"} size={size || "sm"} user={user!}>
+      // @ts-ignore
+      <Container
+        {...(Container !== Fragment && {
+          intent: intent || "primary",
+          size: size || "sm",
+          user: user,
+        })}
+      >
         <Link to={user?.verification_token || ""}>
           <div
             ref={ref}
