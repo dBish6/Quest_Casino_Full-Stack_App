@@ -14,6 +14,7 @@ import { capitalize } from "@qc/utils";
 import { isFormValidationError } from "@utils/forms";
 
 import useForm from "@hooks/useForm";
+import useSwitchModal from "@authFeat/hooks/useSwitchModal";
 import {
   useRegisterMutation,
   useLoginGoogleMutation,
@@ -31,6 +32,7 @@ import s from "./registerModal.module.css";
 
 export default function RegisterModal() {
   const { form, setLoading, setError, setErrors } = useForm<RegisterBodyDto>();
+  const { handleSwitch } = useSwitchModal("register");
 
   const [worldData, setWorldData] = useState<{
       countries: Country[] | null;
@@ -186,7 +188,7 @@ export default function RegisterModal() {
       queryKey="register"
       width="496px"
       className={s.modal}
-      onEscapeKeyDown={() => setErrors({})}
+      onCloseAutoFocus={() => setErrors({})}
       Trigger={null}
     >
       {({ close }) => (
@@ -195,10 +197,7 @@ export default function RegisterModal() {
             intent="exit"
             size="xl"
             className="exitXl"
-            onClick={() => {
-              close();
-              setErrors({});
-            }}
+            onClick={() => close()}
           />
 
           <div className="head">
@@ -436,7 +435,11 @@ export default function RegisterModal() {
 
           <span className={s.already}>
             Already have a account?{" "}
-            <Link intent="primary" to={{ search: "?login=true" }}>
+            <Link
+              intent="primary"
+              to={{ search: "?login1=true" }}
+              onClick={(e) => handleSwitch(e)}
+            >
               Log In
             </Link>
           </span>

@@ -220,14 +220,12 @@
 
   --c-para: #e3e3e3;
   --c-para-faded: #c1c1c1;
-  /* --c-para-faded: #cecdd2; */
-
-  /* Typography */
-  /* May need the default line height. */
-  --h1: 700 42px/59px "Enzo OT", sans-serif;
+  --c-para-faded-ex: #87868b /* --c-para-faded: #cecdd2; */ /* Typography */
+      --h1: 700 42px/59px "Enzo OT",
+    sans-serif;
   --h2: 700 32px/45px "Enzo OT", sans-serif;
-  --h3: 700 24px/34px "Enzo OT", sans-serif;
-  --h4: 700 18px/26px "Enzo OT", sans-serif;
+  --h3: 700 24px/34px "Enzo OT", sans-serif; /* 29px for line-height? */
+  --h4: 700 18px/26px "Enzo OT", sans-serif; /* 24px for line-height? */
   --h4-it: italic 500 18px/26px "Enzo OT", sans-serif;
 
   /* 
@@ -285,9 +283,12 @@
   --z-toast: 15;
   --z-overlay: 99;
 
+  --dashboard-height: calc(
+    100vh - 4rem
+  ); /* TODO: Change this in media queries too. */
+
   background: var(--c-bg);
   color-scheme: dark;
-  min-height: 100vh;
 }
 
 /* html,
@@ -311,6 +312,17 @@ select {
   color: var(--c-para);
 }
 
+main {
+  grid-column: 2;
+  position: relative;
+
+  & .viewport {
+    height: calc(var(--dashboard-height) - 2rem);
+    padding: 2rem 1.5rem;
+  }
+}
+
+/*  */
 h1,
 h2,
 h3,

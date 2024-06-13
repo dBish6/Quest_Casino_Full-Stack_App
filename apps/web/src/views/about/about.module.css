@@ -1,0 +1,21 @@
+/* <!-- opacity=".85" fill="#efecf7" --> for quote icon. */
+
+.about :global(.viewport) {
+  /* & > div { */
+  /* position: absolute; */
+  /* } */
+  /* max-height: 759px; */
+  /* max-height: inherit; */
+  & section {
+    margin-bottom: 2rem;
+    & h2 {
+      margin-bottom: 1rem;
+    }
+  }
+
+  & .community {
+    & p:last-of-type {
+      margin-block: 20px 1.5rem;
+    }
+  }
+}

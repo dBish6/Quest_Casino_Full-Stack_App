@@ -13,7 +13,7 @@ import s from "./loginWithGoogle.module.css";
 import { LoginGoogleTriggerType } from "@authFeat/services/authApi";
 
 export interface LoginWithGoogleProps {
-  queryKey: "register" | "login";
+  queryKey: "register" | "login1" | "login2";
   loginGoogle: LoginGoogleTriggerType;
   setGoogleLoading: React.Dispatch<React.SetStateAction<boolean>>;
   processing: {

@@ -157,6 +157,12 @@ const iconLib = {
     "aria-label": "Google",
   },
 
+  "hand-cash-48": {
+    id: "info",
+    size: { width: "48", height: "38.17" },
+    "aria-label": "Cash In",
+  },
+
   "info-24": {
     id: "info",
     size: { width: "24", height: "24" },

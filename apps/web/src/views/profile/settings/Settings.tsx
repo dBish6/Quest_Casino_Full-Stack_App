@@ -1,3 +1,3 @@
 export default function Settings() {
-  return <div>Settings</div>;
+  return <main>Settings</main>;
 }

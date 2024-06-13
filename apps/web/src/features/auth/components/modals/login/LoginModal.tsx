@@ -9,12 +9,13 @@ import { capitalize } from "@qc/utils";
 import { isFormValidationError } from "@utils/forms";
 
 import useForm from "@hooks/useForm";
+import useSwitchModal from "@authFeat/hooks/useSwitchModal";
 import {
   useLoginMutation,
   useLoginGoogleMutation,
 } from "@authFeat/services/authApi";
 
-import ModalTemplate from "@components/modals/ModalTemplate";
+import { ModalTemplate } from "@components/modals";
 import { Form } from "@components/form";
 import { Button, Input } from "@components/common/controls";
 import { Icon } from "@components/common/icon";
@@ -24,8 +25,13 @@ import { Spinner } from "@components/loaders";
 
 import s from "./loginModal.module.css";
 
-export default function LoginModal() {
+export default function LoginModal({
+  queryKey,
+}: {
+  queryKey: "login1" | "login2";
+}) {
   const { form, setLoading, setError, setErrors } = useForm<LoginBodyDto>();
+  const { handleSwitch } = useSwitchModal(queryKey);
 
   const [
     login,
@@ -52,10 +58,8 @@ export default function LoginModal() {
     processing = processingForm || loginGoogleLoading || googleLoading;
 
   useEffect(() => {
-    if (loginSuccess || loginGoogleSuccess) {
+    if (loginSuccess || loginGoogleSuccess)
       (document.querySelector(".exitXl") as HTMLButtonElement).click();
-      setErrors({});
-    }
   }, [loginSuccess, loginGoogleSuccess]);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -95,12 +99,12 @@ export default function LoginModal() {
   return (
     <ModalTemplate
       aria-description="Login with your Quest Casino profile by providing the details below."
-      queryKey="login"
+      queryKey={queryKey}
       width="368px"
       className={`modal ${s.modal}`}
-      onEscapeKeyDown={() => setErrors({})}
+      onCloseAutoFocus={() => setErrors({})}
       Trigger={() => (
-        <Link intent="primary" to={{ search: "?login=true" }}>
+        <Link intent="primary" to={{ search: `?${queryKey}=true` }}>
           Login
         </Link>
       )}
@@ -165,7 +169,7 @@ export default function LoginModal() {
           </Form>
 
           <LoginWithGoogle
-            queryKey="login"
+            queryKey={queryKey}
             loginGoogle={loginGoogle}
             setGoogleLoading={setGoogleLoading}
             processing={{
@@ -177,7 +181,11 @@ export default function LoginModal() {
 
           <span className={s.haveAcc}>
             Don't have an account?{" "}
-            <Link intent="primary" to={{ search: "?register=true" }}>
+            <Link
+              intent="primary"
+              to={{ search: "?register=true" }}
+              onClick={(e) => handleSwitch(e)}
+            >
               Register
             </Link>
           </span>

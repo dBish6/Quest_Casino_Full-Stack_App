@@ -53,7 +53,7 @@ const Avatar = forwardRef<HTMLDivElement, AvatarProps>(
         {...(Container !== Fragment && {
           intent: intent || "primary",
           size: size || "sm",
-          user: user,
+          user: user!,
         })}
       >
         <Link to={user?.verification_token || ""}>
