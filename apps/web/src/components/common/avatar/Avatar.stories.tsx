@@ -1,4 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react";
+import type UserCredentials from "@qc/typescript/typings/UserCredentials";
+
 import { useMockSelector } from "@storybook/mockStore";
 
 import Avatar from "./Avatar";
@@ -37,7 +39,7 @@ export const Default: Story = {
     render: (args) => {
       const { avatar_url, ...user } = args.user!;
 
-      return <Avatar user={user} />;
+      return <Avatar user={user as UserCredentials} />;
     },
   },
   NoHoverCard: Story = {
