@@ -16,6 +16,7 @@ const authState: AuthState = {
       legal_name: { first: "Test", last: "Tester" },
       email_verified: false,
       username: "Testest",
+      verification_token: "#",
       country: "Canada",
       bio: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam tincidunt eget dui ac ornare. Sed congue tellus in lectus imperdiet, ac facilisis lorem suscipit. Nulla scelerisque consectetur ipsum.",
       balance: 0,

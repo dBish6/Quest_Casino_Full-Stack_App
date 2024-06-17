@@ -1,0 +1,132 @@
+.aside {
+  grid-column: 1;
+  grid-row: span 2;
+  position: relative;
+  z-index: var(--z-partial);
+  & :global(.blob) {
+    top: 45px;
+    left: 49%;
+    transform: translateX(-50%);
+  }
+
+  & .inner {
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) auto;
+    height: 100%;
+    border: 2px solid var(--c-purple-border);
+    background-color: var(--c-lvl-1-trns);
+    backdrop-filter: blur(50px);
+
+    & > div:first-child :global(.viewport) {
+      max-height: 100%;
+      padding: 1.5rem 1.5rem 0;
+      & > div {
+        & .user {
+          position: relative;
+          display: flex;
+          align-items: center;
+          flex-direction: column;
+
+          & .details {
+            display: flex;
+            align-items: center;
+            flex-direction: column;
+            margin-top: 4px;
+            text-align: center;
+            & h3 {
+              font: var(--h3);
+              font-weight: 500;
+              font-style: italic;
+            }
+            & > div:first-of-type {
+              position: relative;
+              bottom: 4px;
+              display: flex;
+              align-items: center;
+              margin-bottom: -4px;
+              & .wins,
+              & .streak {
+                font: var(--para-small);
+                font-weight: 300;
+              }
+              & .wins span {
+                font-weight: 400;
+                color: var(--c-status-green);
+              }
+              & .divider {
+                display: inline-block;
+                width: 1px;
+                height: 13px;
+                margin-inline: 13px;
+                background-color: var(--c-para-faded);
+              }
+              & .streak span {
+                font-weight: 400;
+                color: #de9e1e;
+              }
+            }
+
+            & .log {
+              position: relative;
+              display: flex;
+              align-items: center;
+              & span {
+                position: absolute;
+                /* TODO: 0.875? */
+                left: -0.75rem;
+                width: 0.5rem;
+                height: 0.5rem;
+                border-radius: 50%;
+                &[data-user="Logout"] {
+                  background-color: var(--c-status-green);
+                }
+                &[data-user="Login"] {
+                  background-color: var(--c-status-red);
+                }
+              }
+              & a,
+              & button {
+                font: var(--para-regular);
+              }
+              & a {
+                font-weight: 600;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    & footer {
+      margin-top: 0.75rem;
+      padding: 0 1.5rem 0.75rem;
+      & div {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 0.75rem;
+        & a {
+          & svg {
+            display: block;
+            & use {
+              fill: var(--c-para-faded);
+              transition: 0.22s ease-in-out fill;
+            }
+          }
+          &:hover,
+          &:focus-visible,
+          &:active,
+          &[data-key-press="true"] {
+            & svg use {
+              fill: var(--c-heading-1);
+            }
+          }
+        }
+      }
+      & small {
+        display: block;
+        font: var(--para-xx-small);
+        color: var(--c-para-faded-ex);
+      }
+    }
+  }
+}

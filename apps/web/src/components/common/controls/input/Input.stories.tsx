@@ -4,7 +4,7 @@ import { useState } from "react";
 
 import Input from "./Input";
 import CButton from "../button/Button";
-import { Icon } from "@components/common/icon";
+import { Icon } from "@components/common";
 
 const meta: Meta<typeof Input> = {
   title: "Components/Controls/Input",

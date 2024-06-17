@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react";
 import { fn } from "@storybook/test";
 
 import Button from "./Button";
-import { Icon as CIcon } from "@components/common/icon";
+import { Icon as CIcon } from "@components/common";
 
 const meta: Meta<typeof Button> = {
   title: "Components/Controls/Button",
@@ -112,6 +112,7 @@ export const Small: Story = {
 
 export const Icon: Story = {
     argTypes: {
+      // FIXME: Then you don't need to use bell probably.
       size: { options: ["lrg", "xl"] },
     },
     args: {

@@ -12,7 +12,7 @@ import {
 } from "@radix-ui/react-hover-card";
 import { cva } from "class-variance-authority";
 
-import { Image } from "../image";
+import { Image } from "@components/common";
 import { ScrollArea } from "@components/scrollArea";
 
 import s from "./avatar.module.css";
@@ -39,7 +39,7 @@ const avatar = cva(s.avatar, {
 export interface AvatarProps
   extends React.ComponentProps<"div">,
     VariantProps<typeof avatar> {
-  user?: UserCredentials;
+  user?: UserCredentials | { avatar_url: string };
   showProfile?: boolean;
 }
 
@@ -47,16 +47,25 @@ const Avatar = forwardRef<HTMLDivElement, AvatarProps>(
   ({ className, intent, size, user, showProfile = true, ...props }, ref) => {
     const Container = user && showProfile ? ProfileHoverCard : Fragment;
 
+    const ProfileLink = (user as UserCredentials)?.verification_token
+      ? Link
+      : Fragment;
+
     return (
       // @ts-ignore
       <Container
         {...(Container !== Fragment && {
           intent: intent || "primary",
           size: size || "sm",
-          user: user,
+          user: user!,
         })}
       >
-        <Link to={user?.verification_token || ""}>
+        {/* @ts-ignore */}
+        <ProfileLink
+          {...(ProfileLink !== Fragment && {
+            to: (user as UserCredentials).verification_token,
+          })}
+        >
           <div
             ref={ref}
             className={avatar({ className, intent, size })}
@@ -68,7 +77,7 @@ const Avatar = forwardRef<HTMLDivElement, AvatarProps>(
               fill
             />
           </div>
-        </Link>
+        </ProfileLink>
       </Container>
     );
   }
@@ -86,7 +95,7 @@ function ProfileHoverCard({
   const legalName = user.legal_name;
 
   return (
-    <Root open>
+    <Root>
       <Trigger asChild>{children}</Trigger>
 
       <Portal>

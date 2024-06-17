@@ -157,6 +157,12 @@ const iconLib = {
     "aria-label": "Google",
   },
 
+  "hand-cash-48": {
+    id: "info",
+    size: { width: "48", height: "38.17" },
+    "aria-label": "Cash In",
+  },
+
   "info-24": {
     id: "info",
     size: { width: "24", height: "24" },
@@ -201,11 +207,6 @@ const iconLib = {
     "aria-label": "Leaderboard",
   },
 
-  "quote-16": {
-    id: "quote",
-    size: { width: "16.003", height: "12.609" },
-    "aria-label": "Quote",
-  },
   "quote-12": {
     id: "quote",
     size: { width: "12", height: "9.455" },

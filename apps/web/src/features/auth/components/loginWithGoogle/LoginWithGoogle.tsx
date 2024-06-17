@@ -5,7 +5,7 @@ import { useAppSelector } from "@redux/hooks";
 import { selectUserOStateToken } from "@authFeat/redux/authSelectors";
 
 import { Button } from "@components/common/controls";
-import { Icon } from "@components/common/icon";
+import { Icon } from "@components/common";
 import { Spinner } from "@components/loaders";
 
 import s from "./loginWithGoogle.module.css";
@@ -13,7 +13,7 @@ import s from "./loginWithGoogle.module.css";
 import { LoginGoogleTriggerType } from "@authFeat/services/authApi";
 
 export interface LoginWithGoogleProps {
-  queryKey: "register" | "login";
+  queryKey: "register" | "login1" | "login2";
   loginGoogle: LoginGoogleTriggerType;
   setGoogleLoading: React.Dispatch<React.SetStateAction<boolean>>;
   processing: {
