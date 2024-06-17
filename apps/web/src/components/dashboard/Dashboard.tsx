@@ -3,11 +3,9 @@ import { Outlet, useLocation } from "react-router-dom";
 import NavAside from "./aside/Aside";
 import { ChatAside } from "@chatFeat/components/dashboard";
 
-import { Blob } from "@components/common/blob";
-import { Image } from "@components/common/image";
+import { Blob, Image, Icon } from "@components/common";
 import { CashInModal } from "@components/modals";
 import { Button } from "@components/common/controls";
-import { Icon } from "@components/common/icon";
 import { ScrollArea } from "@components/scrollArea";
 
 import logoTitle from "/images/logo-title.svg";
@@ -73,11 +71,9 @@ export function Main({
 }: React.PropsWithChildren<React.ComponentProps<"main">>) {
   return (
     <main {...props}>
-      <div role="presentation" style={{ position: "absolute" }}>
-        <ScrollArea type="always" orientation="vertical">
-          {children}
-        </ScrollArea>
-      </div>
+      <ScrollArea type="always" orientation="vertical">
+        {children}
+      </ScrollArea>
     </main>
   );
 }

@@ -23,8 +23,7 @@ import {
 import { ModalTemplate } from "@components/modals";
 import { Form } from "@components/form";
 import { Button, Input, Select } from "@components/common/controls";
-import { Icon } from "@components/common/icon";
-import { Link } from "@components/common/link";
+import { Icon, Link } from "@components/common";
 import { LoginWithGoogle } from "@authFeat/components/loginWithGoogle";
 import { Spinner } from "@components/loaders";
 

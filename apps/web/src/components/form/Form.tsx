@@ -5,7 +5,7 @@ import { forwardRef, useEffect } from "react";
 
 import { isFetchBaseQueryError } from "@utils/isFetchBaseQueryError";
 
-import { Link } from "@components/common/link";
+import { Link } from "@components/common";
 
 import s from "./form.module.css";
 

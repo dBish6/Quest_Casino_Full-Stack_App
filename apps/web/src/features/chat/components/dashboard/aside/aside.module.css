@@ -1,4 +1,29 @@
 .aside {
   grid-column: 3;
   grid-row: 2;
+  width: 214px;
+  z-index: var(--z-partial);
+  & button.close {
+    position: absolute;
+    top: 50%;
+    /* right: -10px; */
+    right: -8px;
+    transform: translateY(-50%);
+    /* width: 10px; */
+    width: 8px;
+    height: 102px;
+    padding-block: 1rem;
+    border: 2px solid var(--c-purple-border);
+    border-left: none;
+    border-radius: 0 12px 12px 0;
+    background: linear-gradient(180deg, var(--c-purple-500) 0%, #302259 100%);
+    & div {
+      width: 2px;
+      height: 100%;
+      border-radius: 4px;
+      margin-left: 2px;
+      background-color: rgba(25, 17, 47, 0.65);
+      z-index: 5;
+    }
+  }
 }

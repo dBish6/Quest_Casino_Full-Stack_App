@@ -1,11 +1,13 @@
 .dashboard {
   display: grid;
-  grid-template-columns: 254px 1fr 214px;
+  /* grid-template-columns: 254px 1fr 214px; */
+  grid-template-columns: 254px 1fr auto;
   grid-template-rows: 80px 1fr;
   width: 100%;
   height: var(--dashboard-height);
   max-width: 1644px;
-  margin: 2rem auto;
+  margin: var(--dashboard-margin-vert) auto;
+  background: linear-gradient(146deg, #07050e 0%, var(--c-lvl-7) 100%);
 
   & .header {
     grid-column: 2 / span 2;
@@ -14,7 +16,6 @@
     & :global(.blob) {
       top: 8px;
       left: 10px;
-      z-index: -1;
     }
 
     & .inner {
@@ -27,7 +28,6 @@
       border-left: none;
       background-color: var(--c-lvl-1-trns);
       backdrop-filter: blur(35px);
-      z-index: 1;
 
       & > div {
         display: flex;

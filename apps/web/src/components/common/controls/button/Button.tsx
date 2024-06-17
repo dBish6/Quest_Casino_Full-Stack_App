@@ -6,7 +6,7 @@ import { cva } from "class-variance-authority";
 
 import keyPress from "@utils/keyPress";
 
-import { Icon } from "@components/common/icon";
+import { Icon } from "@components/common";
 
 import s from "./button.module.css";
 

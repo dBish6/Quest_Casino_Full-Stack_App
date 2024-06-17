@@ -210,6 +210,7 @@
   --c-lvl-4: #1c1435;
   --c-lvl-5: #1f163b;
   --c-lvl-6: #221841;
+  --c-lvl-7: #251a47;
 
   --c-status-red: #c63b50;
   --c-status-green: #43b25f;
@@ -220,72 +221,61 @@
 
   --c-para: #e3e3e3;
   --c-para-faded: #c1c1c1;
-  --c-para-faded-ex: #87868b /* --c-para-faded: #cecdd2; */ /* Typography */
-      --h1: 700 42px/59px "Enzo OT",
-    sans-serif;
+  --c-para-faded-ex: #87868b;
+  /* --c-para-faded: #cecdd2; */
+
+  /* Typography */
+  /* --h1: 700 42px/59px "Enzo OT", sans-serif;
   --h2: 700 32px/45px "Enzo OT", sans-serif;
-  --h3: 700 24px/34px "Enzo OT", sans-serif; /* 29px for line-height? */
-  --h4: 700 18px/26px "Enzo OT", sans-serif; /* 24px for line-height? */
-  --h4-it: italic 500 18px/26px "Enzo OT", sans-serif;
+  --h3: 700 24px/34px "Enzo OT", sans-serif; 29px for line-height?
+  --h4: 700 18px/26px "Enzo OT", sans-serif; 24px for line-height?
+  --h4-it: italic 500 18px/26px "Enzo OT", sans-serif; */
+  --h1: 700 42px/130% "Enzo OT", sans-serif;
+  --h2: 700 32px/130% "Enzo OT", sans-serif;
+  --h3: 700 24px/130% "Enzo OT", sans-serif;
+  --h4: 700 18px/130% "Enzo OT", sans-serif;
+  --h4-it: italic 500 18px/130% "Enzo OT", sans-serif;
 
-  /* 
-  --h1-clamp: clamp(
-    4.375rem,
-    3.7333650190114067rem + 2.053231939163498vw,
-    6.0625rem
-  );
-  --h2-clamp: clamp(
-    3.1875rem,
-    2.640922053231939rem + 1.7490494296577945vw,
-    4.625rem
-  );
-  --h3-clamp: clamp(
-    2.375rem,
-    1.9710076045627376rem + 1.2927756653992395vw,
-    3.4375rem
-  );
-  --h4-clamp: clamp(2rem, 1.417300380228137rem + 1.064638783269962vw, 2.625rem); */
+  --h1-clamp: clamp(2rem, 1.625rem + 0.975609756097561vw, 2.625rem);
+  --h2-clamp: clamp(1.75rem, 1.6rem + 0.3902439024390244vw, 2rem);
+  --h3-clamp: clamp(1.1875rem, 1rem + 0.4878048780487805vw, 1.5rem);
+  --h4-clamp: clamp(0.9375rem, 0.825rem + 0.2926829268292683vw, 1.125rem);
 
-  /* 20px */
-  --para-large: 400 20px/28.5px "Myriad Pro", sans-serif;
-  --para-medium: 400 18px/28.5px "Myriad Pro", sans-serif; /* Main */
+  /* --para-large: 400 20px/28.5px "Myriad Pro", sans-serif;
+  --para-medium: 400 18px/28.5px "Myriad Pro", sans-serif; Main
   --para-regular: 400 16px/24.5px "Myriad Pro", sans-serif;
   --para-small: 400 14px/23.5px "Myriad Pro", sans-serif;
   --para-x-small: 400 12px/18.5px "Myriad Pro", sans-serif;
   --para-xx-small: 400 10px/17.5px "Myriad Pro", sans-serif;
+  --para-letter-spaceing: 0.18px; */
+  --para-large: 400 20px/158% "Myriad Pro", sans-serif;
+  --para-medium: 400 18px/158% "Myriad Pro", sans-serif; /* Main */
+  --para-regular: 400 16px/158% "Myriad Pro", sans-serif;
+  --para-small: 400 14px/158% "Myriad Pro", sans-serif;
+  --para-x-small: 400 12px/158% "Myriad Pro", sans-serif;
+  --para-xx-small: 400 10px/158% "Myriad Pro", sans-serif;
   --para-letter-spaceing: 0.18px;
 
-  /* 18px to 15px... */
-  /* --para-large-clamp: clamp(
-    1.125rem,
-    0.9824144486692015rem + 0.45627376425855515vw,
-    1.5rem
-  );
+  /* --para-large-clamp: clamp(1.0625rem, 0.95rem + 0.2926829268292683vw, 1.25rem); */
   --para-medium-clamp: clamp(
-    1.0625rem,
-    0.9912072243346007rem + 0.22813688212927757vw,
-    1.25rem
-  );
-  --para-regular-clamp: clamp(
     0.9375rem,
-    0.8662072243346007rem + 0.22813688212927757vw,
+    0.825rem + 0.2926829268292683vw,
     1.125rem
   );
-  --para-small-clamp: clamp(
-    0.8125rem,
-    0.7835648148148148rem + 0.0925925925925926vw,
-    0.875rem
-  ); */
+  /* --para-regular-clamp: clamp(0.8125rem, 0.7rem + 0.2926829268292683vw, 1rem); */
+  --para-small-clamp: clamp(0.75rem, 0.675rem + 0.1951219512195122vw, 0.875rem);
 
   /* Indices */
+  --z-partial: 3;
   --z-dropdown: 5;
   --z-modal: 10;
   --z-toast: 15;
   --z-overlay: 99;
 
+  --dashboard-margin-vert: 2rem;
   --dashboard-height: calc(
-    100vh - 4rem
-  ); /* TODO: Change this in media queries too. */
+    100vh - var(--dashboard-margin-vert) - var(--dashboard-margin-vert)
+  );
 
   background: var(--c-bg);
   color-scheme: dark;
@@ -307,22 +297,23 @@ select {
   -webkit-text-size-adjust: 100%;
 
   font: var(--para-medium);
-  /* font-family: "Myriad Pro"; */
-  /* font-weight: 400; */
   color: var(--c-para);
 }
 
 main {
   grid-column: 2;
-  position: relative;
-
   & .viewport {
-    height: calc(var(--dashboard-height) - 2rem);
-    padding: 2rem 1.5rem;
+    --_padding-vert: 2rem;
+
+    height: calc(
+      var(--dashboard-height) - var(--_padding-vert) - var(--_padding-vert) -
+        1rem
+    );
+    padding: var(--_padding-vert) 1.5rem;
+    border-bottom: 2px solid var(--c-purple-border);
   }
 }
 
-/*  */
 h1,
 h2,
 h3,
@@ -334,7 +325,7 @@ h5 {
 
 p,
 small {
-  /* font-size: var(--para-regular-clamp); */
+  font-size: var(--para-medium-clamp);
   letter-spacing: var(--para-letter-spaceing);
 }
 

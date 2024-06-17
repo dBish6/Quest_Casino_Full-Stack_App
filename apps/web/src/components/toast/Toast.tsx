@@ -19,8 +19,7 @@ import { selectToasts } from "@redux/toast/toastSelectors";
 import { REMOVE_TOAST } from "@redux/toast/toastSlice";
 
 import { Button } from "@components/common/controls";
-import { Icon } from "@components/common/icon";
-import { Link } from "@components/common/link";
+import { Icon, Link } from "@components/common";
 
 import s from "./toast.module.css";
 
@@ -68,6 +67,7 @@ export default function Toast({
   if (link || button)
     messageParts = message.split(link?.sequence || button?.sequence || "");
 
+  // FIXME: Set open when there is toasts length.
   return (
     <Root
       ref={toastRef}

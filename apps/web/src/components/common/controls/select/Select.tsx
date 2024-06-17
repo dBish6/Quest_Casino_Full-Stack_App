@@ -4,7 +4,7 @@ import { forwardRef, useRef } from "react";
 import { Label } from "@radix-ui/react-label";
 import { cva } from "class-variance-authority";
 
-import { Icon } from "@components/common/icon";
+import { Icon } from "@components/common";
 
 import "../input-select.css";
 import s from "./select.module.css";

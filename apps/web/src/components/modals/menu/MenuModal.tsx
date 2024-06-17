@@ -1,12 +1,10 @@
-import type { IconIds } from "@components/common/icon";
-import type { LinkProps } from "@components/common/link";
+import type { IconIds, LinkProps } from "@components/common";
 
 import { Title } from "@radix-ui/react-dialog";
 
 import { ModalTemplate } from "@components/modals";
-import { Link } from "@components/common/link";
+import { Link, Icon } from "@components/common";
 import { Button } from "@components/common/controls";
-import { Icon } from "@components/common/icon";
 
 import s from "./menuModal.module.css";
 

@@ -12,7 +12,7 @@ import {
 } from "@radix-ui/react-hover-card";
 import { cva } from "class-variance-authority";
 
-import { Image } from "../image";
+import { Image } from "@components/common";
 import { ScrollArea } from "@components/scrollArea";
 
 import s from "./avatar.module.css";

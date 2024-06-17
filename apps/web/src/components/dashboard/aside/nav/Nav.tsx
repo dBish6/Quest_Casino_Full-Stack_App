@@ -1,7 +1,6 @@
 import { useLocation } from "react-router-dom";
 
-import { Icon } from "@components/common/icon";
-import { Link } from "@components/common/link";
+import { Icon, Link } from "@components/common";
 import { MenuModal } from "@components/modals";
 import { Select } from "@components/common/controls";
 

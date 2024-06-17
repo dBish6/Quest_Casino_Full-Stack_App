@@ -2,12 +2,9 @@ import { useAppSelector } from "@redux/hooks";
 import { selectUserCredentials } from "@authFeat/redux/authSelectors";
 
 import { ScrollArea } from "@components/scrollArea";
-import { Avatar } from "@components/common/avatar";
-import { Link } from "@components/common/link";
+import { Avatar, Link, Icon, Blob } from "@components/common";
 import { LoginModal } from "@authFeat/components/modals";
 import { Button } from "@components/common/controls";
-import { Icon } from "@components/common/icon";
-import { Blob } from "@components/common/blob";
 import Nav from "./nav/Nav";
 
 import s from "./aside.module.css";
@@ -15,6 +12,8 @@ import s from "./aside.module.css";
 export default function Aside() {
   const user = useAppSelector(selectUserCredentials),
     btnTxt = user ? "Logout" : "Login";
+
+  const currentYear = new Date().getFullYear().toString();
 
   return (
     <aside className={s.aside}>
@@ -77,7 +76,10 @@ export default function Aside() {
               <Icon id="discord-20" />
             </Link>
           </div>
-          <small>Copyright © 2023 Quest Casino</small>
+          <small>
+            Copyright © <time dateTime={currentYear}>{currentYear}</time> Quest
+            Casino
+          </small>
         </footer>
       </div>
     </aside>

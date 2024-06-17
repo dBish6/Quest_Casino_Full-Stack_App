@@ -2,6 +2,7 @@
   grid-column: 1;
   grid-row: span 2;
   position: relative;
+  z-index: var(--z-partial);
   & :global(.blob) {
     top: 45px;
     left: 49%;

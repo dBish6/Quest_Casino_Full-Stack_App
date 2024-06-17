@@ -14,8 +14,7 @@ import useForm from "@hooks/useForm";
 import { ModalTemplate } from "@components/modals";
 import { Form } from "@components/form";
 import { Button, Input } from "@components/common/controls";
-import { Icon } from "@components/common/icon";
-import { Link } from "@components/common/link";
+import { Icon, Link } from "@components/common";
 import { Spinner } from "@components/loaders";
 
 import s from "./cashInModal.module.css";
