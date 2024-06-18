@@ -8,7 +8,7 @@ export default function Error403() {
       </h2>
       <p>
         User authorization or CSRF token is not valid. Please try to{" "}
-        <Link intent="primary" to="/?login=true">
+        <Link intent="primary" to={{ search: "?login1=true" }}>
           log in
         </Link>{" "}
         again.
