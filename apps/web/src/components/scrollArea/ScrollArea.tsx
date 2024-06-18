@@ -18,9 +18,14 @@ const scrollArea = cva(s.scrollArea, {
     intent: {
       primary: s.primary,
     },
+    scrollbarSize: {
+      "3": s.three,
+      "5": s.five,
+    },
   },
   defaultVariants: {
     intent: "primary",
+    scrollbarSize: "3",
   },
 });
 
@@ -32,11 +37,11 @@ export interface ScrollAreaProps
 
 // prettier-ignore
 const ScrollArea = forwardRef<HTMLDivElement, React.PropsWithChildren<ScrollAreaProps>>(
-  ({ children, orientation, className, intent, ...props }, ref) => {
+  ({ children, orientation, className, intent, scrollbarSize, ...props }, ref) => {
     return (
       <Root
         ref={ref}
-        className={scrollArea({ className, intent })}
+        className={scrollArea({ className, intent, scrollbarSize })}
         type="auto"
         {...props}
       >

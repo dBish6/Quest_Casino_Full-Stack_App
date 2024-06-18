@@ -71,7 +71,7 @@ export function Main({
 }: React.PropsWithChildren<React.ComponentProps<"main">>) {
   return (
     <main {...props}>
-      <ScrollArea type="always" orientation="vertical">
+      <ScrollArea scrollbarSize="5" orientation="vertical">
         {children}
       </ScrollArea>
     </main>

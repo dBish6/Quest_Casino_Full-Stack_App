@@ -1,14 +1,32 @@
 & .scrollArea {
-  --radix-scroll-area-thumb-width: 3px;
+  &.three {
+    --scrollbar-size: 3px;
+    & :global(.scrollbar) {
+      margin-inline: 4px;
+    }
+  }
+  &.five {
+    --scrollbar-size: 5px;
+    & :global(.scrollbar) {
+      margin-inline: 6px;
+    }
+  }
 
   &.primary {
     & :global(.scrollbar) {
-      margin: 8px 4px;
+      margin-block: 8px;
       border-radius: 1rem;
       user-select: none;
       touch-action: none;
       background-color: rgba(193, 193, 193, 0.2);
       transition: background-color 0.22s ease-in-out;
+      &[data-orientation="vertical"] {
+        width: var(--scrollbar-size);
+      }
+      &[data-orientation="horizontal"] {
+        --radix-scroll-area-thumb-height: 100%;
+        height: var(--scrollbar-size);
+      }
       & div {
         position: relative;
         border-radius: inherit;
