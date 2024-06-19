@@ -4,7 +4,7 @@
  *
  * Author: David Bishop
  * Creation Date: April 16, 2024
- * Last Updated: June 10, 2024
+ * Last Updated: June 19, 2024
  *
  * Description:
  * .
@@ -21,6 +21,7 @@ import { Navigate, type RouteObject } from "react-router-dom";
 import HistoryProvider from "@utils/History";
 import { ToastsProvider } from "@components/toast";
 
+import { ResourceLoader } from "@components/loaders";
 import { Dashboard } from "@components/dashboard";
 import { RegisterModal } from "@authFeat/components/modals";
 import VerificationHandler from "@components/VerificationHandler";
@@ -46,7 +47,9 @@ export const routes: RouteObject[] = [
         <HistoryProvider />
         <ToastsProvider />
 
-        <Dashboard />
+        <ResourceLoader>
+          <Dashboard />
+        </ResourceLoader>
         <RegisterModal />
         <VerificationHandler />
       </>
