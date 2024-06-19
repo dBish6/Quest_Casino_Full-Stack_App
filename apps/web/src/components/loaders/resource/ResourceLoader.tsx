@@ -1,10 +1,9 @@
-import { FeatureBundle } from "framer-motion";
+import type { FeatureBundle } from "framer-motion";
 import { useRef, useState, useLayoutEffect } from "react";
 
 import delay from "@utils/delay";
 
 import OverlayLoader from "../overlay/OverlayLoader";
-import { Button } from "@components/common/controls";
 
 import s from "./resourceLoader.module.css";
 
@@ -13,47 +12,39 @@ export default function ResourceLoader({
 }: React.PropsWithChildren<{}>) {
   const FramerFeatureBundleRef = useRef<{
       LazyMotion?: React.ElementType;
-      domAnimation?: FeatureBundle;
+      domMax?: FeatureBundle;
     }>({}),
-    [loaded, setLoaded] = useState(false);
+    [loading, setLoading] = useState(false); // I would love to show the loader initially but the portal in the loader breaks hydration.
 
   if (typeof window !== "undefined") {
     useLayoutEffect(() => {
-      if (!loaded) {
+      if (!loading) {
+        setLoading(true);
+
         (async () => {
-          const { LazyMotion, domAnimation } = await import("framer-motion");
+          const { LazyMotion, domMax } = await import("framer-motion");
 
           await delay(700, () => {
-            FramerFeatureBundleRef.current = {
-              LazyMotion: LazyMotion,
-              domAnimation: domAnimation,
-            };
-
-            setLoaded(true);
+            FramerFeatureBundleRef.current = { LazyMotion, domMax };
+            setLoading(false);
           });
         })();
+        s;
       }
     }, []);
   }
 
-  const { LazyMotion, domAnimation } = FramerFeatureBundleRef.current;
-  return !loaded ? (
-    <OverlayLoader message="Loading resources..." />
-  ) : LazyMotion ? (
-    <LazyMotion features={domAnimation} strict>
-      {children}
-    </LazyMotion>
-  ) : (
-    <div role="alert" className={s.error}>
-      <h2>ERROR</h2>
-      <p>Unexpected error loading custom recourses.</p>
-      <Button
-        intent="primary"
-        size="xl"
-        onClick={() => window.location.reload()}
-      >
-        Try Again
-      </Button>
-    </div>
+  const { LazyMotion, domMax } = FramerFeatureBundleRef.current;
+  return (
+    <>
+      {loading && <OverlayLoader message="Loading resources..." />}
+      {LazyMotion ? (
+        <LazyMotion features={domMax} strict>
+          {children}
+        </LazyMotion>
+      ) : (
+        children
+      )}
+    </>
   );
 }

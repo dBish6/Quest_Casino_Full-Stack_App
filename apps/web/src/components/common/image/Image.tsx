@@ -1,4 +1,4 @@
-import { forwardRef, useRef } from "react";
+import { forwardRef, useRef, useEffect } from "react";
 
 import s from "./image.module.css";
 
@@ -15,10 +15,16 @@ export interface ImageProps extends React.ComponentProps<"img"> {
   fill?: boolean;
 }
 
-// FIXME:
+// FIXME: It just gross looking.
 const Image = forwardRef<HTMLImageElement, ImageProps>(
   ({ src, alt, load = true, size, fill, ...props }, ref) => {
-    const containerRef = useRef<HTMLDivElement>(null);
+    const containerRef = useRef<HTMLDivElement>(null),
+      imgRef = useRef<HTMLImageElement | null>(null);
+
+    useEffect(() => {
+      if (load && imgRef.current && imgRef.current.complete)
+        containerRef.current!.setAttribute("data-loaded", "true");
+    }, [imgRef.current]);
 
     return (
       <div
@@ -42,7 +48,13 @@ const Image = forwardRef<HTMLImageElement, ImageProps>(
         }}
       >
         <img
-          ref={ref}
+          ref={(node) =>
+            ref
+              ? typeof ref === "function"
+                ? ref(node)
+                : (ref.current = node)
+              : (imgRef.current = node)
+          }
           src={src}
           alt={alt}
           {...props}
@@ -63,14 +75,6 @@ const Image = forwardRef<HTMLImageElement, ImageProps>(
                   ...props.style,
                 }),
           }}
-          {...(load && {
-            loading: "lazy",
-            onLoad: (e) => {
-              containerRef.current!.setAttribute("data-loaded", "true");
-
-              if (props.onLoad) props.onLoad(e);
-            },
-          })}
         />
       </div>
     );

@@ -5,7 +5,6 @@ import { Provider as ReduxProvider } from "react-redux";
 import store from "@redux/store";
 
 import { routes } from "./App";
-import { ResourceLoader } from "@components/loaders";
 
 function hydrate() {
   const router = createBrowserRouter(routes);
@@ -13,9 +12,7 @@ function hydrate() {
   return hydrateRoot(
     document.getElementById("root")!,
     <ReduxProvider store={store}>
-      <ResourceLoader>
-        <RouterProvider router={router} fallbackElement={null} />
-      </ResourceLoader>
+      <RouterProvider router={router} fallbackElement={null} />
     </ReduxProvider>
   );
 }
