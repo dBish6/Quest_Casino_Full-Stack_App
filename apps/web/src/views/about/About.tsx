@@ -64,6 +64,7 @@ export default function About() {
       <footer>
         <p>learn more about the creator:</p>
         <Link
+          intent="primary"
           to="https://www.davidbishop.info"
           external
           title="The Creator of Quest Casino Personal Website"

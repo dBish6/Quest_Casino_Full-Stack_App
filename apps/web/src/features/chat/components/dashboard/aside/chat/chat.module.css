@@ -1,0 +1,27 @@
+.chat {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 0 1rem 0.5rem;
+  border-top: 2px solid var(--c-purple-border);
+  border-radius: 6px 6px 0 0;
+  background-color: var(--c-lvl-1-trns);
+  backdrop-filter: blur(40px);
+  & > button {
+    position: relative;
+    right: 1rem;
+    width: calc(100% + 2rem) !important;
+  }
+
+  & .head {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    /* margin-top: 3.8px; */
+    & h3 {
+      font: var(--h3);
+    }
+  }
+}

@@ -169,7 +169,7 @@ export default function RegisterModal() {
         (parts[1] ? (
           <>
             {parts[0]}
-            <Link intent="primary" to={{ search: "?login=true" }}>
+            <Link intent="primary" to={{ search: "?login1=true" }}>
               log in
             </Link>
             {parts[1]}

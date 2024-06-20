@@ -92,6 +92,11 @@ const iconLib = {
     "aria-label": "Exit",
   },
 
+  "expand-35": {
+    id: "expand-bold",
+    size: { width: "35.5", height: "15" },
+    "aria-label": "Expand",
+  },
   "expand-23": {
     id: "expand-wide",
     size: { width: "23", height: "12" },
@@ -243,6 +248,18 @@ const iconLib = {
     id: "send",
     size: { width: "18", height: "18.028" },
     "aria-label": "Send",
+  },
+
+  "speech-bubble-24": {
+    id: "speech-bubble",
+    size: { width: "24", height: "21.377" },
+    "aria-label": "Reply",
+  },
+
+  "user-24": {
+    id: "user",
+    size: { width: "23.998", height: "25.844" },
+    "aria-label": "Profile",
   },
 
   "warning-24": {
