@@ -4,7 +4,7 @@
  *
  * Author: David Bishop
  * Creation Date: April 16, 2024
- * Last Updated: June 19, 2024
+ * Last Updated: June 20, 2024
  *
  * Description:
  * .
@@ -49,9 +49,10 @@ export const routes: RouteObject[] = [
 
         <ResourceLoader>
           <Dashboard />
+
+          <RegisterModal />
+          <VerificationHandler />
         </ResourceLoader>
-        <RegisterModal />
-        <VerificationHandler />
       </>
     ),
     children: [
