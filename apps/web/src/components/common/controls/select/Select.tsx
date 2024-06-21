@@ -31,7 +31,7 @@ export interface SelectProps
       "size" | "required" | "onBlur" | "onKeyDown" | "onChange"
     >,
     VariantProps<typeof select> {
-  label: string;
+  label?: string;
   required?: boolean | "show";
   error?: string | null;
   Loader?: () => React.ReactElement;
@@ -76,6 +76,8 @@ export const Select = forwardRef<HTMLSelectElement,React.PropsWithChildren<Selec
             required={required ? true : false}
             {...props}
 
+            // TODO: If there is a label the label should be up.
+            {...(!props.value && props.defaultValue && {style: {color: "var(--_input-fade)"}})}
             onBlur={() =>
               selectContainerRef.current!.removeAttribute("data-focused")
             }

@@ -9,6 +9,8 @@
 }
 
 .aside {
+  --_headHeight: 81.2px;
+
   grid-column: 3;
   grid-row: 2;
   position: relative;
@@ -55,17 +57,20 @@
     & .content {
       display: grid;
       grid-template-rows: auto minmax(0, 1fr);
-      padding: 1.5rem 1rem 81.2px;
+      padding: 1.5rem 1rem var(--_headHeight);
       border-right: 2px solid var(--c-purple-border);
       border-left: 2px solid var(--c-purple-border);
       width: 100%;
       height: 100%;
       background-color: var(--c-lvl-1-trns);
       backdrop-filter: blur(40px);
-      & .head {
+      & .head div {
         display: flex;
         justify-content: center;
         gap: 0.5rem;
+        &[role="button"] {
+          cursor: pointer;
+        }
         & svg {
           transform: translateY(2px);
         }
