@@ -31,7 +31,7 @@ export function Header() {
   const location = useLocation();
 
   return (
-    <header className={s.header}>
+    <header id="dashHeader" className={s.header}>
       <Blob svgWidth="329.838px" svgHeight="65.308px">
         <svg
           xmlns="http://www.w3.org/2000/svg"

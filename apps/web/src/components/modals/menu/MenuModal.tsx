@@ -33,7 +33,7 @@ export default function MenuModal({
       queryKey={`${queryKey}${slide}`}
       width="768px"
       className={s.modal}
-      //   onEscapeKeyDown={() => setErrors({})}
+      // onCloseAutoFocus={() => setErrors({})}
       Trigger={() => (
         <Link
           to={{

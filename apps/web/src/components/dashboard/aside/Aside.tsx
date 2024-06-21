@@ -16,7 +16,7 @@ export default function Aside() {
   const currentYear = new Date().getFullYear().toString();
 
   return (
-    <aside className={s.aside}>
+    <aside id="asideLeft" className={s.aside}>
       <Blob svgWidth="220.83px" svgHeight="201.251px">
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -32,7 +32,7 @@ export default function Aside() {
       <div className={s.inner}>
         <ScrollArea orientation="vertical">
           <div className={s.user}>
-            <Avatar size="xxl" />
+            <Avatar size="xxl" {...(user && { user })} showProfile={false} />
 
             <div className={s.details}>
               {user && (

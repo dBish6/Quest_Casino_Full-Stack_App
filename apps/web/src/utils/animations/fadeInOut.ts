@@ -5,14 +5,14 @@ export default (duration?: { in: number; out: number }): Variants => ({
     opacity: 1,
     transition: {
       ease: "easeInOut",
-      duration: duration?.in,
+      duration: duration?.in || 0.5,
     },
   },
   hidden: {
     opacity: 0,
     transition: {
       ease: "easeOut",
-      duration: duration?.out,
+      duration: duration?.out || 1.75,
     },
   },
 });

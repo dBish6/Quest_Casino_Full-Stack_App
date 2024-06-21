@@ -8,11 +8,13 @@
   max-width: 1644px;
   margin: var(--dashboard-margin-vert) auto;
   background: linear-gradient(146deg, #07050e 0%, var(--c-lvl-7) 100%);
+  overflow: hidden;
 
   & .header {
     grid-column: 2 / span 2;
     grid-row: 1;
     position: relative;
+    z-index: var(--z-partial);
     & :global(.blob) {
       top: 8px;
       left: 10px;

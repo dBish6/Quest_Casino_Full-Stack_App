@@ -136,9 +136,16 @@ export default function Carousel() {
   }, [current]);
 
   return (
-    <div className={s.carContainer}>
+    <div
+      className={s.carContainer}
+      role="group"
+      aria-roledescription="carousel"
+      aria-label="Testimonials Carousel"
+    >
       <div className={s.carousel}>
         <Button
+          aria-label="Previous slide"
+          aria-controls="carouselInner"
           intent="primary"
           size="lrg"
           iconBtn
@@ -152,7 +159,12 @@ export default function Carousel() {
           <Icon id="expand-22" />
         </Button>
         <div className={s.innerWrapper}>
-          <m.div className={s.inner} animate={controls}>
+          <m.div
+            aria-live={interactionRef.current ? "polite" : "off"}
+            id="carouselInner"
+            className={s.inner}
+            animate={controls}
+          >
             {current.testimonials.map((user, i) => (
               <Testimonial
                 key={user.from}
@@ -166,6 +178,8 @@ export default function Carousel() {
           </m.div>
         </div>
         <Button
+          aria-label="Next slide"
+          aria-controls="carouselInner"
           intent="primary"
           size="lrg"
           iconBtn
@@ -214,6 +228,9 @@ function Testimonial({
 
   return (
     <m.article
+      aria-label={`Slide ${index + 1}`}
+      aria-roledescription="Slide"
+      {...(!currentSlide && { "aria-hidden": "true" })}
       className={s.testimonial}
       data-current={currentSlide}
       animate={controls}
@@ -240,15 +257,19 @@ function Testimonial({
 
 function Indicators({ currentSlide }: { currentSlide: number }) {
   return (
-    <div className={s.indicators}>
-      {TESTIMONIALS.map((_, i) => (
-        <span
-          // data-current={
-          //   i === (currentSlide <= 0 ? currentSlide : currentSlide - 1)
-          // }
-          data-current={i === currentSlide}
-        />
-      ))}
+    <div className={s.indicators} role="list" aria-label="Slide indicators">
+      {TESTIMONIALS.map((_, i) => {
+        const currSlide = currentSlide === 0 ? 5 : currentSlide;
+
+        return (
+          <span
+            key={i}
+            role="listitem"
+            aria-label={`Slide ${i + 1}${i + 1 === currSlide ? " Active" : ""}`}
+            aria-current={i + 1 === currSlide}
+          />
+        );
+      })}
     </div>
   );
 }

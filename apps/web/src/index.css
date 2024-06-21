@@ -266,8 +266,8 @@
   --para-small-clamp: clamp(0.75rem, 0.675rem + 0.1951219512195122vw, 0.875rem);
 
   /* Indices */
-  --z-partial: 3;
-  --z-dropdown: 5;
+  --z-partial: 5;
+  /* --z-dropdown: 5; */
   --z-modal: 10;
   --z-toast: 15;
   --z-overlay: 99;
