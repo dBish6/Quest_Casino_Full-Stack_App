@@ -56,7 +56,7 @@ const ModalTemplate = forwardRef<HTMLDivElement, ModalTemplateProps>(
     const [searchParams, setSearchParams] = useSearchParams();
 
     const [modal, setModal] = useState({ show: false, render: false }),
-      fadeVariant = fadeInOut({ in: 0.5, out: 1.75 });
+      fadeVariant = fadeInOut();
 
     const dispatch = useAppDispatch(),
       user = useAppSelector(selectUserCredentials);
