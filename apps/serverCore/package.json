@@ -20,6 +20,7 @@
     "clean": "rm -rf node_modules"
   },
   "dependencies": {
+    "@qc/constants": "*",
     "@qc/server": "*",
     "@qc/utils": "*",
     "body-parser": "^1.20.2",

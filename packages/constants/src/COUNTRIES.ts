@@ -1,3 +1,11 @@
+export interface Country {
+  name: string;
+  abbr: string;
+  callingCode: string;
+  continent: string;
+}
+
+
 export const COUNTRIES = [
   {
     name: "Afghanistan",
