@@ -5,6 +5,8 @@ import type { InitializeUser } from "@authFeat/typings/User";
 
 import querystring from "querystring";
 
+import { COUNTRIES } from "@qc/constants";
+
 import { logger } from "@qc/utils";
 import { createApiError } from "@utils/CustomError";
 import { registerUser } from "./authService";
@@ -59,6 +61,8 @@ export async function loginWithGoogle(
         email,
         email_verified,
         password: "",
+        // prettier-ignore
+        country: COUNTRIES[Math.floor(Math.random() * COUNTRIES.length)].name || "Canada", // The country has to be defaulted. Since we don't have access to their country with Google, they would be prompted to change this.
       };
       await registerUser(regUser);
 
