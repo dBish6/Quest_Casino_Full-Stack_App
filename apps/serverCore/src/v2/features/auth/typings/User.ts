@@ -1,6 +1,7 @@
 import type { ObjectId } from "mongoose";
 import type { JwtPayload } from "jsonwebtoken";
 import RegisterBodyDto from "@qc/typescript/dtos/RegisterBodyDto";
+import { FriendCredentials } from "@qc/typescript/typings/UserCredentials";
 
 export type RegistrationTypes = "standard" | "google";
 export type GetUserBy = "_id" | "email" | "username";
@@ -22,8 +23,9 @@ export interface UserToClaims {
   type: RegistrationTypes;
   legal_name: { first: string; last: string };
   email: string;
+  verification_token?: string;
   username: string;
-  country?: string;
+  country: string;
   region?: string;
   phone_number?: string;
 }
@@ -35,7 +37,7 @@ export interface UserClaims extends JwtPayload {
   email: string;
   username: string;
   verification_token: string;
-  country?: string;
+  country: string;
   region?: string;
   phone_number?: string;
 }
@@ -97,11 +99,12 @@ export interface UserDoc extends SharedDocFields {
    */
   verification_token?: string;
   password: string;
-  country?: string;
+  country: string;
   region?: string;
   phone_number?: string;
   bio?: string;
   balance: number;
+  friends: FriendCredentials[];
   statistics: UserDocStatistics;
   activity: UserDocStatistics;
 }

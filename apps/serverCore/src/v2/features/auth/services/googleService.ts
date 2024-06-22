@@ -1,6 +1,6 @@
 import type { Response } from "express";
 import type { GoogleLoginRequestDto } from "@authFeat/dtos/LoginRequestDto";
-import type UserCredentials from "@qc/typescript/typings/UserCredentials";
+import type { UserCredentials } from "@qc/typescript/typings/UserCredentials";
 import type { InitializeUser } from "@authFeat/typings/User";
 
 import querystring from "querystring";

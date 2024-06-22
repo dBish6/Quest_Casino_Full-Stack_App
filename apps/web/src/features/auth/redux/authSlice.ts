@@ -1,4 +1,4 @@
-import type UserCredentials from "@qc/typescript/typings/UserCredentials";
+import type { UserCredentials } from "@qc/typescript/typings/UserCredentials";
 import { type PayloadAction, createSlice } from "@reduxjs/toolkit";
 
 /**

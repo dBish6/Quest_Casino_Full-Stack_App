@@ -1,5 +1,5 @@
 import type { ThunkDispatch, UnknownAction } from "@reduxjs/toolkit";
-import type UserCredentials from "@qc/typescript/typings/UserCredentials";
+import type { UserCredentials } from "@qc/typescript/typings/UserCredentials";
 import type {
   ApiResponse,
   SuccessResponse,
