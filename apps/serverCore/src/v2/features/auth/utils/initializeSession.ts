@@ -1,9 +1,10 @@
 import type { Response } from "express";
 import type { ObjectId } from "mongoose";
-import type UserCredentials from "@qc/typescript/typings/UserCredentials";
+import type { UserCredentials } from "@qc/typescript/typings/UserCredentials";
 import type {
   GetUserBy,
-  UserDoc,
+  User,
+  UserToClaims,
   RegistrationTypes,
 } from "@authFeat/typings/User";
 
@@ -72,7 +73,7 @@ export default async function initializeSession(
   }
 }
 
-function formatUserToClaims(user: UserDoc) {
+function formatUserToClaims(user: User): UserToClaims {
   return {
     _id: user._id,
     type: user.type as RegistrationTypes,
@@ -86,7 +87,7 @@ function formatUserToClaims(user: UserDoc) {
   };
 }
 
-function formatClientUser(user: UserDoc): UserCredentials {
+function formatClientUser(user: User): UserCredentials {
   const { _id, email, verification_token, ...shared } =
     formatUserToClaims(user);
   return {
@@ -95,6 +96,7 @@ function formatClientUser(user: UserDoc): UserCredentials {
     email_verified: user.email_verified,
     ...(user.email_verified && { verification_token }),
     balance: user.balance,
+    friends: user.friends,
     statistics: {
       losses: user.statistics.losses,
       wins: user.statistics.wins,

@@ -1,7 +1,8 @@
 import type { ObjectId } from "mongoose";
 import type { JwtPayload } from "jsonwebtoken";
-import RegisterBodyDto from "@qc/typescript/dtos/RegisterBodyDto";
-import { FriendCredentials } from "@qc/typescript/typings/UserCredentials";
+import type RegisterBodyDto from "@qc/typescript/dtos/RegisterBodyDto";
+import type { FriendCredentials } from "@qc/typescript/typings/UserCredentials";
+import type DefaultDocFields from "@typings/DefaultDocFields";
 
 export type RegistrationTypes = "standard" | "google";
 export type GetUserBy = "_id" | "email" | "username";
@@ -42,48 +43,10 @@ export interface UserClaims extends JwtPayload {
   phone_number?: string;
 }
 
-interface SharedDocFields {
-  created_at: Date;
-  updated_at: Date;
-}
-
-export interface UserDocStatistics extends SharedDocFields {
-  _id: ObjectId;
-  losses: {
-    total: number;
-    table: number;
-    slots: number;
-    dice: number;
-  };
-  wins: {
-    total: number;
-    table: number;
-    slots: number;
-    dice: number;
-    streak: number;
-    win_rate: number;
-  };
-  completed_quests: Map<string, boolean>;
-}
-
-export interface UserDocActivity extends SharedDocFields {
-  _id: ObjectId;
-  history: {
-    game_name: string;
-    result: {
-      outcome: "win" | "loss";
-      earnings: number;
-    };
-    timestamp: Date;
-  }[];
-  recently_played?: string;
-  activity_timestamp: Date;
-}
-
 /**
- * User fields within the document in the database.
+ * All fields within a user document.
  */
-export interface UserDoc extends SharedDocFields {
+export interface User extends DefaultDocFields {
   _id: ObjectId;
   type: string;
   avatar_url?: string;
@@ -108,3 +71,38 @@ export interface UserDoc extends SharedDocFields {
   statistics: UserDocStatistics;
   activity: UserDocStatistics;
 }
+
+export interface UserDocStatistics extends Document, DefaultDocFields {
+  _id: ObjectId;
+  losses: {
+    total: number;
+    table: number;
+    slots: number;
+    dice: number;
+  };
+  wins: {
+    total: number;
+    table: number;
+    slots: number;
+    dice: number;
+    streak: number;
+    win_rate: number;
+  };
+  completed_quests: Map<string, boolean>;
+}
+
+export interface UserDocActivity extends Document, DefaultDocFields {
+  _id: ObjectId;
+  history: {
+    game_name: string;
+    result: {
+      outcome: "win" | "loss";
+      earnings: number;
+    };
+    timestamp: Date;
+  }[];
+  recently_played?: string;
+  activity_timestamp: Date;
+}
+
+export interface UserDoc extends Document, User {}
