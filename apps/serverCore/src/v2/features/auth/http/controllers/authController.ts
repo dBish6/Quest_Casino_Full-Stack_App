@@ -6,19 +6,19 @@
  */
 
 import type { Request, Response, NextFunction } from "express";
-import RegisterRequestDto from "@authFeat/dtos/RegisterRequestDto";
+import RegisterRequestDto from "@authFeatHttp/dtos/RegisterRequestDto";
 import {
   LoginRequestDto,
   GoogleLoginRequestDto,
-} from "@authFeat/dtos/LoginRequestDto";
+} from "@authFeatHttp/dtos/LoginRequestDto";
 
 import { logger } from "@qc/utils";
-import { createApiError } from "@utils/CustomError";
-import initializeSession from "@authFeat/utils/initializeSession";
+import { handleApiError } from "@utils/handleError";
+import initializeSession from "@authFeatHttp/utils/initializeSession";
 
-import * as authService from "@authFeat/services/authService";
-import { loginWithGoogle } from "@authFeat/services/googleService";
-import { deleteCsrfToken } from "@authFeat/services/csrfService";
+import * as authService from "@authFeatHttp/services/authService";
+import { loginWithGoogle } from "@authFeatHttp/services/googleService";
+import { deleteCsrfToken } from "@authFeatHttp/services/csrfService";
 
 /**
  * Send all users as client formatted users.
@@ -38,7 +38,7 @@ export async function getUsers(
       users: clientUsers,
     });
   } catch (error: any) {
-    next(createApiError(error, "getUsers controller error.", 500));
+    next(handleApiError(error, "getUsers controller error.", 500));
   }
 }
 
@@ -66,7 +66,7 @@ export async function getUser(req: Request, res: Response, next: NextFunction) {
       user: clientUser,
     });
   } catch (error: any) {
-    next(createApiError(error, "getUser controller error.", 500));
+    next(handleApiError(error, "getUser controller error.", 500));
   }
 }
 
@@ -89,7 +89,7 @@ export async function register(
         ERROR:
           "A user with this email address already exists. Please try using a different email address.",
       });
-    // TODO: Unique usernames.
+
     await authService.registerUser({ ...req.body, type: "standard" });
 
     return res.status(200).json({
@@ -97,7 +97,7 @@ export async function register(
         "Successfully registered! You can now log in with your newly created profile.",
     });
   } catch (error: any) {
-    next(createApiError(error, "register controller error.", 500));
+    next(handleApiError(error, "register controller error.", 500));
   }
 }
 
@@ -132,7 +132,7 @@ export async function login(
       user: clientUser,
     });
   } catch (error: any) {
-    next(createApiError(error, "login controller error.", 500));
+    next(handleApiError(error, "login controller error.", 500));
   }
 }
 /**
@@ -155,7 +155,7 @@ export async function loginGoogle(
       user: clientUser,
     });
   } catch (error: any) {
-    next(createApiError(error, "loginGoogle controller error.", 500));
+    next(handleApiError(error, "loginGoogle controller error.", 500));
   }
 }
 
@@ -181,7 +181,7 @@ export async function emailVerify(
       .status(200)
       .json({ message: "Email address successfully verified.", user: result });
   } catch (error: any) {
-    next(createApiError(error, "emailVerify controller error.", 500));
+    next(handleApiError(error, "emailVerify controller error.", 500));
   }
 }
 /**
@@ -203,7 +203,7 @@ export async function sendVerifyEmail(
         "Verification email successfully sent. If you can't find it in your inbox, please check your spam or junk folder.",
     });
   } catch (error: any) {
-    next(createApiError(error, "sendVerifyEmail controller error.", 500));
+    next(handleApiError(error, "sendVerifyEmail controller error.", 500));
   }
 }
 
@@ -224,7 +224,7 @@ export async function logout(req: Request, res: Response, next: NextFunction) {
       .clearCookie("session")
       .json({ message: "Session cleared, log out successful." });
   } catch (error: any) {
-    next(createApiError(error, "logout controller error.", 500));
+    next(handleApiError(error, "logout controller error.", 500));
   }
 }
 
@@ -241,7 +241,7 @@ export async function clear(req: Request, res: Response, next: NextFunction) {
       message: "All refresh and csrf tokens successfully removed.",
     });
   } catch (error: any) {
-    next(createApiError(error, "clear controller error.", 500));
+    next(handleApiError(error, "clear controller error.", 500));
   }
 }
 
@@ -264,6 +264,6 @@ export async function deleteUser(
       .status(200)
       .json({ message: `User ${userId} successfully deleted.` });
   } catch (error: any) {
-    next(createApiError(error, "deleteUser controller error.", 500));
+    next(handleApiError(error, "deleteUser controller error.", 500));
   }
 }

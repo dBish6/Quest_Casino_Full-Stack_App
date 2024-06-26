@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { logger } from "@qc/utils";
-import { ApiError } from "@utils/CustomError";
+import { ApiError } from "@utils/handleError";
 
 export default function apiErrorHandler(
   error: ApiError | Error,

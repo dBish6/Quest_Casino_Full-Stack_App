@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { createApiError } from "@utils/CustomError";
+import { handleApiError } from "@utils/handleError";
 import { redisClient } from "@cache";
 
 /**
@@ -32,6 +32,6 @@ export default async function verifyCsrfToken(
     console.log("Csrf token successfully verified.");
     next();
   } catch (error: any) {
-    next(createApiError(error, "verifyCsrfToken middleware error.", 500));
+    next(handleApiError(error, "verifyCsrfToken middleware error.", 500));
   }
 }

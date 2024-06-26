@@ -1,8 +1,8 @@
 import { Router } from "express";
-import { verifyUserToken, verifyCsrfToken } from "../middleware/tokens";
-import { validateRegister, validateLogin } from "@authFeat/middleware/formValidation";
-import validateGoogleLogin from "@authFeat/middleware/validateGoogleLogin";
-import * as authController from "../controllers/authController";
+import { verifyUserToken, verifyCsrfToken } from "@authFeatHttp/middleware/tokens";
+import { validateRegister, validateLogin } from "@authFeatHttp/middleware/formValidation";
+import validateGoogleLogin from "@authFeatHttp/middleware/validateGoogleLogin";
+import * as authController from "@authFeatHttp/controllers/authController";
 
 const router = Router();
 

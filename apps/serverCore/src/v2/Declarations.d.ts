@@ -1,9 +1,16 @@
-import { Request } from "express";
-import { UserClaims } from "@authFeat/typings/User";
+import type { Request } from "express";
+import type { UserClaims } from "@authFeatHttp/typings/User";
 
 declare module "express-serve-static-core" {
   interface Request {
     loginMethod?: "email" | "username";
+    decodedClaims?: UserClaims;
+  }
+}
+
+declare module "http" {
+  interface IncomingMessage {
+    _query?: any;
     decodedClaims?: UserClaims;
   }
 }

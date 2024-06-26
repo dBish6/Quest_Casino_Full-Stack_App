@@ -1,17 +1,20 @@
-import { type Model, Schema } from "mongoose";
+import type { Model } from "mongoose";
 import type {
   UserDoc,
   UserDocStatistics,
   UserDocActivity,
-} from "@authFeat/typings/User";
-import shared from "../shared";
+} from "@authFeatHttp/typings/User";
+import type { FriendCredentials } from "@qc/typescript/typings/UserCredentials";
+
+import { Schema } from "mongoose";
+import defaults from "@utils/schemaDefaults";
 
 export const userStatisticsSchema = new Schema<
   UserDocStatistics,
   Model<UserDocStatistics>
 >(
   {
-    _id: { type: Schema.ObjectId },
+    _id: { type: Schema.ObjectId, immutable: true },
     losses: {
       _id: false,
       type: {
@@ -49,7 +52,7 @@ export const userStatisticsSchema = new Schema<
   },
   {
     collection: "user_statistics",
-    ...shared.options,
+    ...defaults.options,
   }
 );
 
@@ -58,7 +61,7 @@ export const userActivitySchema = new Schema<
   Model<UserDocActivity>
 >(
   {
-    _id: { type: Schema.ObjectId },
+    _id: { type: Schema.ObjectId, immutable: true },
     history: {
       type: [
         {
@@ -77,13 +80,13 @@ export const userActivitySchema = new Schema<
   },
   {
     collection: "user_activity",
-    ...shared.options,
+    ...defaults.options,
   }
 );
 
 const userSchema = new Schema<UserDoc, Model<UserDoc>>(
   {
-    _id: { type: Schema.ObjectId },
+    _id: { type: Schema.ObjectId, immutable: true },
     type: {
       type: String,
       enum: {
@@ -110,14 +113,14 @@ const userSchema = new Schema<UserDoc, Model<UserDoc>>(
     email_verified: { type: Boolean, default: false },
     username: {
       type: String,
-      min: [3, "username field is less than the min of 3 characters."],
-      max: [24, "username field exceeds the max of 24 characters."],
+      minlength: [3, "username field is less than the min of 3 characters."],
+      maxlength: [24, "username field exceeds the max of 24 characters."],
       unique: true,
       required: true,
     },
     verification_token: { type: String },
     password: { type: String, required: true },
-    country: { type: String },
+    country: { type: String, required: true },
     region: { type: String },
     phone_number: {
       type: String,
@@ -132,9 +135,32 @@ const userSchema = new Schema<UserDoc, Model<UserDoc>>(
     },
     bio: {
       type: String,
-      max: [338, "bio field exceeds the max of 338 characters."],
+      maxlength: [338, "bio field exceeds the max of 338 characters."],
     },
     balance: { type: Number, default: 0 },
+    // TODO:
+    friends: {
+      _id: false,
+      type: [
+        {
+          avatar_url: { type: String },
+          legal_name: {
+            _id: false,
+            type: { first: { type: String }, last: { type: String } },
+            required: true,
+          },
+          username: { type: String, required: true },
+          verification_token: { type: String },
+          country: { type: String, required: true },
+          bio: { type: String },
+        },
+      ],
+      validate: {
+        validator: (friends: FriendCredentials[]) => friends.length <= 25,
+        message: "friends field exceeded the max of 25 friends.",
+      },
+      // default: [],
+    },
     statistics: {
       type: Schema.ObjectId,
       ref: "statistics",
@@ -146,7 +172,7 @@ const userSchema = new Schema<UserDoc, Model<UserDoc>>(
       required: true,
     },
   },
-  { collection: "user", ...shared.options }
+  { collection: "user", ...defaults.options }
 );
 
 export default userSchema;

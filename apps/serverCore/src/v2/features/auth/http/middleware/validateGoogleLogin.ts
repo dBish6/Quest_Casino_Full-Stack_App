@@ -1,11 +1,11 @@
 import type { Response, NextFunction } from "express";
-import type { GoogleLoginRequestDto } from "@authFeat/dtos/LoginRequestDto";
+import type { GoogleLoginRequestDto } from "@authFeatHttp/dtos/LoginRequestDto";
 
 import { randomUUID } from "crypto";
 import { compare } from "bcrypt";
 
 import { logger } from "@qc/utils";
-import { createApiError } from "@utils/CustomError";
+import { handleApiError } from "@utils/handleError";
 
 /**
  * Validates the Google credentials (code, state) if they are valid.
@@ -29,6 +29,6 @@ export default async function validateGoogleLogin(
     logger.info("Google login successfully validated.");
     next();
   } catch (error) {
-    next(createApiError(error, "validateGoogleLogin middleware error.", 500));
+    next(handleApiError(error, "validateGoogleLogin middleware error.", 500));
   }
 }

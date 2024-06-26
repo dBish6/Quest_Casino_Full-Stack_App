@@ -1,13 +1,13 @@
 import type { Response, NextFunction } from "express";
-import type { LoginRequestDto } from "@authFeat/dtos/LoginRequestDto";
+import type { LoginRequestDto } from "@authFeatHttp/dtos/LoginRequestDto";
 
 import { compare } from "bcrypt";
 
 import { logger } from "@qc/utils";
-import { createApiError } from "@utils/CustomError";
-import validateEmail from "@authFeat/utils/validateEmail";
+import { handleApiError } from "@utils/handleError";
+import validateEmail from "@authFeatHttp/utils/validateEmail";
 
-import { getUser } from "@authFeat/services/authService";
+import { getUser } from "@authFeatHttp/services/authService";
 
 /**
  * Validates the standard login form fields.
@@ -43,6 +43,6 @@ export default async function validateLogin(
     logger.info("Login form submission successfully validated.");
     next();
   } catch (error) {
-    next(createApiError(error, "validateLogin middleware error.", 500));
+    next(handleApiError(error, "validateLogin middleware error.", 500));
   }
 }

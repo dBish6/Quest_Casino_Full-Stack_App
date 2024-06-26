@@ -1,16 +1,16 @@
 import type { Response } from "express";
-import type { GoogleLoginRequestDto } from "@authFeat/dtos/LoginRequestDto";
+import type { GoogleLoginRequestDto } from "@authFeatHttp/dtos/LoginRequestDto";
 import type { UserCredentials } from "@qc/typescript/typings/UserCredentials";
-import type { InitializeUser } from "@authFeat/typings/User";
+import type { InitializeUser } from "@authFeatHttp/typings/User";
 
 import querystring from "querystring";
 
 import { COUNTRIES } from "@qc/constants";
 
 import { logger } from "@qc/utils";
-import { createApiError } from "@utils/CustomError";
+import { handleApiError } from "@utils/handleError";
 import { registerUser } from "./authService";
-import initializeSession from "@authFeat/utils/initializeSession";
+import initializeSession from "@authFeatHttp/utils/initializeSession";
 
 interface FetchAccessTokenSuccessDataDto {
   access_token: string;
@@ -75,7 +75,7 @@ export async function loginWithGoogle(
       return clientUser;
     }
   } catch (error: any) {
-    throw createApiError(error, "loginWithGoogle service error.", 500);
+    throw handleApiError(error, "loginWithGoogle service error.", 500);
   }
 }
 
@@ -101,7 +101,7 @@ async function fetchAccessTokenToken(code: string, redirectUri: string) {
 
     if (!res.ok) {
       logger.error("fetchAccessTokenToken error:", data);
-      throw createApiError(
+      throw handleApiError(
         Error("Received a bad status from token request."),
         "fetchAccessTokenToken error.",
         403
@@ -110,7 +110,7 @@ async function fetchAccessTokenToken(code: string, redirectUri: string) {
 
     return data.access_token;
   } catch (error) {
-    throw createApiError(error, "fetchIdToken error.", 500);
+    throw handleApiError(error, "fetchIdToken error.", 500);
   }
 }
 
@@ -127,7 +127,7 @@ async function fetchUserInfo(token: string) {
     logger.info("google fetchUserInfo", res.status);
 
     if (!res.ok)
-      throw createApiError(
+      throw handleApiError(
         new Error("Failed to fetch user info"),
         "fetchUserInfo error",
         500
@@ -135,6 +135,6 @@ async function fetchUserInfo(token: string) {
 
     return data;
   } catch (error) {
-    throw createApiError(error, "fetchUserInfo error.", 500);
+    throw handleApiError(error, "fetchUserInfo error.", 500);
   }
 }

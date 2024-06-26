@@ -6,11 +6,11 @@
  */
 
 import type { Secret, SignOptions } from "jsonwebtoken";
-import type { UserToClaims } from "@authFeat/typings/User";
+import type { UserToClaims } from "@authFeatHttp/typings/User";
 
 import jwt from "jsonwebtoken";
 
-import { createApiError } from "@utils/CustomError";
+import { handleApiError } from "@utils/handleError";
 import { redisClient } from "@cache";
 
 export class GenerateUserJWT {
@@ -32,7 +32,7 @@ export class GenerateUserJWT {
     try {
       return this.#token(process.env.ACCESS_TOKEN_SECRET!, options);
     } catch (error: any) {
-      throw createApiError(
+      throw handleApiError(
         error,
         "generateJWT service error; generating access token.",
         500
@@ -54,7 +54,7 @@ export class GenerateUserJWT {
 
       return refreshToken;
     } catch (error: any) {
-      throw createApiError(
+      throw handleApiError(
         error,
         "generateJWT service error; generating refresh token.",
         500
@@ -67,7 +67,7 @@ export const isRefreshTokenValid = async (userId: string, token: string) => {
   try {
     return await redisClient.sIsMember(`user:${userId}:refresh_tokens`, token);
   } catch (error: any) {
-    throw createApiError(error, "isRefreshTokenValid service error.", 500);
+    throw handleApiError(error, "isRefreshTokenValid service error.", 500);
   }
 };
 
@@ -75,7 +75,7 @@ export async function clearSession(userId: string, refreshToken: string) {
   try {
     await redisClient.sRem(`user:${userId}:refresh_tokens`, refreshToken);
   } catch (error: any) {
-    throw createApiError(error, "clearSession service error.", 500);
+    throw handleApiError(error, "clearSession service error.", 500);
   }
 }
 
@@ -83,6 +83,6 @@ export async function clearAllSessions(userId: string) {
   try {
     await redisClient.del(`user:${userId}:refresh_tokens`);
   } catch (error: any) {
-    throw createApiError(error, "clearAllSessions service error.", 500);
+    throw handleApiError(error, "clearAllSessions service error.", 500);
   }
 }

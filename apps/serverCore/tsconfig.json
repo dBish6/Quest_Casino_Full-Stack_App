@@ -9,8 +9,15 @@
       "@cache": ["./src/v2/cache.ts"],
 
       "@authFeat/*": ["./src/v2/features/auth/*"],
+      "@authFeatHttp/*": ["./src/v2/features/auth/http/*"],
+      "@authFeatSocket/*": ["./src/v2/features/auth/socket/*"],
+
       "@chatFeat/*": ["./src/v2/features/chat/*"],
+      "@chatFeatHttp/*": ["./src/v2/features/chat/http/*"],
+      "@chatFeatSocket/*": ["./src/v2/features/chat/socket/*"],
+
       "@csrfFeat/*": ["./src/v2/features/csrf/*"],
+
       "@gamesFeat/*": ["./src/v2/features/games/*"],
 
       "@middleware/*": ["./src/v2/middleware/*"],

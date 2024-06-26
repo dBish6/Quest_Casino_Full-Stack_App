@@ -1,6 +1,6 @@
 import { randomUUID } from "crypto";
 
-import { createApiError } from "@utils/CustomError";
+import { handleApiError } from "@utils/handleError";
 import { redisClient } from "@cache";
 
 export async function generateCsrfToken(userId: string) {
@@ -10,7 +10,7 @@ export async function generateCsrfToken(userId: string) {
 
     return csrfToken;
   } catch (error) {
-    throw createApiError(error, "generateCsrfToken service error.", 500);
+    throw handleApiError(error, "generateCsrfToken service error.", 500);
   }
 }
 
@@ -18,7 +18,7 @@ export async function deleteCsrfToken(userId: string, csrfToken: string) {
   try {
     await redisClient.sRem(`user:${userId}:csrf_tokens`, csrfToken);
   } catch (error) {
-    throw createApiError(error, "deleteCsrfToken service error.", 500);
+    throw handleApiError(error, "deleteCsrfToken service error.", 500);
   }
 }
 
@@ -26,6 +26,6 @@ export async function deleteAllCsrfTokens(userId: string) {
   try {
     await redisClient.del(`user:${userId}:csrf_tokens`);
   } catch (error) {
-    throw createApiError(error, "deleteAllCsrfTokens service error.", 500);
+    throw handleApiError(error, "deleteAllCsrfTokens service error.", 500);
   }
 }

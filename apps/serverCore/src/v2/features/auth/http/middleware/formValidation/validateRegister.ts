@@ -1,10 +1,10 @@
 import type { Response, NextFunction } from "express";
 import type RegisterBodyDto from "@qc/typescript/dtos/RegisterBodyDto";
-import type RegisterRequestDto from "@authFeat/dtos/RegisterRequestDto";
+import type RegisterRequestDto from "@authFeatHttp/dtos/RegisterRequestDto";
 
 import { logger } from "@qc/utils";
-import { createApiError } from "@utils/CustomError";
-import validateEmail from "@authFeat/utils/validateEmail";
+import { handleApiError } from "@utils/handleError";
+import validateEmail from "@authFeatHttp/utils/validateEmail";
 
 /**
  * Validates the standard register form fields.
@@ -40,7 +40,7 @@ export default async function validateRegister(
       });
     }
   } catch (error) {
-    next(createApiError(error, "validateRegister middleware error.", 500));
+    next(handleApiError(error, "validateRegister middleware error.", 500));
   }
 }
 

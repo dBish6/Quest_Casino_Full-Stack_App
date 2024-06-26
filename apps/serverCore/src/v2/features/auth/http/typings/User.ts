@@ -1,4 +1,4 @@
-import type { ObjectId } from "mongoose";
+import type { Document, ObjectId } from "mongoose";
 import type { JwtPayload } from "jsonwebtoken";
 import type RegisterBodyDto from "@qc/typescript/dtos/RegisterBodyDto";
 import type { FriendCredentials } from "@qc/typescript/typings/UserCredentials";
@@ -105,4 +105,6 @@ export interface UserDocActivity extends Document, DefaultDocFields {
   activity_timestamp: Date;
 }
 
-export interface UserDoc extends Document, User {}
+export interface UserDoc extends Document, User {
+  _id: ObjectId;
+}

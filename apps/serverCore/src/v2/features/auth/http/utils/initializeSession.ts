@@ -6,16 +6,16 @@ import type {
   User,
   UserToClaims,
   RegistrationTypes,
-} from "@authFeat/typings/User";
+} from "@authFeatHttp/typings/User";
 
-import { createApiError } from "@utils/CustomError";
+import { handleApiError } from "@utils/handleError";
 
-import { getUser } from "@authFeat/services/authService";
-import { GenerateUserJWT } from "@authFeat/services/jwtService";
+import { getUser } from "@authFeatHttp/services/authService";
+import { GenerateUserJWT } from "@authFeatHttp/services/jwtService";
 import {
   deleteCsrfToken,
   generateCsrfToken,
-} from "@authFeat/services/csrfService";
+} from "@authFeatHttp/services/csrfService";
 
 interface Identifier {
   by: GetUserBy;
@@ -69,7 +69,7 @@ export default async function initializeSession(
 
     return formatClientUser(user);
   } catch (error: any) {
-    throw createApiError(error, "initializeSession error.", 500);
+    throw handleApiError(error, "initializeSession error.", 500);
   }
 }
 

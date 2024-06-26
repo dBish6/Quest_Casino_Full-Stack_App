@@ -6,7 +6,7 @@
  */
 
 import type { ObjectId } from "mongoose";
-import type { GetUserBy, InitializeUser } from "@authFeat/typings/User";
+import type { GetUserBy, InitializeUser } from "@authFeatHttp/typings/User";
 
 import { Types } from "mongoose";
 import { hash } from "bcrypt";
@@ -16,17 +16,17 @@ import { dirname, resolve } from "path";
 import { fileURLToPath } from "url";
 
 import { logger } from "@qc/utils";
-import { createApiError } from "@utils/CustomError";
+import { handleApiError } from "@utils/handleError";
 import sendEmail from "@utils/sendEmail";
 
-import { User, UserStatistics, UserActivity } from "@authFeat/models";
+import { User, UserStatistics, UserActivity } from "@authFeatHttp/models";
 import { redisClient } from "@cache";
 
 import { clearAllSessions } from "./jwtService";
 import { deleteAllCsrfTokens } from "./csrfService";
 
 const CLIENT_USER_SHARED_EXCLUDE = "-_id -created_at -updated_at",
-  CLIENT_USER_FIELDS = `${CLIENT_USER_SHARED_EXCLUDE} -verification_token -password -activity`;
+  CLIENT_USER_FIELDS = `${CLIENT_USER_SHARED_EXCLUDE} -email -verification_token -password -activity`;
 
 function populateUser(userQuery: any, forClient?: boolean) {
   if (forClient) {
@@ -49,7 +49,7 @@ export async function getUsers(forClient?: boolean) {
 
     return await query.exec();
   } catch (error: any) {
-    throw createApiError(error, "getUsers service error.", 500);
+    throw handleApiError(error, "getUsers service error.", 500);
   }
 }
 
@@ -67,7 +67,7 @@ export async function getUser(
 
     return await query.exec();
   } catch (error: any) {
-    throw createApiError(error, "getUser service error.", 500);
+    throw handleApiError(error, "getUser service error.", 500);
   }
 }
 
@@ -111,7 +111,7 @@ export async function registerUser(user: InitializeUser) {
       `User ${newUser._id} was successfully registered in the database.`
     );
   } catch (error: any) {
-    throw createApiError(error, "registerUser service error.", 500);
+    throw handleApiError(error, "registerUser service error.", 500);
   }
 }
 
@@ -142,7 +142,7 @@ export async function emailVerify(userId: string, verificationToken: string) {
 
     return query;
   } catch (error: any) {
-    throw createApiError(error, "emailVerify service error.", 500);
+    throw handleApiError(error, "emailVerify service error.", 500);
   }
 }
 /**
@@ -173,7 +173,7 @@ export async function sendVerifyEmail(
 
     const info = await sendEmail(email, "Email Verification", html);
     if (info.rejected.length)
-      throw createApiError(
+      throw handleApiError(
         Error(
           "Your email was rejected by our SMTP server during sending. Please consider using a different email address. If the issue persists, feel free to reach out to support."
         ),
@@ -181,7 +181,7 @@ export async function sendVerifyEmail(
         541
       );
   } catch (error: any) {
-    throw createApiError(error, "sendVerifyEmail service error.", 500);
+    throw handleApiError(error, "sendVerifyEmail service error.", 500);
   }
 }
 
@@ -190,13 +190,34 @@ export async function sendVerifyEmail(
  */
 export async function updateActivityTimestamp(userId: ObjectId | string) {
   try {
-    await User.findOneAndUpdate(
+    // TODO:
+    await UserStatistics.findOneAndUpdate(
       { _id: userId },
-      { $set: { activity_timestamp: new Date() } },
-      { runValidators: true }
+      { activity_timestamp: new Date() }
     );
+    // await User.findOneAndUpdate(
+    //   { _id: userId },
+    //   { "activity.activity_timestamp": new Date() },
+    //   { runValidators: true }
+    // );
   } catch (error: any) {
-    throw createApiError(error, "updateActivityTimestamp service error.", 500);
+    throw handleApiError(error, "updateActivityTimestamp service error.", 500);
+  }
+}
+
+/**
+ * ...
+ */
+// TODO:
+export async function updateProfile(userId: ObjectId | string) {
+  try {
+    // await User.findOneAndUpdate(
+    //   { _id: userId },
+    //
+    //   { runValidators: true }
+    // );
+  } catch (error: any) {
+    throw handleApiError(error, "updateUser service error.", 500);
   }
 }
 
@@ -210,7 +231,7 @@ export async function wipeUser(userId: ObjectId | string) {
       deleteAllCsrfTokens(userId.toString()),
     ]);
   } catch (error: any) {
-    throw createApiError(error, "deleteUser service error.", 500);
+    throw handleApiError(error, "deleteUser service error.", 500);
   }
 }
 
@@ -224,6 +245,6 @@ export async function deleteUser(userId: ObjectId | string) {
       clearAllSessions(userId.toString()),
     ]);
   } catch (error: any) {
-    throw createApiError(error, "deleteUser service error.", 500);
+    throw handleApiError(error, "deleteUser service error.", 500);
   }
 }

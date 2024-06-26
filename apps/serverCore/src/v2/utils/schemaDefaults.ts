@@ -1,6 +1,6 @@
 import type { SchemaOptions, SchemaDefinition } from "mongoose";
 
-const shared: {
+const defaults: {
   fields: SchemaDefinition;
   options: SchemaOptions<any>;
 } = {
@@ -14,4 +14,4 @@ const shared: {
   },
 };
 
-export default shared;
+export default defaults;

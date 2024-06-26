@@ -32,12 +32,12 @@ export default async function establishRedisConnection() {
       await redisClient.connect();
       break;
     } catch (error) {
-      console.log(error);
+      logger.error(error);
 
       retries -= 1;
       if (retries === 0)
         throw Error("Redis failed to connect, shutting down server...");
-      console.log(
+      logger.debug(
         `Redis connection failed. Retrying connection; ${retries} retries left.`
       );
       await new Promise((resolve) => setTimeout(resolve, 5000));
@@ -45,4 +45,4 @@ export default async function establishRedisConnection() {
   }
 }
 
-// TODO: Make a function that fires every day and does a redisClient.memoryUsage.
+// TODO: Make a function that fires every day and does a redisClient.memoryUsage?
