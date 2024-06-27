@@ -7,7 +7,7 @@ import { logger } from "@qc/utils";
 import { handleApiError } from "@utils/handleError";
 import validateEmail from "@authFeatHttp/utils/validateEmail";
 
-import { getUser } from "@authFeatHttp/services/authService";
+import { getUser } from "@authFeatHttp/services/httpAuthService";
 
 /**
  * Validates the standard login form fields.

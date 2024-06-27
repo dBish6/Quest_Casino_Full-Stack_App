@@ -1,8 +1,8 @@
 /**
- * Auth Service
+ * HTTP Auth Service
  *
  * Description:
- * Handles functionalities related to user authentication and management.
+ * Handles HTTP-related functionalities related to user authentication and management.
  */
 
 import type { ObjectId } from "mongoose";
@@ -132,8 +132,10 @@ export async function emailVerify(userId: string, verificationToken: string) {
         verification_token: verificationToken,
       },
       {
-        email_verified: true,
-        verification_token: `/profile/${verificationToken}`,
+        $set: {
+          email_verified: true,
+          verification_token: `/profile/${verificationToken}`,
+        },
       },
       { new: true }
     );

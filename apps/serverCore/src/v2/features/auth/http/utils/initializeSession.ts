@@ -10,7 +10,7 @@ import type {
 
 import { handleApiError } from "@utils/handleError";
 
-import { getUser } from "@authFeatHttp/services/authService";
+import { getUser } from "@authFeatHttp/services/httpAuthService";
 import { GenerateUserJWT } from "@authFeatHttp/services/jwtService";
 import {
   deleteCsrfToken,
@@ -25,6 +25,7 @@ interface Identifier {
 /**
  * Initializes a user session by generating and setting JWT access and refresh tokens as cookies,
  * replaces the old CSRF token if it exists with a new one.
+ *
  * @param res Express response object.
  * @param identifier Object containing user get by and value.
  * @param csrfToken Replaces the current user's csrf token with a new one.

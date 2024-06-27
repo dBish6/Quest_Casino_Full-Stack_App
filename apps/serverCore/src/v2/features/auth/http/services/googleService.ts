@@ -9,7 +9,7 @@ import { COUNTRIES } from "@qc/constants";
 
 import { logger } from "@qc/utils";
 import { handleApiError } from "@utils/handleError";
-import { registerUser } from "./authService";
+import { registerUser } from "./httpAuthService";
 import initializeSession from "@authFeatHttp/utils/initializeSession";
 
 interface FetchAccessTokenSuccessDataDto {

@@ -16,7 +16,7 @@ import { logger } from "@qc/utils";
 import { handleApiError } from "@utils/handleError";
 import initializeSession from "@authFeatHttp/utils/initializeSession";
 
-import * as authService from "@authFeatHttp/services/authService";
+import * as authService from "@authFeatHttp/services/httpAuthService";
 import { loginWithGoogle } from "@authFeatHttp/services/googleService";
 import { deleteCsrfToken } from "@authFeatHttp/services/csrfService";
 
