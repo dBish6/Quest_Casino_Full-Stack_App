@@ -8,28 +8,34 @@
 import { CorsOptions } from "cors";
 import { Server as HttpServer } from "http";
 import { Server as SocketServer } from "socket.io";
+import { logger } from "@qc/utils";
 
-import chatNamespace from "@chatFeat/namespaces/chatNamespace";
+import verifyUserToken from "@authFeatSocket/middleware/verifyUserToken";
 
-export let io: SocketServer;
+import authNamespace from "@authFeatSocket/namespaces/authNamespace";
+import chatNamespace from "@chatFeatSocket/namespaces/chatNamespace";
+
+const baseUrl = "/socket/v2";
 
 export default function initializeSocketIo(
   httpServer: HttpServer,
   corsOptions?: CorsOptions
 ) {
-  io = new SocketServer(httpServer, {
+  const io = new SocketServer(httpServer, {
     cors: corsOptions,
   });
 
-  // *Namespaces*
-  io.of("/auth").on("connection", (socket) => {
-    console.log(`Auth namespace connected; ${socket.id}.`);
+  io.engine.use(verifyUserToken);
 
-    chatNamespace(socket, io.of("/auth"));
+  // *Namespaces*
+  io.of(`${baseUrl}/auth`).on("connection", (socket) => {
+    logger.debug(`Client connected to auth namespace; ${socket.id}`);
+
+    authNamespace(socket, io.of("/auth"));
   });
 
-  io.of("/chat").on("connection", (socket) => {
-    console.log(`Chat namespace connected; ${socket.id}.`);
+  io.of(`${baseUrl}/chat`).on("connection", (socket) => {
+    logger.debug(`Client connected to chat namespace; ${socket.id}.`);
 
     chatNamespace(socket, io.of("/chat"));
   });

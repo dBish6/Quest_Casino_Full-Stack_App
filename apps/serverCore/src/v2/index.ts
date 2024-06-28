@@ -26,7 +26,7 @@ import { createServer } from "http";
 import Db from "@model/Db";
 import establishRedisConnection from "./cache";
 import initializeApi from "./api";
-import initializeSocket from "./socket";
+import initializeSocketIo from "./socket";
 
 export const setupServer = async () => {
   const { PROTOCOL, HOST, PORT: ENV_PORT } = process.env,
@@ -44,7 +44,7 @@ export const setupServer = async () => {
   const app = initializeApi(corsOptions),
     httpServer = createServer(app);
 
-  initializeSocket(httpServer, corsOptions);
+  initializeSocketIo(httpServer, corsOptions);
 
   httpServer.listen(PORT, HOST!, async () => {
     try {

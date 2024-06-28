@@ -19,7 +19,7 @@ import { logger } from "@qc/utils";
 import { handleApiError } from "@utils/handleError";
 import sendEmail from "@utils/sendEmail";
 
-import { User, UserStatistics, UserActivity } from "@authFeatHttp/models";
+import { User, UserStatistics, UserActivity } from "@authFeat/models";
 import { redisClient } from "@cache";
 
 import { clearAllSessions } from "./jwtService";
@@ -83,7 +83,7 @@ export async function registerUser(user: InitializeUser) {
       user.password = await hash(user.password, 12);
     else user.password = `${user.type} provided`;
 
-    if (user.email_verified === false)
+    if (!user.email_verified)
       await redisClient.set(
         `user:${userId}:verification_token`,
         verificationToken
