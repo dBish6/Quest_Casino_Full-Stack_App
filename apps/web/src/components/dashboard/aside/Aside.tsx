@@ -1,5 +1,8 @@
+import { useState, useEffect } from "react";
+
 import { useAppSelector } from "@redux/hooks";
 import { selectUserCredentials } from "@authFeat/redux/authSelectors";
+import { useLogoutMutation } from "@authFeat/services/authApi";
 
 import { ScrollArea } from "@components/scrollArea";
 import { Avatar, Link, Icon, Blob } from "@components/common";
@@ -10,10 +13,15 @@ import Nav from "./nav/Nav";
 import s from "./aside.module.css";
 
 export default function Aside() {
-  const user = useAppSelector(selectUserCredentials),
-    btnTxt = user ? "Logout" : "Login";
+  const [status, setStatus] = useState<"Logout" | "Login">("Login"), // Because to match the server.
+    user = useAppSelector(selectUserCredentials),
+    [logout] = useLogoutMutation();
 
   const currentYear = new Date().getFullYear().toString();
+
+  useEffect(() => {
+    setStatus(user ? "Logout" : "Login");
+  }, [user]);
 
   return (
     <aside id="asideLeft" className={s.aside}>
@@ -35,7 +43,7 @@ export default function Aside() {
             <Avatar size="xxl" {...(user && { user })} showProfile={false} />
 
             <div className={s.details}>
-              {user && (
+              {user && status === "Logout" && (
                 <>
                   <h3>{user.username}</h3>
                   <div>
@@ -51,9 +59,9 @@ export default function Aside() {
               )}
 
               <div className={s.log}>
-                <span data-user={btnTxt} />
-                {btnTxt === "Logout" ? (
-                  <Button>{btnTxt}</Button>
+                <span data-user={status} />
+                {status === "Logout" ? (
+                  <Button onClick={() => logout(undefined)}>{status}</Button>
                 ) : (
                   <LoginModal queryKey="login1" />
                 )}

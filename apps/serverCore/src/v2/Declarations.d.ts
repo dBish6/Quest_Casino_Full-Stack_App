@@ -11,6 +11,7 @@ declare module "express-serve-static-core" {
 declare module "http" {
   interface IncomingMessage {
     _query?: any;
+    cookies?: Record<string, any>;
     decodedClaims?: UserClaims;
   }
 }

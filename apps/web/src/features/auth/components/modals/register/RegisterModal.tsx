@@ -1,7 +1,6 @@
 import type RegisterBodyDto from "@qc/typescript/dtos/RegisterBodyDto";
 import type { Country } from "@qc/constants";
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
-import type { SuccessResponse } from "@typings/ApiResponse";
 import type { Region, Regions } from "@authFeat/typings/Region";
 import type NullablePartial from "@qc/typescript/typings/NullablePartial";
 
@@ -209,7 +208,7 @@ export default function RegisterModal() {
             resSuccessMsg={
               successMessage(registerSuccess, registerData) ||
               (loginGoogleSuccess &&
-                `Welcome ${(loginGoogleData as SuccessResponse).user.username}! You're all set, continue to use Google to log in to use your profile. Best of luck and have fun!`)
+                `Welcome ${loginGoogleData.user.username}! You're all set, continue to use Google to log in to use your profile. Best of luck and have fun!`)
             }
             resError={registerError || loginGoogleError}
             clearErrors={() => setErrors({})}

@@ -20,7 +20,11 @@ const store = configureStore({
   reducer: rootReducer,
   preloadedState,
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(apiErrorHandler, authMiddleware),
+    getDefaultMiddleware({
+      serializableCheck: {
+        ignoredActionPaths: ["meta.baseQueryMeta.request", "meta.baseQueryMeta.response", "payload.options.button.onClick"],
+      },
+    }).concat(apiErrorHandler, authMiddleware),
 });
 
 store.subscribe(

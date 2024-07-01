@@ -60,8 +60,8 @@ export default function Toast({
   options,
   ...props
 }: ToastProps) {
-  const toastRef = useRef<HTMLLIElement>(null);
-  const { link, button } = options || {};
+  const toastRef = useRef<HTMLLIElement>(null),
+    { link, button } = options || {};
 
   let messageParts = [message];
   if (link || button)
@@ -122,7 +122,7 @@ export default function Toast({
                       {link
                         ? link.sequence
                         : button && (
-                            <Button onClick={button.onClick}>
+                            <Button id="toastBtn" onClick={button.onClick}>
                               {button.sequence}
                             </Button>
                           )}

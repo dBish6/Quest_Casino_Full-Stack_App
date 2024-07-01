@@ -1,5 +1,5 @@
 import { type PayloadAction, createSlice } from "@reduxjs/toolkit";
-import { nanoid } from "@reduxjs/toolkit";
+import { nanoid, createAction } from "@reduxjs/toolkit";
 
 export interface ToastOptions {
   link?: {
@@ -51,3 +51,22 @@ export const { name: toastName, reducer: toastReducer } = toastSlice,
   { ADD_TOAST, REMOVE_TOAST, CLEAR_TOASTS } = toastSlice.actions;
 
 export default toastSlice;
+
+export const unexpectedErrorToast = createAction(
+  ADD_TOAST.type,
+  function (message: string) {
+    return {
+      payload: {
+        title: "Unexpected Error",
+        message: `${message ?? "An unexpected error occurred."} Please try refreshing the page. If the error persists, feel free to reach out to support.`,
+        intent: "error",
+        options: {
+          link: {
+            sequence: "support",
+            to: "/support",
+          },
+        },
+      },
+    };
+  }
+);

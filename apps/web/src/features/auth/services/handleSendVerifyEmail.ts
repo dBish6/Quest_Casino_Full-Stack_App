@@ -9,7 +9,16 @@ import { ADD_TOAST } from "@redux/toast/toastSlice";
 export default async function handleSendVerifyEmail(
   dispatch: ThunkDispatch<any, any, UnknownAction>
 ) {
+  const button = document.getElementById("toastBtn");
+  if (!button) return logger.error("Button with ID 'toastBtn' not found.");
+
+  const initialText = button?.innerText;
+  button.setAttribute("aria-live", "polite");
+  button.setAttribute("disabled", "");
+  button.innerText = "Loading...";
+
   try {
+    console.log("hello");
     const res = dispatch(authEndpoints.sendVerifyEmail.initiate(undefined));
 
     const { data, error } = await res;
@@ -35,5 +44,8 @@ export default async function handleSendVerifyEmail(
     }
   } catch (error: any) {
     logger.error("handleSendVerifyEmail error:\n", error.message);
+  } finally {
+    button.removeAttribute("disabled");
+    button.innerText = initialText;
   }
 }

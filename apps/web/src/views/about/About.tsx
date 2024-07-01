@@ -12,8 +12,8 @@ export const meta = {
 export default function About() {
   return (
     <Main className={s.about}>
-      <section className={s.welcome}>
-        <h2>Welcome! 👋</h2>
+      <section aria-labelledby="hWelcome" className={s.welcome}>
+        <h2 id="hWelcome">Welcome! 👋</h2>
         <p>
           Welcome to Quest Casino, where your gaming experience is our top
           priority. We've built this platform with a commitment to transparency,
@@ -23,8 +23,8 @@ export default function About() {
         </p>
       </section>
 
-      <section className={s.safety}>
-        <h2>Safety and Security!</h2>
+      <section aria-labelledby="hSafety" className={s.safety}>
+        <h2 id="hSafety">Safety and Security!</h2>
         <p>
           At Quest Casino, we take your safety seriously. Our platform employs
           cutting-edge security measures to protect your data and financial
@@ -33,8 +33,8 @@ export default function About() {
         </p>
       </section>
 
-      <section className={s.play}>
-        <h2>Fair Play and Transparency</h2>
+      <section aria-labelledby="hFair" className={s.play}>
+        <h2 id="hFair">Fair Play and Transparency</h2>
         <p>
           Unlike many other online casinos, Quest Casino is committed to
           transparency. We provide you with insights into our operations,
@@ -44,8 +44,8 @@ export default function About() {
         </p>
       </section>
 
-      <section className={s.community}>
-        <h2>Community and Connections</h2>
+      <section aria-labelledby="hCommunity" className={s.community}>
+        <h2 id="hCommunity">Community and Connections</h2>
         <p>
           Beyond gaming, Quest Casino is also your place to connect with a
           vibrant community of players. Share your experiences, make friends,
