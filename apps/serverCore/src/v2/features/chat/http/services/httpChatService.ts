@@ -12,7 +12,7 @@ import type MessageDto from "@chatFeat/dtos/MessageDto";
 import { handleApiError } from "@utils/handleError";
 import continentUtils from "@chatFeat/utils/ContinentUtils";
 
-import { MessageGlobal, MessagePrivate } from "@chatFeatHttp/models";
+import { MessageGlobal, MessagePrivate } from "@chatFeat/models";
 import { Model } from "mongoose";
 
 function getMessageModel(roomId: Rooms) {
