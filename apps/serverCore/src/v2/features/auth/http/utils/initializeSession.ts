@@ -11,11 +11,8 @@ import type {
 import { handleApiError } from "@utils/handleError";
 
 import { getUser } from "@authFeatHttp/services/httpAuthService";
-import { GenerateUserJWT } from "@authFeatHttp/services/jwtService";
-import {
-  deleteCsrfToken,
-  generateCsrfToken,
-} from "@authFeatHttp/services/csrfService";
+import { GenerateUserJWT } from "@authFeat/services/jwtService";
+import { deleteCsrfToken, generateCsrfToken } from "@authFeatHttp/services/csrfService";
 
 interface Identifier {
   by: GetUserBy;
@@ -37,7 +34,7 @@ export default async function initializeSession(
 ) {
   try {
     const user = await getUser(identifier.by, identifier.value);
-    if (!user) return "User doesn't exist.";
+    if (!user) return "Couldn't find the user while session initialization.";
 
     const userToClaims = formatUserToClaims(user),
       generateUserJWT = new GenerateUserJWT(userToClaims);

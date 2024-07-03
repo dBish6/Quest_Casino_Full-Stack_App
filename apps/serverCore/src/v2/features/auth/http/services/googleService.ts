@@ -102,7 +102,7 @@ async function fetchAccessTokenToken(code: string, redirectUri: string) {
     if (!res.ok) {
       logger.error("fetchAccessTokenToken error:", data);
       throw handleApiError(
-        Error("Received a bad status from token request."),
+        new Error("Received a bad status from token request."),
         "fetchAccessTokenToken error.",
         403
       );

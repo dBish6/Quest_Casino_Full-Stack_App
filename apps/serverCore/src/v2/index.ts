@@ -4,7 +4,7 @@
  *
  * Author: David Bishop
  * Creation Date: April 16, 2024
- * Last Updated: June 10, 2024
+ * Last Updated: July 3, 2024
  *
  * Description:
  * ...
@@ -25,7 +25,7 @@ import { createServer } from "http";
 
 import Db from "@model/Db";
 import establishRedisConnection from "./cache";
-import initializeApi from "./api";
+import initializeHttp from "./http";
 import initializeSocketIo from "./socket";
 
 export const setupServer = async () => {
@@ -41,7 +41,7 @@ export const setupServer = async () => {
 
   await establishRedisConnection();
 
-  const app = initializeApi(corsOptions),
+  const app = initializeHttp(corsOptions),
     httpServer = createServer(app);
 
   initializeSocketIo(httpServer, corsOptions);
@@ -56,5 +56,4 @@ export const setupServer = async () => {
     }
   });
 };
-
 setupServer();

@@ -30,8 +30,8 @@ export function handleSocketError(
   logger.error(err.stack || err);
 
   socket.emit("error", {
-    status: formatErr.status || "Internal Error",
-    message: formatErr.from,
+    status: formatErr.status || "internal error",
+    ...(process.env.NODE_ENV !== "production" && { message: formatErr.from }),
     ERROR: err.message || "An unexpected error occurred.",
   });
 }

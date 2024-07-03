@@ -23,7 +23,7 @@ import chatRouter from "@chatFeatHttp/routes/chatRoute";
 
 import apiErrorHandler from "@middleware/apiErrorHandler";
 
-const initializeApi = (corsOptions: CorsOptions) => {
+const initializeHttp = (corsOptions: CorsOptions) => {
   const app = express(),
     baseUrl = "/api/v2";
 
@@ -61,7 +61,7 @@ const initializeApi = (corsOptions: CorsOptions) => {
   app.use(`${baseUrl}/chat`, chatRouter);
 
   // Test entry route.
-  app.get(`${baseUrl}/`, async (req, res) => {
+  app.get(`${baseUrl}/`, async (_, res) => {
     res.json({ message: "Quest Casino api online!" });
   });
 
@@ -71,4 +71,4 @@ const initializeApi = (corsOptions: CorsOptions) => {
   return app;
 };
 
-export default initializeApi;
+export default initializeHttp;

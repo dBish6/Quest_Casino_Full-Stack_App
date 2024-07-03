@@ -185,7 +185,7 @@ export async function emailVerify(
   }
 }
 /**
- * Initiates the email verification process.
+ * Initiates verification email sending.
  * @controller
  * @response `success`, `SMTP rejected` or `ApiError`.
  */

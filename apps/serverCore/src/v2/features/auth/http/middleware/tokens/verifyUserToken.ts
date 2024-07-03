@@ -1,20 +1,13 @@
 import type { Request, Response, NextFunction } from "express";
-import type { Secret } from "jsonwebtoken";
-import type { UserClaims } from "@authFeatHttp/typings/User";
-
-import jwt from "jsonwebtoken";
 
 import { logger } from "@qc/utils";
 import { handleApiError } from "@utils/handleError";
 
-import { isRefreshTokenValid } from "@authFeatHttp/services/jwtService";
+import { JWTVerification } from "@authFeat/services/jwtService";
 import initializeSession from "@authFeatHttp/utils/initializeSession";
 
-const { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET } = process.env,
-  REFRESH_THRESHOLD = 1000 * 60 * 3;
-
 /**
- * Verifies the access token and also refreshes the session if needed.
+ * Verifies the access and refresh tokens and also refreshes the session if needed.
  * @middleware This should only be used on routes where the user should already be logged in for.
  * @response `unauthorized`, `forbidden`, or `ApiError`.
  */
@@ -26,112 +19,30 @@ export default async function verifyUserToken(
   const accessToken = req.cookies?.session,
     refreshToken = req.cookies?.refresh;
 
+  const jwtVerification = new JWTVerification();
+
   try {
-    if (!accessToken) {
-      // Refreshes if there is no accessToken anymore but there is a refreshToken, which indicates that the accessToken has expired.
-      if (refreshToken) {
-        const decodedClaims = await verifyJwt<UserClaims>(
-          refreshToken,
-          REFRESH_TOKEN_SECRET!
-        );
-        // FIXME: Always fails to verify the refresh token.
-        logger.debug("Refresh token decodedClaims:", decodedClaims);
-        if (!decodedClaims)
-          return res.status(403).json({
-            ERROR: "Refresh token is invalid.",
-          });
-
-        const errorMsg = await refreshSession(
-          req,
-          res,
-          decodedClaims,
-          refreshToken
-        );
-        if (errorMsg) {
-          return res.status(401).json({
-            ERROR: errorMsg,
-          });
-        }
-
-        next();
-      }
-      return res.status(401).json({
-        ERROR: "Access token is missing.",
+    const result = await jwtVerification.verifyUserToken(accessToken, refreshToken);
+    if (!result.claims) 
+      return res.status(["missing", "disparity"].includes(result.message, -1) ? 401 : 403).json({
+        ERROR: result.message,
       });
-    }
-
-    const decodedClaims = await verifyJwt<UserClaims>(
-      accessToken,
-      ACCESS_TOKEN_SECRET!
-    );
-    logger.debug("Access token decodedClaims:", decodedClaims);
-    if (!decodedClaims)
-      return res.status(403).json({
-        ERROR: "Access token is invalid.",
-      });
-
-    const tokenExpiry = decodedClaims.exp! * 1000,
-      currentTime = Date.now();
-
-    // Refreshes if the token expiry is within the refresh threshold.
-    if (tokenExpiry - currentTime <= REFRESH_THRESHOLD) {
-      const errorMsg = await refreshSession(
-        req,
+    
+    // Refreshes the session when within the refresh threshold or expired.
+    if (["threshold", "expired"].includes(result.message)) {
+      const refreshResult = await initializeSession(
         res,
-        decodedClaims,
-        refreshToken
+        { by: "_id", value: result.claims.sub },
+        req.headers["x-xsrf-token"] as string,
       );
-      if (errorMsg) {
-        return res.status(401).json({
-          ERROR: errorMsg,
-        });
-      }
-
-      next();
-    } else if (tokenExpiry <= currentTime) {
-      return res.status(403).json({
-        ERROR: "Access token is expired.",
-      });
+      if (typeof refreshResult === "string") return res.status(401).json({ ERROR: result.message });
+      logger.info("Session refresh was attached to the response.");
     }
 
-    req.decodedClaims = decodedClaims;
+    req.decodedClaims = result.claims;
     logger.info("Access token successfully verified.");
     next();
   } catch (error) {
-    next(handleApiError(error, "verifyAccessToken middleware error.", 500));
-  }
-}
-
-async function verifyJwt<T>(token: string, secretOrPublicKey: Secret) {
-  try {
-    // return jwt.verify(token, secretOrPublicKey) as T;
-    const jw = jwt.verify(token, secretOrPublicKey) as T;
-    console.log("jwt", jw);
-    return jw;
-  } catch (error) {
-    return false;
-  }
-}
-
-async function refreshSession(
-  req: Request,
-  res: Response,
-  user: UserClaims,
-  refreshToken: string
-) {
-  try {
-    const isTokenValid = await isRefreshTokenValid(user.sub, refreshToken);
-    if (!isTokenValid) return "Refresh token was not found.";
-
-    await initializeSession(
-      res,
-      { by: "_id", value: user.sub },
-      req.headers["x-xsrf-token"] as string
-    );
-
-    req.decodedClaims = user;
-    logger.info("Session was refreshed successfully verified.");
-  } catch (error) {
-    throw error;
+    next(handleApiError(error, "http/verifyAccessToken middleware error.", 500));
   }
 }

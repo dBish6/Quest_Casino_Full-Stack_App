@@ -47,7 +47,7 @@ export default class SocketAuthService {
       });
     } catch (error: any) {
       throw handleSocketError(this.socket, error, {
-        from: "manageRoom service error.",
+        from: "manageFriends service error.",
       });
     }
   }

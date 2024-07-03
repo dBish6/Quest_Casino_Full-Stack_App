@@ -15,7 +15,7 @@ function handleUniqueUsername(
   const error = monError as MongoError;
   if (error.code === 11000 && error.keyPattern?.username)
     throw handleApiError(
-      Error("Username is already taken. Please try a different username."),
+      new Error("Username is already taken. Please try a different username."),
       "handleUniqueUsername error.",
       400
     );
@@ -35,7 +35,7 @@ async function handleMaxFriends(
   const error = monError as MongoError;
   if (error.code === 11000 && error.keyPattern?.friends)
     throw handleApiError(
-      Error("Your max 25 friends has been reached."),
+      new Error("Your max 25 friends has been reached."),
       "handleMaxFriends error.",
       400
     );

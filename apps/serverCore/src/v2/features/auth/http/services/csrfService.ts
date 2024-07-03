@@ -3,6 +3,9 @@ import { randomUUID } from "crypto";
 import { handleApiError } from "@utils/handleError";
 import { redisClient } from "@cache";
 
+/**
+ * Generates a CSRF token for the specified user and stores it in the cache.
+ */
 export async function generateCsrfToken(userId: string) {
   try {
     const csrfToken = randomUUID();
@@ -14,6 +17,9 @@ export async function generateCsrfToken(userId: string) {
   }
 }
 
+/**
+ * Deletes a specific CSRF token for the specified user from the cache.
+ */
 export async function deleteCsrfToken(userId: string, csrfToken: string) {
   try {
     await redisClient.sRem(`user:${userId}:csrf_tokens`, csrfToken);
@@ -22,6 +28,9 @@ export async function deleteCsrfToken(userId: string, csrfToken: string) {
   }
 }
 
+/**
+ * Deletes all CSRF tokens in the cache from the given user.
+ */
 export async function deleteAllCsrfTokens(userId: string) {
   try {
     await redisClient.del(`user:${userId}:csrf_tokens`);

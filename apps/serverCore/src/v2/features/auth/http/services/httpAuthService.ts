@@ -22,7 +22,7 @@ import sendEmail from "@utils/sendEmail";
 import { User, UserStatistics, UserActivity } from "@authFeat/models";
 import { redisClient } from "@cache";
 
-import { clearAllSessions } from "./jwtService";
+import { clearAllSessions } from "@authFeat/services/jwtService";
 import { deleteAllCsrfTokens } from "./csrfService";
 
 const CLIENT_USER_SHARED_EXCLUDE = "-_id -created_at -updated_at",
@@ -162,7 +162,7 @@ export async function sendVerifyEmail(
         "utf-8"
       ),
       footerPartial = readFileSync(
-        resolve(__dirname, "../../../emails/partials/footer.html"),
+        resolve(__dirname, "../../../../emails/partials/footer.html"),
         "utf-8"
       );
 
