@@ -3,7 +3,9 @@ import type { TimeoutObj } from "@services/socket";
 
 import { useRef, useState, useLayoutEffect } from "react";
 
+import { logger } from "@qc/utils";
 import delay from "@utils/delay";
+import { history } from "@utils/History";
 
 import { useAppSelector } from "@redux/hooks";
 import { selectUserCsrfToken } from "@authFeat/redux/authSelectors";
@@ -40,15 +42,14 @@ export default function ResourceLoader({ children }: React.PropsWithChildren<{}>
             }
 
             setProgress((prev) => ({ ...prev, message: "Syncing You with Others..." }));
-            if (userToken) await socketInstancesConnectionProvider(timeoutObj)
-
-            delay(30000, () => {
-              if (progress.loading)
+            delay(29000, () => {
+              if (!progress.loading)
                 setProgress((prev) => ({ ...prev, message: "Taking longer than expected..." }));
             });
+            if (userToken) await socketInstancesConnectionProvider(timeoutObj)
           } catch (error: any) {
-            console.error("Loading resources error:\n", error.message);
-            // history.push("/error-500");
+            logger.error("Loading resources error:\n", error.message);
+            if (error.message.includes("stable connection")) history.push("/error-500");
           } finally {
             setProgress((prev) => ({ ...prev, loading: false }));
           }

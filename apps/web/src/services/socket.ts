@@ -72,6 +72,8 @@ export async function socketInstancesConnectionProvider(timeoutObj: TimeoutObj) 
             })
             .on("connect_error", (error) => {
               logger.error(`${namespace} socket instance connection error:\n`, error.message);
+              if (error.message === "unauthorized") history.push("/error-401");
+              else if (error.message === "forbidden") history.push("/error-403");
 
               const timeout = setTimeout(() => attemptConnection(), 5000);
               timeoutObj[namespace] = timeout;
@@ -129,7 +131,7 @@ function socketErrorHandler(socket: Socket, namespace: SocketNamespaces) {
       // Not sure how I want to do this yet.
       switch (error.status) {
         case "bad request":
-          error.message.includes("leave", -1) && history.push("/error-500");
+          error.message.includes(`"leave"`, -1) && history.push("/error-500");
           break;
         case "internal error":
           history.push("/error-500");
