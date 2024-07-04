@@ -11,8 +11,7 @@ import {
 
 import { fadeInOut } from "@utils/animations";
 
-import { useAppSelector } from "@redux/hooks";
-import { selectUserCredentials } from "@authFeat/redux/authSelectors";
+import useUser from "@authFeat/hooks/useUser";
 
 import Friends from "./Friends";
 import Chat from "./chat/Chat";
@@ -32,7 +31,6 @@ const dragPoints: Variants = {
   },
   enlarged: (x) => {
     return {
-      // FIXME: Position when closing.
       // position: "absolute",
       width: "100vw",
       maxWidth: "945px",
@@ -63,7 +61,7 @@ export default function Aside() {
     controls = useDragControls(),
     fadeVariant = fadeInOut();
 
-  const user = useAppSelector(selectUserCredentials);
+  const user = useUser();
 
   // prettier-ignore
   useEffect(() => {
@@ -167,7 +165,7 @@ export default function Aside() {
                 </hgroup>
 
                 {user ? (
-                  <Friends />
+                  <Friends user={user} />
                 ) : (
                   <span style={{ alignSelf: "center", textAlign: "center" }}>
                     <Link intent="primary" to={{ search: "?login1=true" }}>
@@ -177,7 +175,7 @@ export default function Aside() {
                   </span>
                 )}
 
-                <Chat />
+                <Chat user={user} />
               </>
             )}
           </div>

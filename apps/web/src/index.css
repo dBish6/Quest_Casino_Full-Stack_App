@@ -256,7 +256,7 @@
   --para-xx-small: 400 10px/158% "Myriad Pro", sans-serif;
   --para-letter-spaceing: 0.18px;
 
-  /* --para-large-clamp: clamp(1.0625rem, 0.95rem + 0.2926829268292683vw, 1.25rem); */
+  --para-large-clamp: clamp(1.0625rem, 0.95rem + 0.2926829268292683vw, 1.25rem);
   --para-medium-clamp: clamp(
     0.9375rem,
     0.825rem + 0.2926829268292683vw,

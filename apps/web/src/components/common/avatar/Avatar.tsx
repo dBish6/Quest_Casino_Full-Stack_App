@@ -72,7 +72,7 @@ const Avatar = forwardRef<HTMLDivElement, AvatarProps>(
             {...props}
           >
             <Image
-              src={user?.avatar_url ?? "/images/default.svg"}
+              src={user?.avatar_url ? user.avatar_url : "/images/default.svg"}
               alt="Profile Picture"
               fill
             />

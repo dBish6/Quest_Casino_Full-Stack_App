@@ -1,4 +1,3 @@
-// import type { ErrorResponse } from "@typings/ApiResponse";
 import type {
   FetchBaseQueryError,
   FetchBaseQueryMeta,

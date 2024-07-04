@@ -229,7 +229,7 @@ function Testimonial({
   return (
     <m.article
       aria-label={`Slide ${index + 1}`}
-      aria-roledescription="Slide"
+      aria-roledescription="slide"
       {...(!currentSlide && { "aria-hidden": "true" })}
       className={s.testimonial}
       data-current={currentSlide}

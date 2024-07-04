@@ -1,4 +1,5 @@
 import type { Variants } from "framer-motion";
+import type { UserCredentials } from "@qc/typescript/typings/UserCredentials";
 
 import { useSearchParams } from "react-router-dom";
 import { useEffect } from "react";
@@ -21,7 +22,7 @@ const shrinkInOut: Variants = {
   },
 };
 
-export default function Chat() {
+export default function Chat({ user }: { user: UserCredentials | null }) {
   const [searchParams, setSearchParams] = useSearchParams(),
     asideState = searchParams.get("aside"),
     chatState = searchParams.get("chat") || "enlarged";
@@ -141,7 +142,7 @@ function Message() {
           <h4>VinceCarter15</h4>
         </div>
 
-        <time datetime="01:35">01:35</time>
+        <time dateTime="01:35">01:35</time>
       </div>
       <p>You know, there are many variations of Lorem Ipsum.</p>
     </li>

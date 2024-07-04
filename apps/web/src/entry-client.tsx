@@ -16,5 +16,4 @@ function hydrate() {
     </ReduxProvider>
   );
 }
-
 hydrate();

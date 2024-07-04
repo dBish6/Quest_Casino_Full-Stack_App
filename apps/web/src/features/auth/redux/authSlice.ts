@@ -27,35 +27,25 @@ const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
-    INITIALIZE_SESSION: (
-      state,
-      action: PayloadAction<{ credentials: UserCredentials; csrf: string }>
-    ) => {
+    INITIALIZE_SESSION: (state, action: PayloadAction<{ credentials: UserCredentials; csrf: string }>) => {
       state.user = {
         ...state.user,
         credentials: action.payload.credentials,
         token: { csrf: action.payload.csrf }, // Removes oState so a new one from the server can be added.
       };
     },
-    SET_USER_CREDENTIALS: (state, action: PayloadAction<UserCredentials>) => {
-      state.user = {
-        ...state.user,
-        credentials: action.payload,
+    UPDATE_USER_CREDENTIALS: (state, action: PayloadAction<Partial<UserCredentials>>) => {
+      const updatedCredentials = state.user.credentials as UserCredentials;
+      
+      state.user.credentials = {
+        ...updatedCredentials,
+        ...action.payload,
+        statistics: {
+          ...updatedCredentials.statistics,
+          ...action.payload.statistics,
+        },
       };
     },
-    // ADD_TOKEN: (
-    //   state,
-    //   action: PayloadAction<{ type: "oState" | "csrf"; token: string }>
-    // ) => {
-    //   const { type, token } = action.payload;
-    //   state.user = {
-    //     ...state.user,
-    //     token: { ...state.user.token, [type]: token },
-    //   };
-    // },
-    // SET_CSRF_TOKEN: (state, action: PayloadAction<string>) => {
-    //   state.user.token.csrf = action.payload;
-    // },
     CLEAR_USER: (state) => {
       state.user = {
         credentials: null,
@@ -66,6 +56,6 @@ const authSlice = createSlice({
 });
 
 export const { name: authName, reducer: authReducer } = authSlice,
-  { INITIALIZE_SESSION, SET_USER_CREDENTIALS, CLEAR_USER } = authSlice.actions;
+  { INITIALIZE_SESSION, UPDATE_USER_CREDENTIALS, CLEAR_USER } = authSlice.actions;
 
 export default authSlice;
