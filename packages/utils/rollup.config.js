@@ -8,7 +8,6 @@ export default {
   output: {
     file: "build/bundle.js",
     format: "es",
-    name: "utils",
   },
   plugins: [
     multi(),
