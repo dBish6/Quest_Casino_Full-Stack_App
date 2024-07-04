@@ -1,5 +1,5 @@
 import type { VariantProps } from "class-variance-authority";
-import type UserCredentials from "@qc/typescript/typings/UserCredentials";
+import type { UserCredentials } from "@qc/typescript/typings/UserCredentials";
 
 import { forwardRef, Fragment } from "react";
 import { Link } from "react-router-dom";
@@ -72,10 +72,14 @@ const Avatar = forwardRef<HTMLDivElement, AvatarProps>(
             {...props}
           >
             <Image
-              src={user?.avatar_url ?? "/images/default.svg"}
+              src={user?.avatar_url ? user.avatar_url : "/images/default.svg"}
               alt="Profile Picture"
               fill
             />
+            {/* TODO: aria? */}
+            {user && showProfile && (
+              <span role="status" className={s.activityIndie} />
+            )}
           </div>
         </ProfileLink>
       </Container>

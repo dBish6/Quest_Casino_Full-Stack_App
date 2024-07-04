@@ -1,7 +1,6 @@
 import type RegisterBodyDto from "@qc/typescript/dtos/RegisterBodyDto";
+import type { Country } from "@qc/constants";
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
-import type { SuccessResponse } from "@typings/ApiResponse";
-import type Country from "@authFeat/typings/Country";
 import type { Region, Regions } from "@authFeat/typings/Region";
 import type NullablePartial from "@qc/typescript/typings/NullablePartial";
 
@@ -75,11 +74,10 @@ export default function RegisterModal() {
         ...prev,
         countries: [],
       }));
-      const countriesData = (await import("@authFeat/constants/COUNTRIES"))
-        .default;
+      const { COUNTRIES } = await import("@qc/constants");
       setWorldData((prev) => ({
         ...prev,
-        countries: countriesData,
+        countries: COUNTRIES,
       }));
     }
   };
@@ -111,12 +109,6 @@ export default function RegisterModal() {
     }
   }, [selected.country, worldData.regions]);
 
-  const optionalFields = new Set([
-    "country",
-    "region",
-    "calling_code",
-    "phone_number",
-  ]);
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
@@ -132,7 +124,7 @@ export default function RegisterModal() {
       for (const field of fields) {
         const key = field.name as keyof RegisterBodyDto;
 
-        if (!field.value.length && !optionalFields.has(key)) {
+        if (!field.value.length && field.required) {
           errors[key] =
             key === "con_password"
               ? "Please confirm your password."
@@ -216,7 +208,7 @@ export default function RegisterModal() {
             resSuccessMsg={
               successMessage(registerSuccess, registerData) ||
               (loginGoogleSuccess &&
-                `Welcome ${(loginGoogleData as SuccessResponse).user.username}! You're all set, continue to use Google to log in to use your profile. Best of luck and have fun!`)
+                `Welcome ${loginGoogleData.user.username}! You're all set, continue to use Google to log in to use your profile. Best of luck and have fun!`)
             }
             resError={registerError || loginGoogleError}
             clearErrors={() => setErrors({})}
@@ -303,6 +295,7 @@ export default function RegisterModal() {
                   size="lrg"
                   id="country"
                   name="country"
+                  required="show"
                   error={form.error.country}
                   Loader={() => <Spinner intent="primary" size="sm" />}
                   loaderTrigger={countriesLoading}

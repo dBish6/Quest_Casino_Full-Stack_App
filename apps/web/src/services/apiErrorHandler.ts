@@ -11,14 +11,14 @@ import { logger } from "@qc/utils";
 import { isFetchBaseQueryError } from "@utils/isFetchBaseQueryError";
 import { history } from "@utils/History";
 
-import { ADD_TOAST } from "@redux/toast/toastSlice";
+import { ADD_TOAST, unexpectedErrorToast } from "@redux/toast/toastSlice";
 import { CLEAR_USER } from "@authFeat/redux/authSlice";
 
 export const apiErrorHandler: Middleware =
   (api: MiddlewareAPI) => (next) => (action) => {
     if (isRejected(action)) {
       const [reducerName, actionType] = action.type.split("/"),
-        payload = action.payload as | FetchBaseQueryError| SerializedError| undefined; // prettier-ignore
+        payload = action.payload as | FetchBaseQueryError | SerializedError | undefined; // prettier-ignore
 
       const log = () => {
         if (payload) {
@@ -64,19 +64,22 @@ export const apiErrorHandler: Middleware =
           case 500:
             log();
             if (!payload.data?.allow)
+              // api.dispatch(
+              //   ADD_TOAST({
+              //     title: "Unexpected Error",
+              //     message:
+              //       "An unexpected server error occurred. Please try refreshing the page. If the error persists, feel free to reach out to support.",
+              //     intent: "error",
+              //     options: {
+              //       link: {
+              //         sequence: "support",
+              //         to: "/support",
+              //       },
+              //     },
+              //   })
+              // );
               api.dispatch(
-                ADD_TOAST({
-                  title: "Unexpected Error",
-                  message:
-                    "An unexpected server error occurred. Please try refreshing the page. If the error persists, feel free to reach out to support.",
-                  intent: "error",
-                  options: {
-                    link: {
-                      sequence: "support",
-                      to: "/support",
-                    },
-                  },
-                })
+                unexpectedErrorToast("An unexpected server error occurred.")
               );
             break;
           default:
@@ -85,18 +88,24 @@ export const apiErrorHandler: Middleware =
         }
       } else if (payload?.message) {
         log();
+        // api.dispatch(
+        //   ADD_TOAST({
+        //     title: "Unexpected Error",
+        //     message: `${payload.message}. If the error persists, feel free to reach out to support.`,
+        //     intent: "error",
+        //     options: {
+        //       link: {
+        //         sequence: "support",
+        //         to: "/support",
+        //       },
+        //     },
+        //   })
+        // );
+        const message = payload.message;
         api.dispatch(
-          ADD_TOAST({
-            title: "Unexpected Error",
-            message: `${payload.message}. If the error persists, feel free to reach out to support.`,
-            intent: "error",
-            options: {
-              link: {
-                sequence: "support",
-                to: "/support",
-              },
-            },
-          })
+          unexpectedErrorToast(
+            `${message.length > 30 ? `${message.slice(0, 30)}...` : message}.`
+          )
         );
       }
     }

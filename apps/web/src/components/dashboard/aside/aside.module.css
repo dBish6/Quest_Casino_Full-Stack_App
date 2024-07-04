@@ -37,6 +37,7 @@
               font: var(--h3);
               font-weight: 500;
               font-style: italic;
+              margin-bottom: 1px;
             }
             & > div:first-of-type {
               position: relative;

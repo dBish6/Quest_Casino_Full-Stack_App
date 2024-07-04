@@ -1,2 +1,5 @@
-type SocketCallback = (error: string | null, message?: any) => void;
+type SocketCallback = (response: {
+  status: string;
+  [key: string]: any;
+}) => void;
 export default SocketCallback;

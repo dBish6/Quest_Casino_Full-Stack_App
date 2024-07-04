@@ -8,29 +8,41 @@
 import { CorsOptions } from "cors";
 import { Server as HttpServer } from "http";
 import { Server as SocketServer } from "socket.io";
+import { logger } from "@qc/utils";
 
-import chatNamespace from "@chatFeat/namespaces/chatNamespace";
+import cookieParser from "cookie-parser";
 
-export let io: SocketServer;
+import verifyUserToken from "@authFeatSocket/middleware/verifyUserToken";
+
+import authNamespace from "@authFeatSocket/namespaces/authNamespace";
+import chatNamespace from "@chatFeatSocket/namespaces/chatNamespace";
+
+const baseUrl = "/socket/v2",
+  namespaces = [`${baseUrl}/auth`, `${baseUrl}/chat`];
 
 export default function initializeSocketIo(
   httpServer: HttpServer,
   corsOptions?: CorsOptions
 ) {
-  io = new SocketServer(httpServer, {
+  const io = new SocketServer(httpServer, {
     cors: corsOptions,
   });
 
-  // *Namespaces*
-  io.of("/auth").on("connection", (socket) => {
-    console.log(`Auth namespace connected; ${socket.id}.`);
+  // *Middleware*
+  io.engine.use(cookieParser());
 
-    chatNamespace(socket, io.of("/auth"));
+  namespaces.map((nsp) => io.of(nsp).use(verifyUserToken));
+
+  // *Namespaces*
+  io.of(`${baseUrl}/auth`).on("connection", (socket) => {
+    logger.debug(`Client connected to auth namespace; ${socket.id}`);
+
+    authNamespace(socket, io.of(`${baseUrl}/auth`));
   });
 
-  io.of("/chat").on("connection", (socket) => {
-    console.log(`Chat namespace connected; ${socket.id}.`);
+  io.of(`${baseUrl}/chat`).on("connection", (socket) => {
+    logger.debug(`Client connected to chat namespace; ${socket.id}.`);
 
-    chatNamespace(socket, io.of("/chat"));
+    chatNamespace(socket, io.of(`${baseUrl}/chat`));
   });
 }

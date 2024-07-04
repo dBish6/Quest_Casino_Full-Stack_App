@@ -1,18 +1,25 @@
-export default interface UserCredentials {
-  type: "standard" | "google";
+export interface FriendCredentials {
   avatar_url?: string;
   legal_name: { first: string; last: string };
-  email_verified: boolean;
   username: string;
   /**
    * Not given if the user not verified. When the user is verified it is the user's public profile link.
    */
   verification_token?: string;
-  country?: string;
+  country: string;
+  bio?: string;
+}
+
+/**
+ * The available user credentials on the client.
+ */
+export interface UserCredentials extends FriendCredentials {
+  type: "standard" | "google";
+  email_verified: boolean;
   region?: string;
   phone_number?: string;
-  bio?: string;
   balance: number;
+  friends: FriendCredentials[];
   statistics: {
     losses: {
       total: number;

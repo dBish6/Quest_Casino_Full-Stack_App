@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import type Country from "@authFeat/typings/Country";
+import type { Country } from "@qc/constants";
 
 import { fn } from "@storybook/test";
 import { useState } from "react";
@@ -90,10 +90,9 @@ export const CallingCode: Story = {
         onFocus={async () => {
           if (!data?.length) {
             setData([]);
-            const data = (await import("@authFeat/constants/COUNTRIES"))
-              .default;
+            const { COUNTRIES } = await import("@qc/constants");
             setTimeout(() => {
-              setData(data);
+              setData(COUNTRIES);
             }, 1500);
           }
         }}

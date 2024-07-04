@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import type UserCredentials from "@qc/typescript/typings/UserCredentials";
+import type { UserCredentials } from "@qc/typescript/typings/UserCredentials";
 
 import { useMockSelector } from "@storybook/mockStore";
 
