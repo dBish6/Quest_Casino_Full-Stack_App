@@ -17,7 +17,6 @@ export default function Friends({ user }: { user: UserCredentials | null }) {
         Add Friends
       </Link>
       <ScrollArea orientation="vertical">
-        {user && <div>{user.legal_name.first}</div>}
         {friends?.length ? (
           friends.map((friend, i) => (
             <div key={i} className={s.friend}>
