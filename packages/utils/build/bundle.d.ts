@@ -3,6 +3,9 @@
  */
 export declare function capitalize(txt: string): string;
 
+export type ActivityStatuses = "online" | "away" | "offline";
+export declare function getUserActivityStatus(timestamp: Date | null, verificationToken: string | undefined): ActivityStatuses;
+
 declare class Logger {
     disableAll: boolean;
     constructor(disableAll: boolean);
