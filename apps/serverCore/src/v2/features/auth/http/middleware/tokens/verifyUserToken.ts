@@ -30,6 +30,8 @@ export default async function verifyUserToken(
     
     // Refreshes the session when within the refresh threshold or expired.
     if (["threshold", "expired"].includes(result.message)) {
+      logger.debug("Within refresh threshold or expired", result.message);
+
       const refreshResult = await initializeSession(
         res,
         { by: "_id", value: result.claims.sub },

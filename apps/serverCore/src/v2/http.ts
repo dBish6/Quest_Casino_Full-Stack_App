@@ -5,7 +5,7 @@
  * Setup for HTTP requests and responses.
  */
 
-import { CorsOptions } from "cors";
+import type { CorsOptions } from "cors";
 import express from "express";
 
 import bodyParser from "body-parser";
@@ -23,9 +23,11 @@ import chatRouter from "@chatFeatHttp/routes/chatRoute";
 
 import apiErrorHandler from "@middleware/apiErrorHandler";
 
-const initializeHttp = (corsOptions: CorsOptions) => {
+export default function initializeHttp(corsOptions: CorsOptions) {
   const app = express(),
     baseUrl = "/api/v2";
+
+  app.disable("x-powered-by"); // Can reduce the ability of attackers to determine the software that a server uses.
 
   // *Parser Middleware*
   app.use(bodyParser.urlencoded({ extended: true }));
@@ -40,12 +42,14 @@ const initializeHttp = (corsOptions: CorsOptions) => {
   app.use(
     rateLimit({
       windowMs: 60 * 60 * 1000, // 60 Minutes
-      max: 55, // limit each IP to 55 requests per windowMs.
-      message:
-        "Too many requests made from this IP, please try again after an hour.",
+      max: 55, // limits each IP to 55 requests per windowMs.
+      handler: (_: express.Request, res: express.Response) => 
+        res.status(429).json({
+          status: 429,
+          ERROR: "Too many requests made from this IP, please try again after an hour.",
+        })
     })
   );
-  app.disable("x-powered-by"); // Can reduce the ability of attackers to determine the software that a server uses.
 
   // *Logger Middleware*
   // morgan.token("all-headers", (req) => {
@@ -70,5 +74,3 @@ const initializeHttp = (corsOptions: CorsOptions) => {
 
   return app;
 };
-
-export default initializeHttp;

@@ -3,10 +3,12 @@ import type {
   UserDoc,
   UserDocStatistics,
   UserDocActivity,
-} from "@authFeatHttp/typings/User";
-import type { FriendCredentials } from "@qc/typescript/typings/UserCredentials";
+  UserDocNotifications,
+} from "@authFeat/typings/User";
 
 import { Schema } from "mongoose";
+import { randomUUID } from "crypto";
+
 import defaults from "@utils/schemaDefaults";
 
 export const userStatisticsSchema = new Schema<
@@ -14,7 +16,7 @@ export const userStatisticsSchema = new Schema<
   Model<UserDocStatistics>
 >(
   {
-    _id: { type: Schema.ObjectId, immutable: true },
+    _id: { type: Schema.Types.ObjectId, immutable: true },
     losses: {
       _id: false,
       type: {
@@ -61,17 +63,17 @@ export const userActivitySchema = new Schema<
   Model<UserDocActivity>
 >(
   {
-    _id: { type: Schema.ObjectId, immutable: true },
+    _id: { type: Schema.Types.ObjectId, immutable: true },
     history: {
       type: [
         {
           _id: false,
-          game_name: String,
+          game_name: { type: String },
           result: {
             outcome: { type: String, enum: ["win", "loss"] },
-            earnings: Number,
+            earnings: { type: Number },
           },
-          timestamp: Date,
+          timestamp: { type: Date, default: Date.now },
         },
       ],
     },
@@ -84,9 +86,49 @@ export const userActivitySchema = new Schema<
   }
 );
 
+const notification = {
+  _id: { type: Schema.Types.ObjectId, immutable: true },
+  notification_id: { type: String, immutable: true, default: () => randomUUID() },
+  type: { type: String, enum: ["news", "system", "general"], required: true },
+  title: { type: String, required: true },
+  message: { type: String, required: true },
+  link: {
+    sequence: { type: String },
+    to: { type: String },
+  },
+  created_at: { type: Date, index: true, default: Date.now },
+};
+export const userNotificationsSchema = new Schema<
+  UserDocNotifications,
+  Model<UserDocNotifications>
+>(
+  {
+    _id: { type: Schema.Types.ObjectId, immutable: true },
+    friend_requests: [{ type: Schema.Types.ObjectId, ref: "user" }],
+    notifications: {
+      news: {
+        _id: false,
+        type: [notification],
+      },
+      system: {
+        _id: false,
+        type: [notification],
+      },
+      general: { 
+        _id: false,
+        type: [notification],
+      },
+    },
+  },
+  {
+    collection: "user_notifications",
+    ...defaults.options,
+  }
+);
+
 const userSchema = new Schema<UserDoc, Model<UserDoc>>(
   {
-    _id: { type: Schema.ObjectId, immutable: true },
+    _id: { type: Schema.Types.ObjectId, immutable: true },
     type: {
       type: String,
       enum: {
@@ -109,7 +151,13 @@ const userSchema = new Schema<UserDoc, Model<UserDoc>>(
       type: { first: { type: String }, last: { type: String } },
       required: true,
     },
-    email: { type: String, lowercase: true, trim: true, required: true },
+    email: {
+      type: String,
+      lowercase: true,
+      trim: true,
+      unique: true,
+      required: true,
+    },
     email_verified: { type: Boolean, default: false },
     username: {
       type: String,
@@ -118,7 +166,7 @@ const userSchema = new Schema<UserDoc, Model<UserDoc>>(
       unique: true,
       required: true,
     },
-    verification_token: { type: String },
+    verification_token: { type: String, required: true },
     password: { type: String, required: true },
     country: { type: String, required: true },
     region: { type: String },
@@ -138,37 +186,31 @@ const userSchema = new Schema<UserDoc, Model<UserDoc>>(
       maxlength: [338, "bio field exceeds the max of 338 characters."],
     },
     balance: { type: Number, default: 0 },
-    // TODO:
     friends: {
       _id: false,
-      type: [
-        {
-          avatar_url: { type: String },
-          legal_name: {
-            _id: false,
-            type: { first: { type: String }, last: { type: String } },
-            required: true,
-          },
-          username: { type: String, required: true },
-          verification_token: { type: String },
-          country: { type: String, required: true },
-          bio: { type: String },
-        },
-      ],
+      type: {
+        pending: [{ type: Schema.Types.ObjectId, ref: "user" }],
+        list: [{ type: Schema.Types.ObjectId, ref: "user" },],
+      },
+      default: { pending: [], list: [] },
       validate: {
-        validator: (friends: FriendCredentials[]) => friends.length <= 25,
+        validator: (friends: any) => friends.list.length <= 25,
         message: "friends field exceeded the max of 25 friends.",
       },
-      // default: [],
     },
     statistics: {
-      type: Schema.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: "statistics",
       required: true,
     },
     activity: {
-      type: Schema.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: "activity",
+      required: true,
+    },
+    notifications: {
+      type: Schema.Types.ObjectId,
+      ref: "notifications",
       required: true,
     },
   },

@@ -1,23 +1,13 @@
 import type { Response } from "express";
-import type { ObjectId } from "mongoose";
+import type { Identifier } from "@authFeat/services/authService";
 import type { UserCredentials } from "@qc/typescript/typings/UserCredentials";
-import type {
-  GetUserBy,
-  User,
-  UserToClaims,
-  RegistrationTypes,
-} from "@authFeatHttp/typings/User";
+import type { GetUserBy, User, UserToClaims, RegistrationTypes } from "@authFeat/typings/User";
 
 import { handleApiError } from "@utils/handleError";
 
-import { getUser } from "@authFeatHttp/services/httpAuthService";
+import { getUser } from "@authFeat/services/authService";
 import { GenerateUserJWT } from "@authFeat/services/jwtService";
 import { deleteCsrfToken, generateCsrfToken } from "@authFeatHttp/services/csrfService";
-
-interface Identifier {
-  by: GetUserBy;
-  value: ObjectId | string;
-}
 
 /**
  * Initializes a user session by generating and setting JWT access and refresh tokens as cookies,
@@ -29,7 +19,7 @@ interface Identifier {
  */
 export default async function initializeSession(
   res: Response,
-  identifier: Identifier,
+  identifier: Identifier<GetUserBy>,
   csrfToken: string | undefined
 ) {
   try {
@@ -85,15 +75,14 @@ function formatUserToClaims(user: User): UserToClaims {
 }
 
 function formatClientUser(user: User): UserCredentials {
-  const { _id, email, verification_token, ...shared } =
-    formatUserToClaims(user);
+  const { _id, email, verification_token, ...shared } = formatUserToClaims(user);
   return {
     ...shared,
     avatar_url: user.avatar_url,
     email_verified: user.email_verified,
     ...(user.email_verified && { verification_token }),
     balance: user.balance,
-    friends: user.friends,
+    friends: (user.friends as unknown) as UserCredentials["friends"],
     statistics: {
       losses: user.statistics.losses,
       wins: user.statistics.wins,

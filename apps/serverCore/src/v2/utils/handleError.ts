@@ -1,4 +1,4 @@
-import type { Socket } from "socket.io";
+import type SocketCallback from "@typings/SocketCallback";
 
 import { logger } from "@qc/utils";
 
@@ -22,16 +22,19 @@ export function handleApiError(err: any, from: string, statusCode?: number) {
     : new ApiError(err.message, from, statusCode);
 }
 
+/**
+ * Use for 'critical' errors.
+ */
 export function handleSocketError(
-  socket: Socket,
+  callback: SocketCallback,
   err: any,
   formatErr: { status?: string; from: string }
 ) {
   logger.error(err.stack || err);
 
-  socket.emit("error", {
+  callback({
     status: formatErr.status || "internal error",
-    ...(process.env.NODE_ENV !== "production" && { message: formatErr.from }),
+    ...(process.env.NODE_ENV === "development" && { message: formatErr.from }),
     ERROR: err.message || "An unexpected error occurred.",
   });
 }

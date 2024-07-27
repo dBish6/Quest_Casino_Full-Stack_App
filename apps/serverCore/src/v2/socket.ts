@@ -12,12 +12,14 @@ import { logger } from "@qc/utils";
 
 import cookieParser from "cookie-parser";
 
+import { redisClient } from "@cache";
+
 import verifyUserToken from "@authFeatSocket/middleware/verifyUserToken";
 
 import authNamespace from "@authFeatSocket/namespaces/authNamespace";
 import chatNamespace from "@chatFeatSocket/namespaces/chatNamespace";
 
-const baseUrl = "/socket/v2",
+const baseUrl = "/api/v2/socket",
   namespaces = [`${baseUrl}/auth`, `${baseUrl}/chat`];
 
 export default function initializeSocketIo(
@@ -31,13 +33,17 @@ export default function initializeSocketIo(
   // *Middleware*
   io.engine.use(cookieParser());
 
-  namespaces.map((nsp) => io.of(nsp).use(verifyUserToken));
+  namespaces.forEach((nsp) => io.of(nsp).use(verifyUserToken));
 
   // *Namespaces*
   io.of(`${baseUrl}/auth`).on("connection", (socket) => {
-    logger.debug(`Client connected to auth namespace; ${socket.id}`);
+    // Caches their auth socket id for certain notifications at the moment.
+    redisClient.set(`user:${socket.decodedClaims!.sub}:socket_id`, socket.id).then(() => {
+        logger.debug(`Client connected to auth namespace; ${socket.id}`);
+        authNamespace(socket, io.of(`${baseUrl}/auth`));
+      });
 
-    authNamespace(socket, io.of(`${baseUrl}/auth`));
+    // Update timestamp here?
   });
 
   io.of(`${baseUrl}/chat`).on("connection", (socket) => {
