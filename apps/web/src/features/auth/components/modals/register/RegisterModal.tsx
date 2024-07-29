@@ -11,15 +11,13 @@ import formatPhoneNumber from "@authFeat/utils/formatPhoneNumber";
 import getSelectedRegion from "@authFeat/utils/getSelectedRegion";
 import { capitalize } from "@qc/utils";
 import { isFormValidationError } from "@utils/forms";
+import displayNotificationMessage from "@authFeat/utils/displayNotificationMessage";
 
 import useForm from "@hooks/useForm";
 import useSwitchModal from "@authFeat/hooks/useSwitchModal";
-import {
-  useRegisterMutation,
-  useLoginGoogleMutation,
-} from "@authFeat/services/authApi";
+import { useRegisterMutation, useLoginGoogleMutation } from "@authFeat/services/authApi";
 
-import { ModalTemplate } from "@components/modals";
+import { ModalTemplate, ModalQueryKey, ModalTrigger } from "@components/modals";
 import { Form } from "@components/form";
 import { Button, Input, Select } from "@components/common/controls";
 import { Icon, Link } from "@components/common";
@@ -30,7 +28,7 @@ import s from "./registerModal.module.css";
 
 export default function RegisterModal() {
   const { form, setLoading, setError, setErrors } = useForm<RegisterBodyDto>();
-  const { handleSwitch } = useSwitchModal("register");
+  const { handleSwitch } = useSwitchModal(ModalQueryKey.REGISTER_MODAL);
 
   const [worldData, setWorldData] = useState<{
       countries: Country[] | null;
@@ -113,7 +111,7 @@ export default function RegisterModal() {
     e.preventDefault();
     setLoading(true);
 
-    const form = e.target as HTMLFormElement,
+    const form = e.currentTarget as HTMLFormElement,
       fields = form.querySelectorAll<HTMLInputElement | HTMLSelectElement>(
         "input, select"
       );
@@ -122,6 +120,10 @@ export default function RegisterModal() {
       let errors: Partial<RegisterBodyDto> = {},
         reqBody: NullablePartial<RegisterBodyDto> = {} as any;
       for (const field of fields) {
+        if (field.type === "hidden") {
+          if (field.value.length) (document.querySelector(".exitXl") as HTMLButtonElement).click();
+          continue;
+        }
         const key = field.name as keyof RegisterBodyDto;
 
         if (!field.value.length && field.required) {
@@ -138,7 +140,6 @@ export default function RegisterModal() {
         setErrors(errors);
       } else {
         register(reqBody as RegisterBodyDto).then((res) => {
-          // prettier-ignore
           if (isFormValidationError(res.error))
             return setErrors(
               ((res.error as FetchBaseQueryError).data?.ERROR as Record<string,string>) || {}
@@ -152,45 +153,16 @@ export default function RegisterModal() {
     }
   };
 
-  const successMessage = (resSuccess: boolean, data: any) => {
-    if (resSuccess) {
-      const parts = data?.message.split("log in");
-
-      return (
-        parts &&
-        (parts[1] ? (
-          <>
-            {parts[0]}
-            <Link intent="primary" to={{ search: "?login1=true" }}>
-              log in
-            </Link>
-            {parts[1]}
-          </>
-        ) : (
-          data?.message
-        ))
-      );
-    }
-  };
-
   return (
     <ModalTemplate
       aria-description="Register a profile at Quest Casino by providing the details below or by pressing the google button."
-      queryKey="register"
+      queryKey={ModalQueryKey.REGISTER_MODAL}
       width="496px"
       className={s.modal}
       onCloseAutoFocus={() => setErrors({})}
-      Trigger={null}
     >
-      {({ close }) => (
+      {() => (
         <>
-          <Button
-            intent="exit"
-            size="xl"
-            className="exitXl"
-            onClick={() => close()}
-          />
-
           <div className="head">
             <hgroup>
               <Icon aria-hidden="true" id="badge-48" />
@@ -206,11 +178,17 @@ export default function RegisterModal() {
           <Form
             formLoading={processing}
             resSuccessMsg={
-              successMessage(registerSuccess, registerData) ||
+              (registerSuccess &&
+                displayNotificationMessage(registerData.message, {
+                  to: { search: `?${ModalQueryKey.LOGIN_MODAL}=true` },
+                  sequence: "log in",
+                  queryKey: ModalQueryKey.LOGIN_MODAL,
+                  options: { onClick: (e) => handleSwitch(e) }
+                })) ||
               (loginGoogleSuccess &&
                 `Welcome ${loginGoogleData.user.username}! You're all set, continue to use Google to log in to use your profile. Best of luck and have fun!`)
             }
-            resError={registerError || loginGoogleError}
+            resError={(registerError || loginGoogleError) as any}
             clearErrors={() => setErrors({})}
             onSubmit={handleSubmit}
           >
@@ -382,6 +360,8 @@ export default function RegisterModal() {
                   disabled={processing}
                 />
               </div>
+
+              <input type="hidden" id="bot" name="bot" />
             </div>
 
             <div className={s.submit}>
@@ -391,8 +371,8 @@ export default function RegisterModal() {
                 intent="primary"
                 size="xl"
                 type="submit"
+                className="formBtn"
                 disabled={processing}
-                style={{ opacity: googleLoading ? 0.48 : 1 }}
               >
                 {processingForm ? (
                   <Spinner intent="primary" size="md" />
@@ -415,7 +395,7 @@ export default function RegisterModal() {
           </Form>
 
           <LoginWithGoogle
-            queryKey="register"
+            queryKey={ModalQueryKey.REGISTER_MODAL}
             loginGoogle={loginGoogle}
             setGoogleLoading={setGoogleLoading}
             processing={{
@@ -427,16 +407,18 @@ export default function RegisterModal() {
 
           <span className={s.already}>
             Already have a account?{" "}
-            <Link
+            <ModalTrigger
+              queryKey={ModalQueryKey.LOGIN_MODAL}
               intent="primary"
-              to={{ search: "?login1=true" }}
               onClick={(e) => handleSwitch(e)}
             >
-              Log In
-            </Link>
+              Login
+            </ModalTrigger>
           </span>
         </>
       )}
     </ModalTemplate>
   );
 }
+
+RegisterModal.restricted = "loggedIn";

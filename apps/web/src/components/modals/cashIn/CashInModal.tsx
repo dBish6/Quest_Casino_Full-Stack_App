@@ -11,7 +11,7 @@ import useForm from "@hooks/useForm";
 //   useCashInMutation
 // } from "@authFeat/services/authApi";
 
-import { ModalTemplate } from "@components/modals";
+import { ModalTemplate, ModalQueryKey } from "@components/modals";
 import { Form } from "@components/form";
 import { Button, Input } from "@components/common/controls";
 import { Icon, Link } from "@components/common";
@@ -58,35 +58,13 @@ export default function CashInModal() {
   return (
     <ModalTemplate
       aria-description="Deposit a amount below by entering the amount or by choosing any of the other third-party services. Keep in mind, that this casino is just for fun, a developer playing around, so no real cash is involved."
-      queryKey="cashIn"
-      width="496px"
+      queryKey={ModalQueryKey.CASH_IN_MODAL}
+      width="368px"
       className={s.modal}
       //   onEscapeKeyDown={() => setErrors({})}
-      Trigger={() => (
-        <Button
-          asChild
-          intent="primary"
-          size="xl"
-          style={{ display: "flex", alignItems: "center" }}
-        >
-          <Link to={{ search: `?cashIn=true` }}>
-            <span>Cash In</span>
-          </Link>
-        </Button>
-      )}
     >
-      {({ close }) => (
+      {() => (
         <>
-          <Button
-            intent="exit"
-            size="xl"
-            className="exitXl"
-            onClick={() => {
-              close();
-              //   setErrors({});
-            }}
-          />
-
           <hgroup className="head">
             <Icon aria-hidden="true" id="hand-cash-48" />
             <Title asChild>
@@ -108,6 +86,7 @@ export default function CashInModal() {
                 size="lrg"
                 id="email_username"
                 name="email_username"
+                className="formBtn"
                 required
                 // error={form.error.email_username}
                 // disabled={processing}
@@ -122,7 +101,6 @@ export default function CashInModal() {
               size="xl"
               type="submit"
               // disabled={processing}
-              // style={{ opacity: googleLoading ? 0.48 : 1 }}
             >
               {/* {processingForm ? (
                   <Spinner intent="primary" size="md" />
@@ -151,7 +129,6 @@ export default function CashInModal() {
             size="xl"
             className={s.paypal}
             // disabled={processing}
-            // style={{ opacity: processingForm ? 0.48 : 1 }}
             onClick={() => alert("")}
           >
             <span>
@@ -167,7 +144,6 @@ export default function CashInModal() {
             size="xl"
             className={s.paypal}
             // disabled={processing}
-            // style={{ opacity: processingForm ? 0.48 : 1 }}
             onClick={() => alert("")}
           >
             <span>

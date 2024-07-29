@@ -15,6 +15,7 @@
     position: relative;
     width: 100%;
     max-width: 402px;
+    height: fit-content;
     padding: 1rem;
     padding-bottom: 14px;
     border: 2px solid var(--c-purple-border);

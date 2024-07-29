@@ -4,8 +4,7 @@ import NavAside from "./aside/Aside";
 import { ChatAside } from "@chatFeat/components/dashboard";
 
 import { Blob, Image, Icon } from "@components/common";
-import { CashInModal } from "@components/modals";
-import { Button } from "@components/common/controls";
+import { ModalQueryKey, ModalTrigger } from "@components/modals";
 import { ScrollArea } from "@components/scrollArea";
 
 import logoTitle from "/images/logo-title.svg";
@@ -51,14 +50,26 @@ export function Header() {
           {/* TODO: */}
           <h1>About</h1>
         </div>
+        
         <div>
-          <CashInModal />
-          <Button intent="primary" size="xl" iconBtn>
+          <ModalTrigger
+            queryKey={ModalQueryKey.CASH_IN_MODAL}
+            buttonProps={{ intent: "primary", size: "xl" }}
+          >
+            Cash In
+          </ModalTrigger>
+          <ModalTrigger
+            queryKey={ModalQueryKey.MENU_MODAL}
+            buttonProps={{ intent: "primary", size: "xl", iconBtn: true }}
+          >
             <Icon id="scroll-28" />
-          </Button>
-          <Button intent="primary" size="xl" iconBtn>
+          </ModalTrigger>
+          <ModalTrigger
+            queryKey={ModalQueryKey.NOTIFICATIONS_MODAL}
+            buttonProps={{ intent: "primary", size: "xl", iconBtn: true }}
+          >
             <Icon id="bell-25" />
-          </Button>
+          </ModalTrigger>
         </div>
       </div>
     </header>

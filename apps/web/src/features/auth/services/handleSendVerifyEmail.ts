@@ -1,4 +1,5 @@
 import type { ThunkDispatch, UnknownAction } from "@reduxjs/toolkit";
+import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 
 import { logger } from "@qc/utils";
 import { isFetchBaseQueryError } from "@utils/isFetchBaseQueryError";
@@ -18,17 +19,17 @@ export default async function handleSendVerifyEmail(
   button.innerText = "Loading...";
 
   try {
-    console.log("hello");
-    const res = dispatch(authEndpoints.sendVerifyEmail.initiate(undefined));
+    const res = dispatch(authEndpoints.sendVerifyEmail.initiate());
 
     const { data, error } = await res;
 
     if (error && isFetchBaseQueryError(error)) {
-      if (error.status === 541) {
+      const err = error as FetchBaseQueryError;
+      if (err.status === 541) {
         dispatch(
           ADD_TOAST({
             title: "SMTP Rejected",
-            message: error.data!.ERROR as string,
+            message: err.data!.ERROR as string,
             intent: "error",
           })
         );

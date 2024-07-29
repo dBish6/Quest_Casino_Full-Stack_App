@@ -1,34 +1,37 @@
 import type { DialogContentProps } from "@radix-ui/react-dialog";
 import type { Variants } from "framer-motion";
 
-import { forwardRef, useState, useRef, useLayoutEffect } from "react";
+import React, { forwardRef, useState, useRef, useLayoutEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { AnimatePresence, m } from "framer-motion";
-import {
-  Root,
-  Trigger as RTrigger,
-  Portal,
-  Overlay,
-  Content,
-} from "@radix-ui/react-dialog";
+import { Root, Portal, Overlay, Content } from "@radix-ui/react-dialog";
 
 import preventScroll from "@utils/preventScroll";
 import { fadeInOut } from "@utils/animations";
 
-import { useAppSelector, useAppDispatch } from "@redux/hooks";
-import { selectUserCredentials } from "@authFeat/redux/authSelectors";
+import { useAppDispatch } from "@redux/hooks";
 import { ADD_TOAST } from "@redux/toast/toastSlice";
 
 import { ScrollArea } from "@components/scrollArea";
+import { type ButtonProps, Button } from "@components/common/controls";
+import { type LinkProps, Link } from "@components/common";
 
 import "./modalTemplate.css";
+
+export enum ModalQueryKey {
+  ADD_FRIENDS_MODAL = "add",
+  CASH_IN_MODAL = "cash",
+  LOGIN_MODAL = "login",
+  MENU_MODAL = "menu",
+  NOTIFICATIONS_MODAL = "notif",
+  REGISTER_MODAL = "register"
+}
 
 export interface ModalTemplateProps
   extends Omit<DialogContentProps, "children" | "onInteractOutside"> {
   children: (props: { close: () => void }) => React.ReactNode;
-  queryKey: string;
+  queryKey: ModalQueryKey;
   width: React.CSSProperties["maxWidth"];
-  Trigger: (() => React.ReactElement) | null;
 }
 
 export const ANIMATION_DURATION = 1100;
@@ -52,14 +55,11 @@ const modalPopInOut: Variants = {
 };
 
 const ModalTemplate = forwardRef<HTMLDivElement, ModalTemplateProps>(
-  ({ children, className, style, queryKey, width, Trigger, ...props }, ref) => {
+  ({ children, className, style, queryKey, width, ...props }, ref) => {
     const [searchParams, setSearchParams] = useSearchParams();
 
     const [modal, setModal] = useState({ show: false, render: false }),
       fadeVariant = fadeInOut();
-
-    const dispatch = useAppDispatch(),
-      user = useAppSelector(selectUserCredentials);
 
     const handleToggle = () => {
       const toggle = !modal.show;
@@ -83,17 +83,8 @@ const ModalTemplate = forwardRef<HTMLDivElement, ModalTemplateProps>(
     if (typeof window !== "undefined") {
       useLayoutEffect(() => {
         const incomingQuery = searchParams.get(queryKey);
-        // prettier-ignore
-        if ((incomingQuery === "register" || incomingQuery?.startsWith("login")) && user) {
-          dispatch(
-            ADD_TOAST({
-              message:
-                "You're already logged in, you cannot access this content.",
-              intent: "error",
-              duration: 65000,
-            })
-          );
-        } else if (
+
+        if (
           searchParams.has(queryKey) ||
           prevOpen.current === queryKey
         ) {
@@ -117,11 +108,6 @@ const ModalTemplate = forwardRef<HTMLDivElement, ModalTemplateProps>(
 
     return (
       <Root open={modal.render} onOpenChange={handleToggle} modal>
-        {Trigger && (
-          <RTrigger>
-            <Trigger />
-          </RTrigger>
-        )}
         <Portal>
           <AnimatePresence>
             {modal.show && (
@@ -146,10 +132,17 @@ const ModalTemplate = forwardRef<HTMLDivElement, ModalTemplateProps>(
                   exit="hidden"
                 >
                   <Content
+                    id={queryKey}
                     ref={ref}
                     onInteractOutside={(e) => e.preventDefault()}
                     {...props}
                   >
+                    <Button
+                      intent="exit"
+                      size="xl"
+                      className="exitXl"
+                      onClick={() => handleToggle()}
+                    />
                     <ScrollArea
                       className={`modal ${className ? " " + className : ""}`}
                       orientation="vertical"
@@ -166,5 +159,45 @@ const ModalTemplate = forwardRef<HTMLDivElement, ModalTemplateProps>(
     );
   }
 );
-
 export default ModalTemplate;
+
+const RESTRICTED_MODALS: ReadonlySet<ModalQueryKey> = new Set([
+  ModalQueryKey.NOTIFICATIONS_MODAL,
+  ModalQueryKey.ADD_FRIENDS_MODAL,
+]);
+
+export const ModalTrigger = forwardRef<
+  HTMLAnchorElement, Omit<LinkProps, "to"> & { queryKey: ModalQueryKey, buttonProps?: ButtonProps }
+>(({ children, queryKey, buttonProps, ...props }, ref) => {
+    const [searchParams] = useSearchParams(),
+      dispatch = useAppDispatch()
+
+    return (
+      <Button asChild {...buttonProps} >
+        <Link
+          aria-haspopup="dialog"
+          aria-expanded={searchParams.has(queryKey)}
+          aria-controls={queryKey}
+          ref={ref}
+          to={{ search: `?${queryKey}=true` }}
+          {...props}
+          onClick={(e) => {
+            if (RESTRICTED_MODALS.has(queryKey))
+              dispatch(
+                ADD_TOAST({
+                  title: "Login Required",
+                  message:
+                    "You must be logged in to have access to this feature.",
+                  intent: "error",
+                })
+              )
+
+            if (props.onClick) props.onClick(e);
+          }}
+        >
+          {children}
+        </Link>
+      </Button>
+    );
+  }
+);

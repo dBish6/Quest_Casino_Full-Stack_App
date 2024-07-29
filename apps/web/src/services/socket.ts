@@ -1,5 +1,5 @@
 import type { Socket } from "socket.io-client";
-import type { SocketResponse, ErrorSocketResponse } from "@typings/ApiResponse";
+import type { SocketResponse } from "@typings/ApiResponse";
 
 import { io } from "socket.io-client";
 import { logger } from "@qc/utils";
@@ -9,40 +9,39 @@ export const namespaces = ["auth", "chat"] as const;
 export type SocketNamespaces = (typeof namespaces)[number];
 export type TimeoutObj = Partial<Record<SocketNamespaces, NodeJS.Timeout>>;
 
-// const baseUrl = "/socket/v2",
-const baseUrl = "http://localhost:4000/socket/v2";
-// const baseUrl = ":4000/socket/v2",
+// const baseUrl = "/socket/v2/socket",
+const baseUrl = "http://localhost:4000/api/v2/socket";
+
+const socketInstances: Partial<Record<SocketNamespaces, Socket>> = {};
 
 /**
  * Creates a socket instance only once for a specific namespace.
  */
-export function getSocketInstance(namespace: SocketNamespaces) {
-  let socket: Socket;
+export function getSocketInstance(namespace: SocketNamespaces): Socket {
+  if (!socketInstances[namespace]) {
+    const socket = io(`${baseUrl}/${namespace}`, {
+      autoConnect: false,
+      reconnection: false,
+      transports: ["websocket", "polling"],
+      withCredentials: true,
+    });
 
-  const getSocket = () => {
-    if (!socket) {
-      socket = io(`${baseUrl}/${namespace}`, {
-        autoConnect: false,
-        reconnection: false,
-        transports: ["websocket", "polling"],
-        withCredentials: true,
-      });
-    }
+    socketInstances[namespace] = socket;
+  }
 
-    return socket;
-  };
-
-  return getSocket();
+  return socketInstances[namespace];
 }
 
 export function emitAsPromise(socket: Socket) {
   return <TData extends object>(event: string, data: TData): Promise<any> => {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       socket.emit(event, data, (res: SocketResponse<TData>) => {
         if (res.status !== "ok") {
-          reject(res);
+          // Mimics the structure of what RTK does for their FetchBaseQueryError.
+          const { status, ...rest } = res
+          resolve({ error: { data: { ...rest }, status } });
         } else {
-          resolve(res);
+          resolve({ data: res });
         }
       });
     });
@@ -102,42 +101,31 @@ export async function socketInstancesConnectionProvider(timeoutObj: TimeoutObj) 
   });
 
   await Promise.all(connections);
+  setupDebugger()
 }
 
-function setupDefaultListeners(socket: Socket, namespace: SocketNamespaces) {
-  const engine = socket.io.engine,
-    engineLogs = true;
+function setupDebugger() {
+  if (import.meta.env.MODE !== "production") {
+    const socket = getSocketInstance("auth"); // They both use the same engine.
 
-  socketErrorHandler(socket, namespace);
-
-  if (import.meta.env.MODE !== "production" && engineLogs) {
-    engine
-      .on("packet", ({ type, data }) => 
-        logger.debug(`${namespace} received:`, { type: type, data: data })
+    socket.io.engine
+      .on("packet", ({ type, data }) =>
+        logger.debug("Socket received:", { type: type, data: data })
       )
       .on("packetCreate", ({ type, data }) =>
-        logger.debug(`${namespace} Sent:`, { type: type, data: data })
+        logger.debug("Socket sent:", { type: type, data: data })
       );
   }
 }
-function socketErrorHandler(socket: Socket, namespace: SocketNamespaces) {
-  socket
-    .on("connect_error", (error) => 
-      logger.error(
-        `Unexpected error occurred from ${namespace} socket instance:\n`, error.message
-      )
+
+function setupDefaultListeners(socket: Socket, namespace: SocketNamespaces) {
+  socket.on("connect_error", (error) =>
+    logger.error(
+      `Unexpected error occurred from ${namespace} socket instance:\n`, error.message
     )
-    .on("error", (error: ErrorSocketResponse) => {
-      // Not sure how I want to do this yet.
-      switch (error.status) {
-        case "bad request":
-          error.message.includes(`"leave"`, -1) && history.push("/error-500");
-          break;
-        case "internal error":
-          history.push("/error-500");
-          break;
-        default:
-          break;
-      }
-    });
+  );
+
+  socket.on("disconnect", () => {
+    console.log("DISCONNECTING");
+  });
 }

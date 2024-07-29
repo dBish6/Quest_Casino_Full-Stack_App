@@ -45,7 +45,9 @@
       }
       & > div:last-child {
         gap: 1.5rem;
-        & button:first-child {
+        & a:first-child {
+          display: flex;
+          align-items: center;
           margin-right: 0.5rem;
         }
       }

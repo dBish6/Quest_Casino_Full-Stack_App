@@ -16,6 +16,9 @@
 }
 button.google {
   width: 100%;
+  &[disabled] {
+    opacity: 0.68;
+  }
   & span {
     display: flex;
     justify-content: center;

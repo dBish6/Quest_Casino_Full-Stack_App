@@ -20,6 +20,7 @@ const button = cva(s.button, {
       "exit ghost": `${s.icon} ${s.exit} ${s.ghost}`,
     },
     size: {
+      xsm: s.xsm,
       sm: s.sm,
       md: s.md,
       lrg: s.lrg,

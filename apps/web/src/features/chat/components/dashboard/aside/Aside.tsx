@@ -17,6 +17,7 @@ import Friends from "./Friends";
 import Chat from "./chat/Chat";
 import { Button } from "@components/common/controls";
 import { Icon, Link } from "@components/common";
+import { ModalQueryKey, ModalTrigger } from "@components/modals";
 
 import s from "./aside.module.css";
 
@@ -88,7 +89,7 @@ export default function Aside() {
       <aside id="asideRight" className={s.aside}>
         <m.div
           // role="group"
-          aria-roledescription="Drawer"
+          aria-roledescription="drawer"
           id="asideDrawer"
           className={s.drawer}
           variants={dragPoints}
@@ -168,9 +169,9 @@ export default function Aside() {
                   <Friends user={user} />
                 ) : (
                   <span style={{ alignSelf: "center", textAlign: "center" }}>
-                    <Link intent="primary" to={{ search: "?login1=true" }}>
-                      Log In
-                    </Link>{" "}
+                    <ModalTrigger queryKey={ModalQueryKey.LOGIN_MODAL} intent="primary">
+                      Login
+                    </ModalTrigger>{" "}
                     to see friends.
                   </span>
                 )}

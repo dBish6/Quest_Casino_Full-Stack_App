@@ -80,17 +80,36 @@
       }
 
       & .friends {
+        position: relative;
         display: flex;
         align-items: center;
         flex-direction: column;
         width: 100%;
-        & a {
+        /* & a {
           font-weight: 400;
           &.add {
             font: var(--para-small);
             font-style: italic;
             text-align: center;
             margin-block: 0.25rem 1rem;
+          }
+        } */
+        & > a {
+          font: var(--para-small);
+          font-style: italic;
+          text-align: center;
+          margin-block: 0.25rem 1rem;
+        }
+
+        & > p {
+          position: absolute;
+          top: 50%;
+          left: 0;
+          transform: translateY(-50%);
+          text-align: center;
+          font: var(--para-regular);
+          & a {
+            font-weight: 400;
           }
         }
 

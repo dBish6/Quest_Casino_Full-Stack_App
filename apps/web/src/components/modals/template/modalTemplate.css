@@ -1,0 +1,75 @@
+.modalBackdrop {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* TODO: Or however big the dashboard is. */
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(19, 19, 19, 0.35);
+  backdrop-filter: blur(6px);
+  z-index: var(--z-modal);
+
+  & .modalContainer {
+    position: relative;
+    width: 100%;
+    margin: 0.5rem;
+    & div[role="dialog"] {
+      & > button.exitXl {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        z-index: 4;
+      }
+      & .modal {
+        border: 2px solid var(--c-purple-border);
+        border-radius: 12px;
+        background-color: var(--c-lvl-2-trns);
+        backdrop-filter: blur(40px);
+        & > .viewport {
+          height: calc(100vh - 1rem);
+          padding: 2rem;
+        
+          & .head {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+            &hgroup {
+              gap: 0.75rem;
+            }
+            & h2 {
+              font: var(--h1);
+            }
+          }
+          & .head hgroup {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+          }
+
+          & form {
+            margin-bottom: 1.5rem;
+            & .inputs {
+              & > .control {
+                margin-bottom: 1.5rem;
+              }
+              & .control {
+                width: 100%;
+              }
+            }
+          }
+          & button.formBtn {
+            width: 100%;
+            &[disabled] {
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              opacity: 0.68;
+            }
+          }
+        }
+      }
+    }
+  }
+}

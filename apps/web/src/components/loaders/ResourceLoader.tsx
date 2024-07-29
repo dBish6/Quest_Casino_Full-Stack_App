@@ -1,7 +1,7 @@
 import type { FeatureBundle } from "framer-motion";
 import type { TimeoutObj } from "@services/socket";
 
-import { useRef, useState, useLayoutEffect } from "react";
+import { createContext, useRef, useState, useLayoutEffect } from "react";
 
 import { logger } from "@qc/utils";
 import delay from "@utils/delay";
@@ -14,15 +14,21 @@ import { socketInstancesConnectionProvider } from "@services/socket";
 
 import OverlayLoader from "./overlay/OverlayLoader";
 
-export default function ResourceLoader({ children }: React.PropsWithChildren<{}>) {
+export interface ResourceLoaderContextValues {
+  resourcesLoaded: boolean | undefined;
+}
+
+export const ResourceLoaderContext = createContext<ResourceLoaderContextValues | undefined>(undefined);
+
+export default function ResourceLoaderProvider({ children }: React.PropsWithChildren<{}>) {
   const FramerFeatureBundleRef = useRef<{
-      LazyMotion?: React.ElementType;
-      domMax?: FeatureBundle;
-    }>({}),
-    [progress, setProgress] = useState({
-      loading: false, // I would love to show the loader initially but the portal in OverlayLoader breaks hydration.
-      message: "Loading animating magic...",
-    });
+    LazyMotion?: React.ElementType;
+    domMax?: FeatureBundle;
+  }>({}),
+  [progress, setProgress] = useState({
+    loading: false, // I would love to show the loader initially but the portal in OverlayLoader breaks hydration.
+    message: "Loading animating magic...",
+  });
 
   const userToken = useAppSelector(selectUserCsrfToken);
 
@@ -55,15 +61,14 @@ export default function ResourceLoader({ children }: React.PropsWithChildren<{}>
           }
         })();
 
-        return () =>
-          Object.values(timeoutObj).forEach((timeout) => clearTimeout(timeout));
+        return () => Object.values(timeoutObj).forEach((timeout) => clearTimeout(timeout));
       }
     }, [userToken]);
   }
 
   const { LazyMotion, domMax } = FramerFeatureBundleRef.current;
   return (
-    <>
+    <ResourceLoaderContext.Provider value={{ resourcesLoaded: LazyMotion && progress.loading === false }}>
       {progress.loading && <OverlayLoader message={progress.message} />}
       {LazyMotion ? (
         <LazyMotion features={domMax} strict>
@@ -72,6 +77,6 @@ export default function ResourceLoader({ children }: React.PropsWithChildren<{}>
       ) : (
         children
       )}
-    </>
+    </ResourceLoaderContext.Provider>
   );
-}
+};

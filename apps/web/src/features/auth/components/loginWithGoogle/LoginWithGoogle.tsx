@@ -13,7 +13,7 @@ import s from "./loginWithGoogle.module.css";
 import { LoginGoogleTriggerType } from "@authFeat/services/authApi";
 
 export interface LoginWithGoogleProps {
-  queryKey: "register" | "login1" | "login2";
+  queryKey: "register" | "login";
   loginGoogle: LoginGoogleTriggerType;
   setGoogleLoading: React.Dispatch<React.SetStateAction<boolean>>;
   processing: {
@@ -49,17 +49,22 @@ export default function LoginWithGoogle({
   const handleCallback = (code: string) => {
     setGoogleLoading(true);
 
-    loginGoogle({
+    const mutation = loginGoogle({
       code: code,
       state: searchParams.get("state") || "",
       secret: storedOState?.secret,
       redirect_uri: redirectUri,
-    }).finally(() => setGoogleLoading(false));
+    })
+    mutation.finally(() => setGoogleLoading(false));
+    return mutation;
   };
 
   useEffect(() => {
     const code = searchParams.get("code");
-    if (code) handleCallback(code);
+    if (code) {
+      const mutation = handleCallback(code);
+      return () => mutation.abort();
+    };
   }, [searchParams]);
 
   return (
@@ -83,7 +88,6 @@ export default function LoginWithGoogle({
         size="xl"
         className={s.google}
         disabled={processing.all}
-        style={{ opacity: processing.form ? 0.48 : 1 }}
         onClick={() =>
           window.open(createGoogleOAuthUrl(), "_blank", "noopener,noreferrer")
         }

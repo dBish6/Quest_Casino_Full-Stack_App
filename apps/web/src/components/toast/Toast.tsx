@@ -23,12 +23,6 @@ import { Icon, Link } from "@components/common";
 
 import s from "./toast.module.css";
 
-const defaultTitles = {
-  success: "Success!",
-  error: "Error",
-  info: "Info",
-};
-
 const toast = cva(s.toast, {
   variants: {
     intent: {
@@ -49,7 +43,13 @@ export interface ToastProps
   close: () => void;
 }
 
-const ANIMATION_DURATION = 500;
+const defaultTitles = {
+  success: "Success!",
+  error: "Error",
+  info: "Info",
+};
+
+const ANIMATION_DURATION = 490;
 
 export default function Toast({
   message,

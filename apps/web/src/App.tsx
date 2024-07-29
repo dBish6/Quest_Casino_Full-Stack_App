@@ -4,7 +4,7 @@
  *
  * Author: David Bishop
  * Creation Date: April 16, 2024
- * Last Updated: July 3, 2024
+ * Last Updated: July 29, 2024
  *
  * Description:
  * .
@@ -21,10 +21,12 @@ import { Navigate, type RouteObject } from "react-router-dom";
 import HistoryProvider from "@utils/History";
 import { ToastsProvider } from "@components/toast";
 
-import { ResourceLoader } from "@components/loaders";
+import { ResourceLoaderProvider } from "@components/loaders";
+import SocketListenersProvider from "@components/SetupSocketListeners";
 import { Dashboard } from "@components/dashboard";
-import { RegisterModal } from "@authFeat/components/modals";
+import { ModalsProvider } from "@components/modals";
 import VerificationHandler from "@components/VerificationHandler";
+
 import { About, Home, Profile, Settings, Support } from "@views/index";
 import { Error } from "@views/errors";
 
@@ -41,12 +43,14 @@ export const routes: RouteObject[] = [
         <HistoryProvider />
         <ToastsProvider />
 
-        <ResourceLoader>
+        <ResourceLoaderProvider>
+          <SocketListenersProvider />
+
           <Dashboard />
 
-          <RegisterModal />
+          <ModalsProvider />
           <VerificationHandler />
-        </ResourceLoader>
+        </ResourceLoaderProvider>
       </>
     ),
     children: [
@@ -108,7 +112,7 @@ export const routes: RouteObject[] = [
           <Error
             status={429}
             title="Too Many Requests"
-            description="Too many requests have been made to the server, the entire site maybe on lockdown for you. You can try refreshing to the home page, but if this persists, come back in an hour."
+            description="You made too many requests to the our server in a short period, Quest Casino is temporarily locked down for you. Please come back again in an hour."
           />
         ),
       },

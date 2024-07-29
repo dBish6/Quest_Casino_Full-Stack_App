@@ -1,13 +1,13 @@
 import { useEffect } from "react";
 
-import { useResourceLoaderContext } from "./loaders";
+import useResourceLoader from "@hooks/useResourceLoader";
 
 import { useAppSelector, useAppDispatch } from "@redux/hooks";
 import { selectUserCredentials } from "@authFeat/redux/authSelectors";
 import { authEndpoints, authSocketListeners } from "@authFeat/services/authApi";
 
 export default function SocketListenersProvider() {
-  const { resourcesLoaded } = useResourceLoaderContext();
+  const { resourcesLoaded } = useResourceLoader();
 
   const user = useAppSelector(selectUserCredentials),
     dispatch = useAppDispatch();

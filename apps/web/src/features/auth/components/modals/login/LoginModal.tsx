@@ -10,12 +10,9 @@ import { isFormValidationError } from "@utils/forms";
 
 import useForm from "@hooks/useForm";
 import useSwitchModal from "@authFeat/hooks/useSwitchModal";
-import {
-  useLoginMutation,
-  useLoginGoogleMutation,
-} from "@authFeat/services/authApi";
+import { useLoginMutation, useLoginGoogleMutation } from "@authFeat/services/authApi";
 
-import { ModalTemplate } from "@components/modals";
+import { ModalTemplate, ModalQueryKey } from "@components/modals";
 import { Form } from "@components/form";
 import { Button, Input } from "@components/common/controls";
 import { Icon, Link } from "@components/common";
@@ -24,13 +21,9 @@ import { Spinner } from "@components/loaders";
 
 import s from "./loginModal.module.css";
 
-export default function LoginModal({
-  queryKey,
-}: {
-  queryKey: "login1" | "login2";
-}) {
+export default function LoginModal() {
   const { form, setLoading, setError, setErrors } = useForm<LoginBodyDto>();
-  const { handleSwitch } = useSwitchModal(queryKey);
+  const { handleSwitch } = useSwitchModal(ModalQueryKey.LOGIN_MODAL);
 
   const [
     login,
@@ -65,12 +58,16 @@ export default function LoginModal({
     e.preventDefault();
     setLoading(true);
 
-    const form = e.target as HTMLFormElement,
+    const form = e.currentTarget as HTMLFormElement,
       fields = form.querySelectorAll<HTMLInputElement>("input");
 
     try {
       let reqBody: NullablePartial<LoginBodyDto> = {} as any;
       for (const field of fields) {
+        if (field.type === "hidden") {
+          if (field.value.length) (document.querySelector(".exitXl") as HTMLButtonElement).click();
+          continue;
+        }
         const key = field.name as keyof LoginBodyDto;
 
         if (!field.value.length) {
@@ -82,7 +79,6 @@ export default function LoginModal({
 
       if (Object.keys(reqBody).length === 2)
         login(reqBody as LoginBodyDto).then((res) => {
-          // prettier-ignore
           if (isFormValidationError(res.error))
           return setErrors(
             ((res.error as FetchBaseQueryError).data?.ERROR as Record<string, string>) || {}
@@ -98,20 +94,13 @@ export default function LoginModal({
   return (
     <ModalTemplate
       aria-description="Login with your Quest Casino profile by providing the details below."
-      queryKey={queryKey}
+      queryKey={ModalQueryKey.LOGIN_MODAL}
       width="368px"
       className={`modal ${s.modal}`}
       onCloseAutoFocus={() => setErrors({})}
-      Trigger={() => (
-        <Link intent="primary" to={{ search: `?${queryKey}=true` }}>
-          Login
-        </Link>
-      )}
     >
-      {({ close }) => (
+      {() => (
         <>
-          <Button intent="exit" size="xl" className="exitXl" onClick={close} />
-
           <hgroup className="head">
             <Icon aria-hidden="true" id="enter-45" />
             <Title asChild>
@@ -121,7 +110,7 @@ export default function LoginModal({
 
           <Form
             formLoading={processingForm}
-            resError={loginError || loginGoogleError}
+            resError={(loginError || loginGoogleError) as any}
             clearErrors={() => setErrors({})}
             onSubmit={handleSubmit}
           >
@@ -149,6 +138,8 @@ export default function LoginModal({
                 disabled={processing}
                 onInput={() => setError("password", "")}
               />
+
+              <input type="hidden" id="bot" name="bot" />
             </div>
             <Button
               aria-label="Log In"
@@ -156,8 +147,8 @@ export default function LoginModal({
               intent="primary"
               size="xl"
               type="submit"
+              className="formBtn"
               disabled={processing}
-              style={{ opacity: googleLoading ? 0.48 : 1 }}
             >
               {processingForm ? (
                 <Spinner intent="primary" size="md" />
@@ -168,7 +159,7 @@ export default function LoginModal({
           </Form>
 
           <LoginWithGoogle
-            queryKey={queryKey}
+            queryKey={ModalQueryKey.LOGIN_MODAL}
             loginGoogle={loginGoogle}
             setGoogleLoading={setGoogleLoading}
             processing={{
@@ -193,3 +184,5 @@ export default function LoginModal({
     </ModalTemplate>
   );
 }
+
+LoginModal.restricted = "loggedIn";

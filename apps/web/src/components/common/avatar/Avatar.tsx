@@ -1,5 +1,5 @@
 import type { VariantProps } from "class-variance-authority";
-import type { UserCredentials } from "@qc/typescript/typings/UserCredentials";
+import type { FriendCredentials } from "@qc/typescript/typings/UserCredentials";
 
 import { forwardRef, Fragment } from "react";
 import { Link } from "react-router-dom";
@@ -39,33 +39,43 @@ const avatar = cva(s.avatar, {
 export interface AvatarProps
   extends React.ComponentProps<"div">,
     VariantProps<typeof avatar> {
-  user?: UserCredentials | { avatar_url: string };
+  user?: Partial<FriendCredentials>; // Not only friends would be passed.
   showProfile?: boolean;
 }
 
 const Avatar = forwardRef<HTMLDivElement, AvatarProps>(
   ({ className, intent, size, user, showProfile = true, ...props }, ref) => {
-    const Container = user && showProfile ? ProfileHoverCard : Fragment;
+    const linkToProfile = 
+      user && showProfile && user.legal_name && user.bio && user.verification_token;
 
-    const ProfileLink = (user as UserCredentials)?.verification_token
-      ? Link
-      : Fragment;
-
+    // FIXME: Format better. 
     return (
-      // @ts-ignore
-      <Container
-        {...(Container !== Fragment && {
-          intent: intent || "primary",
-          size: size || "sm",
-          user: user!,
-        })}
-      >
-        {/* @ts-ignore */}
-        <ProfileLink
-          {...(ProfileLink !== Fragment && {
-            to: (user as UserCredentials).verification_token,
-          })}
-        >
+      <Fragment>
+        {linkToProfile ? (
+          <ProfileHoverCard
+            intent={intent || "primary"}
+            size={size || "sm"}
+            user={user as FriendCredentials}
+          >
+            <Link
+              to={`/profile/${user?.username}`}
+            >
+              <div
+                ref={ref}
+                className={avatar({ className, intent, size })}
+                {...props}
+              >
+                <Image
+                  src={user?.avatar_url ? user.avatar_url : "/images/default.svg"}
+                  alt="Profile Picture"
+                  fill
+                />
+                {/* TODO: */}
+                <span role="status" className={s.activityIndie} data-status={user.status || "offline"} />
+              </div>
+            </Link>
+          </ProfileHoverCard>
+        ) : (
           <div
             ref={ref}
             className={avatar({ className, intent, size })}
@@ -76,13 +86,14 @@ const Avatar = forwardRef<HTMLDivElement, AvatarProps>(
               alt="Profile Picture"
               fill
             />
-            {/* TODO: aria? */}
-            {user && showProfile && (
+            {/* TODO: */}
+            {user?.status && <span role="status" className={s.activityIndie} data-status={user.status || "offline"} />}
+            {/* {user && showProfile && (
               <span role="status" className={s.activityIndie} />
-            )}
+            )} */}
           </div>
-        </ProfileLink>
-      </Container>
+        )}
+      </Fragment>
     );
   }
 );
@@ -94,7 +105,7 @@ function ProfileHoverCard({
   size,
   user,
 }: React.PropsWithChildren<
-  { user: UserCredentials } & VariantProps<typeof avatar>
+  { user: FriendCredentials } & VariantProps<typeof avatar>
 >) {
   const legalName = user.legal_name;
 

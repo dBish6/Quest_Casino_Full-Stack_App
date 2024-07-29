@@ -2,7 +2,7 @@ import type { IconIds, LinkProps } from "@components/common";
 
 import { Title } from "@radix-ui/react-dialog";
 
-import { ModalTemplate } from "@components/modals";
+import { ModalTemplate, ModalQueryKey } from "@components/modals";
 import { Link, Icon } from "@components/common";
 import { Button } from "@components/common/controls";
 
@@ -16,47 +16,32 @@ const triggerDefaults: Record<string, { title: string; icon: IconIds }> = {
 
 export interface MenuModalProps extends Omit<LinkProps, "to"> {
   queryKey: string;
-  slide: "1" | "2" | "3";
+  // slide: "1" | "2" | "3";
+  slide: "Leaderboard" | "Quests" | "Bonuses";
 }
+
+// export const SLIDES = ["Leaderboard", "Quests", "Bonuses"] as const;
 
 // TODO:
 export default function MenuModal({
-  queryKey,
-  slide,
-  ...props
-}: MenuModalProps) {
-  const initialSlide = triggerDefaults[slide].title;
+  // children,
+  // queryKey,
+  // slide,
+  // ...props
+}) {
+  // const initialSlide = triggerDefaults[slide].title;
 
   return (
     <ModalTemplate
       aria-description="..."
-      queryKey={`${queryKey}${slide}`}
+      // queryKey={`${queryKey}${slide}`}
+      queryKey={ModalQueryKey.MENU_MODAL}
       width="768px"
       className={s.modal}
       // onCloseAutoFocus={() => setErrors({})}
-      Trigger={() => (
-        <Link
-          to={{
-            search: `?${queryKey}${slide}=true&${initialSlide}=true`,
-          }}
-          {...props}
-        >
-          <Icon id={triggerDefaults[slide].icon} /> {initialSlide}
-        </Link>
-      )}
     >
-      {({ close }) => (
+      {() => (
         <>
-          <Button
-            intent="exit"
-            size="xl"
-            className="exitXl"
-            onClick={() => {
-              close();
-              //   setErrors({});
-            }}
-          />
-
           <div className="head">
             <hgroup>
               {/* Changes on slides. */}

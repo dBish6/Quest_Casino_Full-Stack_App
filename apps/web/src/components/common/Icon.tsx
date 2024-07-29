@@ -51,6 +51,11 @@ const iconLib = {
     "aria-label": "Identification",
   },
 
+  "bell-45": {
+    id: "bell",
+    size: { width: "44.999", height: "48.866" },
+    "aria-label": "Notifications",
+  },
   "bell-25": {
     id: "bell",
     size: { width: "25.782", height: "27.998" },
@@ -63,10 +68,23 @@ const iconLib = {
     "aria-label": "Notifications",
   },
 
+  "border-horizontal-24": {
+    id: "border-horizontal",
+    size: { width: "24.001", height: "24.085" },
+    "aria-label": "Categorize",
+  },
+
+
   "check-mark-24": {
     id: "check-mark",
     size: { width: "24", height: "16.961" },
     "aria-label": "Success",
+  },
+
+  "delete-19": {
+    id: "delete",
+    size: { width: "18.858", height: "23.999" },
+    "aria-label": "Delete",
   },
 
   "discord-20": {
@@ -248,6 +266,17 @@ const iconLib = {
     id: "scroll",
     size: { width: "16", height: "14.476" },
     "aria-label": "Quests",
+  },
+
+  "search-24": {
+    id: "search",
+    size: { width: "24", height: "24.11" },
+    "aria-label": "Search",
+  },
+  "search-21": {
+    id: "search",
+    size: { width: "20.996", height: "21.022" },
+    "aria-label": "Search",
   },
 
   "send-24": {

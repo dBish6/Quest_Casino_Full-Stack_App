@@ -14,17 +14,14 @@ export interface FormProps
   formLoading: boolean;
   resSuccessMsg?: any;
   resError: FetchBaseQueryError | SerializedError | undefined;
-  clearErrors: () => void;
+  clearErrors?: () => void;
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
 }
 
 const Form = forwardRef<HTMLFormElement, React.PropsWithChildren<FormProps>>(
-  (
-    { children, formLoading, resSuccessMsg, resError, clearErrors, ...props },
-    ref
-  ) => {
+  ({ children, formLoading, resSuccessMsg, resError, clearErrors, ...props }, ref) => {
     useEffect(() => {
-      if (resSuccessMsg) clearErrors();
+      if (resSuccessMsg && clearErrors) clearErrors();
     }, [resSuccessMsg]);
 
     return (
@@ -36,12 +33,12 @@ const Form = forwardRef<HTMLFormElement, React.PropsWithChildren<FormProps>>(
             resError &&
             (isFetchBaseQueryError(resError) ? (
               typeof resError.data?.ERROR === "string" &&
-              [400, 404, 409].includes(resError.status) ? (
+              [400, 401, 404, 409].includes((resError.status as number)) ? (
                 <span role="alert" id="globalFormError" className={s.errorMsg}>
                   {resError.data?.ERROR}
                 </span>
               ) : (
-                (resError.status >= 500 ||
+                ((resError.status as number) >= 500 ||
                   (typeof resError.data?.ERROR === "string" &&
                     resError.data?.ERROR.startsWith("No form field"))) && (
                   <span

@@ -106,15 +106,29 @@
     }
   }
 
+  &.xsm {
+    &:not(.icon) {
+      font: var(--para-xx-small);
+    }
+    font-size: 8px;
+    height: 18px;
+    &.icon {
+      width: 18px;
+    }
+  }
   &.sm {
-    font: var(--para-xx-small);
+    &:not(.icon) {
+      font: var(--para-xx-small);
+    }
     height: 24px;
     &.icon {
       width: 24px;
     }
   }
   &.md {
-    font: var(--para-small);
+    &:not(.icon) {
+      font: var(--para-small);
+    }
     height: 32px;
     &.icon {
       width: 32px;
@@ -127,7 +141,9 @@
     }
   }
   &.xl {
-    font: var(--para-large);
+    &:not(.icon) {
+      font: var(--para-large);
+    }
     height: 48px;
     &.icon {
       width: 48px;

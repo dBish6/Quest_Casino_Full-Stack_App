@@ -30,14 +30,14 @@ export interface InputProps
     >,
     VariantProps<typeof input> {
   label: string;
+  id: string;
   required?: boolean | "show";
   Button?: () => React.ReactElement<ButtonProps>;
   error?: string | null;
 }
 
-// prettier-ignore
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ label, className, intent, size, style, Button, required, error, ...props }, ref) => {
+  ({ label, className, intent, size, style, required, Button, error, ...props }, ref) => {
     const inputContainerRef = useRef<HTMLDivElement>(null);
 
     return (
