@@ -100,7 +100,7 @@ export async function loginGoogle(
   logger.debug("/auth/login/google body:", req.body);
 
   try {
-    const clientUser = await loginWithGoogle(res, req);
+    const clientUser = await loginWithGoogle(req, res);
 
     return res.status(200).json({
       message: "User session created successfully.",
