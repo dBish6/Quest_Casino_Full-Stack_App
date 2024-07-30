@@ -17,3 +17,9 @@ declare class Logger {
 declare const logger: Logger;
 export { logger };
 
+/**
+ * Constraints:
+ * - Valid email format.
+ */
+export declare function validateEmail(email: string): "Invalid email." | undefined;
+
