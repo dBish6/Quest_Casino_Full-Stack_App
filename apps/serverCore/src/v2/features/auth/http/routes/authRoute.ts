@@ -1,12 +1,12 @@
 import { Router } from "express";
-import { verifyUserToken, verifyCsrfToken } from "@authFeatHttp/middleware/tokens";
-import { validateRegister, validateLogin } from "@authFeatHttp/middleware/formValidation";
+import validateLogin from "@authFeatHttp/middleware/validateLogin";
 import validateGoogleLogin from "@authFeatHttp/middleware/validateGoogleLogin";
+import { verifyUserToken, verifyCsrfToken } from "@authFeatHttp/middleware/tokens";
 import * as authController from "@authFeatHttp/controllers/authController";
 
 const router = Router();
 
-router.post("/register", validateRegister, authController.register);
+router.post("/register", authController.register);
 
 router.post("/login", validateLogin, authController.login);
 router.post("/login/google", validateGoogleLogin, authController.loginGoogle);

@@ -37,7 +37,7 @@ export async function setupServer() {
     };
 
   const db = new Db();
-  db.connectBaseCluster();
+  await db.connectBaseCluster();
 
   await establishRedisConnection();
 
