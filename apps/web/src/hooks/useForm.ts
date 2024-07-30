@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 export interface FormState<T = Partial<Record<string, string>>> {
   error: Partial<T>;
@@ -12,7 +12,7 @@ export interface FormState<T = Partial<Record<string, string>>> {
  *
  * @example
  * // Basic usage with default error type.
- * const { form, setLoading, setErrors } = useForm();
+ * const { form, setLoading, setErrors, setError } = useForm();
  *
  * @example
  * // Custom usage with a specific error type.
@@ -20,13 +20,14 @@ export interface FormState<T = Partial<Record<string, string>>> {
  *   username: string;
  *   password: string;
  * }
- * const { form, setLoading, setErrors } = useForm<CustomError>();
+ * const { form, setLoading, setErrors, setError } = useForm<CustomError>();
  */
 export default function useForm<T = Partial<Record<string, string>>>() {
-  const [form, setForm] = useState<FormState<T>>({
-    error: {},
-    processing: false,
-  });
+  const formRef = useRef<HTMLFormElement>(null),
+    [form, setForm] = useState<FormState<T>>({
+      error: {},
+      processing: false,
+    });
 
   const setLoading = (bool: boolean) =>
     setForm((prev) => ({ ...prev, processing: bool }));
@@ -45,5 +46,5 @@ export default function useForm<T = Partial<Record<string, string>>>() {
       },
     }));
 
-  return { form, setLoading, setError, setErrors };
+  return { formRef, form, setLoading, setError, setErrors };
 }

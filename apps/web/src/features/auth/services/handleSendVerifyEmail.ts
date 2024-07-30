@@ -29,7 +29,7 @@ export default async function handleSendVerifyEmail(
         dispatch(
           ADD_TOAST({
             title: "SMTP Rejected",
-            message: err.data!.ERROR as string,
+            message: err.data!.ERROR,
             intent: "error",
           })
         );

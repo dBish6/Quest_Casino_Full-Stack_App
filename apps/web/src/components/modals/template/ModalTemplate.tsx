@@ -9,7 +9,8 @@ import { Root, Portal, Overlay, Content } from "@radix-ui/react-dialog";
 import preventScroll from "@utils/preventScroll";
 import { fadeInOut } from "@utils/animations";
 
-import { useAppDispatch } from "@redux/hooks";
+import { useAppSelector, useAppDispatch } from "@redux/hooks";
+import { selectUserCredentials } from "@authFeat/redux/authSelectors";
 import { ADD_TOAST } from "@redux/toast/toastSlice";
 
 import { ScrollArea } from "@components/scrollArea";
@@ -169,7 +170,9 @@ const RESTRICTED_MODALS: ReadonlySet<ModalQueryKey> = new Set([
 export const ModalTrigger = forwardRef<
   HTMLAnchorElement, Omit<LinkProps, "to"> & { queryKey: ModalQueryKey, buttonProps?: ButtonProps }
 >(({ children, queryKey, buttonProps, ...props }, ref) => {
-    const [searchParams] = useSearchParams(),
+    const [searchParams] = useSearchParams();
+
+    const user = useAppSelector(selectUserCredentials),
       dispatch = useAppDispatch()
 
     return (
@@ -182,7 +185,7 @@ export const ModalTrigger = forwardRef<
           to={{ search: `?${queryKey}=true` }}
           {...props}
           onClick={(e) => {
-            if (RESTRICTED_MODALS.has(queryKey))
+            if (RESTRICTED_MODALS.has(queryKey) && !user)
               dispatch(
                 ADD_TOAST({
                   title: "Login Required",

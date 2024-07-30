@@ -14,7 +14,7 @@ import { LoginGoogleTriggerType } from "@authFeat/services/authApi";
 
 export interface LoginWithGoogleProps {
   queryKey: "register" | "login";
-  loginGoogle: LoginGoogleTriggerType;
+  postLoginGoogle: LoginGoogleTriggerType;
   setGoogleLoading: React.Dispatch<React.SetStateAction<boolean>>;
   processing: {
     google: boolean;
@@ -30,7 +30,7 @@ export interface LoginWithGoogleProps {
  */
 export default function LoginWithGoogle({
   queryKey,
-  loginGoogle,
+  postLoginGoogle,
   setGoogleLoading,
   processing,
 }: LoginWithGoogleProps) {
@@ -49,7 +49,7 @@ export default function LoginWithGoogle({
   const handleCallback = (code: string) => {
     setGoogleLoading(true);
 
-    const mutation = loginGoogle({
+    const mutation = postLoginGoogle({
       code: code,
       state: searchParams.get("state") || "",
       secret: storedOState?.secret,

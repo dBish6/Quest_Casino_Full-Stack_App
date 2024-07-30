@@ -15,7 +15,7 @@ import s from "./aside.module.css";
 export default function Aside() {
   const [status, setStatus] = useState<"Logout" | "Login">("Login"), // Because to match the server.
     user = useAppSelector(selectUserCredentials),
-    [logout] = useLogoutMutation();
+    [postLogout] = useLogoutMutation();
 
   const currentYear = new Date().getFullYear().toString();
 
@@ -62,7 +62,7 @@ export default function Aside() {
                 <span />
                 {status === "Logout" ? (
                   <Link asChild intent="primary" to="">
-                    <Button onClick={() => logout({ username: user!.username })}>{status}</Button>
+                    <Button onClick={() => postLogout({ username: user!.username })}>{status}</Button>
                   </Link>
                 ) : (
                   <ModalTrigger queryKey={ModalQueryKey.LOGIN_MODAL} intent="primary">

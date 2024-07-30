@@ -4,7 +4,7 @@ export type HttpResponse<TData extends object = {}> = {
 
 export interface ErrorResponse {
   message?: string;
-  ERROR: string | Record<string, string>;
+  ERROR: string;
   allow?: boolean;
 }
 

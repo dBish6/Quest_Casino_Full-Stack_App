@@ -1,12 +1,10 @@
 import type { LoginBodyDto } from "@qc/typescript/dtos/LoginBodyDto";
-import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import type NullablePartial from "@qc/typescript/typings/NullablePartial";
 
 import { useEffect, useState } from "react";
 import { Title } from "@radix-ui/react-dialog";
 
 import { capitalize } from "@qc/utils";
-import { isFormValidationError } from "@utils/forms";
 
 import useForm from "@hooks/useForm";
 import useSwitchModal from "@authFeat/hooks/useSwitchModal";
@@ -26,9 +24,8 @@ export default function LoginModal() {
   const { handleSwitch } = useSwitchModal(ModalQueryKey.LOGIN_MODAL);
 
   const [
-    login,
+    postLogin,
     {
-      // data: loginData,
       error: loginError,
       isLoading: loginLoading,
       isSuccess: loginSuccess,
@@ -37,9 +34,8 @@ export default function LoginModal() {
 
   const [googleLoading, setGoogleLoading] = useState(false),
     [
-      loginGoogle,
+      postLoginGoogle,
       {
-        // data: loginGoogleData,
         error: loginGoogleError,
         isLoading: loginGoogleLoading,
         isSuccess: loginGoogleSuccess,
@@ -78,12 +74,7 @@ export default function LoginModal() {
       }
 
       if (Object.keys(reqBody).length === 2)
-        login(reqBody as LoginBodyDto).then((res) => {
-          if (isFormValidationError(res.error))
-          return setErrors(
-            ((res.error as FetchBaseQueryError).data?.ERROR as Record<string, string>) || {}
-          );
-
+        postLogin(reqBody as LoginBodyDto).then((res) => {
           if (res.data?.message?.endsWith("successfully.")) form.reset();
         });
     } finally {
@@ -109,10 +100,10 @@ export default function LoginModal() {
           </hgroup>
 
           <Form
+            onSubmit={handleSubmit}
             formLoading={processingForm}
             resError={(loginError || loginGoogleError) as any}
             clearErrors={() => setErrors({})}
-            onSubmit={handleSubmit}
           >
             <div className="inputs">
               <Input
@@ -160,7 +151,7 @@ export default function LoginModal() {
 
           <LoginWithGoogle
             queryKey={ModalQueryKey.LOGIN_MODAL}
-            loginGoogle={loginGoogle}
+            postLoginGoogle={postLoginGoogle}
             setGoogleLoading={setGoogleLoading}
             processing={{
               google: googleLoading,

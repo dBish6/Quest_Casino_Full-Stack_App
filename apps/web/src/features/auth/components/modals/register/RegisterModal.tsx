@@ -1,16 +1,13 @@
 import type RegisterBodyDto from "@qc/typescript/dtos/RegisterBodyDto";
 import type { Country } from "@qc/constants";
-import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import type { Region, Regions } from "@authFeat/typings/Region";
-import type NullablePartial from "@qc/typescript/typings/NullablePartial";
 
+import { useFetcher } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Title } from "@radix-ui/react-dialog";
 
 import formatPhoneNumber from "@authFeat/utils/formatPhoneNumber";
 import getSelectedRegion from "@authFeat/utils/getSelectedRegion";
-import { capitalize } from "@qc/utils";
-import { isFormValidationError } from "@utils/forms";
 import displayNotificationMessage from "@authFeat/utils/displayNotificationMessage";
 
 import useForm from "@hooks/useForm";
@@ -27,7 +24,11 @@ import { Spinner } from "@components/loaders";
 import s from "./registerModal.module.css";
 
 export default function RegisterModal() {
-  const { form, setLoading, setError, setErrors } = useForm<RegisterBodyDto>();
+  const fetcher = useFetcher(),
+    { formRef, form, setLoading, setError, setErrors } = useForm<
+      RegisterBodyDto & { calling_code: string }
+    >();
+
   const { handleSwitch } = useSwitchModal(ModalQueryKey.REGISTER_MODAL);
 
   const [worldData, setWorldData] = useState<{
@@ -40,18 +41,17 @@ export default function RegisterModal() {
     }>({ country: "", regions: [] });
 
   const [
-    register,
+    postRegister,
     {
       data: registerData,
       error: registerError,
-      isLoading: registerLoading,
       isSuccess: registerSuccess,
     },
   ] = useRegisterMutation();
 
   const [googleLoading, setGoogleLoading] = useState(false),
     [
-      loginGoogle,
+      postLoginGoogle,
       {
         data: loginGoogleData,
         error: loginGoogleError,
@@ -63,8 +63,7 @@ export default function RegisterModal() {
   const countriesLoading = !!worldData.countries && !worldData.countries.length,
     regionsLoading = !!selected.country && !selected.regions.length;
 
-  const processingForm = registerLoading || form.processing,
-    processing = processingForm || loginGoogleLoading || googleLoading;
+  const processing = form.processing || loginGoogleLoading || googleLoading;
 
   const getCountries = async () => {
     if (!worldData.countries?.length) {
@@ -107,51 +106,26 @@ export default function RegisterModal() {
     }
   }, [selected.country, worldData.regions]);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setLoading(true);
-
-    const form = e.currentTarget as HTMLFormElement,
-      fields = form.querySelectorAll<HTMLInputElement | HTMLSelectElement>(
-        "input, select"
-      );
-
+  const handleValidationResponse = (data: {
+    errors: Partial<RegisterBodyDto> & { bot: string };
+    reqBody: RegisterBodyDto;
+  }) => {
     try {
-      let errors: Partial<RegisterBodyDto> = {},
-        reqBody: NullablePartial<RegisterBodyDto> = {} as any;
-      for (const field of fields) {
-        if (field.type === "hidden") {
-          if (field.value.length) (document.querySelector(".exitXl") as HTMLButtonElement).click();
-          continue;
-        }
-        const key = field.name as keyof RegisterBodyDto;
-
-        if (!field.value.length && field.required) {
-          errors[key] =
-            key === "con_password"
-              ? "Please confirm your password."
-              : `${capitalize(key)} is required.`;
-          continue;
-        }
-        reqBody[key] = field.value || null;
-      }
-
-      if (Object.keys(errors).length) {
-        setErrors(errors);
+      if (data.errors) {
+        if (data.errors.bot) (document.querySelector(".exitXl") as HTMLButtonElement).click();
+        setErrors(data.errors);
       } else {
-        register(reqBody as RegisterBodyDto).then((res) => {
-          if (isFormValidationError(res.error))
-            return setErrors(
-              ((res.error as FetchBaseQueryError).data?.ERROR as Record<string,string>) || {}
-            );
-
-          if (res.data?.message?.startsWith("Successfully")) form.reset();
+        postRegister(data.reqBody).then((res) => {
+          if (res.data?.message?.startsWith("Successfully")) formRef.current!.reset();
         });
       }
     } finally {
       setLoading(false);
     }
   };
+  useEffect(() => {
+    if (fetcher.data) handleValidationResponse(fetcher.data);
+  }, [fetcher.data]);
 
   return (
     <ModalTemplate
@@ -176,6 +150,11 @@ export default function RegisterModal() {
           </div>
 
           <Form
+            ref={formRef}
+            fetcher={fetcher}
+            method="post"
+            action="/action/register"
+            onSubmit={() => setLoading(true)}
             formLoading={processing}
             resSuccessMsg={
               (registerSuccess &&
@@ -188,9 +167,8 @@ export default function RegisterModal() {
               (loginGoogleSuccess &&
                 `Welcome ${loginGoogleData.user.username}! You're all set, continue to use Google to log in to use your profile. Best of luck and have fun!`)
             }
-            resError={(registerError || loginGoogleError) as any}
+            resError={(fetcher.data?.ERROR || registerError || loginGoogleError) as any}
             clearErrors={() => setErrors({})}
-            onSubmit={handleSubmit}
           >
             <div className="inputs">
               <div role="group">
@@ -331,7 +309,6 @@ export default function RegisterModal() {
                   id="calling_code"
                   name="calling_code"
                   error={form.error.calling_code}
-                  // FIXME:
                   Loader={() => <Spinner intent="primary" size="sm" />}
                   loaderTrigger={countriesLoading}
                   disabled={processing}
@@ -374,7 +351,7 @@ export default function RegisterModal() {
                 className="formBtn"
                 disabled={processing}
               >
-                {processingForm ? (
+                {form.processing ? (
                   <Spinner intent="primary" size="md" />
                 ) : (
                   "Register"
@@ -396,11 +373,11 @@ export default function RegisterModal() {
 
           <LoginWithGoogle
             queryKey={ModalQueryKey.REGISTER_MODAL}
-            loginGoogle={loginGoogle}
+            postLoginGoogle={postLoginGoogle}
             setGoogleLoading={setGoogleLoading}
             processing={{
               google: googleLoading,
-              form: processingForm,
+              form: form.processing,
               all: processing,
             }}
           />

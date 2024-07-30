@@ -46,9 +46,9 @@ export default function AddFriendsModal() {
           </hgroup>
 
           <Form
+            onSubmit={handleSubmit}
             formLoading={searchLoading}
             resError={searchError as any}
-            onSubmit={handleSubmit}
           >
             <Input
               ref={inputRef}

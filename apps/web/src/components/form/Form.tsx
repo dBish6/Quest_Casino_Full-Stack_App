@@ -1,3 +1,4 @@
+import type { FetcherWithComponents } from "react-router-dom";
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import type { SerializedError } from "@reduxjs/toolkit";
 
@@ -9,17 +10,18 @@ import { Link } from "@components/common";
 
 import s from "./form.module.css";
 
-export interface FormProps
-  extends Omit<React.ComponentProps<"form">, "aria-errormessage"> {
+export interface FormProps extends Omit<React.ComponentProps<"form">, "aria-errormessage"> {
+  fetcher?: FetcherWithComponents<any>;
   formLoading: boolean;
   resSuccessMsg?: any;
   resError: FetchBaseQueryError | SerializedError | undefined;
   clearErrors?: () => void;
-  onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
 }
 
 const Form = forwardRef<HTMLFormElement, React.PropsWithChildren<FormProps>>(
-  ({ children, formLoading, resSuccessMsg, resError, clearErrors, ...props }, ref) => {
+  ({ children, fetcher, formLoading, resSuccessMsg, resError, clearErrors, ...props }, ref) => {
+    const FormElm = (fetcher ? fetcher.Form : "form") as React.ElementType<React.ComponentProps<"form">>;
+
     useEffect(() => {
       if (resSuccessMsg && clearErrors) clearErrors();
     }, [resSuccessMsg]);
@@ -66,7 +68,7 @@ const Form = forwardRef<HTMLFormElement, React.PropsWithChildren<FormProps>>(
               </span>
             ))
           ))}
-        <form
+        <FormElm
           ref={ref}
           {...(resError && { "aria-errormessage": "globalFormError" })}
           autoComplete="off"
@@ -74,7 +76,7 @@ const Form = forwardRef<HTMLFormElement, React.PropsWithChildren<FormProps>>(
           {...props}
         >
           {children}
-        </form>
+        </FormElm>
       </>
     );
   }
