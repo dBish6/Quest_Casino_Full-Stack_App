@@ -1,47 +1,57 @@
-import type { UserCredentials, FriendCredentials } from "@qc/typescript/typings/UserCredentials";
+import type { UserCredentials } from "@qc/typescript/typings/UserCredentials";
 
-import { useState } from "react";
+import useResourcesLoadedEffect from "@hooks/useResourcesLoadedEffect";
+
+import { useInitializeFriendsMutation } from "@authFeat/services/authApi";
 
 import { ScrollArea } from "@components/scrollArea";
 import { Avatar, Link } from "@components/common";
+import { ModalQueryKey, ModalTrigger } from "@components/modals";
 
 import s from "./aside.module.css";
 
 export default function Friends({ user }: { user: UserCredentials | null }) {
-  const [friends, setFriends] = useState<FriendCredentials[]>(user?.friends || []);
+  const [emitInitFriends, { data, error: friendsError, isLoading: friendsLoading, isSuccess: friendsSuccess }] = useInitializeFriendsMutation(),
+    friends = user?.friends.list || [];
+  
+  useResourcesLoadedEffect(() => {
+      const mutation = emitInitFriends({ friends })
+      mutation.then((res) => {
+        console.log("res.data", res.data)
+      })
+
+      return () => mutation.abort();
+  }, [])
 
   return (
     <div className={s.friends}>
-      {/* TODO: Add friends modal. */}
-      <Link intent="primary" to={{ search: "?add=true" }} className={s.add}>
+      <ModalTrigger queryKey={ModalQueryKey.ADD_FRIENDS_MODAL} intent="primary">
         Add Friends
-      </Link>
-      <ScrollArea orientation="vertical">
-        {friends?.length ? (
-          friends.map((friend, i) => (
+      </ModalTrigger>
+
+      {friends.length ? (
+        <ScrollArea orientation="vertical">
+          {friends.map((friend, i) => (
             <div key={i} className={s.friend}>
               <Avatar
                 size="lrg"
-                user={{ avatar_url: friend.avatar_url || "" }}
-                showProfile={false}
+                user={friend}
               />
-              {/* TODO: Idk if this should be a heading. */}
               <h4>{friend.username}</h4>
-              <Link intent="primary" to={{ search: `?pm=${friend.username}` }}>
-                Message
-              </Link>
+              <Link to={{ search: `?pm=${friend.username}` }}>Message</Link>
             </div>
-          ))
-        ) : (
-          <p>
-            Meet people by playing some games! Or look through some{" "}
-            <Link intent="primary" to={{ search: "?players=true" }}>
-              suggested players
-            </Link>
-            .
-          </p>
-        )}
-      </ScrollArea>
+          ))}
+        </ScrollArea>
+      ) : (
+        <p aria-label="No Friends Found">
+          Meet people by playing some games! Or look through some{" "}
+          {/* TODO: Link. */}
+          <Link intent="primary" to={{ search: "?players=true" }}>
+            suggested players
+          </Link>
+          .
+        </p>
+      )}
     </div>
   );
 }

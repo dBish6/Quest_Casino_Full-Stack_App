@@ -1,5 +1,4 @@
-import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
-import type { ErrorHttpResponse } from "@typings/ApiResponse";
+import type { ErrorResponse } from "@typings/ApiResponse";
 
 declare global {
   interface Window {
@@ -9,7 +8,7 @@ declare global {
 
 declare module "@reduxjs/toolkit/query" {
   interface FetchBaseQueryError {
-    status: number;
-    data?: ErrorHttpResponse;
+    status: number | string;
+    data?: ErrorResponse;
   }
 }

@@ -19,7 +19,7 @@ export interface AuthState {
 const initialState: AuthState = {
   user: {
     credentials: null,
-    token: { csrf: null },
+    token: { csrf: null }
   },
 };
 
@@ -31,25 +31,29 @@ const authSlice = createSlice({
       state.user = {
         ...state.user,
         credentials: action.payload.credentials,
-        token: { csrf: action.payload.csrf }, // Removes oState so a new one from the server can be added.
+        token: { csrf: action.payload.csrf } // Removes oState so a new one from the server can be added.
       };
     },
     UPDATE_USER_CREDENTIALS: (state, action: PayloadAction<Partial<UserCredentials>>) => {
-      const updatedCredentials = state.user.credentials as UserCredentials;
-      
+      const credentials = state.user.credentials as UserCredentials;
+
       state.user.credentials = {
-        ...updatedCredentials,
+        ...credentials,
         ...action.payload,
+        friends: {
+          ...credentials.friends,
+          ...action.payload.friends
+        },
         statistics: {
-          ...updatedCredentials.statistics,
-          ...action.payload.statistics,
+          ...credentials.statistics,
+          ...action.payload.statistics
         },
       };
     },
     CLEAR_USER: (state) => {
       state.user = {
         credentials: null,
-        token: { csrf: null },
+        token: { csrf: null }
       };
     },
   },

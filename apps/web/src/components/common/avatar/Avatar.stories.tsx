@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import type { UserCredentials } from "@qc/typescript/typings/UserCredentials";
 
 import { useMockSelector } from "@storybook/mockStore";
 
@@ -9,67 +8,72 @@ const meta: Meta<typeof Avatar> = {
   title: "Components/Avatar",
   component: Avatar,
   parameters: {
-    layout: "centered",
+    layout: "centered"
   },
   tags: ["autodocs"],
   argTypes: {
     intent: {
       control: { type: "radio" },
-      options: ["primary"],
+      options: ["primary"]
     },
     size: {
       control: { type: "select" },
-      options: ["sm", "md", "lrg", "xl", "xxl"],
-    },
+      options: ["sm", "md", "lrg", "xl", "xxl"]
+    }
   },
-  args: { showProfile: true },
+  args: { linkProfile: true },
   decorators: [
     (Story, { args }) => {
       const mockUser = useMockSelector((state) => state.auth.user.credentials)!;
       return <Story args={{ ...args, user: mockUser }} />;
-    },
-  ],
+    }
+  ]
 };
 export default meta;
 
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-    args: {},
     render: (args) => {
       const { avatar_url, ...user } = args.user!;
 
-      return <Avatar user={user as UserCredentials} />;
+      return <Avatar user={user} />;
     },
   },
   NoHoverCard: Story = {
     args: {
-      showProfile: false,
+      linkProfile: false
+    }
+  },
+  NoUser: Story = {
+    argTypes: {
+      linkProfile: { table: { disable: true } },
     },
+    render: () => <Avatar user={undefined} />
   };
 
 export const Small: Story = {
     args: {
-      size: "sm",
-    },
+      size: "sm"
+    }
   },
   Medium: Story = {
     args: {
-      size: "md",
-    },
+      size: "md"
+    }
   },
   Large: Story = {
     args: {
-      size: "lrg",
-    },
+      size: "lrg"
+    }
   },
   ExtraLarge: Story = {
     args: {
-      size: "xl",
-    },
+      size: "xl"
+    }
   },
   ExtraExtraLarge: Story = {
     args: {
-      size: "xxl",
-    },
+      size: "xxl"
+    }
   };

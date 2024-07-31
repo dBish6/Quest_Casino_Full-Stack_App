@@ -1,7 +1,7 @@
 import { useLocation } from "react-router-dom";
 
 import { Icon, Link } from "@components/common";
-import { MenuModal } from "@components/modals";
+import { ModalQueryKey, ModalTrigger } from "@components/modals";
 import { Select } from "@components/common/controls";
 
 import s from "./nav.module.css";
@@ -25,14 +25,22 @@ export default function Nav() {
         <Divider heading="Menu" />
         <div className={s.menu}>
           <Link
-            to={{ hash: "#games" }}
-            data-current={location.hash.includes("games")}
+            to={{ pathname: "/home", hash: "#games" }}
+            {...(location.hash.includes("games") && { "aria-current": "page" })}
           >
             <Icon aria-hidden="true" id="joystick-16" /> Games
           </Link>
-          <MenuModal queryKey="menu" slide="1" />
-          <MenuModal queryKey="menu" slide="2" />
-          <MenuModal queryKey="menu" slide="3" />
+
+          {/* TODO: Open to certain slide. */}
+          <ModalTrigger queryKey={ModalQueryKey.MENU_MODAL}>
+            <Icon aria-hidden="true" id="list-16" /> Leaderboard
+          </ModalTrigger>
+          <ModalTrigger queryKey={ModalQueryKey.MENU_MODAL}>
+            <Icon aria-hidden="true" id="scroll-16" /> Quests
+          </ModalTrigger>
+          <ModalTrigger queryKey={ModalQueryKey.MENU_MODAL}>
+            <Icon aria-hidden="true" id="gift-16" /> Bonuses
+          </ModalTrigger>
         </div>
       </nav>
 
@@ -53,7 +61,6 @@ export default function Nav() {
   );
 }
 
-// prettier-ignore
 function Divider({ heading, divide = true }: { heading?: string, divide?: boolean }) {
   const Line = divide ? "hr" : "div"
 

@@ -3,6 +3,9 @@
  */
 export declare function capitalize(txt: string): string;
 
+export type ActivityStatuses = "online" | "away" | "offline";
+export declare function getUserActivityStatus(timestamp: Date | null, verificationToken: string | undefined): ActivityStatuses;
+
 declare class Logger {
     disableAll: boolean;
     constructor(disableAll: boolean);
@@ -13,4 +16,10 @@ declare class Logger {
 }
 declare const logger: Logger;
 export { logger };
+
+/**
+ * Constraints:
+ * - Valid email format.
+ */
+export declare function validateEmail(email: string): "Invalid email." | undefined;
 

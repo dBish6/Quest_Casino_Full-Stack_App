@@ -12,7 +12,7 @@ export default function apiErrorHandler(
   const err: any = error;
 
   return res.status(err.statusCode || 500).json({
-    ...(process.env.NODE_ENV !== "production" && {
+    ...(process.env.NODE_ENV === "development" && {
       message: err.from || "An unexpected error occurred.",
     }),
     ERROR: err.message,

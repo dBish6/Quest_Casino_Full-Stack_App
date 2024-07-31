@@ -20,14 +20,14 @@ export default function Error({ status, title, description }: ErrorPageProps) {
   const user = useAppSelector(selectUserCredentials);
   
   if (user && LOGOUT_STATUSES.has(status)) {
-    const [logout] = useLogoutMutation();
+    const [postLogout] = useLogoutMutation();
 
     useEffect(() => {
       const docStyle = document.documentElement.style;
       docStyle.pointerEvents = "none";
       docStyle.cursor = "wait";
 
-      logout({ username: user!.username }).finally(() => {
+      postLogout({ username: user!.username }).finally(() => {
         docStyle.pointerEvents = "";
         docStyle.cursor = "";
       });

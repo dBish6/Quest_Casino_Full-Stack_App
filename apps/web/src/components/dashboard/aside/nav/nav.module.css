@@ -30,8 +30,7 @@
       /* margin-bottom: 0.75rem; */
       margin-bottom: 0.5rem;
     }
-    &:first-of-type div a,
-    &:first-of-type div button {
+    &:first-of-type div a {
       display: flex;
       align-items: center;
       gap: 0.5rem;
@@ -51,8 +50,7 @@
         }
       }
       &[aria-current="page"],
-      &[aria-expanded="true"] a,
-      &[data-current="true"] {
+      &[aria-expanded="true"] {
         color: var(--c-purple-200);
         & svg use {
           fill: var(--c-purple-200);

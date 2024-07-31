@@ -1,0 +1,12 @@
+/* TODO: This is how you can make the icon scale with the heading. */
+/* & > h2 {
+    position: relative;
+    May need to make a Heading component that puts the padding as the width of the icon.
+    padding-left: 52px; 
+    & svg {
+      position: absolute;
+      left: 0;
+      height: 100%;
+    }
+    font-size: var(--h1-clamp) !important;
+  } */

@@ -6,7 +6,7 @@ import { useLogoutMutation } from "@authFeat/services/authApi";
 
 import { ScrollArea } from "@components/scrollArea";
 import { Avatar, Link, Icon, Blob } from "@components/common";
-import { LoginModal } from "@authFeat/components/modals";
+import { ModalQueryKey, ModalTrigger } from "@components/modals";
 import { Button } from "@components/common/controls";
 import Nav from "./nav/Nav";
 
@@ -15,7 +15,7 @@ import s from "./aside.module.css";
 export default function Aside() {
   const [status, setStatus] = useState<"Logout" | "Login">("Login"), // Because to match the server.
     user = useAppSelector(selectUserCredentials),
-    [logout] = useLogoutMutation();
+    [postLogout] = useLogoutMutation();
 
   const currentYear = new Date().getFullYear().toString();
 
@@ -58,12 +58,16 @@ export default function Aside() {
                 </>
               )}
 
-              <div className={s.log}>
-                <span data-user={status} />
+              <div className={s.log} data-user={status}>
+                <span />
                 {status === "Logout" ? (
-                  <Button onClick={() => logout(undefined)}>{status}</Button>
+                  <Link asChild intent="primary" to="">
+                    <Button onClick={() => postLogout({ username: user!.username })}>{status}</Button>
+                  </Link>
                 ) : (
-                  <LoginModal queryKey="login1" />
+                  <ModalTrigger queryKey={ModalQueryKey.LOGIN_MODAL} intent="primary">
+                    Login
+                  </ModalTrigger>
                 )}
               </div>
             </div>

@@ -7,7 +7,7 @@ import { JWTVerification } from "@authFeat/services/jwtService";
 
 /**
  * Verifies the access and refresh tokens only on the initial handshake. This middleware doesn't refresh the session like the http token verify
- * middleware, we just need the decodedClaims.
+ * middleware. The decoded claims are also attached to the socket and lasts the duration of the connection.
  * @middleware Socket middleware.
  * @response `unauthorized`, `forbidden`, or `base socket error`.
  */
@@ -25,13 +25,12 @@ export default async function verifyUserToken(socket: Socket, next: (err?: Exten
   try {
     let result = await jwtVerification.verifyUserToken(accessToken, refreshToken);
     if (!result.claims)
-      return new Error(["missing", "disparity"].includes(result.message, -1) ? "unauthorized" : "forbidden")
+      return next(new Error(["missing", "disparity"].includes(result.message, -1) ? "unauthorized" : "forbidden"))
 
-    req.decodedClaims = result.claims; // Attaches to socket.request.
-    logger.info("Access token successfully verified.");
+    socket.decodedClaims = result.claims;
+    logger.info("Socket Access token successfully verified."); // I hate this comment.
     next();
   } catch (error: any) {
-    console.error("THAT ERROR: ", error);
     next(error)
   }
 }

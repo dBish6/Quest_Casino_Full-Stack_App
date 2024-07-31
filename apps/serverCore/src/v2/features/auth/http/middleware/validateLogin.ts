@@ -3,11 +3,10 @@ import type { LoginRequestDto } from "@authFeatHttp/dtos/LoginRequestDto";
 
 import { compare } from "bcrypt";
 
-import { logger } from "@qc/utils";
+import { logger, validateEmail } from "@qc/utils";
 import { handleApiError } from "@utils/handleError";
-import validateEmail from "@authFeatHttp/utils/validateEmail";
 
-import { getUser } from "@authFeatHttp/services/httpAuthService";
+import { getUser } from "@authFeat/services/authService";
 
 /**
  * Validates the standard login form fields.

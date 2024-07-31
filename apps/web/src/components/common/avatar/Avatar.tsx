@@ -1,17 +1,11 @@
 import type { VariantProps } from "class-variance-authority";
-import type { UserCredentials } from "@qc/typescript/typings/UserCredentials";
+import type { FriendCredentials } from "@qc/typescript/typings/UserCredentials";
 
 import { forwardRef, Fragment } from "react";
-import { Link } from "react-router-dom";
-import {
-  Root,
-  Trigger,
-  Portal,
-  Content,
-  Arrow,
-} from "@radix-ui/react-hover-card";
+import { Root, Trigger, Portal, Content, Arrow } from "@radix-ui/react-hover-card";
 import { cva } from "class-variance-authority";
 
+import { ModalQueryKey, ModalTrigger } from "@components/modals";
 import { Image } from "@components/common";
 import { ScrollArea } from "@components/scrollArea";
 
@@ -39,32 +33,37 @@ const avatar = cva(s.avatar, {
 export interface AvatarProps
   extends React.ComponentProps<"div">,
     VariantProps<typeof avatar> {
-  user?: UserCredentials | { avatar_url: string };
-  showProfile?: boolean;
+  user?: Partial<FriendCredentials>; // Not only friends would be passed.
+  linkProfile?: boolean;
 }
 
 const Avatar = forwardRef<HTMLDivElement, AvatarProps>(
-  ({ className, intent, size, user, showProfile = true, ...props }, ref) => {
-    const Container = user && showProfile ? ProfileHoverCard : Fragment;
-
-    const ProfileLink = (user as UserCredentials)?.verification_token
-      ? Link
-      : Fragment;
+  ({ className, intent = "primary", size = "sm", user, linkProfile = true, ...props }, ref) => {
+    const ProfileShortView = linkProfile && user?.legal_name && user?.username ? ProfileHoverCard : Fragment,
+      ProfileLink = linkProfile && user?.username ? ModalTrigger : "a"; // it has to be an "a" to match the server.
 
     return (
       // @ts-ignore
-      <Container
-        {...(Container !== Fragment && {
-          intent: intent || "primary",
-          size: size || "sm",
-          user: user!,
+      <ProfileShortView
+        {...(ProfileShortView !== Fragment && {
+          intent: intent,
+          size: size,
+          user: user
         })}
       >
         {/* @ts-ignore */}
         <ProfileLink
-          {...(ProfileLink !== Fragment && {
-            to: (user as UserCredentials).verification_token,
-          })}
+          {...(ProfileLink !== "a" 
+            ? {
+                to: { search: `?${ModalQueryKey.VIEW_PROFILE_MODAL}=${user!.username}` },
+                queryKey: ModalQueryKey.VIEW_PROFILE_MODAL,
+              }
+            : {
+                role: "presentation",
+                tabIndex: -1,
+                onClick: (e) => e.preventDefault(),
+                style: { cursor: "default" }
+              })}
         >
           <div
             ref={ref}
@@ -76,25 +75,17 @@ const Avatar = forwardRef<HTMLDivElement, AvatarProps>(
               alt="Profile Picture"
               fill
             />
-            {/* TODO: aria? */}
-            {user && showProfile && (
-              <span role="status" className={s.activityIndie} />
-            )}
+            {user?.status && <span aria-label={user.status} className={s.activityIndie} data-status={user.status || "offline"} />}
           </div>
         </ProfileLink>
-      </Container>
+      </ProfileShortView>
     );
   }
 );
 export default Avatar;
 
-function ProfileHoverCard({
-  children,
-  intent,
-  size,
-  user,
-}: React.PropsWithChildren<
-  { user: UserCredentials } & VariantProps<typeof avatar>
+function ProfileHoverCard({ children, intent, size, user }:
+  React.PropsWithChildren<{ user: FriendCredentials } & VariantProps<typeof avatar>
 >) {
   const legalName = user.legal_name;
 

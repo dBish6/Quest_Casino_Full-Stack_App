@@ -6,69 +6,20 @@
  */
 
 import type { Request, Response, NextFunction } from "express";
-import RegisterRequestDto from "@authFeatHttp/dtos/RegisterRequestDto";
-import {
-  LoginRequestDto,
-  GoogleLoginRequestDto,
-} from "@authFeatHttp/dtos/LoginRequestDto";
+import type RegisterRequestDto from "@authFeatHttp/dtos/RegisterRequestDto";
+import type { LoginRequestDto, GoogleLoginRequestDto } from "@authFeatHttp/dtos/LoginRequestDto";
+import type { DeleteNotificationsRequestDto } from "@authFeatHttp/dtos/DeleteNotificationsRequestDto";
 
 import { logger } from "@qc/utils";
 import { handleApiError } from "@utils/handleError";
 import initializeSession from "@authFeatHttp/utils/initializeSession";
 
-import * as authService from "@authFeatHttp/services/httpAuthService";
+import { getUsers as getUsersService, getUser as getUserService } from "@authFeat/services/authService";
+import * as httpAuthService from "@authFeatHttp/services/httpAuthService";
 import { loginWithGoogle } from "@authFeatHttp/services/googleService";
 import { deleteCsrfToken } from "@authFeatHttp/services/csrfService";
 
-/**
- * Send all users as client formatted users.
- * @controller
- * @response `success` with all users formatted for the client, or `ApiError`.
- */
-export async function getUsers(
-  req: Request,
-  res: Response,
-  next: NextFunction
-) {
-  try {
-    const clientUsers = await authService.getUsers(true);
-
-    return res.status(200).json({
-      message: "Successfully retrieved all users.",
-      users: clientUsers,
-    });
-  } catch (error: any) {
-    next(handleApiError(error, "getUsers controller error.", 500));
-  }
-}
-
-/**
- * Send a client formatted user or current user.
- * @controller
- * @response `success` with the current user formatted for the client, `not found`, or `ApiError`.
- */
-export async function getUser(req: Request, res: Response, next: NextFunction) {
-  const query = req.query.email as string;
-
-  try {
-    const clientUser = await authService.getUser(
-      query ? "email" : "_id",
-      query || req.decodedClaims!.sub,
-      true
-    );
-    if (!clientUser)
-      return res.status(404).json({
-        ERROR: "User doesn't exist.",
-      });
-
-    return res.status(200).json({
-      message: "Successfully retrieved the current user.",
-      user: clientUser,
-    });
-  } catch (error: any) {
-    next(handleApiError(error, "getUser controller error.", 500));
-  }
-}
+const authService = { getUsers: getUsersService, getUser: getUserService, ...httpAuthService }
 
 /**
  * Starts the user registration and checks if the user already exits within the database.
@@ -87,24 +38,25 @@ export async function register(
     if (user)
       return res.status(409).json({
         ERROR:
-          "A user with this email address already exists. Please try using a different email address.",
+          "A user with this email address already exists. Please try using a different email address."
       });
 
     await authService.registerUser({ ...req.body, type: "standard" });
 
     return res.status(200).json({
       message:
-        "Successfully registered! You can now log in with your newly created profile.",
+        "Successfully registered! You can now log in with your newly created profile."
     });
   } catch (error: any) {
     next(handleApiError(error, "register controller error.", 500));
   }
 }
 
+// TODO: Might get rid of login with username.
 /**
  * Initializes the current user session.
  * @controller
- * @response `success` with the client formatted user, `not found`, or `ApiError`.
+ * @response `success` with the client formatted user, `internal`, or `ApiError`.
  */
 export async function login(
   req: LoginRequestDto,
@@ -124,12 +76,12 @@ export async function login(
     if (typeof clientUser === "string")
       // Status 500 because this should never happen.
       return res.status(500).json({
-        ERROR: `${clientUser} Unexpectedly couldn't find the user after validation.`,
+        ERROR: `${clientUser} Unexpectedly couldn't find the user after validation.`
       });
 
     return res.status(200).json({
       message: "User session created successfully.",
-      user: clientUser,
+      user: clientUser
     });
   } catch (error: any) {
     next(handleApiError(error, "login controller error.", 500));
@@ -148,11 +100,11 @@ export async function loginGoogle(
   logger.debug("/auth/login/google body:", req.body);
 
   try {
-    const clientUser = await loginWithGoogle(res, req);
+    const clientUser = await loginWithGoogle(req, res);
 
     return res.status(200).json({
       message: "User session created successfully.",
-      user: clientUser,
+      user: clientUser
     });
   } catch (error: any) {
     next(handleApiError(error, "loginGoogle controller error.", 500));
@@ -170,12 +122,10 @@ export async function emailVerify(
   next: NextFunction
 ) {
   try {
-    const { sub, verification_token } = req.decodedClaims!;
-    const result = await authService.emailVerify(sub, verification_token);
+    const { sub, verification_token } = req.decodedClaims!,
+      result = await authService.emailVerify(sub, verification_token);
     if (typeof result === "string")
-      return res.status(result === "User doesn't exist." ? 404 : 403).json({
-        ERROR: result,
-      });
+      return res.status(result === "User doesn't exist." ? 404 : 403).json({ ERROR: result });
 
     return res
       .status(200)
@@ -200,7 +150,7 @@ export async function sendVerifyEmail(
 
     return res.status(200).json({
       message:
-        "Verification email successfully sent. If you can't find it in your inbox, please check your spam or junk folder.",
+        "Verification email successfully sent. If you can't find it in your inbox, please check your spam or junk folder."
     });
   } catch (error: any) {
     next(handleApiError(error, "sendVerifyEmail controller error.", 500));
@@ -208,28 +158,76 @@ export async function sendVerifyEmail(
 }
 
 /**
- * Clears the session cookie and deletes the csrf token.
+ * Send all users or searched users by username, client formatted.
  * @controller
- * @response `success` or `ApiError`.
+ * @response `success` with all users formatted for the client, or `ApiError`.
  */
-export async function logout(req: Request, res: Response, next: NextFunction) {
-  try {
-    await deleteCsrfToken(
-      req.decodedClaims!.sub,
-      req.headers["x-xsrf-token"] as string
-    );
+export async function getUsers(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  const query = req.query.username as string;
+  let clientUsers;
 
-    return res
-      .status(200)
-      .clearCookie("session")
-      .json({ message: "Session cleared, log out successful." });
+  try {
+    if (query) clientUsers = await authService.searchUsers(query);
+    else { 
+      if (process.env.NODE_ENV !== "development")
+        return res.status(403).json({ ERROR: "Access denied." });
+
+      clientUsers = await authService.getUsers(true);
+    }
+
+    return res.status(200).json({
+      message: `Successfully retrieved ${query ? "searched" : "all"} users.`,
+      users: clientUsers
+    });
   } catch (error: any) {
-    next(handleApiError(error, "logout controller error.", 500));
+    next(handleApiError(error, "getUsers controller error.", 500));
   }
 }
 
 /**
- * Clears every refresh token, csrf token and cookies.
+ * Send a user or current user or even a user's notifications, client formatted.
+ * @controller
+ * @response `success` with the current user formatted for the client, `not found`, `forbidden`, or `ApiError`.
+ */
+export async function getUser(req: Request, res: Response, next: NextFunction) {
+  const query = req.query as Record<string, string>;
+
+  if (query.email && process.env.NODE_ENV !== "development")
+    return res.status(403).json({ ERROR: "Access denied." });
+
+  try {
+    let clientUser = await authService.getUser(
+      query.email ? "email" : "_id",
+      query.email || req.decodedClaims!.sub,
+      !query.notifications
+    );
+    if (!clientUser)
+      return res.status(404).json({ ERROR: "User doesn't exist." });
+
+    if (query.notifications) {
+      const result = await httpAuthService.getSortedUserNotifications(clientUser._id);
+      clientUser = {
+        friend_requests: clientUser!.notifications.friend_requests,
+        notifications: result.notifications
+      } as any;
+    }
+
+    return res.status(200).json({
+      message: 
+        `Successfully retrieved ${query.notifications ? "the user's notifications" : query.email ? `user ${query.email}` : "the current user"}.`,
+      user: clientUser
+    });
+  } catch (error: any) {
+    next(handleApiError(error, "getUser controller error.", 500));
+  }
+}
+
+/**
+ * Clears every refresh token, csrf token and cookies from the current user.
  * @controller
  * @response `success` or `ApiError`.
  */
@@ -238,7 +236,7 @@ export async function clear(req: Request, res: Response, next: NextFunction) {
     await authService.wipeUser(req.decodedClaims!.sub);
 
     return res.status(200).clearCookie("session").clearCookie("refresh").json({
-      message: "All refresh and csrf tokens successfully removed.",
+      message: "All refresh and csrf tokens successfully removed."
     });
   } catch (error: any) {
     next(handleApiError(error, "clear controller error.", 500));
@@ -248,7 +246,7 @@ export async function clear(req: Request, res: Response, next: NextFunction) {
 /**
  * Deletes the current user.
  * @controller
- * @response `success` or `ApiError`.
+ * @response `success`, or `ApiError`.
  */
 export async function deleteUser(
   req: Request,
@@ -260,10 +258,63 @@ export async function deleteUser(
 
     await authService.deleteUser(userId);
 
-    return res
-      .status(200)
-      .json({ message: `User ${userId} successfully deleted.` });
+    return res.status(200).json({ message: `User ${userId} successfully deleted.` });
   } catch (error: any) {
     next(handleApiError(error, "deleteUser controller error.", 500));
+  }
+}
+/**
+ * Deletes the given user notifications.
+ * @controller
+ * @response `success` with sorted notifications, or `ApiError`.
+ */
+export async function deleteUserNotifications(
+  req: DeleteNotificationsRequestDto, 
+  res: Response, 
+  next: NextFunction
+) {
+  const toDelete = req.body.notifications;
+
+  try {
+    const result = await httpAuthService.deleteUserNotifications(
+      req.decodedClaims!.sub,
+      toDelete,
+      req.body.categorize
+    );
+
+    return res.status(200).json({
+      message: `Successfully deleted ${toDelete.length} notifications from current user.`,
+      user: { notifications: result.notifications },
+    });
+  } catch (error: any) {
+    next(handleApiError(error, "deleteUserNotifications controller error.", 500));
+  }
+}
+
+/**
+ * Clears the session cookie and deletes the csrf token.
+ * @controller
+ * @response `success`, `internal`, or `ApiError`.
+ */
+export async function logout(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    const user = await authService.getUser("username", req.body.username);
+    if (!user)
+      return res.status(500).json({
+        ERROR: "Unexpectedly couldn't find the user after login."
+      });
+
+    await deleteCsrfToken(user.id, req.headers["x-xsrf-token"] as string);
+
+    return res
+      .status(200)
+      .clearCookie("session").clearCookie("refresh")
+      .json({ message: "Session cleared, log out successful." });
+  } catch (error: any) {
+    next(handleApiError(error, "logout controller error.", 500));
   }
 }

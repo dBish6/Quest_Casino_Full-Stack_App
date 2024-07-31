@@ -1,7 +1,7 @@
 import type { Response } from "express";
 import type { GoogleLoginRequestDto } from "@authFeatHttp/dtos/LoginRequestDto";
 import type { UserCredentials } from "@qc/typescript/typings/UserCredentials";
-import type { InitializeUser } from "@authFeatHttp/typings/User";
+import type { InitializeUser } from "@authFeat/typings/User";
 
 import querystring from "querystring";
 
@@ -36,8 +36,8 @@ interface FetchUserInfoSuccessDataDto {
  * they don't already exist.
  */
 export async function loginWithGoogle(
-  res: Response,
-  req: GoogleLoginRequestDto
+  req: GoogleLoginRequestDto,
+  res: Response
 ) {
   try {
     const { code, redirect_uri = "" } = req.body;
@@ -61,8 +61,7 @@ export async function loginWithGoogle(
         email,
         email_verified,
         password: "",
-        // prettier-ignore
-        country: COUNTRIES[Math.floor(Math.random() * COUNTRIES.length)].name || "Canada", // The country has to be defaulted. Since we don't have access to their country with Google, they would be prompted to change this.
+        country: COUNTRIES[Math.floor(Math.random() * COUNTRIES.length)].name || "Canada" // The country has to be defaulted. Since we don't have access to their country with Google, they would be prompted to change this.
       };
       await registerUser(regUser);
 
@@ -93,11 +92,11 @@ async function fetchAccessTokenToken(code: string, redirectUri: string) {
           client_id: GOOGLE_OAUTH_CLIENT_ID,
           client_secret: GOOGLE_OAUTH_CLIENT_SECRET,
           redirect_uri: redirectUri, // This is just to ensure the request is valid.
-          grant_type: "authorization_code",
-        }),
+          grant_type: "authorization_code"
+        })
       }),
       data = (await res.json()) as FetchAccessTokenSuccessDataDto;
-    logger.info("google fetchAccessTokenToken", res.status);
+    logger.debug("google fetchAccessTokenToken", res.status);
 
     if (!res.ok) {
       logger.error("fetchAccessTokenToken error:", data);
@@ -120,11 +119,11 @@ async function fetchUserInfo(token: string) {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+          Authorization: `Bearer ${token}`
+        }
       }),
       data = (await res.json()) as FetchUserInfoSuccessDataDto;
-    logger.info("google fetchUserInfo", res.status);
+    logger.debug("google fetchUserInfo", res.status);
 
     if (!res.ok)
       throw handleApiError(

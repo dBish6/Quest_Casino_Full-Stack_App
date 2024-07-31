@@ -1,6 +1,11 @@
-import { FriendCredentials } from "../typings/UserCredentials"
+import type { FriendCredentials } from "../typings/UserCredentials";
 
-export default interface ManageFriendDto {
-  username: string;
-  friend?: FriendCredentials;
+export interface ManageFriendRoomDto {
+  action_type: "join" | "leave";
+  friend: FriendCredentials
+}
+
+export interface ManageFriendRequestDto {
+  action_type: "request" | "add" | "decline";
+  friend: { username: string };
 }

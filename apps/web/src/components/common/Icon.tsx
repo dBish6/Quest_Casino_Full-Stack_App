@@ -28,6 +28,17 @@ export default function Icon({id, fill = "var(--c-purple-50)", ...props}: IconPr
  * The collection icons with their IDs to access the icons and default aria-labels.
  */
 const iconLib = {
+  "add-38": {
+    id: "add",
+    size: { width: "38", height: "38" },
+    "aria-label": "Add",
+  },
+  "add-24": {
+    id: "add",
+    size: { width: "24", height: "24" },
+    "aria-label": "Add",
+  },
+
   "adjust-16": {
     id: "adjust",
     size: { width: "16", height: "16.656" },
@@ -40,6 +51,11 @@ const iconLib = {
     "aria-label": "Identification",
   },
 
+  "bell-45": {
+    id: "bell",
+    size: { width: "44.999", height: "48.866" },
+    "aria-label": "Notifications",
+  },
   "bell-25": {
     id: "bell",
     size: { width: "25.782", height: "27.998" },
@@ -52,10 +68,23 @@ const iconLib = {
     "aria-label": "Notifications",
   },
 
+  "border-horizontal-24": {
+    id: "border-horizontal",
+    size: { width: "24.001", height: "24.085" },
+    "aria-label": "Categorize",
+  },
+
+
   "check-mark-24": {
     id: "check-mark",
     size: { width: "24", height: "16.961" },
     "aria-label": "Success",
+  },
+
+  "delete-19": {
+    id: "delete",
+    size: { width: "18.858", height: "23.999" },
+    "aria-label": "Delete",
   },
 
   "discord-20": {
@@ -239,6 +268,17 @@ const iconLib = {
     "aria-label": "Quests",
   },
 
+  "search-24": {
+    id: "search",
+    size: { width: "24", height: "24.11" },
+    "aria-label": "Search",
+  },
+  "search-21": {
+    id: "search",
+    size: { width: "20.996", height: "21.022" },
+    "aria-label": "Search",
+  },
+
   "send-24": {
     id: "send",
     size: { width: "24", height: "24.038" },
@@ -256,6 +296,11 @@ const iconLib = {
     "aria-label": "Reply",
   },
 
+  "user-45": {
+    id: "user",
+    size: { width: "45.01", height: "48.471" },
+    "aria-label": "Profile",
+  },
   "user-24": {
     id: "user",
     size: { width: "23.998", height: "25.844" },

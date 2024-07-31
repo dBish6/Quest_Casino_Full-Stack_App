@@ -71,12 +71,31 @@
               position: relative;
               display: flex;
               align-items: center;
+              &[data-user="Logout"] {
+                & span {
+                  left: calc(-8px - 4px);
+                  width: 8px;
+                  height: 8px;
+                  background-color: var(--c-status-green);
+                }
+                & button {
+                  font: var(--para-regular);
+                }
+              }
+              &[data-user="Login"] {
+                & span {
+                  left: calc(-9px - 4px);
+                  width: 9px;
+                  height: 9px;
+                  transform: translateY(1px);
+                  background-color: var(--c-status-red);
+                }
+                & a {
+                  font-weight: 600;
+                }
+              }
               & span {
                 position: absolute;
-                /* TODO: 0.875? */
-                left: -0.75rem;
-                width: 0.5rem;
-                height: 0.5rem;
                 border-radius: 50%;
                 &[data-user="Logout"] {
                   background-color: var(--c-status-green);
@@ -84,13 +103,6 @@
                 &[data-user="Login"] {
                   background-color: var(--c-status-red);
                 }
-              }
-              & a,
-              & button {
-                font: var(--para-regular);
-              }
-              & a {
-                font-weight: 600;
               }
             }
           }

@@ -5,7 +5,7 @@
  * Handles functionally of the user's access and refresh tokens.
  */
 
-import type { UserToClaims, UserClaims } from "@authFeatHttp/typings/User";
+import type { UserToClaims, UserClaims } from "@authFeat/typings/User";
 
 import jwt from "jsonwebtoken";
 
@@ -74,6 +74,7 @@ export class JWTVerification {
    */
   async verifyUserToken(accessToken: string | undefined, refreshToken: string | undefined) {
     if (!accessToken) {
+      logger.debug("Access token missing trying to refresh...")
       if (refreshToken) {
         return this.verifyRefreshToken(refreshToken);
       }
@@ -93,7 +94,7 @@ export class JWTVerification {
         accessToken,
         ACCESS_TOKEN_SECRET!
       );
-      logger.debug("Access token decodedClaims:", decodedClaims);
+      // logger.debug("Access token decodedClaims:", decodedClaims);
 
       const tokenExpiry = decodedClaims.exp! * 1000,
         currentTime = Date.now();
@@ -132,7 +133,7 @@ export class JWTVerification {
         refreshToken,
         REFRESH_TOKEN_SECRET!
       );
-      logger.debug("Refresh token decodedClaims:", decodedClaims);
+      // logger.debug("Refresh token decodedClaims:", decodedClaims);
 
       const match = await this.#isRefreshTokenMatching(
         decodedClaims.sub,

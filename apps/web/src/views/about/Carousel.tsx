@@ -237,7 +237,8 @@ function Testimonial({
       custom={index}
     >
       <span className={s.bg} />
-      <Avatar size="xl" user={{ avatar_url: avatarUrl }} showProfile={false} />
+      
+      <Avatar size="xl" user={{ avatar_url: avatarUrl }} />
       <div>
         <p>"{quote}"</p>
         <div>

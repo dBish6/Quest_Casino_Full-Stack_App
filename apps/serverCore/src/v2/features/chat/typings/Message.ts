@@ -1,11 +1,12 @@
 import type { Document, ObjectId } from "mongoose";
 import type MessageDto from "@chatFeat/dtos/MessageDto";
+import type DefaultDocFields from "@typings/DefaultDocFields";
 import type { PublicRooms, PrivateRooms } from "@chatFeat/typings/Rooms";
 
 /**
  * All fields within a message document.
  */
-export interface Message extends MessageDto {
+export interface Message extends MessageDto, DefaultDocFields {
   _id: ObjectId;
 }
 

@@ -6,9 +6,10 @@
  */
 
 import type { ObjectId } from "mongoose";
-import type { GetUserBy, InitializeUser } from "@authFeatHttp/typings/User";
+import type { InitializeUser, UserNotification, UserNotificationField } from "@authFeat/typings/User";
+import type { Notification } from "@qc/typescript/dtos/NotificationsDto";
 
-import { Types } from "mongoose";
+import { Types, startSession  } from "mongoose";
 import { hash } from "bcrypt";
 import { randomUUID } from "crypto";
 import { readFileSync } from "fs";
@@ -19,99 +20,51 @@ import { logger } from "@qc/utils";
 import { handleApiError } from "@utils/handleError";
 import sendEmail from "@utils/sendEmail";
 
-import { User, UserStatistics, UserActivity } from "@authFeat/models";
+import { User, UserStatistics, UserActivity, UserNotifications } from "@authFeat/models";
 import { redisClient } from "@cache";
 
+import { MINIMUM_USER_FIELDS, updateUserCredentials } from "@authFeat/services/authService";
 import { clearAllSessions } from "@authFeat/services/jwtService";
 import { deleteAllCsrfTokens } from "./csrfService";
-
-const CLIENT_USER_SHARED_EXCLUDE = "-_id -created_at -updated_at",
-  CLIENT_USER_FIELDS = `${CLIENT_USER_SHARED_EXCLUDE} -email -verification_token -password -activity`;
-
-function populateUser(userQuery: any, forClient?: boolean) {
-  if (forClient) {
-    return userQuery.select(CLIENT_USER_FIELDS).populate({
-      path: "statistics",
-      select: CLIENT_USER_SHARED_EXCLUDE,
-    });
-  } else {
-    return userQuery.populate("statistics activity");
-  }
-}
-
-/**
- * Gets all users from the database.
- */
-export async function getUsers(forClient?: boolean) {
-  try {
-    let query = User.find();
-    query = populateUser(query, forClient);
-
-    return await query.exec();
-  } catch (error: any) {
-    throw handleApiError(error, "getUsers service error.", 500);
-  }
-}
-
-/**
- * Gets a user from the database based on the specified criteria.
- */
-export async function getUser(
-  by: GetUserBy,
-  value: ObjectId | string,
-  forClient?: boolean
-) {
-  try {
-    let query = User.findOne({ [by]: value });
-    query = populateUser(query, forClient);
-
-    return await query.exec();
-  } catch (error: any) {
-    throw handleApiError(error, "getUser service error.", 500);
-  }
-}
 
 /**
  * Registers a new user in the database.
  */
 export async function registerUser(user: InitializeUser) {
   const userId = new Types.ObjectId();
-  let verificationToken = randomUUID(); // For email verification link.
+  let verificationToken = randomUUID(); // For the email verification link and used for the socket.io friend rooms.
 
+  const session = await startSession();
   try {
-    if (user.password && user.type === "standard")
-      user.password = await hash(user.password, 12);
-    else user.password = `${user.type} provided`;
+    await session.withTransaction(async () => {
+      if (user.password && user.type === "standard") user.password = await hash(user.password, 12);
+      else user.password = `${user.type} provided`;
 
-    if (!user.email_verified)
-      await redisClient.set(
-        `user:${userId}:verification_token`,
-        verificationToken
-      );
-    else verificationToken = `/profile/${verificationToken}`;
+      if (!user.email_verified)
+        await redisClient.set(`user:${userId}:verification_token`, verificationToken);
 
-    const newUser = new User({
-        _id: userId,
-        legal_name: { first: user.first_name, last: user.last_name },
-        verification_token: verificationToken,
-        statistics: userId,
-        activity: userId,
-        ...user,
-      }),
-      userStatistics = new UserStatistics({ _id: userId }),
-      userActivity = new UserActivity({ _id: userId });
+      const docs = [
+        new User({
+          _id: userId,
+          legal_name: { first: user.first_name, last: user.last_name },
+          verification_token: verificationToken,
+          statistics: userId,
+          activity: userId,
+          notifications: userId,
+          ...user,
+        }),
+        new UserStatistics({ _id: userId }),
+        new UserActivity({ _id: userId }),
+        new UserNotifications({ _id: userId })
+      ];
+      await Promise.all([docs.map((doc) => doc.save())])
+    });
 
-    await Promise.all([
-      newUser.save(),
-      userStatistics.save(),
-      userActivity.save(),
-    ]);
-
-    logger.info(
-      `User ${newUser._id} was successfully registered in the database.`
-    );
+    logger.info(`User ${userId} was successfully registered in the database.`);
   } catch (error: any) {
     throw handleApiError(error, "registerUser service error.", 500);
+  } finally {
+    session.endSession();
   }
 }
 
@@ -121,28 +74,24 @@ export async function registerUser(user: InitializeUser) {
  */
 export async function emailVerify(userId: string, verificationToken: string) {
   try {
-    const cachedToken = await redisClient.get(
-      `user:${userId}:verification_token`
-    );
-    if (verificationToken !== cachedToken)
-      return "Verification token disparity.";
+    const cachedToken = await redisClient.get(`user:${userId}:verification_token`);
+    if (verificationToken !== cachedToken) return "Verification token disparity.";
 
-    let query = User.findOneAndUpdate(
+    const clientUser = await updateUserCredentials(
       {
-        verification_token: verificationToken,
+        by: "verification_token",
+        value: verificationToken
       },
       {
-        $set: {
-          email_verified: true,
-          verification_token: `/profile/${verificationToken}`,
-        },
+        $set: { email_verified: true },
       },
-      { new: true }
+      { new: true, forClient: true }
     );
-    query = await populateUser(query, true).exec();
-    if (!query) return "User doesn't exist.";
+    if (!clientUser) return "User doesn't exist.";
 
-    return query;
+    await redisClient.del(`user:${userId}:verification_token`);
+    
+    return clientUser;
   } catch (error: any) {
     throw handleApiError(error, "emailVerify service error.", 500);
   }
@@ -188,40 +137,159 @@ export async function sendVerifyEmail(
 }
 
 /**
- * Updates the date of a user's activity_timestamp.
+ * Searches for users in the database based on a username.
  */
-export async function updateActivityTimestamp(userId: ObjectId | string) {
+export async function searchUsers(username: string) {
   try {
-    // TODO:
-    await UserStatistics.findOneAndUpdate(
-      { _id: userId },
-      { activity_timestamp: new Date() }
-    );
-    // await User.findOneAndUpdate(
-    //   { _id: userId },
-    //   { "activity.activity_timestamp": new Date() },
-    //   { runValidators: true }
-    // );
+    const users = await User.find({
+      username: { $regex: username, $options: "i" }
+    }).select(MINIMUM_USER_FIELDS).limit(50);
+
+    return users;
   } catch (error: any) {
-    throw handleApiError(error, "updateActivityTimestamp service error.", 500);
+    throw handleApiError(error, "searchUsers service error.", 500);
   }
 }
 
 /**
- * ...
+ * Gets all notifications of a user from the database sorted by created_at, categorized or un-categorized.
  */
-// TODO:
-export async function updateProfile(userId: ObjectId | string) {
+export async function getSortedUserNotifications(
+  userId: ObjectId | string,
+  categorize = true
+): Promise<{ notifications: UserNotificationField } | { notifications: UserNotification[] }> {
+  let result
+  
   try {
-    // await User.findOneAndUpdate(
-    //   { _id: userId },
-    //
-    //   { runValidators: true }
-    // );
+    if (categorize) {
+      result = await UserNotifications.aggregate([
+        { $match: { _id: new Types.ObjectId(userId as string) } },
+        {
+          $facet: {
+            news: [
+              { $unwind: "$notifications.news" },
+              { $sort: { "notifications.news.created_at": -1 } },
+              { $project: { notification: "$notifications.news" } }
+            ],
+            system: [
+              { $unwind: "$notifications.system" },
+              { $sort: { "notifications.system.created_at": -1 } },
+              { $project: { notification: "$notifications.system" } }
+            ],
+            general: [
+              { $unwind: "$notifications.general" },
+              { $sort: { "notifications.general.created_at": -1 } },
+              { $project: { notification: "$notifications.general" } }
+            ]
+          }
+        },
+        {
+          $project: {
+            notifications: {
+              news: "$news.notification",
+              system: "$system.notification",
+              general: "$general.notification",
+            }
+          }
+        }
+      ]);
+    } else {
+      result = await UserNotifications.aggregate([
+        { $match: { _id: new Types.ObjectId(userId as string) } },
+        {
+          $project: {
+            notifications: {
+              $concatArrays: [
+                "$notifications.news",
+                "$notifications.system",
+                "$notifications.general"
+              ]
+            }
+          }
+        },
+        { $unwind: "$notifications" },
+        { $sort: { "notifications.created_at": -1 } },
+        { $group: { _id: 0, notifications: { $push: "$notifications" } } }
+      ])
+    }
+
+    return result.length > 0 ? result[0] : { notifications: { news: [], system: [], general: [] } };
   } catch (error: any) {
-    throw handleApiError(error, "updateUser service error.", 500);
+    throw handleApiError(error, "getUserNotifications service error.", 500);
   }
 }
+
+/**
+ * Delete one or multiple notifications of a user from the database.
+ */
+export async function deleteUserNotifications(
+  userId: ObjectId | string,
+  notifications: Notification[],
+  categorize?: boolean
+) {
+  try {
+    if (notifications.length > 1) {
+      await UserNotifications.bulkWrite(
+        notifications.map((toDelete) => ({
+          updateOne: {
+            filter: { _id: userId },
+            update: {
+              $pull: {
+                [`notifications.${toDelete.type}`]: { notification_id: toDelete.notification_id },
+              },
+            },
+          },
+        }))
+      );
+    } else {
+      const toDelete = notifications[0];
+      await UserNotifications.findOneAndUpdate(
+        { _id: userId },
+        { $pull: { [`notifications.${toDelete.type}`]: { notification_id: toDelete.notification_id } } },
+      );
+    }
+
+    return getSortedUserNotifications(userId, categorize);
+  } catch (error: any) {
+    throw handleApiError(error, "deleteUserNotifications service error.", 500);
+  }
+}
+
+// /**
+//  * Updates the date of a user's activity_timestamp.
+//  */
+// export async function updateActivityTimestamp(userId: ObjectId | string) {
+//   try {
+//     // TODO:
+//     await UserStatistics.findOneAndUpdate(
+//       { _id: userId },
+//       { activity_timestamp: new Date() }
+//     );
+//     // await User.findOneAndUpdate(
+//     //   { _id: userId },
+//     //   { "activity.activity_timestamp": new Date() },
+//     //   { runValidators: true }
+//     // );
+//   } catch (error: any) {
+//     throw handleApiError(error, "updateActivityTimestamp service error.", 500);
+//   }
+// }
+
+// /**
+//  * ...
+//  */
+// // TODO:
+// export async function updateProfile(userId: ObjectId | string) {
+//   try {
+//     // await User.findOneAndUpdate(
+//     //   { _id: userId },
+//     //
+//     //   { runValidators: true }
+//     // );
+//   } catch (error: any) {
+//     throw handleApiError(error, "updateUser service error.", 500);
+//   }
+// }
 
 /**
  * Deletes the user's refresh tokens and csrf tokens.

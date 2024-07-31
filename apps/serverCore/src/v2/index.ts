@@ -28,7 +28,7 @@ import establishRedisConnection from "./cache";
 import initializeHttp from "./http";
 import initializeSocketIo from "./socket";
 
-export const setupServer = async () => {
+export async function setupServer() {
   const { PROTOCOL, HOST, PORT: ENV_PORT } = process.env,
     PORT = Number(ENV_PORT) || 4000,
     corsOptions = {
@@ -37,7 +37,7 @@ export const setupServer = async () => {
     };
 
   const db = new Db();
-  db.connectBaseCluster();
+  await db.connectBaseCluster();
 
   await establishRedisConnection();
 

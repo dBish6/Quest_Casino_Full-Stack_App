@@ -65,6 +65,9 @@ export const Sizes: Story = {
   },
   render: (args) => (
     <div style={groupStyle}>
+      <Button size="xsm" {...args}>
+        Extra Small
+      </Button>
       <Button size="sm" {...args}>
         Small
       </Button>
@@ -81,7 +84,14 @@ export const Sizes: Story = {
   ),
 };
 
-export const Small: Story = {
+export const ExtraSmall: Story = {
+  args: {
+    intent: "primary",
+    size: "xsm",
+    children: "Extra Small",
+  },
+},
+ Small: Story = {
     args: {
       intent: "primary",
       size: "sm",
