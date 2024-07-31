@@ -1,7 +1,7 @@
 import type { DialogContentProps } from "@radix-ui/react-dialog";
 import type { Variants } from "framer-motion";
 
-import React, { forwardRef, useState, useRef, useLayoutEffect } from "react";
+import { forwardRef, useState, useRef, useLayoutEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { AnimatePresence, m } from "framer-motion";
 import { Root, Portal, Overlay, Content } from "@radix-ui/react-dialog";
@@ -25,7 +25,9 @@ export enum ModalQueryKey {
   LOGIN_MODAL = "login",
   MENU_MODAL = "menu",
   NOTIFICATIONS_MODAL = "notif",
-  REGISTER_MODAL = "register"
+  REGISTER_MODAL = "register",
+  // TODO:
+  VIEW_PROFILE_MODAL = "prof"
 }
 
 export interface ModalTemplateProps

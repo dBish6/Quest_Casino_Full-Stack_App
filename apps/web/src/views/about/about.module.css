@@ -100,7 +100,7 @@
                 z-index: -1;
               }
 
-              & > div:first-of-type {
+              & > a {
                 flex-shrink: 0;
               }
               & > div:last-child {

@@ -68,7 +68,7 @@ export default function ResourceLoaderProvider({ children }: React.PropsWithChil
 
   const { LazyMotion, domMax } = FramerFeatureBundleRef.current;
   return (
-    <ResourceLoaderContext.Provider value={{ resourcesLoaded: LazyMotion && progress.loading === false }}>
+    <ResourceLoaderContext.Provider value={{ resourcesLoaded: LazyMotion && progress.loading === false }}> 
       {progress.loading && <OverlayLoader message={progress.message} />}
       {LazyMotion ? (
         <LazyMotion features={domMax} strict>

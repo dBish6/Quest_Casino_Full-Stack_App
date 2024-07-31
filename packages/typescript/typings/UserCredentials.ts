@@ -23,7 +23,7 @@ export interface FriendCredentials {
   /**
    * When the timestamp is not null it means they are either online or away.
    */
-  activity_timestamp: Date | null;
+  activity: { activity_timestamp: Date | null };
   status?: "online" | "away" | "offline"; // Could have this initialized on the client? Or stored somewhere else?
 }
 
@@ -31,7 +31,7 @@ export interface FriendCredentials {
  * The user credentials on the client of the current user.
  */
 export interface UserCredentials
-  extends Omit<FriendCredentials, "activity_timestamp" | "status"> {
+  extends Omit<FriendCredentials, "activity" | "status"> {
   type: "standard" | "google";
   // avatar_url?: string;
   // legal_name: { first: string; last: string };

@@ -1,4 +1,5 @@
 .avatar {
+  position: relative;
   & div,
   & div::before,
   & img {
@@ -11,28 +12,69 @@
       border: 2px solid rgba(95, 67, 178, 0.7);
     }
 
+    & .activityIndie {
+      position: absolute;
+      bottom: 2px;
+      display: block;
+      border-radius: 50%;
+      &[aria-label="online"] {
+        background-color: var(--c-status-green);
+      }
+      &[aria-label="away"] {
+        background-color: var(--c-status-yellow);
+      }
+      &[aria-label="offline"] {
+        background-color: var(--c-status-red);
+      }
+    }
+
     &.sm {
       width: 24px;
       height: 24px;
       & div {
         border-width: 1px;
       }
+      & .activityIndie {
+        right: 0;
+        width: 5px;
+        height: 5px;
+      }
     }
     &.md {
       width: 40px;
       height: 40px;
+      & .activityIndie {
+        right: 2px;
+        width: 8px;
+        height: 8px;
+      }
     }
     &.lrg {
       width: 64px;
       height: 64px;
+      & .activityIndie {
+        right: 4px;
+        width: 12px;
+        height: 12px;
+      }
     }
     &.xl {
       width: 94px;
       height: 94px;
+      & .activityIndie {
+        right: 6px;
+        width: 18px;
+        height: 18px;
+      }
     }
     &.xxl {
       width: 116px;
       height: 116px;
+      & .activityIndie {
+        right: 8px;
+        width: 22px;
+        height: 22px;
+      }
     }
   }
 }
@@ -41,14 +83,14 @@
   position: relative;
   background-color: var(--c-lvl-4);
   &[data-state="open"] {
-    animation: fadeIn ease-in-out 0.38s forwards;
+    animation: fadeIn ease-in-out 0.28s forwards;
   }
   &[data-state="closed"] {
-    animation: fadeOut ease-out 0.38s backwards;
+    animation: fadeOut ease-out 0.28s backwards;
   }
   /* 
    Expands the card to cover the gap in between the avatar and the card
-   so it go in and out of the hover state.
+   so it doesn't go in and out of the hover state.
   */
   &::before {
     content: "";

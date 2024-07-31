@@ -151,7 +151,6 @@ function Details({ user }: { user: MinUserCredentials }) {
       <Avatar
         size="md"
         user={{ avatar_url: user.avatar_url }}
-        showProfile={false}
       />
       <hgroup role="group" aria-roledescription="heading group">
         <h4>{user.username}</h4>

@@ -4,7 +4,7 @@
  *
  * Author: David Bishop
  * Creation Date: April 16, 2024
- * Last Updated: July 29, 2024
+ * Last Updated: July 31, 2024
  *
  * Description:
  * .
@@ -29,6 +29,8 @@ import VerificationHandler from "@components/VerificationHandler";
 
 import { About, Home, Profile, Settings, Support } from "@views/index";
 import { Error } from "@views/errors";
+
+import registerAction from "@authFeat/actions/validateRegister";
 
 import "./index.css";
 
@@ -131,6 +133,15 @@ export const routes: RouteObject[] = [
           path: "*",
           element: <Navigate to="/error-404" replace />,
         }),
+      },
+    ],
+  },
+  {
+    path: "/action",
+    children: [
+      {
+        path: "register",
+        action: registerAction,
       },
     ],
   },

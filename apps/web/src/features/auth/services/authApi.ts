@@ -386,7 +386,7 @@ const authApi = createApi({
             try {
               console.log("FRIEND UPDATE", data);
 
-              dispatch(UPDATE_USER_CREDENTIALS({ friends: data.friends })); // TODO: Might be getting back single friends too if I remove friendActivity.
+              dispatch(UPDATE_USER_CREDENTIALS({ friends: { list: data.friends } })); // TODO: Might be getting back single friends too if I remove friendActivity.
 
               // patchResult = dispatch(
               //   authApi.util.updateQueryData("", undefined, (cache) => {
@@ -510,11 +510,14 @@ function handleLoginSuccess(
     // Removes the google params.
     for (const key of Array.from(params.keys())) {
       console.log("key", key);
-      if (!["login", "register"].includes(key)) {
+      // if (![ModalQueryKey.LOGIN_MODAL, ModalQueryKey.REGISTER_MODAL].includes(key as any)) {
+      // TODO: Find out what the specific keys from the google login can be and put them here and also delete login.
+      if (["login"].includes(key as any)) {
         console.log("removed", key);
         params.delete(key);
       }
     }
+    // FIXME:
     window.history.replaceState({}, document.title, params.toString());
 
     if (!params.has("register")) {
