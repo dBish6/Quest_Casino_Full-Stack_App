@@ -33,7 +33,7 @@ export function populateUser<TUserDoc = UserDoc>(userQuery: Query<any, UserDoc>)
       select: FRIEND_FIELDS,
       populate: {
         path: "activity",
-        select: "activity_timestamp"
+        select: "-_id activity_timestamp"
       }
     },
     {

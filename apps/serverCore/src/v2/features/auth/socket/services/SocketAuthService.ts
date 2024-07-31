@@ -47,7 +47,7 @@ export default class SocketAuthService {
 
       if (friends.length) {
         for (const friend of friends) {
-          const status = getUserActivityStatus(friend.activity_timestamp, friend.verification_token);
+          const status = getUserActivityStatus(friend.activity.activity_timestamp, friend.verification_token);
           // Joins their friend room only if they are online.
           if (status === "online")
             this.socket.join(getFriendRoom(user.verification_token, friend.verification_token!)); // If they're online, they're verified.
