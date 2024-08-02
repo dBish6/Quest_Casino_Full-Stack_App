@@ -129,15 +129,6 @@ export default function RegisterModal() {
     if (fetcher.data) handleValidationResponse(fetcher.data);
   }, [fetcher.data]);
 
-  useEffect(() => {
-    console.log("form", form)
-    console.log("form.processing", form.processing)
-  }, [form.processing]);
-
-  useEffect(() => {
-    console.log("form ---------- processing", processing)
-  }, [processing]);
-
   return (
     <ModalTemplate
       aria-description="Register a profile at Quest Casino by providing the details below or by pressing the google button."
