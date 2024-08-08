@@ -26,11 +26,7 @@ export class GenerateUserJWT {
     try {
       return this.#token(ACCESS_TOKEN_SECRET!, options);
     } catch (error: any) {
-      throw handleApiError(
-        error,
-        "generateJWT service error; generating access token.",
-        500
-      );
+      throw handleApiError(error, "generateJWT service error; generating access token.");
     }
   }
 
@@ -45,11 +41,7 @@ export class GenerateUserJWT {
 
       return refreshToken;
     } catch (error: any) {
-      throw handleApiError(
-        error,
-        "generateJWT service error; generating refresh token.",
-        500
-      );
+      throw handleApiError(error, "generateJWT service error; generating refresh token.");
     }
   }
 
@@ -63,10 +55,10 @@ export class GenerateUserJWT {
 }
 
 export class JWTVerification {
-  public refreshThreshold: number;
+  public readonly REFRESH_THRESHOLD: number;
 
   constructor(refreshThreshold: number = 1000 * 60 * 3) {
-    this.refreshThreshold = refreshThreshold;
+    this.REFRESH_THRESHOLD = refreshThreshold;
   }
 
   /**
@@ -99,7 +91,7 @@ export class JWTVerification {
       const tokenExpiry = decodedClaims.exp! * 1000,
         currentTime = Date.now();
       // Signifies to refresh when within the refresh threshold.
-      if (tokenExpiry - currentTime <= this.refreshThreshold) {
+      if (tokenExpiry - currentTime <= this.REFRESH_THRESHOLD) {
         const match = await this.#isRefreshTokenMatching(
           decodedClaims.sub,
           refreshToken
@@ -116,11 +108,7 @@ export class JWTVerification {
       if (this.#isJwtError(error)) 
         return { claims: null, message: "Access token is invalid." };
 
-      throw handleApiError(
-        error,
-        "JWTVerification service error; access token verification.",
-        500
-      );
+      throw handleApiError(error, "JWTVerification service error; access token verification.");
     }
   }
 
@@ -146,11 +134,7 @@ export class JWTVerification {
       if (this.#isJwtError(error)) 
         return { claims: null, message: "Refresh token is invalid." };
       
-      throw handleApiError(
-        error,
-        "JWTVerification service error; refresh token verification.",
-        500
-      );
+      throw handleApiError(error, "JWTVerification service error; refresh token verification.");
     }
   }
 
@@ -184,7 +168,7 @@ export async function clearSession(userId: string, refreshToken: string) {
   try {
     await redisClient.sRem(`user:${userId}:refresh_tokens`, refreshToken);
   } catch (error: any) {
-    throw handleApiError(error, "clearSession service error.", 500);
+    throw handleApiError(error, "clearSession service error.");
   }
 }
 
@@ -195,6 +179,6 @@ export async function clearAllSessions(userId: string) {
   try {
     await redisClient.del(`user:${userId}:refresh_tokens`);
   } catch (error: any) {
-    throw handleApiError(error, "clearAllSessions service error.", 500);
+    throw handleApiError(error, "clearAllSessions service error.");
   }
 }

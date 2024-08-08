@@ -5,46 +5,61 @@
  * Handles functionalities related to user authentication and management that can be for HTTP or Sockets.
  */
 
-import type { ObjectId, Query, QueryOptions, UpdateQuery } from "mongoose";
-import type { GetUserBy, UserDoc, UserDocStatistics, UserDocActivity, UserDocNotifications } from "@authFeat/typings/User";
+import type { ObjectId, PopulateOptions, Query, QueryOptions, UpdateQuery } from "mongoose";
+import type { GetUserBy, UserDoc, UserDocFriends, UserDocStatistics, UserDocActivity, UserDocNotifications } from "@authFeat/typings/User";
 
-import { handleApiError } from "@utils/handleError";
+import { handleApiError, ApiError } from "@utils/handleError";
 
-import { User, UserStatistics, UserActivity, UserNotifications } from "@authFeat/models";
+import { User, UserFriends, UserStatistics, UserActivity, UserNotifications } from "@authFeat/models";
 
 export interface Identifier<TBy> {
   by: TBy;
   value: ObjectId | string;
 }
 
-export const FRIEND_FIELDS = "avatar_url legal_name username verification_token country bio"; // FriendCredentials type.
-
 export const CLIENT_USER_SHARED_EXCLUDE = "-_id -created_at -updated_at",
-  CLIENT_USER_FIELDS = `${CLIENT_USER_SHARED_EXCLUDE} -email -password -activity -notifications`, // UserCredentials type.
-  MINIMUM_USER_FIELDS = "-_id avatar_url legal_name username";
+  /**
+   * Type `UserCredentials` (minus the friends because they get initialized elsewhere).
+   */
+  CLIENT_USER_FIELDS = `${CLIENT_USER_SHARED_EXCLUDE} -email -password -friends -activity -notifications`,
+  CLIENT_USER_ACTIVITY_FIELDS = "-_id status";
 
 /**
- * Populates specific fields for the client or internal use.
+ * Type `MinUserCredentials`.
  */
-export function populateUser<TUserDoc = UserDoc>(userQuery: Query<any, UserDoc>) {
-  const query = userQuery.populate([
-    {
-      path: "friends.list",
-      select: FRIEND_FIELDS,
-      populate: {
-        path: "activity",
-        select: "-_id activity_timestamp"
-      }
-    },
-    {
-      path: "friends.pending",
-      select: MINIMUM_USER_FIELDS
-    }
-  ]);
+export const MINIMUM_USER_FIELDS = "-_id avatar_url legal_name username verification_token";
 
+/**
+ * Type `FriendCredentials`.
+ */
+export const FRIEND_FIELDS = `${MINIMUM_USER_FIELDS} country bio`
+
+export const USER_FRIENDS_POPULATE: PopulateOptions[] = [
+  { 
+    path: "pending.$*",
+    select: MINIMUM_USER_FIELDS
+  },
+  { 
+    path: "list.$*",
+    select: FRIEND_FIELDS,
+    populate: {
+      path: "activity",
+      select: CLIENT_USER_ACTIVITY_FIELDS
+    }
+  },
+];
+
+/**
+ * Populates specific fields on the `UserDoc` for the client or internal use.
+ */
+export function populateUserDoc<TUserDoc = UserDoc>(query: Query<any, UserDoc>) {
   return {
-    full: (): Query<TUserDoc, UserDoc> =>
-      userQuery.populate([
+    full: (): Query<TUserDoc | null, UserDoc> =>
+      query.populate([
+        {
+          path: "friends",
+          populate: USER_FRIENDS_POPULATE
+        },
         { path: "statistics" },
         { path: "activity" },
         {
@@ -55,17 +70,25 @@ export function populateUser<TUserDoc = UserDoc>(userQuery: Query<any, UserDoc>)
           },
         },
       ]),
-    client: async (): Promise<TUserDoc> => {
-      const doc = await query.select(CLIENT_USER_FIELDS).populate({
-        path: "statistics",
-        select: CLIENT_USER_SHARED_EXCLUDE,
-      })
-      if (!doc) return doc;
-
-      if (!doc.email_verified) delete doc._doc?.verification_token;
-      return doc;
-    }
+    client: (): Query<TUserDoc | null, UserDoc> =>
+      query.select(CLIENT_USER_FIELDS).populate([
+        {
+          path: "statistics",
+          select: CLIENT_USER_SHARED_EXCLUDE
+        },
+        {
+          path: "activity",
+          select: CLIENT_USER_ACTIVITY_FIELDS
+        },
+      ]),
   };
+}
+
+/**
+ * Populates specific fields on the `UserDocFriends`.
+ */
+function populateUserFriendsDoc(query: Query<UserDocFriends | null, UserDocFriends>) {
+  return query.select(CLIENT_USER_SHARED_EXCLUDE).populate(USER_FRIENDS_POPULATE);
 }
 
 /**
@@ -73,9 +96,9 @@ export function populateUser<TUserDoc = UserDoc>(userQuery: Query<any, UserDoc>)
  */
 export async function getUsers(forClient?: boolean) {
   try {
-    return await populateUser<UserDoc[]>(User.find())[forClient ? "client" : "full"]();
+    return await populateUserDoc<UserDoc[]>(User.find())[forClient ? "client" : "full"]();
   } catch (error: any) {
-    throw handleApiError(error, "getUsers service error.", 500);
+    throw handleApiError(error, "getUsers service error.");
   }
 }
 
@@ -88,16 +111,28 @@ export async function getUser(
   forClient?: boolean
 ) {
   try {
-    return await populateUser(User.findOne({ [by]: value }))[
+    return await populateUserDoc(User.findOne({ [by]: value }))[
       forClient ? "client" : "full"
     ]();
   } catch (error: any) {
-    throw handleApiError(error, "getUser service error.", 500);
+    throw handleApiError(error, "getUser service error.");
   }
 }
 
 /**
- * Updates any field in the user's 'credentials' (base) document.
+ * Gets a friend document for a specific user from the database.
+ */
+export async function getUserFriends(userId: ObjectId | string) {
+  try {
+    return await populateUserFriendsDoc(UserFriends.findById(userId));
+  } catch (error: any) {
+    throw handleApiError(error, "getUser service error.");
+  }
+}
+
+/**
+ * Updates any field in the user's `UserDoc` (base document).
+ * @throws `ApiError` if the document is not found.
  */
 export async function updateUserCredentials(
   identifier: Identifier<GetUserBy>,
@@ -108,16 +143,43 @@ export async function updateUserCredentials(
     { forClient, ...restOpts } = options || {};
   
   try {
-    return await populateUser(User.findOneAndUpdate({ [by]: value }, update, restOpts))[
+    const user = await populateUserDoc(User.findOneAndUpdate({ [by]: value }, update, restOpts))[
       forClient ? "client" : "full"
     ]();
+    if (!user) throw new ApiError("User was not found.", 404, "not found");
+
+    return user;
   } catch (error: any) {
-    throw handleApiError(error, "updateUserCredentials service error.", 500);
+    throw handleApiError(error, "updateUserCredentials service error.");
+  }
+}
+
+/**
+ * Updates any field in the user's friends document.
+ * @throws `ApiError` if the document is not found.
+ */
+export async function updateUserFriends(
+  identifier: Identifier<"_id">,
+  update: UpdateQuery<UserDocFriends>,
+  options?: QueryOptions<UserDocFriends>
+) {
+  const { by, value } = identifier;
+
+  try {
+    const userFriends = await populateUserFriendsDoc(
+      UserFriends.findOneAndUpdate({ [by]: value }, update, options)
+    );
+    if (!userFriends) throw new ApiError("User friends was not found.", 404, "not found");
+
+    return userFriends;
+  } catch (error: any) {
+    throw handleApiError(error, "updateActivityTimestamp service error.");
   }
 }
 
 /**
  * Updates any field in the user's statistics document.
+ * @throws `ApiError` if the document is not found.
  */
 export async function updateUserStatistics(
   identifier: Identifier<"_id">,
@@ -127,37 +189,39 @@ export async function updateUserStatistics(
   const { by, value } = identifier;
 
   try {
-    return await UserStatistics.findOneAndUpdate({ [by]: value }, update, options);
+    const userStatistics = await UserStatistics.findOneAndUpdate({ [by]: value }, update, options);
+    if (!userStatistics) throw new ApiError("User statistics was not found.", 404, "not found");
+
+    return userStatistics;
   } catch (error: any) {
-    throw handleApiError(error, "updateActivityTimestamp service error.", 500);
+    throw handleApiError(error, "updateActivityTimestamp service error.");
   }
 }
 
 /**
  * Updates any field in the user's activity document.
+ * @throws `ApiError` if the document is not found.
  */
 export async function updateUserActivity(
   identifier: Identifier<"_id">,
   update?: UpdateQuery<UserDocActivity>,
-  // timestamp?: boolean, // Idk, add to options but there is a timestamps option.
   options?: QueryOptions<UserDocActivity>
 ) {
   const { by, value } = identifier;
   
   try {
-    return await UserActivity.findOneAndUpdate(
-      { [by]: value },
-      // { ...(timestamp && { activity_timestamp: new Date() }), ...update },
-      { activity_timestamp: new Date(), ...update },
-      options
-    );
+    const userActivity = await UserActivity.findOneAndUpdate({ [by]: value }, update, options);
+    if (!userActivity) throw new ApiError("User activity was not found.", 404, "not found");
+
+    return userActivity;
   } catch (error: any) {
-    throw handleApiError(error, "updateActivityTimestamp service error.", 500);
+    throw handleApiError(error, "updateActivityTimestamp service error.");
   }
 }
 
 /**
  * Updates any field in the user's notifications document.
+ * @throws `ApiError` if the document is not found.
  */
 export async function updateUserNotifications(
   identifier: Identifier<"_id">,
@@ -167,8 +231,12 @@ export async function updateUserNotifications(
   const { by, value } = identifier;
 
   try {
-    return await UserNotifications.findOneAndUpdate({ [by]: value }, update, options);
+    const userNotifications =
+      await UserNotifications.findOneAndUpdate({ [by]: value }, update, options);
+    if (!userNotifications) throw new ApiError("User notifications was not found.", 404, "not found");
+
+    return userNotifications;
   } catch (error: any) {
-    throw handleApiError(error, "updateActivityTimestamp service error.", 500);
+    throw handleApiError(error, "updateActivityTimestamp service error.");
   }
 }

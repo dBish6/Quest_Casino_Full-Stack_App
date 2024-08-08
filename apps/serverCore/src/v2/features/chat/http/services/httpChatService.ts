@@ -9,7 +9,7 @@ import type { Rooms, PublicRooms } from "@chatFeat/typings/Rooms";
 import type { MessageDoc } from "@chatFeat/typings/Message";
 import type MessageDto from "@chatFeat/dtos/MessageDto";
 
-import { handleApiError } from "@utils/handleError";
+import { handleHttpError } from "@utils/handleError";
 import continentUtils from "@chatFeat/utils/ContinentUtils";
 
 import { MessageGlobal, MessagePrivate } from "@chatFeat/models";
@@ -28,7 +28,7 @@ export async function getMessages(roomId: Rooms) {
     const MessageModel = getMessageModel(roomId);
     return await MessageModel.find().sort({ created_at: -1 });
   } catch (error: any) {
-    throw handleApiError(error, "getMessages service error.", 500);
+    throw handleHttpError(error, "getMessages service error.");
   }
 }
 
@@ -37,6 +37,6 @@ export async function addMessage(message: MessageDto) {
     const MessageModel = getMessageModel(message.room_id);
     return await new MessageModel(message).save();
   } catch (error: any) {
-    throw handleApiError(error, "addMessage service error.", 500);
+    throw handleHttpError(error, "addMessage service error.");
   }
 }

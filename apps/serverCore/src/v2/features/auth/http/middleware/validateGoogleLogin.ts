@@ -5,12 +5,12 @@ import { randomUUID } from "crypto";
 import { compare } from "bcrypt";
 
 import { logger } from "@qc/utils";
-import { handleApiError } from "@utils/handleError";
+import { handleHttpError } from "@utils/handleError";
 
 /**
  * Validates the Google credentials (code, state) if they are valid.
  * @middleware
- * @response `unauthorized`, `forbidden`, or `ApiError`.
+ * @response `unauthorized`, `forbidden`, or `HttpError`.
  */
 export default async function validateGoogleLogin(
   req: GoogleLoginRequestDto,
@@ -26,9 +26,9 @@ export default async function validateGoogleLogin(
       return res.status(403).json({ ERROR: "Authorization is invalid." });
     }
 
-    logger.info("Google login successfully validated.");
+    logger.debug("Google login successfully validated.");
     next();
-  } catch (error) {
-    next(handleApiError(error, "validateGoogleLogin middleware error.", 500));
+  } catch (error: any) {
+    next(handleHttpError(error, "validateGoogleLogin middleware error."));
   }
 }

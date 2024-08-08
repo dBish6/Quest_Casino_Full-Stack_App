@@ -20,9 +20,10 @@ async function handleMaxPrivateMessages(next: CallbackWithoutResultAndOptionalEr
     }
 
     next();
-  } catch (error) {
-    next(handleApiError(error, "handleMaxPrivateMessages mongoose middleware error.", 500));
+  } catch (error: any) {
+    next(handleApiError(error, "handleMaxPrivateMessages mongoose middleware error."));
   }
 }
 
-messagePrivateSchema.pre("save", handleMaxPrivateMessages);
+messagePrivateSchema.pre("findOneAndUpdate", handleMaxPrivateMessages);
+

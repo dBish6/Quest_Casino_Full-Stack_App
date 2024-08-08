@@ -1,6 +1,7 @@
 import type { Document, ObjectId } from "mongoose";
 import type { JwtPayload } from "jsonwebtoken";
 import type RegisterBodyDto from "@qc/typescript/dtos/RegisterBodyDto";
+import type { ActivityStatuses } from "@qc/typescript/typings/UserCredentials";
 import type { NotificationTypes, Notification } from "@qc/typescript/dtos/NotificationsDto";
 import type DefaultDocFields from "@typings/DefaultDocFields";
 
@@ -24,7 +25,7 @@ export interface UserToClaims {
   type: RegistrationTypes;
   legal_name: { first: string; last: string };
   email: string;
-  verification_token?: string;
+  verification_token: string;
   username: string;
   country: string;
   region?: string;
@@ -32,7 +33,10 @@ export interface UserToClaims {
 }
 
 export interface UserClaims extends JwtPayload {
-  sub: string; // (_id) There is always a subject for the user token.
+  /**
+   * The user's `_id` as a string.
+   */
+  sub: string;
   type: RegistrationTypes;
   legal_name: { first: string; last: string };
   email: string;
@@ -67,10 +71,26 @@ export interface User extends DefaultDocFields {
   phone_number?: string;
   bio?: string;
   balance: number;
-  friends: { pending: ObjectId[]; list: ObjectId[] };
+  friends: UserDocFriends;
   statistics: UserDocStatistics;
-  activity: UserDocStatistics;
+  activity: UserDocActivity;
   notifications: UserDocNotifications;
+}
+
+export interface UserDoc extends Document, User {
+  _id: ObjectId;
+}
+
+export interface UserDocFriends extends Document, DefaultDocFields {
+  _id: ObjectId;
+  /**
+   * Maps `verification_token` to user ObjectIds for friends that are pending.
+   */
+  pending: Map<string, UserDoc>;
+  /**
+   * Maps `verification_token` to user ObjectIds for friends that are added.
+   */
+  list: Map<string, UserDoc>;
 }
 
 export interface UserDocStatistics extends Document, DefaultDocFields {
@@ -94,6 +114,7 @@ export interface UserDocStatistics extends Document, DefaultDocFields {
 
 export interface UserDocActivity extends Document, DefaultDocFields {
   _id: ObjectId;
+  status: ActivityStatuses;
   history: {
     game_name: string;
     result: {
@@ -117,8 +138,4 @@ export interface UserDocNotifications extends Document, DefaultDocFields {
   _id: ObjectId;
   friend_requests: ObjectId[];
   notifications: UserNotificationField;
-}
-
-export interface UserDoc extends Document, User {
-  _id: ObjectId;
 }

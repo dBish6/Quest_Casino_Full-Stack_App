@@ -11,7 +11,7 @@ import type { LoginRequestDto, GoogleLoginRequestDto } from "@authFeatHttp/dtos/
 import type { DeleteNotificationsRequestDto } from "@authFeatHttp/dtos/DeleteNotificationsRequestDto";
 
 import { logger } from "@qc/utils";
-import { handleApiError } from "@utils/handleError";
+import { handleHttpError } from "@utils/handleError";
 import initializeSession from "@authFeatHttp/utils/initializeSession";
 
 import { getUsers as getUsersService, getUser as getUserService } from "@authFeat/services/authService";
@@ -24,7 +24,7 @@ const authService = { getUsers: getUsersService, getUser: getUserService, ...htt
 /**
  * Starts the user registration and checks if the user already exits within the database.
  * @controller
- * @response `success`, `conflict`, or `ApiError`.
+ * @response `success`, `conflict`, `HttpError` or `ApiError`.
  */
 export async function register(
   req: RegisterRequestDto,
@@ -48,7 +48,7 @@ export async function register(
         "Successfully registered! You can now log in with your newly created profile."
     });
   } catch (error: any) {
-    next(handleApiError(error, "register controller error.", 500));
+    next(handleHttpError(error, "register controller error."));
   }
 }
 
@@ -56,7 +56,7 @@ export async function register(
 /**
  * Initializes the current user session.
  * @controller
- * @response `success` with the client formatted user, `internal`, or `ApiError`.
+ * @response `success` with the client formatted user, `internal`, or `HttpError`.
  */
 export async function login(
   req: LoginRequestDto,
@@ -84,13 +84,13 @@ export async function login(
       user: clientUser
     });
   } catch (error: any) {
-    next(handleApiError(error, "login controller error.", 500));
+    next(handleHttpError(error, "login controller error."));
   }
 }
 /**
  * Initializes the current user session.
  * @controller
- * @response `success`, `forbidden`, or `ApiError`.
+ * @response `success`, `forbidden`, or `HttpError`.
  */
 export async function loginGoogle(
   req: GoogleLoginRequestDto,
@@ -107,14 +107,14 @@ export async function loginGoogle(
       user: clientUser
     });
   } catch (error: any) {
-    next(handleApiError(error, "loginGoogle controller error.", 500));
+    next(handleHttpError(error, "loginGoogle controller error."));
   }
 }
 
 /**
  * Initiates email address verification.
  * @controller
- * @response `success`, `not found`, `forbidden`, or `ApiError`.
+ * @response `success`, `not found`, `forbidden`, or `HttpError`.
  */
 export async function emailVerify(
   req: Request,
@@ -124,20 +124,18 @@ export async function emailVerify(
   try {
     const { sub, verification_token } = req.decodedClaims!,
       result = await authService.emailVerify(sub, verification_token);
-    if (typeof result === "string")
-      return res.status(result === "User doesn't exist." ? 404 : 403).json({ ERROR: result });
 
     return res
       .status(200)
       .json({ message: "Email address successfully verified.", user: result });
   } catch (error: any) {
-    next(handleApiError(error, "emailVerify controller error.", 500));
+    next(handleHttpError(error, "emailVerify controller error."));
   }
 }
 /**
  * Initiates verification email sending.
  * @controller
- * @response `success`, `SMTP rejected` or `ApiError`.
+ * @response `success`, `SMTP rejected` or `HttpError`.
  */
 export async function sendVerifyEmail(
   req: Request,
@@ -153,14 +151,14 @@ export async function sendVerifyEmail(
         "Verification email successfully sent. If you can't find it in your inbox, please check your spam or junk folder."
     });
   } catch (error: any) {
-    next(handleApiError(error, "sendVerifyEmail controller error.", 500));
+    next(handleHttpError(error, "sendVerifyEmail controller error."));
   }
 }
 
 /**
  * Send all users or searched users by username, client formatted.
  * @controller
- * @response `success` with all users formatted for the client, or `ApiError`.
+ * @response `success` with all users formatted for the client, `forbidden`, `HttpError` or `ApiError`.
  */
 export async function getUsers(
   req: Request,
@@ -184,14 +182,14 @@ export async function getUsers(
       users: clientUsers
     });
   } catch (error: any) {
-    next(handleApiError(error, "getUsers controller error.", 500));
+    next(handleHttpError(error, "getUsers controller error."));
   }
 }
 
 /**
  * Send a user or current user or even a user's notifications, client formatted.
  * @controller
- * @response `success` with the current user formatted for the client, `not found`, `forbidden`, or `ApiError`.
+ * @response `success` with the current user formatted for the client, `not found`, `forbidden`, `HttpError` or `ApiError`.
  */
 export async function getUser(req: Request, res: Response, next: NextFunction) {
   const query = req.query as Record<string, string>;
@@ -222,14 +220,14 @@ export async function getUser(req: Request, res: Response, next: NextFunction) {
       user: clientUser
     });
   } catch (error: any) {
-    next(handleApiError(error, "getUser controller error.", 500));
+    next(handleHttpError(error, "getUser controller error."));
   }
 }
 
 /**
  * Clears every refresh token, csrf token and cookies from the current user.
  * @controller
- * @response `success` or `ApiError`.
+ * @response `success` or `HttpError`.
  */
 export async function clear(req: Request, res: Response, next: NextFunction) {
   try {
@@ -239,14 +237,14 @@ export async function clear(req: Request, res: Response, next: NextFunction) {
       message: "All refresh and csrf tokens successfully removed."
     });
   } catch (error: any) {
-    next(handleApiError(error, "clear controller error.", 500));
+    next(handleHttpError(error, "clear controller error."));
   }
 }
 
 /**
  * Deletes the current user.
  * @controller
- * @response `success`, or `ApiError`.
+ * @response `success`, or `HttpError`.
  */
 export async function deleteUser(
   req: Request,
@@ -260,13 +258,13 @@ export async function deleteUser(
 
     return res.status(200).json({ message: `User ${userId} successfully deleted.` });
   } catch (error: any) {
-    next(handleApiError(error, "deleteUser controller error.", 500));
+    next(handleHttpError(error, "deleteUser controller error."));
   }
 }
 /**
  * Deletes the given user notifications.
  * @controller
- * @response `success` with sorted notifications, or `ApiError`.
+ * @response `success` with sorted notifications, or `HttpError`.
  */
 export async function deleteUserNotifications(
   req: DeleteNotificationsRequestDto, 
@@ -287,14 +285,14 @@ export async function deleteUserNotifications(
       user: { notifications: result.notifications },
     });
   } catch (error: any) {
-    next(handleApiError(error, "deleteUserNotifications controller error.", 500));
+    next(handleHttpError(error, "deleteUserNotifications controller error."));
   }
 }
 
 /**
  * Clears the session cookie and deletes the csrf token.
  * @controller
- * @response `success`, `internal`, or `ApiError`.
+ * @response `success`, `internal`, `HttpError` or `ApiError`.
  */
 export async function logout(
   req: Request,
@@ -315,6 +313,6 @@ export async function logout(
       .clearCookie("session").clearCookie("refresh")
       .json({ message: "Session cleared, log out successful." });
   } catch (error: any) {
-    next(handleApiError(error, "logout controller error.", 500));
+    next(handleHttpError(error, "logout controller error."));
   }
 }

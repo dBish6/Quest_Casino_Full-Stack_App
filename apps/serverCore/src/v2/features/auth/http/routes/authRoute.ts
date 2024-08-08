@@ -10,6 +10,7 @@ router.post("/register", authController.register);
 
 router.post("/login", validateLogin, authController.login);
 router.post("/login/google", validateGoogleLogin, authController.loginGoogle);
+
 router.post("/email-verify", verifyUserToken, verifyCsrfToken, authController.emailVerify);
 router.post("/email-verify/send", verifyUserToken, verifyCsrfToken, authController.sendVerifyEmail);
 

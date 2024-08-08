@@ -1,7 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
 import type { Rooms } from "@chatFeat/typings/Rooms";
 
-import { handleApiError } from "@utils/handleError";
+import { handleHttpError } from "@utils/handleError";
 
 import * as httpChatService from "../services/httpChatService";
 
@@ -22,6 +22,6 @@ export const getChat = async (
       chat: chatMessages,
     });
   } catch (error: any) {
-    next(handleApiError(error, "getChat controller error.", 500));
+    next(handleHttpError(error, "getChat controller error."));
   }
 };

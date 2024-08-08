@@ -4,17 +4,19 @@ import { ApiError } from "@utils/handleError";
 
 export default function apiErrorHandler(
   error: ApiError | Error,
-  req: Request,
+  _: Request,
   res: Response,
-  next: NextFunction
+  __: NextFunction
 ) {
-  logger.error(error.stack || error);
   const err: any = error;
+
+  if ((err.statusCode === 500 || err.message?.includes("Unexpectedly")) || !err.statusCode)
+    logger.error(err.stack || err);
 
   return res.status(err.statusCode || 500).json({
     ...(process.env.NODE_ENV === "development" && {
-      message: err.from || "An unexpected error occurred.",
+      message: err.from || "unknown",
     }),
-    ERROR: err.message,
+    ERROR: err.message || "An unexpected error occurred.",
   });
 }

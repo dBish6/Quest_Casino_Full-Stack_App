@@ -1,14 +1,14 @@
 import { Request, Response, NextFunction } from "express";
 
 import { logger } from "@qc/utils";
-import { handleApiError } from "@utils/handleError";
+import { handleHttpError } from "@utils/handleError";
 
 import { redisClient } from "@cache";
 
 /**
  * Verifies the Cross-Site Request Forgery (CSRF) token
  * @middleware This should be used on routes that manipulate data (e.g. POST, PATCH, PUT, DELETE).
- * @response `unauthorized`, `forbidden`, or `ApiError`.
+ * @response `unauthorized`, `forbidden`, or `HttpError`.
  */
 export default async function verifyCsrfToken(
   req: Request,
@@ -32,9 +32,9 @@ export default async function verifyCsrfToken(
         ERROR: "CSRF token is invalid.",
       });
 
-    logger.info("Csrf token successfully verified.");
+    logger.debug("Csrf token successfully verified.");
     next();
   } catch (error: any) {
-    next(handleApiError(error, "verifyCsrfToken middleware error.", 500));
+    next(handleHttpError(error, "verifyCsrfToken middleware error."));
   }
 }
