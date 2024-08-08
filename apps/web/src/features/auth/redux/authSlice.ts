@@ -1,5 +1,6 @@
-import type { UserCredentials } from "@qc/typescript/typings/UserCredentials";
+import type { UserCredentials, FriendCredentials } from "@qc/typescript/typings/UserCredentials";
 import { type PayloadAction, createSlice } from "@reduxjs/toolkit";
+import { logger } from "@qc/utils";
 
 /**
  * Current user stored in redux.
@@ -15,6 +16,8 @@ export interface StateUser {
 export interface AuthState {
   user: StateUser;
 }
+
+export type FriendCredentialKeys = "pending" | "list";
 
 const initialState: AuthState = {
   user: {
@@ -34,22 +37,70 @@ const authSlice = createSlice({
         token: { csrf: action.payload.csrf } // Removes oState so a new one from the server can be added.
       };
     },
+    /**
+     * Sets or overrides all of the user's credentials.
+     */
+    // SET_USER_CREDENTIALS: (state, action: PayloadAction<UserCredentials>) => {
+    //   state.user.credentials = action.payload;
+    // },
+    /**
+     * Use for updating base credentials.
+     */
     UPDATE_USER_CREDENTIALS: (state, action: PayloadAction<Partial<UserCredentials>>) => {
-      const credentials = state.user.credentials as UserCredentials;
+      state.user.credentials = { ...state.user.credentials!, ...action.payload };
+    },
+    /**
+     * Sets or overrides the user's friends object.
+     */
+    SET_USER_FRIENDS: (state, action: PayloadAction<UserCredentials["friends"]>) => {
+      state.user.credentials!.friends = action.payload;
+    },
+    // UPDATE_USER_FRIENDS: (state, action: PayloadAction<FriendCredentials | MinUserCredentials>) => {
+    //   const friend = action.payload as any,
+    //     key = "status" in friend || "activity" in friend ? "list" : "pending";
 
-      state.user.credentials = {
-        ...credentials,
-        ...action.payload,
-        friends: {
-          ...credentials.friends,
-          ...action.payload.friends
-        },
-        statistics: {
-          ...credentials.statistics,
-          ...action.payload.statistics
-        },
+    //     state.user.credentials!.friends[key] = {
+    //       ...state.user.credentials!.friends.list,
+    //       ...(key === "list" ? { [friend.verification_token || ""]: friend } : friend),
+    //     };
+    // },
+    // UPDATE_USER_FRIENDS_LIST: (state, action: PayloadAction<Partial<UserCredentials["friends"]["list"]>>) => {
+    //   // @ts-ignore
+    //   state.user.credentials!.friends.list = { ...state.user.credentials!.friends.list, ...action.payload };
+    // },
+    /**
+     * Updates a friend in the user's friends list.
+     */
+    // TODO: Remove this if used in one place.
+    UPDATE_USER_FRIEND_IN_LIST: (
+      state,
+      action: PayloadAction<{ verToken: string; update: Partial<FriendCredentials> }>
+    ) => {
+      const key = action.payload.verToken,
+        friendState = state.user.credentials!.friends.list[key],
+        toUpdate = action.payload.update
+
+      if (!friendState)
+        return logger.error(
+          "UPDATE_USER_FRIEND_IN_LIST authSlice action error:\n",
+          `Failed to find friend ${key} in the friend's list.`
+        );
+
+      state.user.credentials!.friends.list[key] = {
+        ...friendState,
+        ...toUpdate,
+        ...(toUpdate.activity && {
+          activity: {
+            ...friendState.activity,
+            ...toUpdate.activity,
+          },
+        }),
       };
     },
+    // SET_USER_FRIEND_IN_LIST: (state, action: PayloadAction<UserCredentials["friends"]>) => {
+    //   // state.user.credentials!.friends = action.payload;
+    //   state.user.credentials!.friends.list[action.payload.verification_token || ""] = action.payload;
+    // },
     CLEAR_USER: (state) => {
       state.user = {
         credentials: null,
@@ -60,6 +111,15 @@ const authSlice = createSlice({
 });
 
 export const { name: authName, reducer: authReducer } = authSlice,
-  { INITIALIZE_SESSION, UPDATE_USER_CREDENTIALS, CLEAR_USER } = authSlice.actions;
+  {
+    INITIALIZE_SESSION,
+    // SET_USER_CREDENTIALS,
+    UPDATE_USER_CREDENTIALS,
+    SET_USER_FRIENDS,
+    // UPDATE_USER_FRIENDS_LIST,
+    UPDATE_USER_FRIEND_IN_LIST,
+    // SET_USER_FRIEND_IN_LIST,
+    CLEAR_USER
+  } = authSlice.actions;
 
 export default authSlice;

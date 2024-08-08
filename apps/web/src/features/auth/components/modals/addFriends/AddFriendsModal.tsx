@@ -1,6 +1,6 @@
 import type { MinUserCredentials } from "@qc/typescript/typings/UserCredentials";
 
-import { useRef } from "react";
+import { useRef, useMemo } from "react";
 import { Title } from "@radix-ui/react-dialog";
 
 import { isFetchBaseQueryError } from "@utils/isFetchBaseQueryError";
@@ -21,7 +21,7 @@ export default function AddFriendsModal() {
    [getUsers, { data: searchData, error: searchError, isFetching: searchLoading }] = useLazyGetUsersQuery();
 
   const user = useUser(),
-    pendingFriends = user?.friends.pending;
+    pendingFriendsArr = useMemo(() => Object.values(user?.friends.pending || {}), [user?.friends.pending]);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -91,12 +91,12 @@ export default function AddFriendsModal() {
             )}
           </section>
 
-          {pendingFriends!.length > 0 && (
+          {pendingFriendsArr!.length > 0 && (
             <section aria-labelledby="hPending" className={s.pending}>
               <h3 id="hPending">Pending Friend Requests</h3>
 
               <ul aria-live="polite">
-                {pendingFriends!.map((request) => (
+                {pendingFriendsArr!.map((request) => (
                   <li>
                      <article
                       title={`${user!.username} | ${user!.legal_name.first} ${user!.legal_name.last}`}

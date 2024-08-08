@@ -16,10 +16,14 @@ const authState: AuthState = {
       legal_name: { first: "Test", last: "Tester" },
       email_verified: false,
       username: "Testest",
-      verification_token: "#",
+      verification_token: "1234",
       country: "Canada",
       bio: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam tincidunt eget dui ac ornare. Sed congue tellus in lectus imperdiet, ac facilisis lorem suscipit. Nulla scelerisque consectetur ipsum.",
       balance: 0,
+      friends: {
+        pending: [],
+        list: []
+      },
       statistics: {
         losses: {
           total: 0,
@@ -37,6 +41,7 @@ const authState: AuthState = {
         },
         completed_quests: new Map(),
       },
+      ...({ status: "online" } as any) // Testing purposes; so we can see a "friend" status indicator.
     },
     token: { csrf: null },
   },

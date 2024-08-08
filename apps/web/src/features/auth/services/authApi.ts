@@ -3,17 +3,18 @@ import type { QueryReturnValue } from "@reduxjs/toolkit/dist/query/baseQueryType
 import type { FetchBaseQueryMeta, FetchBaseQueryError } from "@reduxjs/toolkit/dist/query/fetchBaseQuery";
 import type { PatchCollection } from "@reduxjs/toolkit/dist/query/core/buildThunks";
 import type { RootState } from "@redux/store";
-import type { UserCredentials, FriendCredentials, MinUserCredentials } from "@qc/typescript/typings/UserCredentials";
+import type { UserCredentials, MinUserCredentials, ActivityStatuses } from "@qc/typescript/typings/UserCredentials";
 
 import type { HttpResponse, SocketResponse } from "@typings/ApiResponse";
 import type RegisterBodyDto from "@qc/typescript/dtos/RegisterBodyDto";
 import type { LoginBodyDto, LoginGoogleBodyDto } from "@qc/typescript/dtos/LoginBodyDto";
-import type { ManageFriendRoomDto, ManageFriendRequestDto } from "@qc/typescript/dtos/ManageFriendDto";
 import type { GetNotificationsResponseDto, DeleteNotificationsBodyDto, Notification } from "@qc/typescript/dtos/NotificationsDto"
+import type { ManageFriendRequestEventDto } from "@qc/typescript/dtos/ManageFriendEventDto";
+import type FriendActivityEventDto from "@authFeat/dtos/FriendActivityEventDto";
 
 import { AuthEvent } from "@qc/constants";
 
-import { type ActivityStatuses, logger } from "@qc/utils";
+import { logger } from "@qc/utils";
 import { history } from "@utils/History";
 import { isFetchBaseQueryError } from "@utils/isFetchBaseQueryError";
 
@@ -21,7 +22,7 @@ import { createApi, baseQuery } from "@services/index";
 import { getSocketInstance, emitAsPromise } from "@services/socket";
 import allow500ErrorsTransform from "@services/allow500ErrorsTransform";
 import handleSendVerifyEmail from "./handleSendVerifyEmail";
-import { UPDATE_USER_CREDENTIALS, INITIALIZE_SESSION, CLEAR_USER } from "@authFeat/redux/authSlice";
+import { UPDATE_USER_CREDENTIALS, CLEAR_USER, SET_USER_FRIENDS, INITIALIZE_SESSION, UPDATE_USER_FRIEND_IN_LIST } from "@authFeat/redux/authSlice";
 import { ADD_TOAST, unexpectedErrorToast } from "@redux/toast/toastSlice";
 
 const socket = getSocketInstance("auth");
@@ -189,7 +190,10 @@ const authApi = createApi({
      * 
      * @request
      */
-    getUser: builder.query<HttpResponse<{ user: UserCredentials | GetNotificationsResponseDto }>, { notifications: boolean } | void>({
+    getUser: builder.query<
+      HttpResponse<{ user: UserCredentials | GetNotificationsResponseDto }>,
+      { notifications: boolean } | void
+    >({
       query: (args) => ({
         url: "/user",
         method: "GET",
@@ -236,7 +240,6 @@ const authApi = createApi({
         method: "POST",
         body
       }),
-      // invalidatesTags: ["Notification"]
     }),
 
     /**
@@ -266,28 +269,19 @@ const authApi = createApi({
      * Initializes all friend rooms and friend activity statuses.
      * @emitter
      */
-    initializeFriends: builder.mutation<SocketResponse, { friends: FriendCredentials[] }>({
+    initializeFriends: builder.mutation<SocketResponse<{ friends: UserCredentials["friends"] }>, { verification_token: string }>({
       queryFn: async (data) => emitAsPromise(socket)(AuthEvent.INITIALIZE_FRIENDS, data)
-    }),
-
-    /**
-     * Join and leaves of friend rooms.
-     * @emitter
-     */
-    // Idk if I need this.
-    manageFriendRoom: builder.mutation<SocketResponse, ManageFriendRoomDto>({
-      queryFn: async (data) => emitAsPromise(socket)(AuthEvent.MANAGE_FRIEND_ROOM, data)
     }),
 
     /**
      * Friend Requests and adding a friend.
      * @emitter
      */
-    manageFriendRequest: builder.mutation<SocketResponse<{ updated_user: UserCredentials }>, ManageFriendRequestDto>({
+    manageFriendRequest: builder.mutation<SocketResponse<{ friends: UserCredentials["friends"] }>, ManageFriendRequestEventDto>({
       queryFn: async (data, { getState, dispatch }) => {
         const user = (getState() as RootState).auth.user.credentials;
 
-        // TODO: I may need the toasts later on, so they're left here.
+        // NOTE: I may need the toasts later on, so they're left here.
         if (!user?.email_verified) {
           const errorMsg = "You must be verified to add friends.";
 
@@ -306,7 +300,9 @@ const authApi = createApi({
           // );
           return { error: { allow: true, data: { ERROR: errorMsg }, status: "unauthorized" } };
         } else if (
-          user.friends.pending.concat(user.friends.list).some((friend) => friend.username === data.friend.username)
+          [user.friends.pending, user.friends.list].some(
+            (friend) => friend[data.friend.verification_token as any]?.username === data.friend.username  
+          )
         ) {
           const errorMsg = "You already requested or added this friend.";
           
@@ -321,15 +317,17 @@ const authApi = createApi({
         }
 
         const res = await emitAsPromise(socket)(AuthEvent.MANAGE_FRIEND_REQUEST, data);
-        console.log("res", res)
-        
+
         return res.error
           ? {
               error: {
                 ...res.error,
                 data: {
                   ...(allow500ErrorsTransform(res.error!, res.meta).data as any),
-                  ERROR: res.error.status === "unauthorized" ? res.error.ERROR : "An unexpected error occurred.",
+                  ERROR: 
+                    res.error.data?.ERROR.endsWith("in our system.") || res.error.status === "unauthorized"
+                      ? res.error.data.ERROR 
+                      : "An unexpected error occurred.",
                 }
               }
             }
@@ -339,10 +337,10 @@ const authApi = createApi({
         try {
           const { data } = await queryFulfilled;
 
-          console.log("MANAGE FRIEND DATA", data)
+          logger.debug("MANAGE FRIEND", data)
 
-          if (data.status === "ok" && action_type === "request" && data.updated_user) {
-            dispatch(UPDATE_USER_CREDENTIALS(data.updated_user));
+          if (data.status === "ok" && action_type === "request" && data.friends) {
+            dispatch(SET_USER_FRIENDS(data.friends));
             // dispatch(
             //   ADD_TOAST({
             //     title: action_type === "request" ? "Friend Request Sent" : "Friend Added",
@@ -353,11 +351,13 @@ const authApi = createApi({
           }
           } catch (error: any) {
             if (isFetchBaseQueryError(error.error)) {
-              const resError = error.error
+              // const resError = error.error
               // if (resError.status === "not found")
               //   dispatch(unexpectedErrorToast(resError.data.ERROR));
-              // else if (resError.status === "unauthorized" && resError.ERROR.includes("isn't verified."))
+              // else if ((resError.status === "unauthorized" && resError.ERROR.includes("isn't verified.")))
               //   dispatch(ADD_TOAST({ title: "Cannot Send", message: resError.data.ERROR, intent: "error" }));
+              // else if (resError.status === "bad request")
+              //   dispatch(ADD_TOAST({ title: "Already Sent/Friended", message: resError.data.ERROR, intent: "error" }));
             } else {
               logger.error("authApi manageFriendRequest error:\n", error.message);
             }
@@ -367,11 +367,17 @@ const authApi = createApi({
     }),
 
     /**
-     * Receives new entries within the user's friends.
-     * @listener
-     * TODO:
+     * Sends the user's new activity timestamp and or status.
+     * @emitter
      */
-    // Idk what would be the socket response up here for a listener.
+    userActivity: builder.mutation<SocketResponse, { status: ActivityStatuses }>({
+      queryFn: async (data) => emitAsPromise(socket)(AuthEvent.USER_ACTIVITY, data)
+    }),
+
+    /**
+     * Receives new friends to be added or removed for the user's pending or friends list.
+     * @listener
+     */
     [authSocketListeners.friendsUpdate]: builder.mutation<{ resourcesLoaded?: boolean }, { resourcesLoaded?: boolean }>({
       queryFn: (loadedObj) => ({ data: loadedObj }),
       onQueryStarted: async (_, { dispatch, queryFulfilled }) => {
@@ -380,23 +386,16 @@ const authApi = createApi({
         if (data.resourcesLoaded) {
           logger.debug("friendsUpdate listener initialized.");
 
-          socket.on(AuthEvent.FRIENDS_UPDATE, (data: { friends: UserCredentials["friends"] }) => {
-            // let patchResult: PatchCollection | undefined;
-
+          socket.on(AuthEvent.FRIENDS_UPDATE, ({ friends }: { friends: UserCredentials["friends"] }) => {
             try {
-              console.log("FRIEND UPDATE", data);
+              logger.debug("FRIEND UPDATE", { friends });
 
-              dispatch(UPDATE_USER_CREDENTIALS({ friends: { list: data.friends } })); // TODO: Might be getting back single friends too if I remove friendActivity.
-
-              // patchResult = dispatch(
-              //   authApi.util.updateQueryData("", undefined, (cache) => {
-              //     console.log("CACHE", cache);
-              //     cache.push(data);
-              //   }
-              // ));
-              // authApi.util.invalidateTags([""]);
+              if ("list" in friends && "pending" in friends) {
+                dispatch(SET_USER_FRIENDS(friends));
+              } else {
+                logger.error("authApi friendsUpdate error:\n", "Received incorrect friends object.")
+              }
             } catch (error: any) {
-              // if (patchResult) patchResult.undo();
               history.push("/error-500");
               logger.error("authApi friendsUpdate error:\n", error.message);
             }
@@ -406,40 +405,28 @@ const authApi = createApi({
     }),
 
     /**
-     * TODO:
+     * Receives status updates from friends in the user's friends list.
      * @listener
      */
     [authSocketListeners.friendActivity]: builder.mutation<{ resourcesLoaded?: boolean }, { resourcesLoaded?: boolean }>({
       queryFn: (loadedObj) => ({ data: loadedObj }),
-      onQueryStarted: async (_, { getState, dispatch, queryFulfilled }) => {
+      onQueryStarted: async (_, { dispatch, queryFulfilled }) => {
         const { data } = await queryFulfilled;
         
         if (data.resourcesLoaded) {
           logger.debug("friendActivity listener initialized.");
 
-          socket.on(AuthEvent.FRIEND_ACTIVITY, (data: { friend: FriendCredentials; status: ActivityStatuses }) => {
-            // let patchResult: PatchCollection | undefined;
-
+          socket.on(AuthEvent.FRIEND_ACTIVITY, ({ verification_token, status }: FriendActivityEventDto) => {
             try {
-              console.log("FRIEND ACTIVITY", data);
+              logger.debug("FRIEND ACTIVITY", { verification_token, status });
 
-              const state = (getState() as RootState).auth.user.credentials?.friends.list;
-              const friendChange = state?.find(({ username }) => username === data.friend.username )
-              // friendChange?.status = data.status;
-  
-              // dispatch(UPDATE_USER_CREDENTIALS({ friends: { list: ...friendChange! } }));
-  
-              // TODO: If what comes is status offline, disconnect from their room?
-
-              // patchResult = dispatch(
-              //   authApi.util.updateQueryData("", undefined, (cache) => {
-              //     console.log("CACHE", cache);
-              //     cache.push(data);
-              //   }
-              // ));
-              // authApi.util.invalidateTags([""]);
+              dispatch(
+                UPDATE_USER_FRIEND_IN_LIST({
+                  verToken: verification_token,
+                  update: { activity: { status } },
+                })
+              );
             } catch (error: any) {
-              // if (patchResult) patchResult.undo();
               history.push("/error-500");
               logger.error("authApi friendActivity error:\n", error.message);
             }
@@ -451,7 +438,6 @@ const authApi = createApi({
     /**
      * All incoming notifications from the server (friend requests, system messages, news, etc).
      * @listener
-     * // TODO:
      */
     [authSocketListeners.newNotification]: builder.mutation<{ resourcesLoaded?: boolean }, { resourcesLoaded?: boolean }>({
       queryFn: (loadedObj) => ({ data: loadedObj }),
@@ -461,7 +447,6 @@ const authApi = createApi({
         if (data.resourcesLoaded) {
           logger.debug("newNotification listener initialized.");
 
-          // socket.on(AuthEvent.NEW_NOTIFICATION, (data: { type: ServerNotificationTypes; message: ServerNotification }) => {
           socket.on(AuthEvent.NEW_NOTIFICATION, (data: { notification: Notification }) => {          
             let patchResult: PatchCollection | undefined;
 
@@ -510,15 +495,12 @@ function handleLoginSuccess(
     // Removes the google params.
     for (const key of Array.from(params.keys())) {
       console.log("key", key);
-      // if (![ModalQueryKey.LOGIN_MODAL, ModalQueryKey.REGISTER_MODAL].includes(key as any)) {
-      // TODO: Find out what the specific keys from the google login can be and put them here and also delete login.
-      if (["login"].includes(key as any)) {
+      // TODO:
+      if ([""].includes(key as any)) {
         console.log("removed", key);
         params.delete(key);
       }
     }
-    // FIXME:
-    window.history.replaceState({}, document.title, params.toString());
 
     if (!params.has("register")) {
       if (!user.email_verified) {
@@ -572,8 +554,8 @@ export const {
   // useDeleteUserMutation,
   useLogoutMutation,
   useInitializeFriendsMutation,
-  // useManageFriendRoomMutation,
   useManageFriendRequestMutation,
+  useUserActivityMutation
 } = authApi;
 
 export default authApi;

@@ -4,7 +4,7 @@
  *
  * Author: David Bishop
  * Creation Date: April 16, 2024
- * Last Updated: July 31, 2024
+ * Last Updated: Aug 8, 2024
  *
  * Description:
  * .
@@ -26,6 +26,7 @@ import SocketListenersProvider from "@components/SetupSocketListeners";
 import { Dashboard } from "@components/dashboard";
 import { ModalsProvider } from "@components/modals";
 import VerificationHandler from "@components/VerificationHandler";
+import AwayActivityTracker from "@components/AwayActivityTracker";
 
 import { About, Home, Profile, Settings, Support } from "@views/index";
 import { Error } from "@views/errors";
@@ -52,6 +53,7 @@ export const routes: RouteObject[] = [
 
           <ModalsProvider />
           <VerificationHandler />
+          <AwayActivityTracker />
         </ResourceLoaderProvider>
       </>
     ),

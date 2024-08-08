@@ -41,6 +41,7 @@ const Avatar = forwardRef<HTMLDivElement, AvatarProps>(
   ({ className, intent = "primary", size = "sm", user, linkProfile = true, ...props }, ref) => {
     const ProfileShortView = linkProfile && user?.legal_name && user?.username ? ProfileHoverCard : Fragment,
       ProfileLink = linkProfile && user?.username ? ModalTrigger : "a"; // it has to be an "a" to match the server.
+    const userStatus = user?.activity?.status;
 
     return (
       // @ts-ignore
@@ -75,7 +76,15 @@ const Avatar = forwardRef<HTMLDivElement, AvatarProps>(
               alt="Profile Picture"
               fill
             />
-            {user?.status && <span aria-label={user.status} className={s.activityIndie} data-status={user.status || "offline"} />}
+            <span
+              aria-label={userStatus}
+              {...(!userStatus && {
+                "aria-hidden": "true",
+                style: { display: "none" },
+              })}
+              className={s.activityIndie}
+              data-status={userStatus || "offline"}
+            />
           </div>
         </ProfileLink>
       </ProfileShortView>

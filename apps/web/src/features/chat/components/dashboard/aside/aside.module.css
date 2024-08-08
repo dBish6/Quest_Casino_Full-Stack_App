@@ -137,7 +137,7 @@
                 line-height: 22px;
                 font-style: italic;
               }
-              & > a {
+              & > a:not(a[aria-controls]) {
                 display: block;
                 font: var(--para-x-small);
                 text-decoration: none;

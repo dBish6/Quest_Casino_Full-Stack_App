@@ -64,18 +64,26 @@ export async function socketInstancesConnectionProvider(timeoutObj: TimeoutObj) 
         } else {
           socket
             .on("connect", () => {
-              logger.debug(`Connection established for ${namespace} socket; ${socket.id}`);
+              logger.info(
+                `${import.meta.env.DEV ? "Connection established for ${namespace} socket; " : ""}${socket.id}`
+              );
 
               socket.removeAllListeners();
               resolve({ socket, namespace });
             })
             .on("connect_error", (error) => {
               logger.error(`${namespace} socket instance connection error:\n`, error.message);
-              if (error.message === "unauthorized") history.push("/error-401");
-              else if (error.message === "forbidden") history.push("/error-403");
 
-              const timeout = setTimeout(() => attemptConnection(), 5000);
-              timeoutObj[namespace] = timeout;
+              if (["unauthorized", "verification required", "forbidden"].includes(error.message)) {
+                if (error.message === "forbidden") history.push("/error-403");
+                else history.push("/error-401");
+
+                socket.removeAllListeners();
+                reject();
+              } else {
+                const timeout = setTimeout(() => attemptConnection(), 5000);
+                timeoutObj[namespace] = timeout;
+              }
             });
 
           const attemptConnection = () => {

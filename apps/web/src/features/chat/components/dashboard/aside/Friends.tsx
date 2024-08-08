@@ -1,8 +1,6 @@
 import type { UserCredentials } from "@qc/typescript/typings/UserCredentials";
 
-import useResourcesLoadedEffect from "@hooks/useResourcesLoadedEffect";
-
-import { useInitializeFriendsMutation } from "@authFeat/services/authApi";
+import { useMemo } from "react"
 
 import { ScrollArea } from "@components/scrollArea";
 import { Avatar, Link } from "@components/common";
@@ -11,17 +9,7 @@ import { ModalQueryKey, ModalTrigger } from "@components/modals";
 import s from "./aside.module.css";
 
 export default function Friends({ user }: { user: UserCredentials | null }) {
-  const [emitInitFriends, { data, error: friendsError, isLoading: friendsLoading, isSuccess: friendsSuccess }] = useInitializeFriendsMutation(),
-    friends = user?.friends.list || [];
-  
-  useResourcesLoadedEffect(() => {
-      const mutation = emitInitFriends({ friends })
-      mutation.then((res) => {
-        console.log("res.data", res.data)
-      })
-
-      return () => mutation.abort();
-  }, [])
+  const friendsListArr = useMemo(() => Object.values(user?.friends.list || {}), [user?.friends.list]);
 
   return (
     <div className={s.friends}>
@@ -29,19 +17,24 @@ export default function Friends({ user }: { user: UserCredentials | null }) {
         Add Friends
       </ModalTrigger>
 
-      {friends.length ? (
+      {friendsListArr.length ? (
         <ScrollArea orientation="vertical">
-          {friends.map((friend, i) => (
-            <div key={i} className={s.friend}>
-              <Avatar
-                size="lrg"
-                user={friend}
-              />
-              <h4>{friend.username}</h4>
-              <Link to={{ search: `?pm=${friend.username}` }}>Message</Link>
-            </div>
-          ))}
+          <>
+            {friendsListArr.map((friend, i) => (
+              <div key={i} className={s.friend}>
+                <Avatar
+                  size="lrg"
+                  user={friend}
+                />
+                <h4>{friend.username}</h4>
+                <Link to={{ search: `?pm=${friend.username}` }}>Message</Link>
+              </div>
+            ))}
+            <FriendsSkeleton />
+          </>
         </ScrollArea>
+      ) : user?.verification_token ? (
+        <FriendsSkeleton />
       ) : (
         <p aria-label="No Friends Found">
           Meet people by playing some games! Or look through some{" "}
@@ -54,4 +47,8 @@ export default function Friends({ user }: { user: UserCredentials | null }) {
       )}
     </div>
   );
+}
+
+function FriendsSkeleton() {
+  return null
 }

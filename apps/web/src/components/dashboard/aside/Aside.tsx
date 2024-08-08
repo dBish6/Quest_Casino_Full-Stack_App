@@ -40,7 +40,7 @@ export default function Aside() {
       <div className={s.inner}>
         <ScrollArea orientation="vertical">
           <div className={s.user}>
-            <Avatar size="xxl" {...(user && { user })} showProfile={false} />
+            <Avatar size="xxl" {...(user && { user })} linkProfile={false} />
 
             <div className={s.details}>
               {user && status === "Logout" && (

@@ -7,8 +7,10 @@ import { logger } from "@qc/utils";
 import delay from "@utils/delay";
 import { history } from "@utils/History";
 
-import { useAppSelector } from "@redux/hooks";
-import { selectUserCsrfToken } from "@authFeat/redux/authSelectors";
+import { useAppSelector, useAppDispatch } from "@redux/hooks";
+import { selectUserCsrfToken, selectUserCredentials } from "@authFeat/redux/authSelectors";
+import { SET_USER_FRIENDS } from "@authFeat/redux/authSlice";
+import { useInitializeFriendsMutation } from "@authFeat/services/authApi";
 
 import { socketInstancesConnectionProvider } from "@services/socket";
 
@@ -30,7 +32,19 @@ export default function ResourceLoaderProvider({ children }: React.PropsWithChil
     message: "Loading animating magic...",
   });
 
-  const userToken = useAppSelector(selectUserCsrfToken);
+  const userToken = useAppSelector(selectUserCsrfToken),
+    user = useAppSelector(selectUserCredentials),
+    dispatch = useAppDispatch();
+
+  const mutation = useRef<any>(),
+    [emitInitFriends] = useInitializeFriendsMutation();
+
+  const initializeFriends = async () => {
+    mutation.current = emitInitFriends({ verification_token: user!.verification_token });
+    mutation.current.then((res: any) => {
+      if (res.data?.status === "ok") dispatch(SET_USER_FRIENDS(res.data.friends));
+    })
+  }
 
   if (typeof window !== "undefined") {
     useLayoutEffect(() => {
@@ -52,7 +66,11 @@ export default function ResourceLoaderProvider({ children }: React.PropsWithChil
               if (!progress.loading)
                 setProgress((prev) => ({ ...prev, message: "Taking longer than expected..." }));
             });
-            if (userToken) await socketInstancesConnectionProvider(timeoutObj)
+            if (user?.email_verified) {
+              // The user must be verified to establish socket connection.
+              await socketInstancesConnectionProvider(timeoutObj);
+              await initializeFriends();
+            }
           } catch (error: any) {
             logger.error("Loading resources error:\n", error.message);
             if (error.message.includes("stable connection")) history.push("/error-500");
@@ -61,9 +79,12 @@ export default function ResourceLoaderProvider({ children }: React.PropsWithChil
           }
         })();
 
-        return () => Object.values(timeoutObj).forEach((timeout) => clearTimeout(timeout));
+        return () => {
+          Object.values(timeoutObj).forEach((timeout) => clearTimeout(timeout));
+          if (mutation.current) mutation.current.abort();
+        };
       }
-    }, [userToken]);
+    }, [userToken, user?.email_verified]);
   }
 
   const { LazyMotion, domMax } = FramerFeatureBundleRef.current;

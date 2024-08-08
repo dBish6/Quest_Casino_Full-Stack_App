@@ -2,11 +2,7 @@ import type { LinkProps as RouterLinkProps } from "react-router-dom";
 import type { VariantProps } from "class-variance-authority";
 
 import { forwardRef } from "react";
-import {
-  useLocation,
-  Link as RouterLink,
-  NavLink as RouterNavLink,
-} from "react-router-dom";
+import { useLocation, Link as RouterLink, NavLink as RouterNavLink } from "react-router-dom";
 import { Slot } from "@radix-ui/react-slot";
 import { cva } from "class-variance-authority";
 
