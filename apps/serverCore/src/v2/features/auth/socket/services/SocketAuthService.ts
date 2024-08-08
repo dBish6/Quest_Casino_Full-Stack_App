@@ -318,16 +318,12 @@ export default class SocketAuthService {
         if (friendSocketId && friend.activity.status === "online") {
           const friendRoom = getFriendRoom(userToken, friendToken)
 
-          // If the current user is not going offline (disconnecting).
-          if (status !== "offline") {
-            // Joins their friend room only if the friend is online.
-            this.socket.join(friendRoom);
-
-            // If the friend is online emit to them the new status of the current user.
-            this.socket
-              .to(friendSocketId)
-              .emit(AuthEvent.FRIEND_ACTIVITY, { verification_token: userToken, status });
-          }
+          // Joins their friend room If the current user is not going offline (disconnecting).
+          if (status !== "offline") this.socket.join(friendRoom);
+          // Sends the new status of the current user to the friend.
+          this.socket
+            .to(friendSocketId)
+            .emit(AuthEvent.FRIEND_ACTIVITY, { verification_token: userToken, status });
 
           // For the friend, if the current user's status is offline or away it leaves the room also.
           const friendSocket = this.io.sockets.get(friendSocketId);
