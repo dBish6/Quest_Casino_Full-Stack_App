@@ -14,7 +14,7 @@ The `web` directory is a `TypeSript React` app which uses `Vite` and a custom `S
 The `serverCore` directory contains the core API and WebSocket connections via `socket.io`, developed using `TypeScript Express`. I also finally decided to remove Firebase, mid-development. I felt that all I really needed from Firebase was Firestore and all the additional features felt like unnecessary 'bloat' and also the 'hand-holding' began to annoy me. So, after I made up this tech stack, I decided to remove Firebase and use a different document-oriented database, `MongoDB`. Our database is now MongoDB complemented with an Object Data Modeling (ODM) tool, `Mongoose`, for a structured schema approach.
 
 ## Current Steps
-I'm now creating the `friends system` and `friend statuses` and then I'm moving to the new `chat feature`, which will have global chat rooms based on the user's country and private chat rooms will also be implemented for the user's friends. It's a complex chat system for sure, will be a fun challenge.
+I'm now on the new `chat feature`, which will have global chat rooms based on the user's country and private chat rooms will also be implemented for the user's friends. It's a complex chat system for sure, will be a fun challenge.
 
 ## Collaboration Appreciated!
 I would love to work with other people with this app I envisioned.
