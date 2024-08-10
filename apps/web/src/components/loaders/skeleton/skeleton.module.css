@@ -1,0 +1,79 @@
+.skeleton {
+  background-color: var(--c-purple-50);
+  border-radius: 4px;
+  overflow: hidden;
+
+  & .shimmer {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      110deg,
+      rgba(239, 236, 247, 0.1) 5%,
+      rgba(194, 173, 255, 0.15) 30%,
+      rgba(194, 173, 255, 0.45) 65%,
+      rgba(239, 236, 247, 0.1) 100%
+    );
+  }
+
+  &.title {
+    width: 50%;
+    &.h4 {
+      height: 16px;
+    }
+    &.h3 {
+      height: 22px;
+    }
+    &.h2 {
+      height: 29px;
+    }
+    &.h1 {
+      height: 37px;
+    }
+  }
+
+  &.text {
+    width: 100%;
+    &.paraXxSmall {
+      height: 6px;
+    }
+    &.paraXSmall {
+      height: 8px;
+    }
+    &.paraSmall {
+      height: 10px;
+    }
+    &.paraRegular {
+      height: 12px;
+    }
+    &.paraMedium {
+      height: 14px;
+    }
+    &.paraLarge {
+      height: 18px;
+    }
+  }
+
+  &.avatar {
+    border-radius: 50%;
+    &.sm {
+      width: 24px;
+      height: 24px;
+    }
+    &.md {
+      width: 40px;
+      height: 40px;
+    }
+    &.lrg {
+      width: 64px;
+      height: 64px;
+    }
+    &.xl {
+      width: 94px;
+      height: 94px;
+    }
+    &.xxl {
+      width: 116px;
+      height: 116px;
+    }
+  }
+}
