@@ -2,9 +2,10 @@ import type { Preview } from "@storybook/react";
 
 import React from "react";
 import { RouterProvider } from "react-router-dom";
-import mockRouter from "./mockRouter";
-
 import { Provider } from "react-redux";
+import { LazyMotion, domMax } from "framer-motion";
+
+import mockRouter from "./mockRouter";
 import mockStore from "./mockStore";
 
 import "../src/index.css";
@@ -28,7 +29,9 @@ const preview: Preview = {
 
       return (
         <Provider store={mockStore}>
-          <RouterProvider router={router} fallbackElement={<Story />} />
+          <LazyMotion features={domMax} strict>
+            <RouterProvider router={router} fallbackElement={<Story />} />
+          </LazyMotion>
         </Provider>
       );
     },
