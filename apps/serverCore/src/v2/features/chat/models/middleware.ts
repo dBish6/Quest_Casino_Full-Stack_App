@@ -1,6 +1,8 @@
 import type { CallbackWithoutResultAndOptionalError, Model } from "mongoose";
 import { GlobalChatMessageDoc, PrivateChatMessageDoc } from "@chatFeat/typings/ChatMessage";
 
+import MAX_MESSAGES_COUNT from "@chatFeat/constants/MAX_MESSAGES_COUNT";
+
 import { handleApiError } from "@utils/handleError";
 
 import { globalChatMessageSchema, privateChatMessageSchema } from "./schemas/chatMessageSchema";
@@ -11,7 +13,7 @@ import { globalChatMessageSchema, privateChatMessageSchema } from "./schemas/cha
  */
 async function handleMaxGlobalMessages(next: CallbackWithoutResultAndOptionalError) {
   try {
-    const maxMessages = 75,
+    const maxMessages = MAX_MESSAGES_COUNT.global.stored,
       PrivateChatMessage = this.model as Model<GlobalChatMessageDoc>;
 
     const messageCount = await PrivateChatMessage.countDocuments({ room_id: this.room_id });

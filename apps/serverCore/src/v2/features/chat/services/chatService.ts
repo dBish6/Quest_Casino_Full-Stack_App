@@ -10,7 +10,9 @@ import type { ChatRoomId, GlobalChatRoomId } from "@qc/typescript/typings/ChatRo
 import type { GlobalChatMessageDoc, PrivateChatMessageDoc, ChatMessage } from "@chatFeat/typings/ChatMessage";
 import type ChatMessageEventDto from "@qc/typescript/dtos/ChatMessageEventDto";
 
-import { handleApiError, SocketError } from "@utils/handleError";
+import MAX_MESSAGES_COUNT from "@chatFeat/constants/MAX_MESSAGES_COUNT";
+
+import { handleApiError, ApiError, SocketError } from "@utils/handleError";
 import chatRoomUtils from "@chatFeat/utils/ChatRoomsUtils";
 
 import { GlobalChatMessage, PrivateChatMessage } from "@chatFeat/models";
@@ -30,12 +32,18 @@ export async function archiveChatMessageQueue(roomId: ChatRoomId) {
       const recentMessages = await redisClient.lRange(`chat:${roomId}:message_queue`, 0, -1);
       logger.debug("Cached recent messages", recentMessages);
       
-      if (chatRoomUtils.isRoom(roomId, "global") && recentMessages.length >= 25) {
+      if (
+        chatRoomUtils.isRoom(roomId, "global") &&
+        recentMessages.length >= MAX_MESSAGES_COUNT.global.cached
+      ) {
         logger.debug("Global; Inserting cached chat messages to DB.")
         await GlobalChatMessage(roomId as GlobalChatRoomId).insertMany(recentMessages.map(msg => JSON.parse(msg)));
 
         await redisClient.lTrim(`chat:${roomId}:message_queue`, -1, 0); // Clears the cache.
-      } else if (chatRoomUtils.isRoom(roomId, "private") && recentMessages.length >= 15) {
+      } else if (
+        chatRoomUtils.isRoom(roomId, "private") &&
+        recentMessages.length >= MAX_MESSAGES_COUNT.private.cached
+      ) {
         logger.debug("Private; Inserting cached chat messages to DB.")
         // TODO:
         await PrivateChatMessage.updateMany(

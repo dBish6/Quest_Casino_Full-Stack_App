@@ -60,16 +60,16 @@ export default class SocketChatService {
       this.socket[action_type](room_id!);
       const status = action_type === "join" ? "joined" : "left";
 
-      this.socket.in(room_id!).emit("get_chat_message", {
-        message: `${user.username} has ${status} the chat.`,
-      });
+      if (chatRoomsUtils.isRoom(room_id, "private"))
+        this.socket.in(room_id!).emit("get_chat_message", {
+          message: `${user.username} has ${status} the chat.`,
+        });
 
       let chat_messages: Omit<ChatMessage, "_id">[] = [];
       if (action_type === "join") chat_messages = await getChatMessages(room_id!, user.sub);
 
       return callback({ 
         status: "ok", 
-        // message: `User successfully ${status} ${room_id}.`,
         message: `You ${status} the chat.`,
         ...(action_type === "join" && {
           ...(country && { global_chat_id: room_id }),
