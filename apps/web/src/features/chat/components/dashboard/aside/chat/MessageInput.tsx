@@ -4,6 +4,8 @@ import { useRef, useEffect } from "react";
 
 import { debounce } from "tiny-throttle";
 
+import { isFetchBaseQueryError } from "@utils/isFetchBaseQueryError";
+
 import useResourcesLoadedEffect from "@hooks/useResourcesLoadedEffect";
 
 import { useAppSelector, useAppDispatch } from "@redux/hooks";
@@ -30,7 +32,8 @@ export default function MessageInput({ user, asideState }: MessageInputProps) {
     restriction = useAppSelector(selectRestriction),
     dispatch = useAppDispatch();
 
-  const [emitChatMessage, { error: emitChatMessageError }] = useChatMessageMutation();
+  const [emitChatMessage, { isLoading: emitChatMessageLoading, error: emitChatMessageError }] = useChatMessageMutation(),
+    disableInput = !globalRoomId || emitChatMessageLoading || restriction.started;
 
   useEffect(() => {
     if (emitChatMessageError) console.error("emitChatMessageError", emitChatMessageError);
@@ -55,10 +58,9 @@ export default function MessageInput({ user, asideState }: MessageInputProps) {
         // created_at: new Date().toLocaleTimeString()
       });
 
-      const data = res.data;
-      if (data?.status === "ok") {
-        // 
-      } else if (data?.status === "bad request") {
+      if (res.data?.status === "ok") {
+        inputRef.current!.value = "";
+      } else if (isFetchBaseQueryError(res.error) && (res.error?.status as string) === "bad request") {
         // Too many duplicate messages (restrict on spam).
         dispatch(TOGGLE_RESTRICTION(true));
       }
@@ -87,7 +89,7 @@ export default function MessageInput({ user, asideState }: MessageInputProps) {
             intent="primary"
             size={asideState === "enlarged" ? "xl" : "lrg"}
             iconBtn
-            disabled={!globalRoomId || restriction.started}
+            disabled={disableInput}
           >
             <Icon id={asideState === "enlarged" ? "send-24" : "send-18"} />
           </Button>
@@ -100,7 +102,7 @@ export default function MessageInput({ user, asideState }: MessageInputProps) {
           </>
         ))}
         // FIXME: Actually wtf.
-        // disabled={!globalRoomId || restriction.started}
+        // disabled={disableInput}
       />
     </Form>
   );

@@ -65,7 +65,7 @@ export async function socketInstancesConnectionProvider(timeoutObj: TimeoutObj) 
           socket
             .on("connect", () => {
               logger.info(
-                `${import.meta.env.DEV ? "Connection established for ${namespace} socket; " : ""}${socket.id}`
+                `${import.meta.env.DEV ? `Connection established for ${namespace} socket; ` : ""}${socket.id}`
               );
 
               socket.removeAllListeners();
@@ -114,15 +114,18 @@ export async function socketInstancesConnectionProvider(timeoutObj: TimeoutObj) 
 
 function setupDebugger() {
   if (import.meta.env.MODE !== "production") {
-    const socket = getSocketInstance("auth"); // They both use the same engine.
+    const socket = getSocketInstance("auth"), // They both use the same engine.
+      engineLogs = false;
 
-    socket.io.engine
-      .on("packet", ({ type, data }) =>
-        logger.debug("Socket received:", { type: type, data: data })
-      )
-      .on("packetCreate", ({ type, data }) =>
-        logger.debug("Socket sent:", { type: type, data: data })
-      );
+    if (engineLogs) {
+      socket.io.engine
+        .on("packet", ({ type, data }) =>
+          logger.debug("Socket received:", { type: type, data: data })
+        )
+        .on("packetCreate", ({ type, data }) =>
+          logger.debug("Socket sent:", { type: type, data: data })
+        );
+    }
   }
 }
 
