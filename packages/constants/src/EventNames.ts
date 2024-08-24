@@ -8,3 +8,13 @@ export enum AuthEvent {
 
   NEW_NOTIFICATION = "new_notification",
 }
+
+export enum ChatEvent {
+  MANAGE_CHAT_ROOM = "manage_chat_room",
+
+  TYPING = "typing",
+  TYPING_ACTIVITY = "typing_activity",
+
+  CHAT_MESSAGE = "chat_message",
+  CHAT_MESSAGE_SENT = "chat_message_sent",
+}
