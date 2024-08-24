@@ -10,6 +10,8 @@ import type RegisterRequestDto from "@authFeatHttp/dtos/RegisterRequestDto";
 import type { LoginRequestDto, GoogleLoginRequestDto } from "@authFeatHttp/dtos/LoginRequestDto";
 import type { DeleteNotificationsRequestDto } from "@authFeatHttp/dtos/DeleteNotificationsRequestDto";
 
+import USER_NOT_FOUND_MESSAGE from "@authFeat/constants/USER_NOT_FOUND_MESSAGE";
+
 import { logger } from "@qc/utils";
 import { handleHttpError } from "@utils/handleError";
 import initializeSession from "@authFeatHttp/utils/initializeSession";
@@ -74,9 +76,8 @@ export async function login(
     );
     delete req.loginMethod;
     if (typeof clientUser === "string")
-      // Status 500 because this should never happen.
-      return res.status(500).json({
-        ERROR: `${clientUser} Unexpectedly couldn't find the user after validation.`
+      return res.status(404).json({
+        ERROR: `${clientUser} ${USER_NOT_FOUND_MESSAGE}`
       });
 
     return res.status(200).json({

@@ -6,148 +6,162 @@
  */
 
 import type { Socket, Namespace } from "socket.io";
-import type { Rooms, PublicRooms, PrivateRooms } from "@chatFeat/typings/Rooms";
 import type SocketCallback from "@typings/SocketCallback";
-import type MessageDto from "@chatFeat/dtos/MessageDto";
+// import type { ChatRoomId, GlobalChatRoomId, PrivateChatRoomId } from "@qc/typescript/typings/ChatRoomIds";
+import type { ChatMessage } from "@chatFeat/typings/ChatMessage";
+
+import type ManageChatRoomEventDto  from "@qc/typescript/dtos/ManageChatRoomEventDto";
+import type TypingEventDto from "@qc/typescript/dtos/TypingEventDto";
+import type ChatMessageEventDto from "@qc/typescript/dtos/ChatMessageEventDto";
+
+import { ChatEvent } from "@qc/constants";
 
 import { logger } from "@qc/utils";
-import { handleSocketError } from "@utils/handleError";
-import continentUtils from "@chatFeat/utils/ContinentUtils";
+import { handleSocketError, SocketError } from "@utils/handleError";
+import chatRoomsUtils from "@chatFeat/utils/ChatRoomsUtils";
+import getFriendRoom from "@authFeatSocket/utils/getFriendRoom";
 
-import { redisClient } from "@cache";
-import { addMessage } from "@chatFeatHttp/services/httpChatService";
-
-interface CommonDto {
-  username: string;
-  room_id: Rooms;
-}
-
-export interface ManageRoomDto extends CommonDto {
-  action_type: "join" | "leave";
-}
-
-export interface TypingDto extends CommonDto {
-  is_typing: boolean;
-}
-
-type GlobalChatRooms = "North America" | "Europe" | "Asia";
-
-const GLOBAL_ROOM_MAPPING = {
-  "North America": "North America",
-  "South America": "North America",
-  Europe: "Europe",
-  Asia: "Asia",
-  Africa: "Europe",
-  Oceania: "Asia",
-  Antarctica: "North America",
-} as const;
+import { getChatMessages, cacheChatMessage, archiveChatMessageQueue } from "@chatFeat/services/chatService";
+import { getUserFriends } from "@authFeat/services/authService";
+// import { redisClient } from "@cache";
 
 export default class SocketChatService {
   private socket: Socket;
   private io: Namespace;
-  private globalRoom: GlobalChatRooms | null;
+  private duplicateMessages: { last: string | null; count: number };
 
   constructor(socket: Socket, io: Namespace) {
     this.socket = socket;
     this.io = io;
-    this.globalRoom = null;
+    this.duplicateMessages = { last: null, count: 0 }
   }
 
   /**
    * Handles joins and leaves of chat rooms.
    */
-  async manageRoom(data: ManageRoomDto, callback: SocketCallback) {
-    const { username, room_id, action_type } = data;
+  async manageChatRoom({ room_id, action_type, country }: ManageChatRoomEventDto, callback: SocketCallback) {
+    logger.debug("socket manageChatRoom:", { room_id, action_type, country });
 
-    if (!["join", "leave"].includes(action_type)) {
-      throw handleSocketError(
-        this.socket,
-        Error(
-          `There was no data provide for a join or the type isn't valid; "leave" or "join".`
-        ),
-        { status: "bad request", from: "manageRoom service error." }
+    if (!["join", "leave"].includes(action_type))
+      throw new SocketError(
+        "There was no data provided or the action_type is invalid",
+        "bad request"
       );
-    }
 
     try {
-      this.globalRoom = await this.#cacheGlobalRegion()
+      if (room_id === null && action_type === "join" && country) {
+        const globalRoomId = chatRoomsUtils.getGlobalChatRoom(country);
+        room_id = globalRoomId;
+      } else if (!chatRoomsUtils.isRoom(room_id)) {
+        throw new SocketError("Access Denied", "forbidden");
+      }
+      const user = this.socket.decodedClaims!;
 
-      const room = room_id as string,
-        type = action_type === "join" ? "joined" : "left"
+      this.socket[action_type](room_id!);
+      const status = action_type === "join" ? "joined" : "left";
 
-      this.socket[action_type](room);
+      this.socket.in(room_id!).emit("get_chat_message", {
+        message: `${user.username} has ${status} the chat.`,
+      });
 
-      this.socket.in(room).emit("get_chat_message", { message: `${username} has ${type} the chat.` });
+      let chat_messages: Omit<ChatMessage, "_id">[] = [];
+      if (action_type === "join") chat_messages = await getChatMessages(room_id!, user.sub);
 
-      callback({ status: "ok", message: `User successfully ${type} ${room}.` });
+      return callback({ 
+        status: "ok", 
+        // message: `User successfully ${status} ${room_id}.`,
+        message: `You ${status} the chat.`,
+        ...(action_type === "join" && {
+          ...(country && { global_chat_id: room_id }),
+          chat_messages
+        })
+      });
     } catch (error: any) {
-      throw handleSocketError(this.socket, error, { from: "manageRoom service error." });
+      return handleSocketError(callback, error, "manageChatRoom service error.");
     }
   }
 
   /**
    * Notifies when a user starts or stops typing in a chat room.
    */
-  typing(data: TypingDto, resCallback: SocketCallback) {
-    const { username, room_id, is_typing } = data;
-    console.log("User typing", data);
+  typing({ room_id, is_typing }: TypingEventDto, callback: SocketCallback) {
+    logger.debug("socket manageTyping", { room_id, is_typing });
 
     try {
-      this.socket.in(room_id).emit("user_typing", { username, is_typing });
+      if (!chatRoomsUtils.isRoom(room_id)) throw new SocketError("Access Denied", "forbidden");
 
-      resCallback({
+      this.socket.in(room_id).emit("typing_activity", {
+        verification_token: this.socket.decodedClaims!.verification_token,
+        is_typing
+      });
+
+      callback({
         status: "ok",
-        message: is_typing ? "User is typing." : "User stopped typing.",
+        message: "Successfully sent the typing status to chat room.",
       });
     } catch (error: any) {
-      console.error("typing service error:\n", error.message);
-      resCallback(error.message);
+      return handleSocketError(callback, error, "manageTyping service error.");
     }
   }
 
   /**
    * Handles the messages of a chat room; stores the message and sends it back.
    */
-  async chatMessage(data: MessageDto, resCallback: SocketCallback) {
-    console.log("Received message: ", data);
+  async chatMessage(data: ChatMessageEventDto, callback: SocketCallback) {
+    logger.debug("socket chatMessage", data);
+    const { room_id, message, ...rest } = data;
 
     try {
-      const message = await addMessage(data);
-      this.io.in(data.room_id).emit("get_chat_message", message);
+      if (!chatRoomsUtils.isRoom(room_id)) throw new SocketError("Access Denied", "forbidden");
 
-      resCallback({ status: "ok", message: "Message emitted." });
+      data.created_at = new Date(data.created_at) as any;
+
+      // TODO: Make handling dups better, like if the message is similar and if they send the same message again after they send a normal message.
+      if (message === this.duplicateMessages.last) this.duplicateMessages.count++;
+
+      if (this.duplicateMessages.count) {
+        // { "message sequence": 0 }?
+        if (this.duplicateMessages.last !== message) {
+          this.duplicateMessages.count = 0;
+          await cacheChatMessage(data);
+        }
+        if (this.duplicateMessages.count === 3)
+          return callback({ status: "bad request", ERROR: "Duplicate messages count exceed max." })
+      } else {
+        await cacheChatMessage(data);
+      }
+
+      this.io.in(room_id).emit(ChatEvent.CHAT_MESSAGE_SENT, {
+        ...rest,
+        message,
+      });
+      this.duplicateMessages.last = message;
+
+      callback({ status: "ok", message: "Successfully broadcasted chat message to specified room." });
     } catch (error: any) {
-      console.error("chatMessage service error:\n", error.message);
-      resCallback(error.message);
+      return handleSocketError(callback, error, "chatMessage service error.");
     }
   }
 
-  async #cacheGlobalRegion(): Promise<GlobalChatRooms> {
-    const user = this.socket.request.decodedClaims!,
-      [country, globalRoom] = await Promise.all([
-        redisClient.get(`user:${user.sub}:country`),
-        redisClient.get(`user:${user.sub}:global_chat`),
-      ]);
+  /**
+   * Handles socket instance disconnection; Stores the user's private messages to the database if needed.
+   */
+  async disconnect() {
+    logger.debug(`Chat socket instance disconnected; ${this.socket.id}.`);
 
-    if (globalRoom && country === user.country)
-      return globalRoom as GlobalChatRooms;
+    try {
+      const user = this.socket.decodedClaims!,
+        userFriends = await getUserFriends(user.sub);
 
-    let continent = continentUtils.getContinentByCountry(user.country);
-    if (!continent) {
-      logger.warn(
-        "cacheGlobalRegion warning:\nCouldn't find the user's continent by country, defaulting to Asia."
-      );
-      continent = "Asia";
-    } else {
-      continent =
-        GLOBAL_ROOM_MAPPING[continent as keyof typeof GLOBAL_ROOM_MAPPING];
+      const promises: Promise<void>[] = [];
+      for (const friend of userFriends.list.values()) {
+        promises.push(
+          archiveChatMessageQueue(getFriendRoom(user.verification_token, friend.verification_token))
+        );
+      }
+      await Promise.all(promises);
+    } catch (error: any) {
+      logger.error("chat/disconnect service error:\n", error.message);
     }
-
-    await Promise.all([
-      redisClient.set(`user:${user.sub}:country`, user.country),
-      redisClient.set(`user:${user.sub}:global_chat`, continent),
-    ]);
-
-    return continent as GlobalChatRooms;
   }
 }

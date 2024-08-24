@@ -6,7 +6,6 @@ const authNamespace = (socket: Socket, io: Namespace) => {
   const service = new SocketAuthService(socket, io);
 
   socket.on(AuthEvent.INITIALIZE_FRIENDS, service.initializeFriends.bind(service));
-
   socket.on(AuthEvent.MANAGE_FRIEND_REQUEST, service.manageFriendRequest.bind(service));
 
   socket.on(AuthEvent.USER_ACTIVITY, service.userActivity.bind(service));

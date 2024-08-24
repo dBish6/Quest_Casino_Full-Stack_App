@@ -59,15 +59,19 @@ export function handleSocketError(
 ) {
   const err: any = error;
 
-  if ((err.status === "internal error" || err.message?.includes("Unexpectedly")) || !err.status)
+  if (
+    err.status === "internal error" ||
+    err.message?.toLowerCase().includes("unexpectedly") ||
+    !err.status
+  )
     logger.error(err.stack || err);
 
   callback({
     status: err.status || status || "internal error",
     ...(process.env.NODE_ENV === "development" && {
-      message: err.from || from,
+      message: err.from || from
     }),
-    ERROR: err.message || "An unexpected error occurred.",
+    ERROR: err.message || "An unexpected error occurred."
   });
 }
 

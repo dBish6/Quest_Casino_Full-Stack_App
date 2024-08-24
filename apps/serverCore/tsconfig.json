@@ -5,6 +5,7 @@
     "target": "ES6",
     "lib": ["ES2020"],
     // "outDir": "build",
+    "noImplicitThis": false,
     "paths": {
       "@cache": ["./src/v2/cache.ts"],
 

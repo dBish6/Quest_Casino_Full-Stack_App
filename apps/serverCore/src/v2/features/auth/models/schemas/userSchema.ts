@@ -112,7 +112,7 @@ export const userActivitySchema = new Schema<
   }
 );
 
-const notification = {
+const notification = new Schema({
   _id: { type: Schema.Types.ObjectId, immutable: true },
   notification_id: { type: String, immutable: true, default: () => randomUUID() },
   type: { type: String, enum: ["news", "system", "general"], required: true },
@@ -122,8 +122,8 @@ const notification = {
     sequence: { type: String },
     to: { type: String }
   },
-  created_at: { type: Date, index: true, default: Date.now },
-};
+  created_at: { type: Date, default: Date.now },
+}).index({ created_at: -1 });
 export const userNotificationsSchema = new Schema<
   UserDocNotifications,
   Model<UserDocNotifications>
@@ -169,7 +169,7 @@ const userSchema = new Schema<UserDoc, Model<UserDoc>>(
         validator: (url: string) => {
           return /^https?:\/\//.test(url);
         },
-        message: (url: any) => `${url.value} is not a valid URL.`
+        message: (props: any) => `${props.value} is not a valid URL.`
       }
     },
     legal_name: {

@@ -27,8 +27,6 @@ import getSocketId from "@authFeatSocket/utils/getSocketId";
 import { getUserFriends, getUser, updateUserFriends, updateUserNotifications, updateUserActivity } from "@authFeat/services/authService";
 import { redisClient } from "@cache";
 
-const FRIENDS_NOT_FOUND_MESSAGE = "Unexpectedly couldn't find the user's friends after validation.";
-
 export default class SocketAuthService {
   private socket: Socket;
   private io: Namespace;
@@ -48,10 +46,8 @@ export default class SocketAuthService {
     logger.debug("socket initializeFriends:", { verification_token });
 
     try {
-      const user = this.socket.decodedClaims!;
-
-      const userFriends = await getUserFriends(user.sub);
-      if (!userFriends) throw new SocketError(FRIENDS_NOT_FOUND_MESSAGE, "not found"); // TODO: Make this a default error it throws if you continue to do this.
+      const user = this.socket.decodedClaims!,
+        userFriends = await getUserFriends(user.sub);
 
       let initFriends: UserCredentials["friends"] = { 
         pending: userFriends.pending as any,
@@ -96,9 +92,6 @@ export default class SocketAuthService {
         recipient = await getUser("username", friend.username);
       if (!recipient) 
         throw new SocketError("Unexpectedly we couldn't find this user in our system.", "not found");
-
-      const userFriends = await getUserFriends(user.sub);
-      if (!userFriends) throw new SocketError(FRIENDS_NOT_FOUND_MESSAGE, "not found");
 
       // User sending a friend request.
       if (action_type === "request") {
@@ -247,6 +240,11 @@ export default class SocketAuthService {
           message: `Declined ${recipient.username}'s friend request.`,
         });
       }
+
+      return callback({
+        status: "bad request", 
+        message: "There was no data provided or the action_type is invalid",
+      });
     } catch (error: any) {
       return handleSocketError(callback, error, "manageFriends service error.");
     }
@@ -259,10 +257,8 @@ export default class SocketAuthService {
     logger.debug("socket userActivity:", { status });
 
     try {
-      const user = this.socket.decodedClaims!
-
-      const userFriends = await getUserFriends(user.sub);
-      if (!userFriends) throw new SocketError(FRIENDS_NOT_FOUND_MESSAGE, "not found");
+      const user = this.socket.decodedClaims!,
+        userFriends = await getUserFriends(user.sub);
 
       await this.emitFriendActivity(user, status, userFriends.list.values());
 
@@ -280,19 +276,21 @@ export default class SocketAuthService {
    * Handles socket instance disconnection; Sends that they're offline to all friends of the user.
    */
   async disconnect() {
-    logger.debug(`Socket disconnected; ${this.socket.id}.`);
+    logger.debug(`Auth socket instance disconnected; ${this.socket.id}.`);
 
     try {
       const user = this.socket.decodedClaims!;
 
       if (user) {
         const userFriends = await getUserFriends(user.sub);
-        if (!userFriends) throw new SocketError(FRIENDS_NOT_FOUND_MESSAGE, "not found");
 
         await redisClient.del(`user:${user.verification_token}:socket_id`)
+
+        const promises: Promise<void>[] = [];
         for (const friend of userFriends.list.values()) {
-          await this.emitFriendActivity(user, "offline", friend);
+          promises.push(this.emitFriendActivity(user, "offline", friend));
         }
+        await Promise.all(promises);
       }
     } catch (error: any) {
       logger.error("auth/disconnect service error:\n", error.message);
@@ -306,7 +304,7 @@ export default class SocketAuthService {
   async emitFriendActivity(
     user: UserClaims,
     status: ActivityStatuses,
-    friend: UserDoc | BuiltinIterator<UserDoc, undefined, any>,
+    friend: UserDoc | IterableIterator<UserDoc>,
   ) {
     try {
       const handleActivity = async (friend: UserDoc) => {
@@ -341,9 +339,7 @@ export default class SocketAuthService {
       await updateUserActivity({ by: "_id", value: user.sub }, { status });
 
       if ((typeof friend as any)[Symbol.iterator] === "function") {
-        for (const fri of friend as Iterable<UserDoc>) {
-          await handleActivity(fri);
-        }
+        for (const fri of friend as Iterable<UserDoc>) await handleActivity(fri);
       } else {
         await handleActivity(friend as UserDoc);
       }

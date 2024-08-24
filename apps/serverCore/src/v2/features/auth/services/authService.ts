@@ -5,7 +5,7 @@
  * Handles functionalities related to user authentication and management that can be for HTTP or Sockets.
  */
 
-import type { ObjectId, PopulateOptions, Query, QueryOptions, UpdateQuery } from "mongoose";
+import type { ObjectId, PopulateOptions, Query, UpdateQuery, QueryOptions } from "mongoose";
 import type { GetUserBy, UserDoc, UserDocFriends, UserDocStatistics, UserDocActivity, UserDocNotifications } from "@authFeat/typings/User";
 
 import { handleApiError, ApiError } from "@utils/handleError";
@@ -124,7 +124,11 @@ export async function getUser(
  */
 export async function getUserFriends(userId: ObjectId | string) {
   try {
-    return await populateUserFriendsDoc(UserFriends.findById(userId));
+    const userFriends = await populateUserFriendsDoc(UserFriends.findById(userId));
+    if (!userFriends) 
+      throw new ApiError("Unexpectedly couldn't find the user's friends after validation.", 404, "not found");
+
+    return userFriends;
   } catch (error: any) {
     throw handleApiError(error, "getUser service error.");
   }
@@ -146,7 +150,7 @@ export async function updateUserCredentials(
     const user = await populateUserDoc(User.findOneAndUpdate({ [by]: value }, update, restOpts))[
       forClient ? "client" : "full"
     ]();
-    if (!user) throw new ApiError("User was not found.", 404, "not found");
+    if (!user) throw new ApiError("Unexpectedly the user was not found.", 404, "not found");
 
     return user;
   } catch (error: any) {
@@ -169,7 +173,7 @@ export async function updateUserFriends(
     const userFriends = await populateUserFriendsDoc(
       UserFriends.findOneAndUpdate({ [by]: value }, update, options)
     );
-    if (!userFriends) throw new ApiError("User friends was not found.", 404, "not found");
+    if (!userFriends) throw new ApiError("Unexpectedly user friends was not found.", 404, "not found");
 
     return userFriends;
   } catch (error: any) {
@@ -190,7 +194,7 @@ export async function updateUserStatistics(
 
   try {
     const userStatistics = await UserStatistics.findOneAndUpdate({ [by]: value }, update, options);
-    if (!userStatistics) throw new ApiError("User statistics was not found.", 404, "not found");
+    if (!userStatistics) throw new ApiError("Unexpectedly user statistics was not found.", 404, "not found");
 
     return userStatistics;
   } catch (error: any) {
@@ -211,7 +215,7 @@ export async function updateUserActivity(
   
   try {
     const userActivity = await UserActivity.findOneAndUpdate({ [by]: value }, update, options);
-    if (!userActivity) throw new ApiError("User activity was not found.", 404, "not found");
+    if (!userActivity) throw new ApiError("Unexpectedly user activity was not found.", 404, "not found");
 
     return userActivity;
   } catch (error: any) {
@@ -233,7 +237,8 @@ export async function updateUserNotifications(
   try {
     const userNotifications =
       await UserNotifications.findOneAndUpdate({ [by]: value }, update, options);
-    if (!userNotifications) throw new ApiError("User notifications was not found.", 404, "not found");
+    if (!userNotifications) 
+      throw new ApiError("Unexpectedly user notifications was not found.", 404, "not found");
 
     return userNotifications;
   } catch (error: any) {
