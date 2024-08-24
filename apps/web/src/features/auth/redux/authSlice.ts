@@ -1,6 +1,8 @@
 import type { UserCredentials, FriendCredentials } from "@qc/typescript/typings/UserCredentials";
 import { type PayloadAction, createSlice } from "@reduxjs/toolkit";
+
 import { logger } from "@qc/utils";
+import { deepMerge } from "@utils/deepMerge";
 
 /**
  * Current user stored in redux.
@@ -47,7 +49,8 @@ const authSlice = createSlice({
      * Use for updating base credentials.
      */
     UPDATE_USER_CREDENTIALS: (state, action: PayloadAction<Partial<UserCredentials>>) => {
-      state.user.credentials = { ...state.user.credentials!, ...action.payload };
+      // state.user.credentials = { ...state.user.credentials!, ...action.payload };
+      state.user.credentials = deepMerge([state.user.credentials!, action.payload]);
     },
     /**
      * Sets or overrides the user's friends object.
@@ -77,8 +80,8 @@ const authSlice = createSlice({
       action: PayloadAction<{ verToken: string; update: Partial<FriendCredentials> }>
     ) => {
       const key = action.payload.verToken,
-        friendState = state.user.credentials!.friends.list[key],
-        toUpdate = action.payload.update
+        friendState = state.user.credentials!.friends.list[key];
+        // toUpdate = action.payload.update
 
       if (!friendState)
         return logger.error(
@@ -86,26 +89,29 @@ const authSlice = createSlice({
           `Failed to find friend ${key} in the friend's list.`
         );
 
-      state.user.credentials!.friends.list[key] = {
-        ...friendState,
-        ...toUpdate,
-        ...(toUpdate.activity && {
-          activity: {
-            ...friendState.activity,
-            ...toUpdate.activity,
-          },
-        }),
-      };
+      // state.user.credentials!.friends.list[key] = {
+      //   ...friendState,
+      //   ...toUpdate,
+      //   ...(toUpdate.activity && {
+      //     activity: {
+      //       ...friendState.activity,
+      //       ...toUpdate.activity,
+      //     },
+      //   }),
+      // };
+
+      state.user.credentials!.friends.list[key] = deepMerge([friendState, action.payload.update]);
     },
     // SET_USER_FRIEND_IN_LIST: (state, action: PayloadAction<UserCredentials["friends"]>) => {
     //   // state.user.credentials!.friends = action.payload;
     //   state.user.credentials!.friends.list[action.payload.verification_token || ""] = action.payload;
     // },
     CLEAR_USER: (state) => {
-      state.user = {
-        credentials: null,
-        token: { csrf: null }
-      };
+      // state.user = {
+      //   credentials: null,
+      //   token: { csrf: null }
+      // };
+      state.user = initialState.user;
     },
   },
 });

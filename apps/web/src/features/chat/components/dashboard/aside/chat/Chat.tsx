@@ -2,12 +2,20 @@ import type { Variants } from "framer-motion";
 import type { UserCredentials } from "@qc/typescript/typings/UserCredentials";
 
 import { useSearchParams } from "react-router-dom";
-import { useEffect } from "react";
+import { useRef, useEffect } from "react";
 import { m } from "framer-motion";
 
-import { Button, Select, Input } from "@components/common/controls";
-import { Icon, Avatar, Blob } from "@components/common";
-import { ScrollArea } from "@components/scrollArea";
+import RestrictionManager from "@chatFeat/utils/RestrictionManager";
+
+import useResourcesLoadedEffect from "@hooks/useResourcesLoadedEffect";
+
+import { useAppSelector, useAppDispatch } from "@redux/hooks";
+import { selectRestriction } from "@chatFeat/redux/chatSelectors";
+
+import { Button, Select } from "@components/common/controls";
+import { Icon, Blob } from "@components/common";
+import ChatMessages from "./ChatMessages";
+import MessageInput from "./MessageInput";
 
 import s from "./chat.module.css";
 
@@ -24,8 +32,12 @@ const shrinkInOut: Variants = {
 
 export default function Chat({ user }: { user: UserCredentials | null }) {
   const [searchParams, setSearchParams] = useSearchParams(),
+    // FIXME: I think there is a mix up.
     asideState = searchParams.get("aside"),
     chatState = searchParams.get("chat") || "enlarged";
+
+  const restriction = useAppSelector(selectRestriction), dispatch = useAppDispatch(),
+    restrictionManager = useRef(new RestrictionManager(dispatch));
 
   useEffect(() => {
     if (searchParams.has("pm") && !searchParams.has("aside", "enlarged")) {
@@ -36,9 +48,25 @@ export default function Chat({ user }: { user: UserCredentials | null }) {
     }
   }, [searchParams]);
 
-  useEffect(() => {
-    console.log("chatState", chatState);
-  }, [searchParams]);
+  // NOTE: No need to clear the intervals and eventListeners on unmount because this component will always be on screen, can't anyways.
+  const newRestrictionReset = useRef(false);
+  useResourcesLoadedEffect(() => {
+    const manager = restrictionManager.current;
+
+    if (user?.email_verified) {
+      if (restriction.started) {
+        manager.startSpamCooldown(restriction.remaining);
+        manager.startRestrictionResetCountdown(restriction.resetTime);
+        newRestrictionReset.current = true;
+      } else if (!newRestrictionReset.current && restriction.resetTime) {
+        // resetTime can be set even if a restriction is not started.
+        manager.startRestrictionResetCountdown(restriction.resetTime);
+      }
+    } else if (!user) {
+      // Cleans up on logout.
+      manager.cleanupAndUpdateTimes();
+    }
+  }, [user?.email_verified, restriction.started]);
 
   return (
     <m.div
@@ -69,7 +97,7 @@ export default function Chat({ user }: { user: UserCredentials | null }) {
           </Button>
           <hgroup>
             <Icon aria-hidden="true" id="speech-bubble-24" />
-            <h3>Chat</h3>
+            <h3 id="hChat">Chat</h3>
           </hgroup>
           {chatState === "enlarged" && (
             <Select
@@ -102,49 +130,16 @@ export default function Chat({ user }: { user: UserCredentials | null }) {
 
       {chatState === "enlarged" && (
         <>
-          <ScrollArea orientation="vertical" className={s.messages}>
-            <ul>
-              {Array.from({ length: 16 }).map((_, i) => (
-                <Message key={i} />
-              ))}
-            </ul>
-          </ScrollArea>
-          <div className={s.input}>
-            <Input
-              label="Message"
-              intent="primary"
-              size="lrg"
-              Button={() => (
-                <Button
-                  intent="primary"
-                  size={asideState === "enlarged" ? "xl" : "lrg"}
-                  iconBtn
-                >
-                  <Icon
-                    id={asideState === "enlarged" ? "send-24" : "send-18"}
-                  />
-                </Button>
-              )}
-            />
-          </div>
+          <ChatMessages user={user} />
+
+          <MessageInput user={user} asideState={asideState} />
         </>
       )}
     </m.div>
   );
 }
 
-function Message() {
-  return (
-    <li className={s.message}>
-      <div>
-        <div>
-          <Avatar />
-          <h4>VinceCarter15</h4>
-        </div>
-
-        <time dateTime="01:35">01:35</time>
-      </div>
-      <p>You know, there are many variations of Lorem Ipsum.</p>
-    </li>
-  );
+function RoomSwitcher() {
+  // TODO: List only online friends in the select, friends panel with all friends when expand.
+  return null;
 }

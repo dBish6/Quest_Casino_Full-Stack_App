@@ -1,19 +1,20 @@
 import type { StateUser } from "@authFeat/redux/authSlice";
+import type { ChatState } from "@chatFeat/redux/chatSlice";
 
 import { configureStore } from "@reduxjs/toolkit";
 import { setupListeners } from "@reduxjs/toolkit/query";
 import { throttle } from "tiny-throttle";
+
+import { deepMerge } from "@utils/deepMerge";
 
 import { rootReducer } from "./reducers";
 
 import { loadState, saveState } from "./persist";
 import { apiErrorHandler } from "@services/apiErrorHandler";
 import { authMiddleware } from "@authFeat/services/authApi";
+import { chatMiddleware } from "@chatFeat/services/chatApi";
 
-const preloadedState = {
-  ...(window.__PRELOADED_STATE__ || {}),
-  ...loadState(),
-};
+const preloadedState = deepMerge([(window.__PRELOADED_STATE__ || {}), loadState()])
 delete window.__PRELOADED_STATE__;
 
 const store = configureStore({
@@ -22,9 +23,9 @@ const store = configureStore({
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: {
-        ignoredActionPaths: ["meta.baseQueryMeta.request", "meta.baseQueryMeta.response", "payload.options.button.onClick"],
+        ignoredActionPaths: ["meta.baseQueryMeta.request", "meta.baseQueryMeta.response", "meta.arg.originalArgs.callback", "payload.callback", "payload.options.button.onClick"],
       },
-    }).concat(apiErrorHandler, authMiddleware),
+    }).concat(apiErrorHandler, authMiddleware, chatMiddleware),
 });
 
 store.subscribe(
@@ -39,9 +40,15 @@ store.subscribe(
         ...(user.token.oState ? { oState: user.token.oState } : {}),
       },
     };
+    // TODO: Just pass state.chat if everything continues to be persisted.
+    const targetPersistChat: Partial<ChatState> = {
+      globalRoomId: state.chat.globalRoomId,
+      restriction: state.chat.restriction
+    };
 
     const persisted = {
       auth: { user: targetPersistAuth },
+      chat: targetPersistChat
     };
     saveState(persisted);
   }, 1000)

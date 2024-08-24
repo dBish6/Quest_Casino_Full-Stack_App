@@ -28,7 +28,7 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-const groupStyle = {
+const groupStyle: React.CSSProperties  = {
   display: "flex",
   gap: "1.5rem",
   flexWrap: "wrap",

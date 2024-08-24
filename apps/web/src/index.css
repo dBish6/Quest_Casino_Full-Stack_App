@@ -324,8 +324,8 @@ h5 {
   color: var(--c-heading-1);
 }
 
-p,
-small {
+/* small */
+p {
   font-size: var(--para-medium-clamp);
   letter-spacing: var(--para-letter-spaceing);
 }

@@ -23,6 +23,7 @@ import { getSocketInstance, emitAsPromise } from "@services/socket";
 import allow500ErrorsTransform from "@services/allow500ErrorsTransform";
 import handleSendVerifyEmail from "./handleSendVerifyEmail";
 import { UPDATE_USER_CREDENTIALS, CLEAR_USER, SET_USER_FRIENDS, INITIALIZE_SESSION, UPDATE_USER_FRIEND_IN_LIST } from "@authFeat/redux/authSlice";
+import { CLEAR_CHAT } from "@chatFeat/redux/chatSlice";
 import { ADD_TOAST, unexpectedErrorToast } from "@redux/toast/toastSlice";
 
 const socket = getSocketInstance("auth");
@@ -71,14 +72,14 @@ const authApi = createApi({
               meta.response.headers.get("x-xsrf-token")!
             );
         } catch (error: any) {
-          if (isFetchBaseQueryError(error.error)) {
-            if (error.error.status === 404)
-              dispatch(
-                unexpectedErrorToast(
-                  "We couldn't find your profile on our server."
-                )
-              );
-          }
+          // if (isFetchBaseQueryError(error.error)) {
+          //   if (error.error.status === 404)
+          //     dispatch(
+          //       unexpectedErrorToast(
+          //         "We couldn't find your profile on our server."
+          //       )
+          //     );
+          // }
         }
       },
       transformErrorResponse: (res, meta) => allow500ErrorsTransform(res, meta)
@@ -130,14 +131,14 @@ const authApi = createApi({
             );
           }
         } catch (error: any) {
-          if (isFetchBaseQueryError(error.error)) {
-            if (error.error.status === 404)
-              dispatch(
-                unexpectedErrorToast(
-                  "We couldn't find your profile on our server."
-                )
-              );
-          }
+          // if (isFetchBaseQueryError(error.error)) {
+          //   if (error.error.status === 404)
+          //     dispatch(
+          //       unexpectedErrorToast(
+          //         "We couldn't find your profile on our server."
+          //       )
+          //     );
+          // }
         }
       }
     }),
@@ -258,8 +259,11 @@ const authApi = createApi({
 
         if (meta?.response?.ok) {
           dispatch(CLEAR_USER())
+          dispatch(CLEAR_CHAT())
+
           socket.disconnect()
           getSocketInstance("chat").disconnect()
+
           alert("User login session timed out.")
         }
       }
@@ -274,7 +278,8 @@ const authApi = createApi({
     }),
 
     /**
-     * Friend Requests and adding a friend.
+     * Manages friend requests including sending, accepting, and declining.
+     * Also, checks if the user is verified and avoids duplicate requests.
      * @emitter
      */
     manageFriendRequest: builder.mutation<SocketResponse<{ friends: UserCredentials["friends"] }>, ManageFriendRequestEventDto>({
@@ -325,6 +330,7 @@ const authApi = createApi({
                 data: {
                   ...(allow500ErrorsTransform(res.error!, res.meta).data as any),
                   ERROR: 
+                    // res.error.data.ERROR.startsWith("Unexpectedly couldn't") || res.error.status !== "internal error"
                     res.error.data?.ERROR.endsWith("in our system.") || res.error.status === "unauthorized"
                       ? res.error.data.ERROR 
                       : "An unexpected error occurred.",
@@ -363,7 +369,6 @@ const authApi = createApi({
             }
           }
       },
-      // transformErrorResponse: (res, meta) => allow500ErrorsTransform(res, meta)
     }),
 
     /**
@@ -451,7 +456,7 @@ const authApi = createApi({
             let patchResult: PatchCollection | undefined;
 
             try {
-              console.log("NEW NOTIFICATION", data);
+              logger.debug("NEW NOTIFICATION", data);
               const { type, title, message, link } = data.notification;
 
               dispatch(

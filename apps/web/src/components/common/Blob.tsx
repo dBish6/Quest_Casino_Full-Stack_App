@@ -24,7 +24,8 @@ export default function Blob({
         width: "100%",
         maxWidth: svgWidth,
         height: svgHeight,
-        ...style,
+        pointerEvents: "none",
+        ...style
       }}
       {...props}
     >

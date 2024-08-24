@@ -2,6 +2,7 @@ import type { FeatureBundle } from "framer-motion";
 import type { TimeoutObj } from "@services/socket";
 
 import { createContext, useRef, useState, useLayoutEffect } from "react";
+import { LazyMotion } from "framer-motion";
 
 import { logger } from "@qc/utils";
 import delay from "@utils/delay";
@@ -23,10 +24,7 @@ export interface ResourceLoaderContextValues {
 export const ResourceLoaderContext = createContext<ResourceLoaderContextValues | undefined>(undefined);
 
 export default function ResourceLoaderProvider({ children }: React.PropsWithChildren<{}>) {
-  const FramerFeatureBundleRef = useRef<{
-    LazyMotion?: React.ElementType;
-    domMax?: FeatureBundle;
-  }>({}),
+  const framerFeatureBundleRef = useRef<FeatureBundle>(),
   [progress, setProgress] = useState({
     loading: false, // I would love to show the loader initially but the portal in OverlayLoader breaks hydration.
     message: "Loading animating magic...",
@@ -54,10 +52,10 @@ export default function ResourceLoaderProvider({ children }: React.PropsWithChil
 
         (async () => {
           try {
-            if (!FramerFeatureBundleRef.current.LazyMotion || !FramerFeatureBundleRef.current.domMax) {
-              const { LazyMotion, domMax } = await import("framer-motion");
+            if (!framerFeatureBundleRef.current) {
+              const { domMax } = await import("framer-motion");
 
-              FramerFeatureBundleRef.current = { LazyMotion, domMax };
+              framerFeatureBundleRef.current = domMax;
               await delay(1500);
             }
 
@@ -87,17 +85,12 @@ export default function ResourceLoaderProvider({ children }: React.PropsWithChil
     }, [userToken, user?.email_verified]);
   }
 
-  const { LazyMotion, domMax } = FramerFeatureBundleRef.current;
   return (
-    <ResourceLoaderContext.Provider value={{ resourcesLoaded: LazyMotion && progress.loading === false }}> 
+    <ResourceLoaderContext.Provider value={{ resourcesLoaded: framerFeatureBundleRef.current && progress.loading === false }}> 
       {progress.loading && <OverlayLoader message={progress.message} />}
-      {LazyMotion ? (
-        <LazyMotion features={domMax} strict>
-          {children}
-        </LazyMotion>
-      ) : (
-        children
-      )}
+      <LazyMotion features={framerFeatureBundleRef.current! || {}} strict>
+        {children}
+      </LazyMotion>
     </ResourceLoaderContext.Provider>
   );
 };

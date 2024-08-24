@@ -22,6 +22,7 @@
     "clean": "rm -rf node_modules"
   },
   "dependencies": {
+    "@fastify/deepmerge": "^2.0.0",
     "@qc/constants": "*",
     "@qc/server": "*",
     "@qc/utils": "*",

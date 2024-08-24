@@ -34,7 +34,7 @@ async function setupServer() {
     const { createServer } = await import("vite");
     vite = await createServer({
       server: { middlewareMode: true },
-      appType: "custom",
+      appType: "custom"
     });
 
     app.use(vite.middlewares);
@@ -42,7 +42,7 @@ async function setupServer() {
   } else {
     app.use(
       sirv("build/client", {
-        gzip: true,
+        gzip: true
       })
     );
   }
@@ -80,7 +80,7 @@ async function setupServer() {
       } catch (error: any) {
         if ("statusCode" in error && "location" in error) {
           if (error.statusCode === 404) {
-            return res.redirect("/error-404");
+            return res.redirect("/error-404-page");
           } else if (error.location.pathname === "/") {
             const incomingIp =
               (req.headers["x-forwarded-for"] as string)?.split(",")[0] ||
@@ -119,9 +119,7 @@ async function setupServer() {
  * Preloads the initial redux state for the client and also generates the initial oState token for the google login.
  */
 function getInitialReduxState() {
-  const store = configureStore({
-      reducer: rootReducer,
-    }),
+  const store = configureStore({ reducer: rootReducer }),
     oStateToken = nanoid();
 
   const initialAuthState: AuthState = {
@@ -129,15 +127,15 @@ function getInitialReduxState() {
       credentials: null,
       token: {
         oState: { original: oStateToken, secret: hashSync(oStateToken, 6) },
-        csrf: null,
-      },
-    },
+        csrf: null
+      }
+    }
   };
 
   const preloadedStateScript = `<script>window.__PRELOADED_STATE__ = ${JSON.stringify(
     {
       ...store.getState(),
-      auth: initialAuthState,
+      auth: initialAuthState
     }
   ).replace(/</g, "\\u003c")}</script>`;
 

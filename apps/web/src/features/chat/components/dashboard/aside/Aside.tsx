@@ -64,7 +64,7 @@ export default function Aside() {
 
   const user = useUser();
 
-  // prettier-ignore
+  // Hides all content for screen readers when aside is enlarged.
   useEffect(() => {
     const elems = document.querySelectorAll("#dashHeader, #asideLeft, main");
     for (const elem of elems) {

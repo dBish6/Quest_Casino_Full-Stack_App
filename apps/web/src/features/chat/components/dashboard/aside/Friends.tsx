@@ -1,6 +1,6 @@
 import type { UserCredentials } from "@qc/typescript/typings/UserCredentials";
 
-import { useMemo } from "react"
+import { useMemo } from "react";
 
 import { ScrollArea } from "@components/scrollArea";
 import { Avatar, Link } from "@components/common";
@@ -17,24 +17,19 @@ export default function Friends({ user }: { user: UserCredentials | null }) {
         Add Friends
       </ModalTrigger>
 
-      {friendsListArr.length ? (
+      {friendsListArr?.length ? (
         <ScrollArea orientation="vertical">
-          <>
-            {friendsListArr.map((friend, i) => (
-              <div key={i} className={s.friend}>
-                <Avatar
-                  size="lrg"
-                  user={friend}
-                />
-                <h4>{friend.username}</h4>
-                <Link to={{ search: `?pm=${friend.username}` }}>Message</Link>
-              </div>
-            ))}
-            <FriendsSkeleton />
-          </>
+          {friendsListArr.map((friend, i) => (
+            <div key={i} className={s.friend}>
+              <Avatar
+                size="lrg"
+                user={friend}
+              />
+              <h4>{friend.username}</h4>
+              <Link to={{ search: `?pm=${friend.username}` }}>Message</Link>
+            </div>
+          ))}
         </ScrollArea>
-      ) : user?.verification_token ? (
-        <FriendsSkeleton />
       ) : (
         <p aria-label="No Friends Found">
           Meet people by playing some games! Or look through some{" "}
@@ -47,8 +42,4 @@ export default function Friends({ user }: { user: UserCredentials | null }) {
       )}
     </div>
   );
-}
-
-function FriendsSkeleton() {
-  return null
 }

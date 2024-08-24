@@ -58,57 +58,81 @@
     }
   }
 
-  & .messages {
+  & .chatMessages {
     position: relative;
-    width: 100%;
     height: 100%;
     z-index: -1;
     & :global(.scrollbar) {
       margin-block: calc(var(--_headHeight) + 8px)
-        calc(var(--_inputHeight) + 8px) !important;
+        calc(var(--_inputHeight) + 10px) !important;
     }
     & :global(.viewport) {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: inherit;
-      /* padding-inline: 1rem; */
-      padding-inline: 0.75rem;
+      height: 100%;
+      padding: 0 0.75rem calc(var(--_inputHeight) + 8px);
       & > div {
-        & ul {
+        height: 100%;
+        & > p {
+          position: absolute;
+          left: 50%;
+          top: 50%;
+          transform: translate(-50%, -50%);
+          text-align: center;
+          white-space: nowrap;
+        }
+
+        & ul li {
+          &:last-of-type {
+            margin-bottom: 0 !important;
+          }
+          & .info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            & div.nameAva {
+              display: flex;
+              align-items: center;
+              gap: 4px;
+            }
+          }
+        }
+        & ul.skeleton li.messageSkeleton {
+          margin-bottom: 1.75rem;
+          & .info {
+            margin-bottom: 10px;
+            & .timeSkel {
+              width: 23px;
+            }
+          }
+
+          & .paraSkel:not(:last-child) {
+            margin-bottom: 6px;
+          }
+        }
+        & ul.conversation {
           & li.message {
             margin-bottom: 1.5rem;
             &:first-of-type {
               margin-top: calc(var(--_headHeight) + 0.5rem);
             }
-            &:last-of-type {
-              margin-bottom: calc(var(--_inputHeight) + 1.5rem);
-            }
-            & > div {
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-              /* margin-bottom: 0.5rem; */
+            & .info {
+              /* A message sent by the current user. */
+              &[data-user],
+              &[data-user] > div {
+                flex-direction: row-reverse;
+              }
               margin-bottom: 4px;
-              & h4,
+              & .nameAva h4,
               & time {
                 font: var(--para-xx-small);
+                color: var(--c-para-faded);
               }
-              & > div {
-                display: flex;
-                align-items: center;
-                gap: 4px;
-                & h4 {
-                  font-style: italic;
-                  color: var(--c-para-faded);
-                  letter-spacing: var(--para-letter-spaceing);
-                }
+              & .nameAva h4 {
+                font-style: italic;
+                letter-spacing: var(--para-letter-spaceing);
               }
-            }
-            & time {
-              display: flex;
-              gap: 4px;
+              & time {
+                opacity: 0.8;
+              }
             }
 
             & p {
@@ -120,16 +144,25 @@
     }
   }
 
-  & .input {
+  & form {
     position: absolute;
     bottom: 0;
     padding: 0.5rem 0.875rem 1rem;
     background: var(--c-lvl-2);
     /* background: transparent
       linear-gradient(0deg, #e6e6e6 0%, var(--c-lvl-2) 100%); */
+    /* FIXME: Use before this opacity sets to all content. */
     opacity: 0.9;
     /* FIXME: */
     backdrop-filter: blur(15px);
     z-index: 2;
+    & :global(.control) small[role="alert"] {
+      font-size: 12px;
+      font-weight: 600;
+      & span {
+        font-size: 14px;
+        color: var(--c-status-yellow);
+      }
+    }
   }
 }

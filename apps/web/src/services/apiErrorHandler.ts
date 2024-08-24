@@ -1,4 +1,4 @@
-import type { Middleware, MiddlewareAPI, SerializedError } from "@reduxjs/toolkit";
+import type { Middleware, SerializedError } from "@reduxjs/toolkit";
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 
 import { isRejected } from "@reduxjs/toolkit";
@@ -11,7 +11,7 @@ import { ADD_TOAST, unexpectedErrorToast } from "@redux/toast/toastSlice";
 import { CLEAR_USER } from "@authFeat/redux/authSlice";
 
 export const apiErrorHandler: Middleware =
-  (api: MiddlewareAPI) => (next) => (action) => {
+  ({ dispatch }) => (next) => (action) => {
     if (isRejected(action)) {
       const [reducerName, actionType] = action.type.split("/"),
         payload = action.payload as | FetchBaseQueryError | SerializedError | undefined;
@@ -38,9 +38,9 @@ export const apiErrorHandler: Middleware =
               const error = payload.data?.ERROR as string;
 
               if (error?.includes("token")) {
-                api.dispatch(CLEAR_USER());
+                dispatch(CLEAR_USER());
                 if (error === "Access token is expired.") {
-                  return api.dispatch(
+                  return dispatch(
                     ADD_TOAST({
                       title: "Session Expired",
                       message: "Your login session has expired, log in.",
@@ -58,20 +58,23 @@ export const apiErrorHandler: Middleware =
 
               history.push("/error-403");
               break;
+            case 404:
+            case "not found":
+              if (payload.data?.ERROR.toLowerCase().includes("unexpectedly")) history.push("/error-429-user"); // TODO: And also includes user??
+              break;
             case 429:
               history.push("/error-429");
               break;
             case 500:
               log();
-              api.dispatch(
-                unexpectedErrorToast("An unexpected server error occurred.")
-              );
+              dispatch(unexpectedErrorToast("An unexpected server error occurred."));
               break;
             // Socket error responses send string statuses.
             case "bad request":
-              (payload.data?.ERROR as string).includes(`"leave"`, -1) && history.push("/error-500");
+              if (payload.data?.ERROR.includes("no data", -1)) history.push("/error-500");
               break;
             case "internal error":
+              log();
               // TODO: Could do the same as 500?
               history.push("/error-500");
               break;
@@ -84,10 +87,8 @@ export const apiErrorHandler: Middleware =
         log();
 
         const message = payload.message;
-        api.dispatch(
-          unexpectedErrorToast(
-            `${message.length > 30 ? `${message.slice(0, 30)}...` : message}.`
-          )
+        dispatch(
+          unexpectedErrorToast(`${message.length > 30 ? `${message.slice(0, 30)}...` : message}.`)
         );
       }
     }

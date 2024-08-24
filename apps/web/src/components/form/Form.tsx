@@ -12,9 +12,10 @@ import s from "./form.module.css";
 
 export interface FormProps extends Omit<React.ComponentProps<"form">, "aria-errormessage"> {
   fetcher?: FetcherWithComponents<any>;
-  formLoading: boolean;
-  resSuccessMsg?: any;
-  resError: FetchBaseQueryError | SerializedError | undefined;
+  formLoading?: boolean;
+  // resSuccessMsg?: any;
+  resSuccessMsg?: string | JSX.Element | false;
+  resError?: FetchBaseQueryError | SerializedError;
   clearErrors?: () => void;
 }
 
@@ -34,15 +35,12 @@ const Form = forwardRef<HTMLFormElement, React.PropsWithChildren<FormProps>>(
           ) : (
             resError &&
             (isFetchBaseQueryError(resError) ? (
-              typeof resError.data?.ERROR === "string" &&
               [400, 401, 404, 409].includes((resError.status as number)) ? (
                 <span role="alert" id="globalFormError" className={s.errorMsg}>
-                  {resError.data?.ERROR}
+                  {resError.data?.ERROR || "An unexpected server error occurred"}
                 </span>
               ) : (
-                ((resError.status as number) >= 500 ||
-                  (typeof resError.data?.ERROR === "string" &&
-                    resError.data?.ERROR.startsWith("No form field"))) && (
+                (resError.status as number) >= 500 && (
                   <span
                     role="alert"
                     id="globalFormError"

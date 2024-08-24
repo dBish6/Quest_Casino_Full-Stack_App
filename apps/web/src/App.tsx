@@ -4,7 +4,7 @@
  *
  * Author: David Bishop
  * Creation Date: April 16, 2024
- * Last Updated: Aug 8, 2024
+ * Last Updated: Aug 23, 2024
  *
  * Description:
  * .
@@ -100,14 +100,22 @@ export const routes: RouteObject[] = [
           <Error
             status={403}
             title="Forbidden"
-            description="User authorization or CSRF token is not valid."
+            // FIXME: Change message.
+            // description="User authorization or CSRF token is not valid."
+            description="Miscellaneous request or User authorization or CSRF token is not valid."
           />
         ),
       },
       {
-        path: "error-404",
+        path: "error-404-page",
         element: (
-          <Error status={404} title="Not Found" description="Page not found." />
+          <Error status={404} title="Page Not Found" description="The page you are looking for doesn't exist or was moved or deleted." />
+        ),
+      },
+      {
+        path: "error-404-user",
+        element: (
+          <Error status={404} title="User Not Found" description="Unexpectedly we couldn't find your profile on our server." />
         ),
       },
       {
@@ -133,7 +141,7 @@ export const routes: RouteObject[] = [
       {
         ...(typeof window !== "undefined" && {
           path: "*",
-          element: <Navigate to="/error-404" replace />,
+          element: <Navigate to="/error-404-page" replace />,
         }),
       },
     ],

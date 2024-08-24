@@ -4,7 +4,6 @@ import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { Title } from "@radix-ui/react-dialog";
 
 import { capitalize } from "@qc/utils";
-import { isFormValidationError } from "@utils/forms";
 
 import useForm from "@hooks/useForm";
 // import {
@@ -22,38 +21,6 @@ import s from "./cashInModal.module.css";
 // TODO:
 export default function CashInModal() {
   //   const { form, setLoading, setError, setErrors } = useForm<CashInBodyDto>();
-
-  //   const processingForm = registerLoading || form.processing,
-  //     processing = processingForm || loginGoogleLoading || googleLoading;
-
-  //   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-  //     e.preventDefault();
-  //     setLoading(true);
-
-  //     const form = e.target as HTMLFormElement,
-  //       field = form.querySelector<HTMLInputElement>("input")!;
-
-  //     try {
-  //       let error: string;
-  //       const key = field.name as keyof CashInBodyDto;
-
-  //       if (!field.value.length) {
-  //         return setError(key, `${capitalize(key)} is required.`);
-  //       }
-
-  //       register({ [key]: field.value }).then((res) => {
-  //         // prettier-ignore
-  //         if (isFormValidationError(res.error))
-  //             return setErrors(
-  //               ((res.error as FetchBaseQueryError).data?.ERROR as Record<string,string>) || {}
-  //             );
-
-  //         if (res.data?.message?.startsWith("Successfully")) form.reset();
-  //       });
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
 
   return (
     <ModalTemplate

@@ -50,7 +50,6 @@ export const SkeletonTitle = forwardRef<HTMLDivElement, SkeletonProps & VariantP
 
 export const SkeletonText = forwardRef<HTMLDivElement, SkeletonProps & VariantProps<typeof skeletonText>>(
   ({ className, size, ...props }, ref) => {
-    console.log("size", size)
     return <Skeleton ref={ref} className={skeletonText({ className, size })} {...props} />
   }
 );

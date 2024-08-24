@@ -11,7 +11,7 @@ import { fadeInOut } from "@utils/animations";
 import displayNotificationMessage from "@authFeat/utils/displayNotificationMessage";
 import { isFetchBaseQueryError } from "@utils/isFetchBaseQueryError";
 
-import useResourceLoader from "@hooks/useResourceLoader";
+import useResourcesLoadedEffect from "@hooks/useResourcesLoadedEffect";
 
 import { useLazyGetUserQuery, useDeleteUserNotificationsMutation, useManageFriendRequestMutation } from "@authFeat/services/authApi";
 
@@ -38,7 +38,6 @@ export default function NotificationsModal() {
   const [searchParams] = useSearchParams();
 
   const fadeVariant = fadeInOut({ in: 0.3, out: 0.58 });
-  const { resourcesLoaded } = useResourceLoader();
 
   const [ getNotifications, { data, isFetching: notifsLoading }] = useLazyGetUserQuery(),
     userNotifData = data?.user as GetNotificationsResponseDto;
@@ -50,14 +49,14 @@ export default function NotificationsModal() {
 
   const [postDeleteNotifications, { isLoading: deletionLoading }] = useDeleteUserNotificationsMutation();
 
-  useEffect(() => {
-    if (searchParams.has(ModalQueryKey.NOTIFICATIONS_MODAL) && resourcesLoaded) {
+  useResourcesLoadedEffect(() => {
+    if (searchParams.has(ModalQueryKey.NOTIFICATIONS_MODAL)) {
       if (unCategorizedNotifications.current) unCategorizedNotifications.current = [];
       const query = getNotifications({ notifications: true });
 
       return () => query.abort();
     }
-  }, [searchParams, resourcesLoaded]);
+  }, [searchParams]);
   useEffect(() => {
     if (userNotifData) setNotifications(userNotifData.notifications);
   }, [userNotifData]);

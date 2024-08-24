@@ -33,7 +33,7 @@ export interface InputProps
   id: string;
   required?: boolean | "show";
   Button?: () => React.ReactElement<ButtonProps>;
-  error?: string | null;
+  error?: string | (() => React.JSX.Element) | boolean | null;
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
@@ -82,7 +82,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
 
         {error && (
           <small role="alert" id="formError" className={s.error}>
-            {error}
+            {typeof error === "function" ? error() : error}
           </small>
         )}
       </div>

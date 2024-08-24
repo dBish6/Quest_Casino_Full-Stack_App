@@ -30,6 +30,7 @@ export default function AwayActivityTracker() {
   };
 
   useResourcesLoadedEffect(() => {
+    // They have to be verified to manage friends so.
     if (user?.email_verified) {
       startAwayCountdown();
 
