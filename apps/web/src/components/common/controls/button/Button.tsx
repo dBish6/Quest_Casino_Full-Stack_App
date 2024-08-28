@@ -16,6 +16,8 @@ const button = cva(s.button, {
       primary: s.primary,
       secondary: s.secondary,
       ghost: s.ghost,
+      // Chips are used for toggle buttons, but you can with primary too.
+      chip: s.chip,
       exit: `${s.icon} ${s.exit}`,
       "exit ghost": `${s.icon} ${s.exit} ${s.ghost}`,
     },

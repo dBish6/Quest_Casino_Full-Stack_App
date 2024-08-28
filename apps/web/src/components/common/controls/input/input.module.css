@@ -17,7 +17,7 @@
       & input {
         padding-inline: 16px;
         background-color: transparent;
-        color: var(--_input-fade);
+        color: var(--input-fade);
       }
 
       &.button {
@@ -34,6 +34,40 @@
           border-bottom-right-radius: 4px;
           & svg {
             position: absolute;
+          }
+        }
+      }
+
+      &.icon {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        & svg {
+          justify-self: center;
+          align-self: center;
+          margin-left: 0.75rem;
+          & use {
+            fill: var(--input-fade);
+            transition: 0.28s ease-in-out fill;
+          }
+        }
+        &:global(.lrg) input {
+          padding-left: 0.5rem;
+        }
+        &:global(.xl) input {
+          padding-left: 0.75rem;
+        }
+        & input::placeholder {
+          opacity: 1;
+          color: var(--input-fade);
+          transition: 0.28s ease-in-out color; /* Doesn't actually work, but apparently should. */
+        }
+
+        &[data-focused="true"] {
+          & input::placeholder {
+            color: var(--c-heading-2);
+          }
+          & svg use {
+            fill: var(--c-heading-2);
           }
         }
       }

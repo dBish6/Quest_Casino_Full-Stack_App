@@ -173,13 +173,8 @@
           justify-content: flex-end;
           flex-wrap: wrap;
           row-gap: 0.5rem;
-          & > button {
-            &:first-of-type {
-              margin-right: 0.5rem;
-            }
-            &[aria-pressed="true"]::after {
-              opacity: 1;
-            }
+          & > button:first-of-type {
+            margin-right: 0.5rem;
           }
         }
 

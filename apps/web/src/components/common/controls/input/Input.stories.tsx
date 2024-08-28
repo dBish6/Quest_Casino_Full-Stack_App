@@ -4,7 +4,7 @@ import { useState } from "react";
 
 import Input from "./Input";
 import CButton from "../button/Button";
-import { Icon } from "@components/common";
+import { Icon as CIcon } from "@components/common";
 
 const meta: Meta<typeof Input> = {
   title: "Components/Controls/Input",
@@ -27,7 +27,7 @@ const meta: Meta<typeof Input> = {
       options: ["true", "false", "show"],
     },
   },
-  args: { onClick: fn() },
+  args: { intent: "primary", size: "lrg", onClick: fn() },
 };
 export default meta;
 
@@ -36,8 +36,6 @@ type Story = StoryObj<typeof meta>;
 export const Large: Story = {
     args: {
       label: "Large",
-      intent: "primary",
-      size: "lrg",
       id: "large",
       name: "large",
       required: true,
@@ -46,7 +44,6 @@ export const Large: Story = {
   ExtraLarge: Story = {
     args: {
       label: "Extra Large",
-      intent: "primary",
       size: "xl",
       id: "extraLarge",
       name: "extraLarge",
@@ -60,8 +57,6 @@ export const Password: Story = {
   },
   args: {
     label: "Password",
-    intent: "primary",
-    size: "lrg",
     id: "password",
     name: "password",
     required: true,
@@ -83,7 +78,7 @@ export const Password: Story = {
             iconBtn
             onClick={() => toggleVisible(!visible)}
           >
-            <Icon id="eye-18" />
+            <CIcon id="eye-18" />
           </CButton>
         )}
       />
@@ -94,10 +89,7 @@ export const Password: Story = {
 export const Button: Story = {
   args: {
     label: "Button",
-    intent: "primary",
-    size: "lrg",
     id: "button",
-    name: "button",
   },
   render: (args) => (
     <Input
@@ -108,9 +100,22 @@ export const Button: Story = {
           size={args.size === "lrg" ? "lrg" : "xl"}
           iconBtn
         >
-          <Icon id={args.size === "lrg" ? "send-18" : "send-24"} />
+          <CIcon id={args.size === "lrg" ? "send-18" : "send-24"} />
         </CButton>
       )}
+    />
+  ),
+};
+
+export const Icon: Story = {
+  args: {
+    label: "Icon",
+    id: "icon",
+  },
+  render: (args) => (
+    <Input
+      {...args}
+      Icon={() => <CIcon id={args.size === "lrg" ? "search-18" : "search-21"} />}
     />
   ),
 };

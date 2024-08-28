@@ -278,6 +278,11 @@ const iconLib = {
     size: { width: "20.996", height: "21.022" },
     "aria-label": "Search",
   },
+  "search-18": {
+    id: "search",
+    size: { width: "18.003", height: "18.085" },
+    "aria-label": "Search",
+  },
 
   "send-24": {
     id: "send",
@@ -290,6 +295,11 @@ const iconLib = {
     "aria-label": "Send",
   },
 
+  "speech-bubble-32": {
+    id: "speech-bubble",
+    size: { width: "32", height: "29.584" },
+    "aria-label": "Reply",
+  },
   "speech-bubble-24": {
     id: "speech-bubble",
     size: { width: "24", height: "21.377" },
