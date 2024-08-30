@@ -23,7 +23,7 @@
         animation: pulse ease 4.38s infinite;
       }
 
-      & > div {
+      & > div:first-child {
         display: grid;
         grid-template-columns: auto minmax(0, 1fr);
         align-items: center;
@@ -107,12 +107,18 @@
             margin-right: 0.5rem;
           }
 
-          & svg,
+          & .addIcon,
           & span[role="status"] {
             align-self: center;
           }
-          & svg use {
-            fill: var(--c-purple-600);
+          & .addIcon {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background-color: var(--c-purple-600);
             opacity: 0.7;
             transition: 0.22s ease-in-out opacity;
           }
@@ -124,14 +130,14 @@
             &:hover,
             &:focus-visible {
               background-color: var(--c-lvl-3);
-              & svg use {
+              & .addIcon {
                 opacity: 0.86;
               }
             }
             &:active,
             &[data-key-press="true"] {
               background-color: var(--c-lvl-4);
-              & svg use {
+              & .addIcon {
                 opacity: 1;
               }
             }

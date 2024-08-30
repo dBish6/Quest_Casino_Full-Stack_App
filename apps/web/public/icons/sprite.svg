@@ -1,10 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
   <defs>
-    <symbol viewBox="0 0 38 38" id="add">
-      <g transform="translate(-859 -844)">
-        <circle cx="19" cy="19" r="19" transform="translate(859 844)"/>
-        <path fill="none" stroke="#171126" stroke-linecap="round" stroke-width="3" d="M878 857v12"/>
-        <path fill="none" stroke="#171126" stroke-linecap="round" stroke-width="3" d="M872 863h12"/>
+    <symbol viewBox="0 0 15 15" id="add">
+      <g fill="#171126">
+        <path d="M7.5 15A1.5 1.5 0 0 1 6 13.5v-12A1.5 1.5 0 0 1 7.5 0 1.5 1.5 0 0 1 9 1.5v12A1.5 1.5 0 0 1 7.5 15Z"/>
+        <path d="M13.5 9h-12A1.5 1.5 0 0 1 0 7.5 1.5 1.5 0 0 1 1.5 6h12A1.5 1.5 0 0 1 15 7.5 1.5 1.5 0 0 1 13.5 9Z"/>
       </g>
     </symbol>
 

@@ -1,5 +1,6 @@
 import type { VariantProps } from "class-variance-authority";
 import type { ButtonProps } from "../button/Button";
+import type { IconProps } from "@components/common/Icon";
 
 import { forwardRef, useRef } from "react";
 import { Label } from "@radix-ui/react-label";
@@ -33,11 +34,12 @@ export interface InputProps
   id: string;
   required?: boolean | "show";
   Button?: () => React.ReactElement<ButtonProps>;
+  Icon?: () => React.ReactElement<IconProps>;
   error?: string | (() => React.JSX.Element) | boolean | null;
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ label, className, intent, size, style, required, Button, error, ...props }, ref) => {
+  ({ label, className, intent, size, style, required, Button, Icon, error, ...props }, ref) => {
     const inputContainerRef = useRef<HTMLDivElement>(null);
 
     return (
@@ -48,11 +50,12 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       >
         <div
           ref={inputContainerRef}
-          className={`${input({ className, intent, size })}${Button ? " " + s.button : ""}`}
+          className={`${input({ className, intent, size })}${Button ? " " + s.button : ""}${Icon ? " " + s.icon : ""}`}
           style={style}
           data-disabled={props.disabled}
         >
-          <Label htmlFor={props.id}>
+          {Icon && <Icon aria-hidden="true" />}
+          <Label htmlFor={props.id} {...(Icon && { style: { visibility: "hidden" } })}>
             {label}
             {required === "show" && (
               <span aria-hidden="true" className="required">
@@ -64,6 +67,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             {...(error && { "aria-errormessage": "formError", "aria-invalid": true })}
             ref={ref}
             required={required ? true : false}
+            {...(Icon && { placeholder: label })}
             {...props}
 
             onFocus={() =>

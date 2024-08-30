@@ -133,8 +133,9 @@ function SearchUserCard({ user }: { user: MinUserCredentials }) {
         onClick={() => emitManageFriends({ action_type: "request", friend: user })}
       >
         <Details user={user} />
-
-        {manageFriendsLoading ? <Spinner intent="primary" size="md" /> : <Icon id="add-24" />}
+        <div className={s.addIcon}>
+          {manageFriendsLoading ? <Spinner intent="primary" size="md" /> : <Icon id="add-10" />}
+        </div>
       </Button>
       {(resError || manageFriendsData) && (
           <small role={resError ? "alert" : "status"} id="msg">

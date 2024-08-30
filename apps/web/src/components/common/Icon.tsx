@@ -28,14 +28,14 @@ export default function Icon({id, fill = "var(--c-purple-50)", ...props}: IconPr
  * The collection icons with their IDs to access the icons and default aria-labels.
  */
 const iconLib = {
-  "add-38": {
+  "add-15": {
     id: "add",
-    size: { width: "38", height: "38" },
+    size: { width: "15", height: "15" },
     "aria-label": "Add",
   },
-  "add-24": {
+  "add-10": {
     id: "add",
-    size: { width: "24", height: "24" },
+    size: { width: "10", height: "10" },
     "aria-label": "Add",
   },
 
