@@ -1,5 +1,6 @@
-import { forwardRef, useRef, useEffect } from "react";
+import { forwardRef, useRef } from "react";
 
+import noImage from "/images/no-image.webp"
 import s from "./image.module.css";
 
 export interface ImageProps extends React.ComponentProps<"img"> {
@@ -15,16 +16,41 @@ export interface ImageProps extends React.ComponentProps<"img"> {
   fill?: boolean;
 }
 
-// FIXME: It just gross looking.
 const Image = forwardRef<HTMLImageElement, ImageProps>(
   ({ src, alt, load = true, size, fill, ...props }, ref) => {
-    const containerRef = useRef<HTMLDivElement>(null),
-      imgRef = useRef<HTMLImageElement | null>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
 
-    useEffect(() => {
-      if (load && imgRef.current && imgRef.current.complete)
-        containerRef.current!.setAttribute("data-loaded", "true");
-    }, [imgRef.current]);
+    const handleImageLazyLoad = (img: HTMLImageElement) => {
+      if (load) {
+        let timeout: NodeJS.Timeout;
+
+        const cleanUp = () => {
+          if (img) {
+            img.removeEventListener("load", handleLoad);
+            img.removeEventListener("error", handleError);
+          }
+          clearTimeout(timeout);
+        };
+
+        const handleLoad = () => {
+          if (containerRef.current) containerRef.current.setAttribute("data-loaded", "true");
+          cleanUp();
+        };
+  
+        const handleError = () => {
+          if (img) img.src = noImage;
+          cleanUp();
+        };
+  
+        timeout = setTimeout(handleError, 15000);
+
+        if (img.complete) handleLoad();
+        else {
+          img.addEventListener("load", handleLoad);
+          img.addEventListener("error", handleError);
+        }
+      }
+    }
 
     return (
       <div
@@ -48,13 +74,13 @@ const Image = forwardRef<HTMLImageElement, ImageProps>(
         }}
       >
         <img
-          ref={(node) =>
-            ref
-              ? typeof ref === "function"
-                ? ref(node)
-                : (ref.current = node)
-              : (imgRef.current = node)
-          }
+          ref={(node) => {
+            if (typeof ref === "function") ref(node);
+            else if (ref) ref.current = node;
+
+            if (node) handleImageLazyLoad(node);
+          }}
+          {...(load && { loading: "lazy" })}
           src={src}
           alt={alt}
           {...props}
