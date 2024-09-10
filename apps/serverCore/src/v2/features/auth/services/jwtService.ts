@@ -22,17 +22,17 @@ export class GenerateUserJWT {
     this.user = user;
   }
 
-  accessToken(options?: jwt.SignOptions) {
+  public accessToken(options?: jwt.SignOptions) {
     try {
-      return this.#token(ACCESS_TOKEN_SECRET!, options);
+      return this.token(ACCESS_TOKEN_SECRET!, options);
     } catch (error: any) {
       throw handleApiError(error, "generateJWT service error; generating access token.");
     }
   }
 
-  async refreshToken(options?: jwt.SignOptions) {
+  public async refreshToken(options?: jwt.SignOptions) {
     try {
-      const refreshToken = this.#token(REFRESH_TOKEN_SECRET!, options);
+      const refreshToken = this.token(REFRESH_TOKEN_SECRET!, options);
       // For verification afterwards.
       await redisClient.sAdd(
         `user:${this.user._id.toString()}:refresh_tokens`,
@@ -45,7 +45,7 @@ export class GenerateUserJWT {
     }
   }
 
-  #token(secret: jwt.Secret, options?: jwt.SignOptions) {
+  private token(secret: jwt.Secret, options?: jwt.SignOptions) {
     return jwt.sign({ sub: this.user._id.toString(), ...this.user }, secret, {
       algorithm: "HS256",
       expiresIn: "15m",
@@ -64,7 +64,7 @@ export class JWTVerification {
   /**
    * Verifies the user's access and refresh tokens. If the access token is missing, it attempts to verify the refresh token.
    */
-  async verifyUserToken(accessToken: string | undefined, refreshToken: string | undefined) {
+  public async verifyUserToken(accessToken: string | undefined, refreshToken: string | undefined) {
     if (!accessToken) {
       logger.debug("Access token missing trying to refresh...")
       if (refreshToken) {
@@ -80,9 +80,9 @@ export class JWTVerification {
   /**
    * Verifies the access token. Checks its validity and if it's within the refresh threshold or expired, it then checks the refresh token for validity.
    */
-  async verifyAccessToken(accessToken: string | undefined = "", refreshToken: string | undefined = "") {
+  public async verifyAccessToken(accessToken: string | undefined = "", refreshToken: string | undefined = "") {
     try {
-      const decodedClaims = this.#verifyJwt<UserClaims>(
+      const decodedClaims = this.verifyJwt<UserClaims>(
         accessToken,
         ACCESS_TOKEN_SECRET!
       );
@@ -92,7 +92,7 @@ export class JWTVerification {
         currentTime = Date.now();
       // Signifies to refresh when within the refresh threshold.
       if (tokenExpiry - currentTime <= this.REFRESH_THRESHOLD) {
-        const match = await this.#isRefreshTokenMatching(
+        const match = await this.isRefreshTokenMatching(
           decodedClaims.sub,
           refreshToken
         );
@@ -105,7 +105,7 @@ export class JWTVerification {
 
       return { claims: decodedClaims, message: "Is valid." };
     } catch (error: any) {
-      if (this.#isJwtError(error)) 
+      if (this.isJwtError(error)) 
         return { claims: null, message: "Access token is invalid." };
 
       throw handleApiError(error, "JWTVerification service error; access token verification.");
@@ -115,15 +115,15 @@ export class JWTVerification {
   /**
    * Verifies the refresh token. Checks its validity and matches it against the cache.
    */
-  async verifyRefreshToken(refreshToken: string | undefined = "") {
+  public async verifyRefreshToken(refreshToken: string | undefined = "") {
     try {
-      const decodedClaims = this.#verifyJwt<UserClaims>(
+      const decodedClaims = this.verifyJwt<UserClaims>(
         refreshToken,
         REFRESH_TOKEN_SECRET!
       );
       // logger.debug("Refresh token decodedClaims:", decodedClaims);
 
-      const match = await this.#isRefreshTokenMatching(
+      const match = await this.isRefreshTokenMatching(
         decodedClaims.sub,
         refreshToken
       );
@@ -131,7 +131,7 @@ export class JWTVerification {
 
       return { claims: decodedClaims, message: "Is valid." };
     } catch (error: any) {
-      if (this.#isJwtError(error)) 
+      if (this.isJwtError(error)) 
         return { claims: null, message: "Refresh token is invalid." };
       
       throw handleApiError(error, "JWTVerification service error; refresh token verification.");
@@ -141,7 +141,7 @@ export class JWTVerification {
   /**
    * Verifies the integrity of a JWT and returns the given claims type.
    */
-  #verifyJwt<TClaims = jwt.JwtPayload>(
+  private verifyJwt<TClaims = jwt.JwtPayload>(
     token: string,
     secretOrPublicKey: jwt.Secret,
     VerifyOptions?: jwt.VerifyOptions
@@ -152,11 +152,11 @@ export class JWTVerification {
   /**
    * Checks if the provided refresh token matches the cache for the given user.
    */
-  async #isRefreshTokenMatching(userId: string, token: string) {
+  private async isRefreshTokenMatching(userId: string, token: string) {
     return await redisClient.sIsMember(`user:${userId}:refresh_tokens`, token);
   }
 
-  #isJwtError(err: any) {
+  private isJwtError(err: any) {
     return err instanceof jwt.JsonWebTokenError || err instanceof jwt.NotBeforeError;
   }
 }
