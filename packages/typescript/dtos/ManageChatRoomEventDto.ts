@@ -1,7 +1,9 @@
+import ChatRoomAccessType from "../typings/ChatRoomAccessType";
 import { ChatRoomId } from "../typings/ChatRoomIds";
+import { LastChatMessageDto } from "./ChatMessageEventDto";
 
 export default interface ManageChatRoomEventDto {
-  room_id: ChatRoomId | null;
-  action_type: "join" | "leave";
-  country?: string;
+  access_type: ChatRoomAccessType;
+  room_id: { join?: ChatRoomId; leave?: ChatRoomId };
+  last_message?: LastChatMessageDto;
 }

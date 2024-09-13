@@ -16,7 +16,9 @@ export interface MinUserCredentials {
 export interface FriendCredentials extends MinUserCredentials {
   country: string;
   bio?: string;
-  activity: { status: ActivityStatuses };
+  /** The very last private message sent in the friend room (private room). */
+  last_chat_message?: string;
+  activity: { status: ActivityStatuses, inactivity_timestamp?: string };
 }
 
 /**
