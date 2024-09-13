@@ -22,7 +22,7 @@ import { createApi, baseQuery } from "@services/index";
 import { getSocketInstance, emitAsPromise } from "@services/socket";
 import allow500ErrorsTransform from "@services/allow500ErrorsTransform";
 import handleSendVerifyEmail from "./handleSendVerifyEmail";
-import { UPDATE_USER_CREDENTIALS, CLEAR_USER, SET_USER_FRIENDS, INITIALIZE_SESSION, UPDATE_USER_FRIEND_IN_LIST } from "@authFeat/redux/authSlice";
+import { UPDATE_USER_CREDENTIALS, CLEAR_USER, UPDATE_USER_FRIENDS, INITIALIZE_SESSION, UPDATE_USER_FRIEND_IN_LIST } from "@authFeat/redux/authSlice";
 import { CLEAR_CHAT } from "@chatFeat/redux/chatSlice";
 import { ADD_TOAST, unexpectedErrorToast } from "@redux/toast/toastSlice";
 
@@ -62,25 +62,14 @@ const authApi = createApi({
         body: credentials
       }),
       onQueryStarted: async (_, { dispatch, queryFulfilled }) => {
-        try {
-          const { data, meta } = await queryFulfilled;
+        const { data, meta } = await queryFulfilled;
 
-          if (meta?.response?.ok)
-            handleLoginSuccess(
-              dispatch,
-              data.user,
-              meta.response.headers.get("x-xsrf-token")!
-            );
-        } catch (error: any) {
-          // if (isFetchBaseQueryError(error.error)) {
-          //   if (error.error.status === 404)
-          //     dispatch(
-          //       unexpectedErrorToast(
-          //         "We couldn't find your profile on our server."
-          //       )
-          //     );
-          // }
-        }
+        if (meta?.response?.ok)
+          handleLoginSuccess(
+            dispatch,
+            data.user,
+            meta.response.headers.get("x-xsrf-token")!
+          );
       },
       transformErrorResponse: (res, meta) => allow500ErrorsTransform(res, meta)
     }),
@@ -117,28 +106,17 @@ const authApi = createApi({
         method: "POST"
       }),
       onQueryStarted: async (_, { dispatch, queryFulfilled }) => {
-        try {
-          const { data, meta } = await queryFulfilled;
+        const { data, meta } = await queryFulfilled;
 
-          if (meta?.response?.ok) {
-            dispatch(UPDATE_USER_CREDENTIALS(data.user));
-            dispatch(
-              ADD_TOAST({
-                message: data.message,
-                intent: "success",
-                duration: 65000,
-              })
-            );
-          }
-        } catch (error: any) {
-          // if (isFetchBaseQueryError(error.error)) {
-          //   if (error.error.status === 404)
-          //     dispatch(
-          //       unexpectedErrorToast(
-          //         "We couldn't find your profile on our server."
-          //       )
-          //     );
-          // }
+        if (meta?.response?.ok) {
+          dispatch(UPDATE_USER_CREDENTIALS(data.user));
+          dispatch(
+            ADD_TOAST({
+              message: data.message,
+              intent: "success",
+              duration: 65000,
+            })
+          );
         }
       }
     }),
@@ -332,8 +310,8 @@ const authApi = createApi({
                   ERROR: 
                     // res.error.data.ERROR.startsWith("Unexpectedly couldn't") || res.error.status !== "internal error"
                     res.error.data?.ERROR.endsWith("in our system.") || res.error.status === "unauthorized"
-                      ? res.error.data.ERROR 
-                      : "An unexpected error occurred.",
+                      ? res.error.data.ERROR
+                      : "An unexpected error occurred."
                 }
               }
             }
@@ -346,7 +324,7 @@ const authApi = createApi({
           logger.debug("MANAGE FRIEND", data)
 
           if (data.status === "ok" && action_type === "request" && data.friends) {
-            dispatch(SET_USER_FRIENDS(data.friends));
+            dispatch(UPDATE_USER_FRIENDS(data.friends));
             // dispatch(
             //   ADD_TOAST({
             //     title: action_type === "request" ? "Friend Request Sent" : "Friend Added",
@@ -396,7 +374,7 @@ const authApi = createApi({
               logger.debug("FRIEND UPDATE", { friends });
 
               if ("list" in friends && "pending" in friends) {
-                dispatch(SET_USER_FRIENDS(friends));
+                dispatch(UPDATE_USER_FRIENDS(friends));
               } else {
                 logger.error("authApi friendsUpdate error:\n", "Received incorrect friends object.")
               }

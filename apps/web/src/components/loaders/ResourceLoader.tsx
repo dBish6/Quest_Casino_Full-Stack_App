@@ -10,7 +10,7 @@ import { history } from "@utils/History";
 
 import { useAppSelector, useAppDispatch } from "@redux/hooks";
 import { selectUserCsrfToken, selectUserCredentials } from "@authFeat/redux/authSelectors";
-import { SET_USER_FRIENDS } from "@authFeat/redux/authSlice";
+import { UPDATE_USER_FRIENDS } from "@authFeat/redux/authSlice";
 import { useInitializeFriendsMutation } from "@authFeat/services/authApi";
 
 import { socketInstancesConnectionProvider } from "@services/socket";
@@ -40,7 +40,7 @@ export default function ResourceLoaderProvider({ children }: React.PropsWithChil
   const initializeFriends = async () => {
     mutation.current = emitInitFriends({ verification_token: user!.verification_token });
     mutation.current.then((res: any) => {
-      if (res.data?.status === "ok") dispatch(SET_USER_FRIENDS(res.data.friends));
+      if (res.data?.status === "ok") dispatch(UPDATE_USER_FRIENDS(res.data.friends));
     })
   }
 
