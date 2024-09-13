@@ -1,10 +1,24 @@
-import type { GlobalChatRoomId } from "@qc/typescript/typings/ChatRoomIds";
-import { type PayloadAction, createSlice } from "@reduxjs/toolkit";
+import type ChatRoomAccessType from "@qc/typescript/typings/ChatRoomAccessType";
+import type { LastChatMessageDto } from "@qc/typescript/dtos/ChatMessageEventDto";
+import type { FriendCredentials } from "@qc/typescript/typings/UserCredentials";
 
-import { logger } from "@qc/utils";
+import { type PayloadAction, createSlice } from "@reduxjs/toolkit";
 import { deepMerge } from "@utils/deepMerge";
 
-export interface RestrictionState {
+export interface ChatRoomState {
+  loading: boolean;
+  snapshotId?: string; // Because the currentId can be null.
+  /** The value to become the currentId. */
+  proposedId: string | null;
+  currentId: string | null;
+  accessType: ChatRoomAccessType;
+  /** The last chat message sent in an ongoing private chat room. */
+  readonly lastChatMessage?: LastChatMessageDto;
+  /** The target friend to display in a private chat room. */
+  targetFriend?: { verTokenSnapshot: string; friend: FriendCredentials | null }
+}
+
+export interface ChatRestrictionState {
   started: boolean;
   multiplier: number;
   remaining: number;
@@ -12,15 +26,17 @@ export interface RestrictionState {
 }
 
 export interface ChatState {
-  globalRoomId: GlobalChatRoomId | null;
-  restriction: RestrictionState;
+  initialized: boolean;
+  room: ChatRoomState;
+  restriction: ChatRestrictionState;
 }
 
-const BASE_RESTRICTION_DURATION = 1000 * 60 * 5, // 5 Minutes
-  RESTRICTION_RESET_TIME = 1000 * 60 * 60 * 24 * 7; // 1 Week
+const BASE_RESTRICTION_DURATION = 1000 * 60 * 5, // 5 minutes.
+  RESTRICTION_RESET_TIME = 1000 * 60 * 60 * 24 * 7; // 1 week.
 
 const initialState: ChatState = {
-  globalRoomId: null,
+  initialized: false,
+  room: { loading: false, proposedId: null, currentId: null, accessType: "global" },
   restriction: { started: false, multiplier: 1, remaining: 0, resetTime: 0 }
 };
 
@@ -28,14 +44,25 @@ export const chatSlice = createSlice({
   name: "chat",
   initialState,
   reducers: {
-    SET_GLOBAL_CHAT_ROOM_ID: (state, action: PayloadAction<GlobalChatRoomId>) => {
-      state.globalRoomId = action.payload;
+    SET_CHAT_INITIALIZED: (state, action: PayloadAction<boolean>) => {
+      state.initialized = action.payload;
+    },
+    SET_CHAT_ROOM_LOADING: (state, action: PayloadAction<boolean>) => {
+      if (action.payload === false) state.room.lastChatMessage = undefined;
+      state.room.loading = action.payload;
+    },
+    UPDATE_CHAT_ROOM: (state, action: PayloadAction<Partial<ChatRoomState>>) => {
+      if (action.payload.currentId) state.room.snapshotId = action.payload.currentId;
+      state.room = { ...state.room, ...action.payload };
+    },
+    UPDATE_TARGET_FRIEND: (state, action: PayloadAction<NonNullable<Partial<ChatRoomState["targetFriend"]>>>) => {
+      state.room.targetFriend = { ...state.room.targetFriend!, ...action.payload };
     },
     /**
      * Handles starting and stopping a chat restriction.
      */
     TOGGLE_RESTRICTION: (state, action: PayloadAction<boolean>) => {
-      let newState: Partial<RestrictionState>,
+      let newState: Partial<ChatRestrictionState>,
         { multiplier } = state.restriction;
 
       if (action.payload) {
@@ -83,7 +110,10 @@ export const chatSlice = createSlice({
 
 export const { name: chatName, reducer: chatReducer } = chatSlice,
   {
-    SET_GLOBAL_CHAT_ROOM_ID,
+    SET_CHAT_INITIALIZED,
+    SET_CHAT_ROOM_LOADING,
+    UPDATE_CHAT_ROOM,
+    UPDATE_TARGET_FRIEND,
     TOGGLE_RESTRICTION,
     UPDATE_RESTRICTION_TIME,
     RESTRICTION_RESET_TIME_ELAPSED,

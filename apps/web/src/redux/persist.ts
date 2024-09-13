@@ -1,8 +1,5 @@
+import type DeepPartial from "@qc/typescript/typings/DeepPartial";
 import type { RootState } from "./store";
-
-type DeepPartial<T> = T extends object ? {
-  [P in keyof T]?: DeepPartial<T[P]>;
-} : T;
 
 export function saveState(state: DeepPartial<RootState>) {
   try {

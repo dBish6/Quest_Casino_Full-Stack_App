@@ -21,7 +21,8 @@
           }
         }
       }
-      &[data-selected="true"] {
+      &[data-selected="true"],
+      &[data-label-hidden="true"] {
         & select {
           color: var(--input-fade);
         }

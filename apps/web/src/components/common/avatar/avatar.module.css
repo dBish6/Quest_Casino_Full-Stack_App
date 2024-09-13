@@ -43,6 +43,9 @@
     &.md {
       width: 40px;
       height: 40px;
+      & div {
+        border-width: 1px;
+      }
       & .activityIndie {
         right: 2px;
         width: 8px;

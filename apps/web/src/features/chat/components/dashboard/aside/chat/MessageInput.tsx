@@ -1,63 +1,50 @@
 import type { UserCredentials } from "@qc/typescript/typings/UserCredentials";
+import type { DragPointsKey } from "../Aside";
 
-import { useRef, useEffect } from "react";
-
+import { useRef } from "react";
 import { debounce } from "tiny-throttle";
 
 import { isFetchBaseQueryError } from "@utils/isFetchBaseQueryError";
 
-import useResourcesLoadedEffect from "@hooks/useResourcesLoadedEffect";
-
 import { useAppSelector, useAppDispatch } from "@redux/hooks";
-import { selectGlobalRoomId, selectRestriction } from "@chatFeat/redux/chatSelectors";
-import { TOGGLE_RESTRICTION, UPDATE_RESTRICTION_TIME, RESTRICTION_RESET_TIME_ELAPSED } from "@chatFeat/redux/chatSlice";
-// Typing might be here because it will be in the same div (Form right now)...?
+import { selectChatRoom, selectRestriction } from "@chatFeat/redux/chatSelectors";
+import { TOGGLE_RESTRICTION } from "@chatFeat/redux/chatSlice";
+// TODO: (Only do it for private) Typing might be here because it will be in the same div (Form right now)...?
 import { useTypingMutation, useTypingActivityMutation, useChatMessageMutation } from "@chatFeat/services/chatApi";
 
 import { Button, Input } from "@components/common/controls";
 import { Icon } from "@components/common";
 import { Form } from "@components/form";
 
-import s from "./chat.module.css";
+// import s from "./chat.module.css";
 
 interface MessageInputProps { 
   user: UserCredentials | null; 
-  asideState: string | null;
+  asideState: DragPointsKey;
 }
 
 export default function MessageInput({ user, asideState }: MessageInputProps) {
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const globalRoomId = useAppSelector(selectGlobalRoomId),
+  const chatRoom = useAppSelector(selectChatRoom),
     restriction = useAppSelector(selectRestriction),
     dispatch = useAppDispatch();
 
   const [emitChatMessage, { isLoading: emitChatMessageLoading, error: emitChatMessageError }] = useChatMessageMutation(),
-    disableInput = !globalRoomId || emitChatMessageLoading || restriction.started;
-
-  useEffect(() => {
-    if (emitChatMessageError) console.error("emitChatMessageError", emitChatMessageError);
-  }, [emitChatMessageError])
-
-  // useResourcesLoadedEffect(() => {
-  //   console.log("restriction", restriction);
-  //   console.log("restriction globalRoomId", !globalRoomId);
-  // }, [restriction, globalRoomId])
+    disableInput = chatRoom.loading || !chatRoom.currentId || emitChatMessageLoading || restriction.started;
 
   const debouncedSendChatMessage = debounce(async () => {
     const message = inputRef.current!.value.trim();
 
-    if (globalRoomId && message) {
+    if (chatRoom.currentId && message) {
       const res = await emitChatMessage({
-        room_id: globalRoomId,
+        room_id: chatRoom.currentId,
         avatar_url: user!.avatar_url,
         username: user!.username,
-        message: inputRef.current!.value,
-        // created_at: new Date().toUTCString()
-        created_at: new Date().toISOString(),
-        // created_at: new Date().toLocaleTimeString()
+        message: inputRef.current!.value
       });
 
+      console.log("res.data!", res.data)
       if (res.data?.status === "ok") {
         inputRef.current!.value = "";
       } else if (isFetchBaseQueryError(res.error) && (res.error?.status as string) === "bad request") {
@@ -65,25 +52,20 @@ export default function MessageInput({ user, asideState }: MessageInputProps) {
         dispatch(TOGGLE_RESTRICTION(true));
       }
     }
-  }, 700);
- 
-  const handleSendChatMessage = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    debouncedSendChatMessage()
-  };
-
-  // console.log("globalRoomId", globalRoomId, "restriction.started", restriction.started);
+  }, 700),
+    handleSendChatMessage = (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+      debouncedSendChatMessage()
+    };
 
   return (
-    <Form
-      onSubmit={handleSendChatMessage}
-    >
+    <Form onSubmit={handleSendChatMessage}>
       <Input
         ref={inputRef}
         label="Message"
         intent="primary"
-        size="lrg"
-        id="message"
+        size={asideState === "enlarged" ? "xl" : "lrg"}
+        id="messenger"
         Button={() => (
           <Button
             intent="primary"
@@ -101,8 +83,7 @@ export default function MessageInput({ user, asideState }: MessageInputProps) {
             <span id="coolCounter"></span>
           </>
         ))}
-        // FIXME: Actually wtf.
-        // disabled={disableInput}
+        disabled={disableInput}
       />
     </Form>
   );

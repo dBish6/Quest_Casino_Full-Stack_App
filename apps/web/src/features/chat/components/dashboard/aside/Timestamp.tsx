@@ -1,8 +1,8 @@
-import type { ActivityStatuses, FriendCredentials } from "@qc/typescript/typings/UserCredentials";
+import type { ActivityStatuses } from "@qc/typescript/typings/UserCredentials";
 import { useRef } from "react";
 
 interface TimestampProps extends Omit<React.ComponentProps<"span">, "prefix"> {
-  activity: { status?: ActivityStatuses, timestamp: string };
+  activity: { status?: ActivityStatuses, timestamp?: string };
   prefix?: boolean;
 }
 
@@ -30,17 +30,12 @@ function handleTimestamp(date: string, prefix?: boolean) {
 
 
 export default function Timestamp({ activity, prefix, ...props }: TimestampProps) {
-  // When no status is passed, we know it's for the chat.
   const timestamp = useRef(
-    !activity.status
-      ? new Date(activity.timestamp!).toLocaleString("en-CA", {
-          hour: "2-digit",
-          minute: "2-digit",
-          hour12: false,
-        })
+     !activity.timestamp
+      ? "Very Long Ago"
       : activity.status === "online"
         ? "Just Now"
-        : handleTimestamp(activity.timestamp!, prefix)
+        : handleTimestamp(activity.timestamp, prefix)
   );
 
   return (

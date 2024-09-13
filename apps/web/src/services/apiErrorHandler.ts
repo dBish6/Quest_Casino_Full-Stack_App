@@ -35,6 +35,7 @@ export const apiErrorHandler: Middleware =
               history.push("/error-401");
               break;
             case 403:
+            case "forbidden":
               const error = payload.data?.ERROR as string;
 
               if (error?.includes("token")) {
@@ -60,7 +61,7 @@ export const apiErrorHandler: Middleware =
               break;
             case 404:
             case "not found":
-              if (payload.data?.ERROR.toLowerCase().includes("unexpectedly")) history.push("/error-429-user"); // TODO: And also includes user??
+              if (/unexpectedly|user(?:'s)?/.test(payload.data?.ERROR.toLowerCase() || "")) history.push("/error-404-user");
               break;
             case 429:
               history.push("/error-429");

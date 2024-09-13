@@ -1,4 +1,4 @@
-import { Outlet, useLocation } from "react-router-dom";
+import { Outlet, useLocation, Link } from "react-router-dom";
 
 import NavAside from "./aside/Aside";
 import { ChatAside } from "@chatFeat/components/dashboard";
@@ -45,7 +45,9 @@ export function Header() {
       </Blob>
       <div className={s.inner}>
         <div>
-          <Image src={logoTitle} alt="Quest Casino" load={false} />
+          <Link to="/home">
+            <Image src={logoTitle} alt="Quest Casino" load={false} />
+          </Link>
           <span />
           {/* TODO: */}
           <h1>About</h1>

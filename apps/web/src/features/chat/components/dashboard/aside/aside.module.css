@@ -9,7 +9,8 @@
 }
 
 .aside {
-  --_headHeight: 81.2px;
+  --_friends-head-height: 31.2px;
+  --_chat-head-height: 81.2px;
 
   grid-column: 3;
   grid-row: 2;
@@ -22,15 +23,6 @@
     align-items: center;
     width: 222px;
     height: 100%;
-    &[data-state="enlarged"] {
-      position: absolute;
-      right: 0;
-      z-index: 6;
-      & .content {
-        border-top: 2px solid var(--c-purple-border);
-        border-bottom: 2px solid var(--c-purple-border);
-      }
-    }
 
     & button.dragger {
       width: 8px;
@@ -54,16 +46,61 @@
       }
     }
 
+    &[data-aside-state="default"] {
+      & .content {
+        padding: 1.5rem 1rem var(--_chat-head-height);
+        background-color: var(--c-lvl-1-trns);
+      }
+    }
+
+    &[data-aside-state="enlarged"] {
+      position: absolute;
+      right: 0;
+      z-index: 6;
+      & .content {
+        display: grid;
+        @media (width >= 682px) {
+          grid-template-columns: minmax(0, 328px) minmax(328px, 1fr);
+          column-gap: 2rem;
+          padding: 2rem;
+        }
+        @media (563px <= width <= 681px) {
+          grid-template-columns: 0.75fr 1fr;
+          column-gap: 1rem;
+          padding: 2rem 1rem;
+        }
+        @media (width <= 562px) {
+          grid-template-columns: minmax(0, 328px) 1fr;
+          grid-template-rows: 610px 610px;
+          row-gap: 2rem;
+          padding: 2rem;
+          overflow-y: auto;
+          & .friendsPanel {
+            grid-column: 1;
+            grid-row: 2;
+          }
+          & :global(#chat) {
+            grid-column: span 2;
+            grid-row: 1;
+            height: 600px;
+          }
+        }
+        border-top: 2px solid var(--c-purple-border);
+        border-bottom: 2px solid var(--c-purple-border);
+        background-color: rgba(19, 19, 19, 0.6);
+      }
+    }
+
     & .content {
-      display: grid;
-      grid-template-rows: auto minmax(0, 1fr);
-      padding: 1.5rem 1rem var(--_headHeight);
-      border-right: 2px solid var(--c-purple-border);
-      border-left: 2px solid var(--c-purple-border);
       width: 100%;
       height: 100%;
-      background-color: var(--c-lvl-1-trns);
+      border-right: 2px solid var(--c-purple-border);
+      border-left: 2px solid var(--c-purple-border);
       backdrop-filter: blur(40px);
+      @media (height <= 525px) {
+        overflow-y: auto;
+      }
+
       & .head div {
         display: flex;
         justify-content: center;
@@ -85,15 +122,7 @@
         align-items: center;
         flex-direction: column;
         width: 100%;
-        /* & a {
-          font-weight: 400;
-          &.add {
-            font: var(--para-small);
-            font-style: italic;
-            text-align: center;
-            margin-block: 0.25rem 1rem;
-          }
-        } */
+        height: calc(100% - var(--_friends-head-height));
         & > a {
           font: var(--para-small);
           font-style: italic;
@@ -113,7 +142,7 @@
           }
         }
 
-        & > div:first-of-type {
+        & .friendsList {
           position: relative;
           width: 100%;
           height: 100%;
@@ -127,7 +156,7 @@
             left: 0;
             width: 100%;
             height: inherit;
-            & > div .friend {
+            & > div ul li.friend {
               display: flex;
               align-items: center;
               flex-direction: column;
@@ -141,6 +170,240 @@
                 display: block;
                 font: var(--para-x-small);
                 text-decoration: none;
+              }
+            }
+          }
+        }
+      }
+
+      /* Friends panel for enlarged chat. */
+      & .friendsPanel {
+        z-index: 1;
+        position: relative;
+        & :global(.blob) {
+          top: 48px;
+          left: 50%;
+          transform: translateX(-50%);
+          opacity: 0.9;
+          z-index: -1;
+        }
+
+        & .inner {
+          display: grid;
+          grid-template-rows: auto auto minmax(0, 1fr);
+          height: 100%;
+          padding: 1.5rem 1.5rem 0;
+          border: 2px solid var(--c-purple-border);
+          border-radius: 12px;
+          background-color: var(--c-lvl-2-trns);
+          backdrop-filter: blur(40px);
+          overflow: auto;
+
+          & .divider {
+            width: calc(100% + 1rem);
+            border-top: 1px solid var(--c-purple-border);
+          }
+
+          & .targetFriend {
+            display: flex;
+            align-items: center;
+            flex-direction: column;
+            & hgroup {
+              text-align: center;
+              &[role] h3 {
+                font-size: 24px;
+              }
+              &:not([role]) h3 {
+                font-size: 20px;
+              }
+              & h3 {
+                font-family: "Myriad Pro", sans-serif;
+                font-weight: 400;
+                font-style: italic;
+              }
+              & p {
+                position: relative;
+                bottom: 3px;
+                margin-bottom: -3px;
+                font-size: inherit;
+              }
+            }
+            & .divider {
+              margin-block: 1rem 1.25rem;
+              @media (height <= 784px) {
+                margin-block: 0.5rem 0.75rem;
+              }
+            }
+          }
+
+          & > form {
+            margin-bottom: 1rem;
+          }
+
+          & .lists {
+            display: grid;
+            grid-template-rows: 1fr auto 1fr;
+            /* TODO: Change because of not show of target friend. */
+            @media (height <= 805px) {
+              grid-template-rows: 1fr 1fr;
+              & .divider {
+                display: none;
+              }
+            }
+            @media (height <= 740px) {
+              grid-template-rows: 1fr;
+              & .friendsListContainer {
+                display: none;
+              }
+            }
+
+            & :global(.viewport) {
+              position: absolute;
+              top: 0;
+              left: 0;
+              width: 100%;
+              height: 100%;
+            }
+
+            & p.noResults {
+              font: var(--para-small);
+            }
+
+            & .searchResults {
+              grid-row: span 3;
+            }
+
+            & .prevChatsContainer,
+            & .friendsListContainer,
+            & .searchResults {
+              & :global(.hUnderline) {
+                margin-bottom: 0.25rem;
+              }
+
+              & > div :global(.viewport) > div {
+                & ul li.friend {
+                  display: grid;
+                  grid-template-columns: auto minmax(0, 1fr);
+                  padding-block: 0.5rem;
+                  margin-right: 1rem;
+                  & button {
+                    display: flex;
+                    flex-direction: column;
+                    margin-left: 0.5rem;
+                    text-align: left;
+                    transition: 0.22s ease-in-out filter, 0.22s ease-in-out opacity;
+                    & h5,
+                    & p {
+                      white-space: nowrap;
+                      text-overflow: ellipsis;
+                      overflow: hidden;
+                    }
+                    & h5 {
+                      font: var(--para-small);
+                      line-height: 130%;
+                      color: var(--c-heading-2);
+                    }
+                    & p {
+                      font: var(--para-xx-small);
+                      color: var(--c-para-faded);
+                    }
+    
+                    &:not(:disabled) {
+                      &:hover,
+                      &:focus-visible {
+                        filter: drop-shadow(0 0 0.75rem var(--c-magenta-500));
+                      }
+                      &:active,
+                      &[data-key-press="true"],
+                      &[aria-pressed="true"] {
+                        filter: drop-shadow(0 0 0.75rem var(--c-magenta-500));
+                        & h5 {
+                          color: var(--c-heading-1);
+                        }
+                        & span,
+                        & p {
+                          color: #dadada
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+
+            & .prevChatsContainer {
+              & > div {
+                height: calc(100% - 25.4px - 1rem);
+
+                & :global(.viewport) > div {
+                  & ul li.friend {
+                    margin-bottom: 0.5rem;
+                    &[data-target="true"] {
+                      margin-top: 0.5rem;
+                      padding-right: 0.5rem;
+                      border-radius: 6px;
+                      box-shadow: inset 0 0 0 1px var(--c-purple-border);
+                      & button {
+                        filter: drop-shadow(0 0 0.75rem var(--c-magenta-500));
+                        & h5 {
+                          color: var(--c-heading-1);
+                        }
+                        & span,
+                        & p {
+                          color: #dadada
+                        }
+                      }
+                    }
+                    & button > div {
+                      display: flex;
+                      justify-content: space-between;
+                      align-items: center;
+                      gap: 6px;
+                      margin-bottom: 6px;
+                    }
+                  }
+                }
+
+                @media (height <= 631px) {
+                  & :global(.viewport) {
+                    min-height: 100.733px;
+                  }
+                  & :global(.scrollbar) {
+                    min-height: calc(100.733px - 1.25rem - 4px);
+                  }
+                }
+              }
+            }
+
+            & .divider { 
+              margin-bottom: 0.75rem;
+              transform: translateX(-0.5rem);
+            }
+
+            & .friendsListContainer {
+              & > div {
+                height: calc(100% - 25.4px - 1rem);
+
+                & :global(.viewport) {
+                  & > div {
+                    & ul li.friend {
+                      margin-bottom: 4px;
+                      &[data-target="true"] {
+                        opacity: 0.68;
+                      }
+                      & button {
+                        justify-content: center;
+                        transform: translateY(1px);
+                        & :global(.timestamp) {
+                          display: block;
+                          position: relative;
+                          bottom: 2px;
+                          margin-bottom: -2px;
+                        }
+                      }
+                    }
+                  }
+                }
               }
             }
           }

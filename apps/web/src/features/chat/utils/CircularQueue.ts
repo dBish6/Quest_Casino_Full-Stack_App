@@ -4,11 +4,11 @@ import type ChatMessage from "@chatFeat/typings/ChatMessage";
  * A `Circular Queue` or `Circular Buffer` for efficient insert and removal of `chat messages`.
  */
 export default class CircularQueue {
-  messages: ChatMessage[];
+  public messages: ChatMessage[];
   private capacity: number;
   private head: number;
   private tail: number;
-  size: number;
+  public size: number;
 
   constructor(initialMessages: ChatMessage[] = [], capacity: number = 70) {
     if (initialMessages.length > capacity) 
@@ -23,32 +23,31 @@ export default class CircularQueue {
     for (let i = 0; i < initialMessages.length; i++) {
       this.messages[(this.head + i) % capacity] = initialMessages[initialMessages.length - 1 - i];
     }
-
-    // console.log("this.messages", this.messages)
   }
 
-  enqueue(val: ChatMessage) {
-    // console.log("ENQUEUING", val);
+  public enqueue(val: ChatMessage) {
     this.messages[this.tail] = val;
     this.tail = (this.tail + 1) % this.capacity;
-    if (this.size === this.capacity) this.head = (this.head + 1) % this.capacity; // Overwrite oldest data
+    if (this.size === this.capacity) this.head = (this.head + 1) % this.capacity; // Overwrites oldest data.
     else this.size++;
-
-    // console.log("this.messages CHANGE", this.messages)
   }
 
-  dequeue() {
+  public dequeue() {
     if (this.size === 0) return undefined;
 
     const value = this.messages[this.head];
-    // this.messages[this.head] = undefined;
     this.head = (this.head + 1) % this.capacity;
     this.size--;
 
     return value;
   }
 
-  *values(): IterableIterator<ChatMessage> {
+  public peek() {
+    if (this.size === 0) return undefined;
+    return this.messages[(this.tail - 1 + this.capacity) % this.capacity];
+  }
+
+  public *values(): IterableIterator<ChatMessage> {
     for (let i = 0; i < this.size; i++) {
       yield this.messages[(this.head + i) % this.capacity];
     }

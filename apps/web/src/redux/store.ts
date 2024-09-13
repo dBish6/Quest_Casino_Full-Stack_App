@@ -40,9 +40,8 @@ store.subscribe(
         ...(user.token.oState ? { oState: user.token.oState } : {}),
       },
     };
-    // TODO: Just pass state.chat if everything continues to be persisted.
+
     const targetPersistChat: Partial<ChatState> = {
-      globalRoomId: state.chat.globalRoomId,
       restriction: state.chat.restriction
     };
 

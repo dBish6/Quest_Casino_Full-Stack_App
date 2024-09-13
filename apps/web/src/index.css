@@ -323,6 +323,19 @@ h5 {
   font-family: "Enzo OT", sans-serif;
   color: var(--c-heading-1);
 }
+.hUnderline {
+  width: fit-content;
+  font: var(--h4-it);
+  color: var(--c-heading-2);
+  &::after {
+    content: "";
+    display: block;
+    width: 100%;
+    height: 2px;
+    border-radius: 1rem;
+    background: linear-gradient(92deg, #362666 0%, #30225900 100%);
+  }
+}
 
 /* small */
 p {
@@ -338,6 +351,17 @@ ol {
 button {
   background: none;
   cursor: pointer;
+}
+
+.timestamp {
+  font: var(--para-xx-small);
+  color: var(--c-para-faded);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  & time {
+    font-style: italic;
+  }
 }
 
 /* @media (--medium-viewport) {

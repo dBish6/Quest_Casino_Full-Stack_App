@@ -4,7 +4,7 @@
  *
  * Author: David Bishop
  * Creation Date: April 16, 2024
- * Last Updated: Aug 23, 2024
+ * Last Updated: Sept 13, 2024
  *
  * Description:
  * .
@@ -102,7 +102,7 @@ export const routes: RouteObject[] = [
             title="Forbidden"
             // FIXME: Change message.
             // description="User authorization or CSRF token is not valid."
-            description="Miscellaneous request or User authorization or CSRF token is not valid."
+            description="Malicious request or User authorization or CSRF token is not valid."
           />
         ),
       },

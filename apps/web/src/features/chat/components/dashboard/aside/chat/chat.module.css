@@ -1,14 +1,13 @@
 .chat {
-  --_headHeight: 132.2px;
-  --_inputHeight: 64px;
+  --_chat-head-height: 132.2px;
+  --_chat-head-height-full: 80px;
+  --_input-height: 64px;
+  --_input-height-full: 86px;
 
   position: absolute;
   bottom: 0;
   left: 0;
   width: 100%;
-  /* FIXME: */
-  border-top: 2px solid var(--c-purple-border);
-  border-radius: 6px 6px 0 0;
   background-color: var(--c-lvl-2-trns);
   backdrop-filter: blur(40px);
   z-index: 1;
@@ -20,21 +19,15 @@
     overflow: hidden;
     & :global(.blob) {
       top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
       filter: blur(40px);
       z-index: -1;
     }
     & .inner {
-      padding: 0 1rem 0.5rem;
-      background-color: var(--c-lvl-2-trns);
       backdrop-filter: blur(6px);
-      /* z-index: 1; */
-      /* z-index: 2; */
-      &[data-state="enlarged"] button svg {
+      &[data-chat-state="enlarged"] > button svg {
         transform: rotate(180deg);
       }
-      & button {
+      & > button {
         position: relative;
         right: 1rem;
         width: calc(100% + 2rem) !important;
@@ -42,7 +35,7 @@
           transition: 0.38s ease-in-out transform;
         }
       }
-      &[data-state="enlarged"] hgroup {
+      &[data-chat-state="enlarged"] hgroup {
         margin-block: 0.25rem 0.5rem;
       }
       & hgroup {
@@ -50,27 +43,23 @@
         justify-content: center;
         align-items: center;
         gap: 0.5rem;
-        /* margin-top: 3.8px; */
-        & h3 {
-          font: var(--h3);
-        }
       }
     }
   }
 
-  & .chatMessages {
+  & .chatConversation {
     position: relative;
     height: 100%;
     z-index: -1;
-    & :global(.scrollbar) {
-      margin-block: calc(var(--_headHeight) + 8px)
-        calc(var(--_inputHeight) + 10px) !important;
-    }
     & :global(.viewport) {
-      height: 100%;
-      padding: 0 0.75rem calc(var(--_inputHeight) + 8px);
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: inherit;
       & > div {
         height: 100%;
+
         & > p {
           position: absolute;
           left: 50%;
@@ -80,63 +69,30 @@
           white-space: nowrap;
         }
 
-        & ul li {
+        & .message, 
+        & .messageSkeleton {
           &:last-of-type {
             margin-bottom: 0 !important;
           }
-          & .info {
+          & .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            & div.nameAva {
-              display: flex;
-              align-items: center;
-              gap: 4px;
+            gap: 6px;
+            & h4 {
+              white-space: nowrap;
+              text-overflow: ellipsis;
+              overflow: hidden;
             }
-          }
-        }
-        & ul.skeleton li.messageSkeleton {
-          margin-bottom: 1.75rem;
-          & .info {
-            margin-bottom: 10px;
             & .timeSkel {
               width: 23px;
             }
           }
-
-          & .paraSkel:not(:last-child) {
-            margin-bottom: 6px;
-          }
         }
-        & ul.conversation {
-          & li.message {
-            margin-bottom: 1.5rem;
-            &:first-of-type {
-              margin-top: calc(var(--_headHeight) + 0.5rem);
-            }
-            & .info {
-              /* A message sent by the current user. */
-              &[data-user],
-              &[data-user] > div {
-                flex-direction: row-reverse;
-              }
-              margin-bottom: 4px;
-              & .nameAva h4,
-              & time {
-                font: var(--para-xx-small);
-                color: var(--c-para-faded);
-              }
-              & .nameAva h4 {
-                font-style: italic;
-                letter-spacing: var(--para-letter-spaceing);
-              }
-              & time {
-                opacity: 0.8;
-              }
-            }
-
-            & p {
-              font: var(--para-x-small);
+        & .message {
+          & .header {
+            & h4 {
+              font: var(--para-xx-small);
             }
           }
         }
@@ -147,22 +103,260 @@
   & form {
     position: absolute;
     bottom: 0;
-    padding: 0.5rem 0.875rem 1rem;
-    background: var(--c-lvl-2);
-    /* background: transparent
-      linear-gradient(0deg, #e6e6e6 0%, var(--c-lvl-2) 100%); */
-    /* FIXME: Use before this opacity sets to all content. */
-    opacity: 0.9;
-    /* FIXME: */
+    width: 100%;
     backdrop-filter: blur(15px);
     z-index: 2;
-    & :global(.control) small[role="alert"] {
-      font-size: 12px;
-      font-weight: 600;
-      & span {
-        font-size: 14px;
-        color: var(--c-status-yellow);
+    & :global(.control) {
+      opacity: 0.9;
+
+      & small[role="alert"] {
+        font-size: 12px;
+        font-weight: 600;
+        & span {
+          font-size: 14px;
+          color: var(--c-status-yellow);
+        }
       }
+    }
+  }
+
+  &[data-aside-state="default"] {
+    /* FIXME: */
+    border-top: 2px solid var(--c-purple-border);
+    border-radius: 6px 6px 0 0;
+    & .head {
+      & :global(.blob) {
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
+      & .inner {
+        padding: 0 1rem 0.5rem;
+        background-color: var(--c-lvl-2-trns);
+        & hgroup {
+          & h3 {
+            font: var(--h3);
+          }
+        }
+      }
+    }
+
+    & .chatConversation {
+      & :global(.scrollbar) {
+        margin-block: calc(var(--_chat-head-height) + 8px)
+          calc(var(--_input-height) + 10px) !important;
+      }
+      & :global(.viewport) {
+        padding: 0 0.75rem calc(var(--_input-height) + 8px);
+
+        & > div {
+          & .message,
+          & .messageSkeleton {
+            &:first-of-type {
+              margin-top: calc(var(--_chat-head-height) + 0.5rem);
+            }
+            & .nameAva {
+              display: flex;
+              align-items: center;
+              gap: 4px;
+            }
+          }
+
+          & .message {
+            margin-bottom: 1.5rem;
+            & .header {
+              margin-bottom: 4px;
+              /* A message sent by the current user. */
+              &[data-user],
+              &[data-user] > div {
+                flex-direction: row-reverse;
+              }
+              & .nameAva h4 {
+                font: var(--para-xx-small);
+                color: var(--c-para-faded);
+              }
+              & time {
+                opacity: 0.8;
+              }
+            }
+
+            & p {
+              font: var(--para-x-small);
+            }
+          }
+
+          & .messageSkeleton {
+            margin-bottom: 1.75rem;
+            & .header {
+              margin-bottom: 10px;
+            }
+  
+            & .paraSkel:not(:last-child) {
+              margin-bottom: 6px;
+            }
+          }
+        }
+      }
+    }
+
+    & form {
+      padding: 0.5rem 0.75rem 1rem;
+    }
+  }
+
+  /* Fully expanded chat. */
+  &[data-aside-state="enlarged"] {
+    position: static;
+    height: 100%;
+    border: 2px solid var(--c-purple-border);
+    border-radius: 12px;
+    
+    & .head {
+      border-radius: 12px 12px 0 0;
+      & :global(.blob) {
+        left: 6px;
+        transform: translateY(-50%);
+        opacity: 0.7;
+      }
+      & .inner {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 0.5rem 0.75rem;
+        flex-wrap: wrap;
+        padding-block: 1.1375rem;
+        padding-inline: 1.5rem;
+        border-bottom: 2px solid var(--c-purple-border);
+
+        background-color: rgb(25, 17, 47, 0.5);
+        & hgroup h3 {
+          font: var(--h2);
+        }
+        & .roomBtns {
+          display: flex;
+          gap: 1rem;
+        }
+      }
+    }
+
+    & .chatConversation {
+      & :global(.scrollbar) {
+        margin-block: calc(var(--_chat-head-height-full) + 8px)
+          calc(var(--_input-height-full) + 10px) !important;
+      }
+      & :global(.viewport) {
+        padding: 0 1rem calc(var(--_input-height-full) + 12px);
+
+        & > div {
+          --_avatarWidth: 33px;
+
+          & .message {
+            width: fit-content;
+            &:first-of-type {
+              margin-top: calc(var(--_chat-head-height-full) + 0.75rem);
+            }
+            &[data-group-level="top"],
+            &[data-group-level="mid"] {
+              margin-bottom: 0.5rem;
+            }
+            &[data-group-level="bottom"],
+            &[data-group-level="single"] {
+              margin-bottom: 1.375rem;
+              & .bubble p::after {
+                content: "";
+                position: absolute;
+                width: 11.682px;
+                height: 9.088px;
+                bottom: 0;
+              }
+            }
+
+            & .bubble {
+              width: fit-content;
+              min-width: 88px;
+              & .header {
+                margin: 0 4px 4px;
+                & h4 {
+                  color: var(--c-heading-2);
+                }
+              }
+              & p {
+                position: relative;
+                padding: 6px 0.85rem;
+                border-radius: 1rem;
+                font: var(--para-small);
+              }
+              .pSkel {
+                height: 34px;
+                border-radius: 1rem;
+              }
+            }
+
+            &[data-user="true"] {
+              margin-left: auto;
+              margin-right: var(--_avatarWidth);
+              transform: translateX(var(--_avatarWidth));
+
+              & .bubble {
+                & .header {
+                  flex-direction: row-reverse;
+                }
+                & p {
+                  background-color: var(--c-purple-900);
+                }
+              }
+              &[data-group-level="bottom"] .bubble p,
+              &[data-group-level="single"] .bubble p {
+                border-bottom-right-radius: 6px;
+                margin-right: 5.5px;
+                &::after {
+                  background: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='11.682' height='9.088'><path fill='#281c4b' d='M11.682 4.889c0 .842-3.027 2.164-5.947 3.214a17.783 17.783 0 0 1-5.731.984L4.735.656s.887-1.477.916 0c.74 1.562 6.031 3.356 6.031 4.233Z'/></svg>");
+                  right: -5.5px;
+                }
+              }
+            }
+
+            &[data-user="false"] {
+              display: grid;
+              align-items: flex-end;
+              gap: 4px;
+              &[data-group-level="top"],
+              &[data-group-level="mid"] {
+                margin-left: var(--_avatarWidth);
+              }
+
+              & .bubble p {
+                background-color: var(--c-purple-700);
+              }
+              &[data-group-level="bottom"],
+              &[data-group-level="single"] {
+                grid-template-columns: auto 1fr;
+                & .bubble p {
+                  border-bottom-left-radius: 6px;
+                  margin-left: 5.5px;
+                  &::after {
+                    background: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='11.682' height='9.088'><path fill='#43307e' d='M.004 4.889c0 .842 3.027 2.164 5.947 3.214a17.783 17.783 0 0 0 5.734.984L6.948.656s-.971-1.477-1 0C5.204 2.218.004 4.012.004 4.889Z'/></svg>");
+                    left: -5.5px;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    & form {
+      padding: 22px 22px 1rem;
+      border-radius: 0 0 12px 12px;
+      /* background: transparent linear-gradient(180deg, #100D20 0%, var(--c-purple-900) 100%); */
+      /* background: transparent linear-gradient(180deg, rgba(16, 13, 32, 0.8) 0%, rgb(40, 28, 75, 0.8) 100%); */
+      /* This looks pretty nice actually. */
+      background: transparent linear-gradient(180deg, rgba(16, 13, 32, 0) 0%, rgb(40, 28, 75, 0.8) 100%);
+
+      /* background: transparent linear-gradient(180deg, rgba(16, 13, 32, 0.25) 0%, rgb(40, 28, 75, 0.8) 100%); */
+
+
+      /* background: transparent linear-gradient(180deg, var(--c-lvl-2) 0%, var(--c-purple-900) 100%); */
     }
   }
 }

@@ -12,15 +12,15 @@ import { UPDATE_RESTRICTION_TIME, RESTRICTION_RESET_TIME_ELAPSED, TOGGLE_RESTRIC
 export default class RestrictionManager {
   private dispatch: AppDispatch;
   private remaining = { spam: 0, reset: 0 };
-  resetCountdown: NodeJS.Timeout | undefined;
-  spamCooldown: NodeJS.Timeout | undefined;
+  public resetCountdown: NodeJS.Timeout | undefined;
+  public spamCooldown: NodeJS.Timeout | undefined;
   private beforeunloadListener: (() => void) | undefined;
 
   constructor(dispatch: AppDispatch) {
     this.dispatch = dispatch;
   }
 
-  startRestrictionResetCountdown(duration: number) {
+  public startRestrictionResetCountdown(duration: number) {
     clearInterval(this.resetCountdown);
     this.remaining.reset = duration;
 
@@ -35,7 +35,7 @@ export default class RestrictionManager {
     this.listenForAppLeave();
   }
 
-  startSpamCooldown(duration: number) {
+  public startSpamCooldown(duration: number) {
     clearInterval(this.spamCooldown);
     this.remaining.spam = duration;
 
@@ -65,7 +65,7 @@ export default class RestrictionManager {
     this.listenForAppLeave();
   }
 
-  cleanupAndUpdateTimes() {
+  public cleanupAndUpdateTimes() {
     clearInterval(this.spamCooldown);
     clearInterval(this.resetCountdown);
     window.removeEventListener("beforeunload", this.beforeunloadListener || (() => {}));

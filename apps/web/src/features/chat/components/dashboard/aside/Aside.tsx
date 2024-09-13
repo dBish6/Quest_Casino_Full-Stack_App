@@ -1,13 +1,8 @@
 import type { Variants } from "framer-motion";
 
 import { useSearchParams } from "react-router-dom";
-import { useEffect } from "react";
-import {
-  useMotionValue,
-  useDragControls,
-  AnimatePresence,
-  m,
-} from "framer-motion";
+import { useState, useMemo, useEffect } from "react";
+import { useMotionValue, useDragControls, AnimatePresence, m} from "framer-motion";
 
 import { fadeInOut } from "@utils/animations";
 
@@ -16,33 +11,38 @@ import useUser from "@authFeat/hooks/useUser";
 import Friends from "./Friends";
 import Chat from "./chat/Chat";
 import { Button } from "@components/common/controls";
-import { Icon, Link } from "@components/common";
-import { ModalQueryKey, ModalTrigger } from "@components/modals";
+import { Icon } from "@components/common";
 
 import s from "./aside.module.css";
 
+export type DragPointsKey = "default" | "enlarged" | "shrunk";
+
+export const ANIMATION_DURATION = 850;
 const dragPoints: Variants = {
   default: {
     width: "222px",
     maxWidth: "none",
-    transition: { type: "spring", duration: 0.85 },
+    transition: { type: "spring", duration: ANIMATION_DURATION / 1000 },
     // transitionEnd: {
     //   position: "initial",
     // },
   },
   enlarged: (x) => {
     return {
+      // FIXME: Position when closing.
       // position: "absolute",
       width: "100vw",
       maxWidth: "945px",
-      transition: { type: "spring", duration: 0.85 },
+      transition: { type: "spring", duration: ANIMATION_DURATION / 1000 },
     };
   },
   shrunk: (x) => {
     return {
-      width: "82px",
+      // FIXME: I am thinking fully closed because of the phone and for phone just shrunk or enlarged.
+      // width: "82px",
+      width: "9px",
       maxWidth: "none",
-      transition: { type: "spring", duration: 0.85 },
+      transition: { type: "spring", duration: ANIMATION_DURATION / 1000 },
       // transitionEnd: {
       //   position: "initial",
       // },
@@ -56,27 +56,42 @@ const dragPoints: Variants = {
 // FIXME: Keyboard (Arrow Keys).
 export default function Aside() {
   const [searchParams, setSearchParams] = useSearchParams(),
-    state = searchParams.get("aside") || "default";
+    asideState = (searchParams.get("aside") || "default") as DragPointsKey;
+
+  // TODO: Nice transition from enlarged to default.
+  const [lazyShow, setLazyShow] = useState(false);
 
   const x = useMotionValue(0),
     controls = useDragControls(),
     fadeVariant = fadeInOut();
 
-  const user = useUser();
+  const user = useUser(),
+    friendsListArr = useMemo(() => Object.values(user?.friends.list || {}), [user?.friends.list]);
 
   // Hides all content for screen readers when aside is enlarged.
+  // FIXME: For the full chat, shouldn't be able to interact with anything outside.
   useEffect(() => {
     const elems = document.querySelectorAll("#dashHeader, #asideLeft, main");
     for (const elem of elems) {
-      if (state === "enlarged") elem.setAttribute("aria-hidden", "true")
+      if (asideState === "enlarged") elem.setAttribute("aria-hidden", "true")
       else elem.removeAttribute("aria-hidden")
     }
-  }, [state]);
+  }, [asideState]);
+
+  useEffect(() => {
+    if (asideState !== "enlarged") {
+      setTimeout(() => {
+        setLazyShow(true);
+      }, ANIMATION_DURATION - 350);
+    } else {
+      setLazyShow(false)
+    }
+  }, [asideState]);
 
   return (
     <>
       <AnimatePresence>
-        {state === "enlarged" && (
+        {asideState === "enlarged" && (
           <m.div
             className={s.backdrop}
             variants={fadeVariant}
@@ -94,7 +109,7 @@ export default function Aside() {
           className={s.drawer}
           variants={dragPoints}
           initial="default"
-          animate={state}
+          animate={asideState}
           custom={x}
           drag="x"
           dragControls={controls}
@@ -105,13 +120,13 @@ export default function Aside() {
           onDragEnd={() => {
             const position = x.get();
 
-            if (state === "shrunk") {
+            if (asideState === "shrunk") {
               if (position <= -83) {
                 searchParams.set("aside", "enlarged");
               } else if (position <= -22.5) {
                 searchParams.delete("aside");
               }
-            } else if (state === "enlarged") {
+            } else if (asideState === "enlarged") {
               if (position >= 148) {
                 searchParams.set("aside", "shrunk");
               } else if (position >= 22.5) {
@@ -127,12 +142,12 @@ export default function Aside() {
             setSearchParams(searchParams);
           }}
           style={{ x }}
-          data-state={state}
+          data-aside-state={asideState}
         >
           <Button
             aria-label="Drag Panel"
             aria-controls="asideDrawer"
-            aria-expanded={state === "enlarged"}
+            aria-expanded={asideState === "enlarged"}
             className={s.dragger}
             onPointerDown={(e) => controls.start(e)}
           >
@@ -140,9 +155,7 @@ export default function Aside() {
           </Button>
 
           <div className={s.content}>
-            {state === "enlarged" ? (
-              <>{/* <EnlargedChat />? <FocusedChat />? */}</>
-            ) : (
+            {asideState !== "shrunk" && (asideState !== "enlarged" && lazyShow) && (
               <>
                 <hgroup className={s.head}>
                   <div
@@ -150,7 +163,7 @@ export default function Aside() {
                     {...(!searchParams.has("chat") && {
                       role: "button",
                       tabIndex: 0,
-                      "aria-label": "Show Friends",
+                      "aria-label": "Uncover Friends",
                       "aria-controls": "chat",
                       "aria-expanded": !searchParams.has("chat"),
                       onClick: () =>
@@ -165,20 +178,11 @@ export default function Aside() {
                   </div>
                 </hgroup>
 
-                {user ? (
-                  <Friends user={user} />
-                ) : (
-                  <span style={{ alignSelf: "center", textAlign: "center" }}>
-                    <ModalTrigger queryKey={ModalQueryKey.LOGIN_MODAL} intent="primary">
-                      Login
-                    </ModalTrigger>{" "}
-                    to see friends.
-                  </span>
-                )}
-
-                <Chat user={user} />
+                <Friends user={user} friendsListArr={friendsListArr} />
               </>
             )}
+
+            <Chat user={user} friendsListArr={friendsListArr} asideState={asideState} />
           </div>
         </m.div>
       </aside>
