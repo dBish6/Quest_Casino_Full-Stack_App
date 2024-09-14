@@ -85,7 +85,7 @@ export default class SocketAuthService {
 
         return callback({
           status: "ok",
-          message: "Pending and added friends, as well as friend rooms and friend activity, successfully initialized.",
+          message: "Pending and added friends, as well as other credentials, successfully initialized.",
           friends: initFriends
         });
       }
@@ -377,7 +377,7 @@ export default class SocketAuthService {
   private async cacheUserActivityStatus(status: ActivityStatuses, user: UserClaims) {
     try {
       if (status === "offline") await redisClient.del(`user:${user.sub}:activity:status`);
-      else await redisClient.set(`user:${user.sub}:activity:status`, status, { EX: 60 * 60 * 36 }); // 3 days.
+      else await redisClient.set(`user:${user.sub}:activity:status`, status, { EX: 60 * 60 * 36 }); // 1.5 days.
     } catch (error: any) {
       logger.error("cacheUserActivityStatus service error:\n", error.message);
       throw error;
