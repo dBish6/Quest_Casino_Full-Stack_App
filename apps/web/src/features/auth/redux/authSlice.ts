@@ -48,7 +48,7 @@ const authSlice = createSlice({
     /**
      * Updates the user's friends object.
      */
-    UPDATE_USER_FRIENDS: (state, action: PayloadAction<UserCredentials["friends"]>) => {
+    UPDATE_USER_FRIENDS: (state, action: PayloadAction<Partial<UserCredentials["friends"]>>) => {
       state.user.credentials!.friends = deepMerge([state.user.credentials!.friends, action.payload]);
     },
     /**

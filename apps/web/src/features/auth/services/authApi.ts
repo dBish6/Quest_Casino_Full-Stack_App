@@ -260,8 +260,11 @@ const authApi = createApi({
      * Also, checks if the user is verified and avoids duplicate requests.
      * @emitter
      */
-    manageFriendRequest: builder.mutation<SocketResponse<{ friends: UserCredentials["friends"] }>, ManageFriendRequestEventDto>({
-      queryFn: async (data, { getState, dispatch }) => {
+    manageFriendRequest: builder.mutation<
+      SocketResponse<{ pending_friends: UserCredentials["friends"]["pending"] }>,
+      ManageFriendRequestEventDto
+    >({
+      queryFn: async (data, { getState }) => {
         const user = (getState() as RootState).auth.user.credentials;
 
         // NOTE: I may need the toasts later on, so they're left here.
@@ -323,8 +326,8 @@ const authApi = createApi({
 
           logger.debug("MANAGE FRIEND", data)
 
-          if (data.status === "ok" && action_type === "request" && data.friends) {
-            dispatch(UPDATE_USER_FRIENDS(data.friends));
+          if (data.status === "ok" && action_type === "request" && data.pending_friends) {
+            dispatch(UPDATE_USER_FRIENDS({ pending: data.pending_friends }));
             // dispatch(
             //   ADD_TOAST({
             //     title: action_type === "request" ? "Friend Request Sent" : "Friend Added",
