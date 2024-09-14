@@ -3,9 +3,9 @@ import type SocketCallback from "@typings/SocketCallback";
 import { logger } from "@qc/utils";
 
 export class ApiError extends Error {
-  statusCode: number;
-  status: string;
-  from?: string;
+  public statusCode: number;
+  public status: string;
+  public from?: string;
 
   constructor(message: string, statusCode = 500, status = "internal error", from?: string) {
     super(message);
@@ -69,7 +69,8 @@ export function handleSocketError(
   callback({
     status: err.status || status || "internal error",
     ...(process.env.NODE_ENV === "development" && {
-      message: err.from || from
+      message: err.from || from,
+      // ERROR: err.message || "An unexpected error occurred."
     }),
     ERROR: err.message || "An unexpected error occurred."
   });

@@ -90,7 +90,6 @@ export const userActivitySchema = new Schema<
 >(
   {
     _id: { type: Schema.Types.ObjectId, immutable: true },
-    status: { type: String, enum: ["online", "away", "offline"], default: "offline" },
     history: {
       type: [
         {

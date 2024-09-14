@@ -21,8 +21,7 @@ export const CLIENT_USER_SHARED_EXCLUDE = "-_id -created_at -updated_at",
   /**
    * Type `UserCredentials` (minus the friends because they get initialized elsewhere).
    */
-  CLIENT_USER_FIELDS = `${CLIENT_USER_SHARED_EXCLUDE} -email -password -friends -activity -notifications`,
-  CLIENT_USER_ACTIVITY_FIELDS = "-_id status";
+  CLIENT_USER_FIELDS = `${CLIENT_USER_SHARED_EXCLUDE} -email -password -friends -activity -notifications`;
 
 /**
  * Type `MinUserCredentials`.
@@ -41,12 +40,8 @@ export const USER_FRIENDS_POPULATE: PopulateOptions[] = [
   },
   { 
     path: "list.$*",
-    select: FRIEND_FIELDS,
-    populate: {
-      path: "activity",
-      select: CLIENT_USER_ACTIVITY_FIELDS
-    }
-  },
+    select: FRIEND_FIELDS
+  }
 ];
 
 /**
@@ -75,11 +70,7 @@ export function populateUserDoc<TUserDoc = UserDoc>(query: Query<any, UserDoc>) 
         {
           path: "statistics",
           select: CLIENT_USER_SHARED_EXCLUDE
-        },
-        {
-          path: "activity",
-          select: CLIENT_USER_ACTIVITY_FIELDS
-        },
+        }
       ]),
   };
 }
@@ -122,9 +113,9 @@ export async function getUser(
 /**
  * Gets a friend document for a specific user from the database.
  */
-export async function getUserFriends(userId: ObjectId | string) {
+export async function getUserFriends(userId: ObjectId | string, options?: QueryOptions<UserDocFriends>) {
   try {
-    const userFriends = await populateUserFriendsDoc(UserFriends.findById(userId));
+    const userFriends = await populateUserFriendsDoc(UserFriends.findById(userId, {}, options));
     if (!userFriends) 
       throw new ApiError("Unexpectedly couldn't find the user's friends after validation.", 404, "not found");
 

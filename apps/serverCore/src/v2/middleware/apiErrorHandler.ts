@@ -19,7 +19,8 @@ export default function apiErrorHandler(
 
   return res.status(err.statusCode || 500).json({
     ...(process.env.NODE_ENV === "development" && {
-      message: err.from || "unknown"
+      message: err.from || "unknown",
+      // ERROR: err.message || "An unexpected error occurred."
     }),
     ERROR: err.message || "An unexpected error occurred."
   });

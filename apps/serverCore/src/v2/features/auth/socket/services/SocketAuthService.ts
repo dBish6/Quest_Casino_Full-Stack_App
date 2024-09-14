@@ -24,7 +24,7 @@ import handleMultipleTransactionPromises from "@utils/handleMultipleTransactionP
 import getFriendRoom from "@authFeatSocket/utils/getFriendRoom";
 import getSocketId from "@authFeatSocket/utils/getSocketId";
 
-import { getUserFriends, getUser, updateUserFriends, updateUserNotifications, updateUserActivity } from "@authFeat/services/authService";
+import { getUserFriends, getUser, updateUserFriends, updateUserNotifications } from "@authFeat/services/authService";
 import { redisClient } from "@cache";
 
 export default class SocketAuthService {
@@ -42,12 +42,12 @@ export default class SocketAuthService {
    * 
    * Should only be used on login.
    */
-  async initializeFriends({ verification_token }: { verification_token: string }, callback: SocketCallback) {
+  public async initializeFriends({ verification_token }: { verification_token: string }, callback: SocketCallback) {
     logger.debug("socket initializeFriends:", { verification_token });
 
     try {
       const user = this.socket.decodedClaims!,
-        userFriends = await getUserFriends(user.sub);
+        userFriends = await getUserFriends(user.sub, { lean: true });
 
       let initFriends: UserCredentials["friends"] = { 
         pending: userFriends.pending as any,
@@ -55,7 +55,7 @@ export default class SocketAuthService {
       };
 
       if (!userFriends.list.size) {
-        await updateUserActivity({ by: "_id", value: user.sub }, { status: "online" });
+        this.cacheUserActivityStatus("online", user);
 
         return callback({
           status: "ok",
@@ -67,13 +67,26 @@ export default class SocketAuthService {
           // Emits the user's new status to their friends and also joins friend rooms only the friend is online.
           await this.emitFriendActivity(user, "online", friend);
 
-          initFriends.list[key] = (friend as unknown) as FriendCredentials;
+          const [activityStatus, inactivityTimestamp, lastPrivateChatMsg] = await Promise.all([
+            redisClient.get(`user:${friend.id}:activity:status`),
+            redisClient.get(`user:${friend.id}:activity:inactivity_timestamp`),
+            redisClient.get(`chat:${getFriendRoom(user.verification_token, friend.verification_token)}:last_message`)
+          ]);
+
+          const formattedFriend = (friend as unknown) as FriendCredentials;
+          formattedFriend.activity = {
+            status: activityStatus as ActivityStatuses || "offline",
+            ...(inactivityTimestamp && { inactivity_timestamp: inactivityTimestamp })
+          };
+          if (lastPrivateChatMsg) formattedFriend.last_chat_message = lastPrivateChatMsg;
+          
+          initFriends.list[key] = formattedFriend;
         }
 
         return callback({
           status: "ok",
-          message: "Pending and added friends, as well as friend rooms and friend statuses, successfully initialized.",
-          friends: initFriends,
+          message: "Pending and added friends, as well as friend rooms and friend activity, successfully initialized.",
+          friends: initFriends
         });
       }
     } catch (error: any) {
@@ -84,7 +97,7 @@ export default class SocketAuthService {
   /**
    * Manages friend request actions including sending, accepting, and declining friend requests.
    */
-  async manageFriendRequest({ action_type, friend }: ManageFriendRequestEventDto, callback: SocketCallback) {
+  public async manageFriendRequest({ action_type, friend }: ManageFriendRequestEventDto, callback: SocketCallback) {
     logger.debug("socket manageFriendRequest:", { action_type, friend });
 
     try {
@@ -113,7 +126,7 @@ export default class SocketAuthService {
           );
 
           // Sends the friend request to the recipient and adds it to their notifications.
-          await this.#emitNotification(
+          await this.emitNotification(
             recipient,
             {
               type: "friend_request",
@@ -127,14 +140,13 @@ export default class SocketAuthService {
         return callback({
           status: "ok",
           message: `Friend request successfully sent to ${recipient.username}.`,
-          friends: updatedFriends!
+          pending_friends: updatedFriends!.pending
         });
       }
 
       // User(recipient) accepting the friend request.
       if (action_type === "add") {
         const initialSender = recipient;
-        let senderSocketId: string | null = null;
 
         const session = await startSession();
 
@@ -169,14 +181,14 @@ export default class SocketAuthService {
               );
 
               if (i === 1) {
-                senderSocketId = await getSocketId(initialSender.verification_token);
-                if (senderSocketId) this.io.to(senderSocketId).emit(AuthEvent.FRIENDS_UPDATE, { friends: updatedFriends });
+                const friendSocketId = await getSocketId(initialSender.verification_token);
+                if (friendSocketId) this.io.to(friendSocketId).emit(AuthEvent.FRIENDS_UPDATE, { friends: updatedFriends });
               } else {
                 this.socket.emit(AuthEvent.FRIENDS_UPDATE, { friends: updatedFriends });
               }
             }),
             // Sends the info notification to the initial sender.
-            this.#emitNotification(
+            this.emitNotification(
               initialSender,
               { type: "general", title: "Accepted", message: `${user.username} accepted your friend request.` },
               { session }
@@ -184,19 +196,9 @@ export default class SocketAuthService {
           ]);
         }).finally(() => session.endSession());
 
-        // If the sender is online or away (so they're connected and have a socketId), they join a room with each other.
-        const friendRoom = getFriendRoom(user.verification_token, initialSender.verification_token)
-        if (senderSocketId) {
-          this.socket.join(friendRoom);
-          this.io.sockets.get(senderSocketId)?.join(friendRoom);
-        } else {
-          this.socket.leave(friendRoom);
-        }
-
         return callback({
           status: "ok", 
-          message: `Successfully added ${initialSender.username} as a friend.`,
-          joined_room: !!senderSocketId
+          message: `Successfully added ${initialSender.username} as a friend.`
         });
       }
 
@@ -243,7 +245,7 @@ export default class SocketAuthService {
 
       return callback({
         status: "bad request", 
-        message: "There was no data provided or the action_type is invalid",
+        message: "There was no data provided or the action_type is invalid.",
       });
     } catch (error: any) {
       return handleSocketError(callback, error, "manageFriends service error.");
@@ -253,12 +255,16 @@ export default class SocketAuthService {
   /**
    * Handles new incoming activity of the user. 
    */
-  async userActivity({ status }: { status: ActivityStatuses }, callback: SocketCallback) {
+  public async userActivity({ status }: { status: ActivityStatuses }, callback: SocketCallback) {
     logger.debug("socket userActivity:", { status });
 
     try {
       const user = this.socket.decodedClaims!,
         userFriends = await getUserFriends(user.sub);
+
+      // The client only shows the timestamp if their away or offline because the user would just be "Last Seen Just Now" if they're online.
+      if (["away", "offline"].includes(status))
+        await redisClient.set(`user:${user.sub}:activity:inactivity_timestamp`, new Date().toISOString(), { EX: 60 * 60 * 24 * 7 }); // 1 week.
 
       await this.emitFriendActivity(user, status, userFriends.list.values());
 
@@ -275,7 +281,7 @@ export default class SocketAuthService {
   /**
    * Handles socket instance disconnection; Sends that they're offline to all friends of the user.
    */
-  async disconnect() {
+  public async disconnect() {
     logger.debug(`Auth socket instance disconnected; ${this.socket.id}.`);
 
     try {
@@ -301,7 +307,7 @@ export default class SocketAuthService {
    * Updates the user activity status and sends an the updated status to a friend(s) of the user and 
    * also join and leaves friend rooms if needed.
    */
-  async emitFriendActivity(
+  public async emitFriendActivity(
     user: UserClaims,
     status: ActivityStatuses,
     friend: UserDoc | IterableIterator<UserDoc>,
@@ -313,30 +319,13 @@ export default class SocketAuthService {
 
         const friendSocketId = await getSocketId(friendToken);
         // If there is a socketId, it means they're connected, so they're online or away.
-        if (friendSocketId && friend.activity.status === "online") {
-          const friendRoom = getFriendRoom(userToken, friendToken)
-
-          // Joins their friend room If the current user is not going offline (disconnecting).
-          if (status !== "offline") this.socket.join(friendRoom);
-          // Sends the new status of the current user to the friend.
+        if (friendSocketId) 
           this.socket
             .to(friendSocketId)
             .emit(AuthEvent.FRIEND_ACTIVITY, { verification_token: userToken, status });
-
-          // For the friend, if the current user's status is offline or away it leaves the room also.
-          const friendSocket = this.io.sockets.get(friendSocketId);
-          if (["offline", "away"].includes(status)) {
-            friendSocket?.leave(friendRoom);
-          } else {
-            friendSocket?.join(friendRoom);
-          }
-        } else {
-          // Leaves if the socketId is not found or the friend's status is offline or away.
-          if (status !== "offline") this.socket.leave(getFriendRoom(userToken, friendToken));
-        }
       }
 
-      await updateUserActivity({ by: "_id", value: user.sub }, { status });
+      await this.cacheUserActivityStatus(status, user);
 
       if ((typeof friend as any)[Symbol.iterator] === "function") {
         for (const fri of friend as Iterable<UserDoc>) await handleActivity(fri);
@@ -353,7 +342,7 @@ export default class SocketAuthService {
    * Sends a notification to a connected user. Supports all `NotificationTypes`, and even friend requests
    * to allow the client-side the ability to send the add or decline event.
    */
-  async #emitNotification(
+  private async emitNotification(
     to: Partial<UserClaims | UserDoc>,
     notification: Omit<Notification, "type" | "notification_id" | "created_at"> & { type: NotificationTypes | "friend_request" },
     queryOptions?: QueryOptions
@@ -377,6 +366,20 @@ export default class SocketAuthService {
       if (socketId) this.io.to(socketId).emit(AuthEvent.NEW_NOTIFICATION, { notification });
     } catch (error: any) {
       logger.error("emitNotification service error:\n", error.message);
+      throw error;
+    }
+  }
+
+  /**
+   * Stores the user's activity status in the cache only for `online` and `away` for up to 1.5 days.
+   * If no cached value exists, the user is offline.
+   */
+  private async cacheUserActivityStatus(status: ActivityStatuses, user: UserClaims) {
+    try {
+      if (status === "offline") await redisClient.del(`user:${user.sub}:activity:status`);
+      else await redisClient.set(`user:${user.sub}:activity:status`, status, { EX: 60 * 60 * 36 }); // 3 days.
+    } catch (error: any) {
+      logger.error("cacheUserActivityStatus service error:\n", error.message);
       throw error;
     }
   }

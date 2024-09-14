@@ -23,7 +23,6 @@ export const globalChatMessageSchema = new Schema<GlobalChatMessageDoc, Model<Gl
     message: { type: String, required: true }
   },
   {
-    // collection: "message_global",
     capped: { size: 102400, max: 40 },
     timestamps: { createdAt: "created_at" }, 
     ...options 
@@ -37,9 +36,7 @@ export const privateChatMessageSchema = new Schema<PrivateChatMessageDoc, Model<
     chats: {
       type: [
         {
-          // _id: { type: Schema.ObjectId, immutable: true }, // Friend Id
-          // friend_id: { type: Schema.ObjectId, immutable: true },
-          room_id: { type: String, unique: true, immutable: true, required: true },
+          room_id: { type: String, immutable: true, required: true },
           avatar_url: {
             type: String,
             validate: {
@@ -51,7 +48,7 @@ export const privateChatMessageSchema = new Schema<PrivateChatMessageDoc, Model<
           },
           username: { type: String, required: true },
           message: { type: String, required: true },
-          created_at: { type: Date, default: Date.now }
+          created_at: { type: Date, required: true }
         }
       ]
     }
@@ -61,18 +58,4 @@ export const privateChatMessageSchema = new Schema<PrivateChatMessageDoc, Model<
     // capped: { size: 102400, max: 40 },
     ...defaults.options
   }
-).index({ "messages.created_at": -1 });
-
-// export const privateChatMessageSchema = new Schema<PrivateChatMessageDoc, Model<PrivateChatMessageDoc>>(
-//   {
-//     _id: { type: Schema.ObjectId, immutable: true },
-//     room_id: { type: String, required: true },
-//     username: { type: String, required: true },
-//     message: { type: String, required: true }
-//   },
-//   {
-//     collection: "message_private",
-//     // capped: { size: 102400, max: 40 },
-//     ...defaults.options
-//   }
-// );
+).index({ "chats.room_id": 1, "chats.created_at": -1 }, { sparse: true });

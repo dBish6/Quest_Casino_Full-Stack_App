@@ -21,6 +21,7 @@ import { handleHttpError, HttpError } from "@utils/handleError";
 import sendEmail from "@utils/sendEmail";
 
 import { User, UserFriends, UserStatistics, UserActivity, UserNotifications } from "@authFeat/models";
+import { PrivateChatMessage } from "@chatFeat/models";
 import { redisClient } from "@cache";
 
 import { MINIMUM_USER_FIELDS, updateUserCredentials } from "@authFeat/services/authService";
@@ -57,11 +58,10 @@ export async function registerUser(user: InitializeUser) {
         new UserFriends({ _id: userId }),
         new UserStatistics({ _id: userId }),
         new UserActivity({ _id: userId }),
-        new UserNotifications({ _id: userId })
+        new UserNotifications({ _id: userId }),
+        new PrivateChatMessage({ _id: userId })
       ];
-      for (const doc of docs) {
-        await doc.save({ session });
-      }
+      for (const doc of docs) await doc.save({ session });
     }).finally(() => session.endSession());
 
     logger.info(`User ${userId} was successfully registered in the database.`);
@@ -253,26 +253,6 @@ export async function deleteUserNotifications(
     throw handleHttpError(error, "deleteUserNotifications service error.");
   }
 }
-
-// /**
-//  * Updates the date of a user's activity_timestamp.
-//  */
-// export async function updateActivityTimestamp(userId: ObjectId | string) {
-//   try {
-//     // TODO:
-//     await UserStatistics.findOneAndUpdate(
-//       { _id: userId },
-//       { activity_timestamp: new Date() }
-//     );
-//     // await User.findOneAndUpdate(
-//     //   { _id: userId },
-//     //   { "activity.activity_timestamp": new Date() },
-//     //   { runValidators: true }
-//     // );
-//   } catch (error: any) {
-//     throw handleApiError(error, "updateActivityTimestamp service error.", 500);
-//   }
-// }
 
 // /**
 //  * Updates the user's profile details based on the client edit
