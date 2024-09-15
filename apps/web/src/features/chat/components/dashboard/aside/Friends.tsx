@@ -235,7 +235,7 @@ export function FriendsPanel({ user, friendsListArr }: FriendsPanelProps) {
                 }}
               />
             </Form>
-            <div className={s.lists} aria-live="polite">
+            <div className={s.lists} aria-live="polite" data-friend-targeted={!!chatRoom.targetFriend?.friend}>
               {search.start ? (
                 <ScrollArea orientation="vertical" id="searchResults" className={s.searchResults}>
                   <ul>
