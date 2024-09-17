@@ -2,7 +2,7 @@
   "news": {
     "title": "Earn a X5 Bonus on Register",
     "description": "When you register a new account get a X5 time bonus. This is only for a limited time, get while you can!",
-    "image_url": "https://cdn.jsdelivr.net/gh/dBish6/Quest_Casino_Full-Stack_App@dev/images/bonuses.jpg",
+    "image_url": "https://cdn.jsdelivr.net/gh/dBish6/Quest_Casino_Full-Stack_App@dev/static/carousel/images/bonuses.jpg",
     "sequence": {
       "title_emp": "X5 Bonus",
       "link": null
@@ -12,7 +12,7 @@
     {
       "title": "Jack Night",
       "description": "Join us every Saturday for Jack Night! Play any blackjack game and enjoy a bonus of X0.5!",
-      "image_url": "https://cdn.jsdelivr.net/gh/dBish6/Quest_Casino_Full-Stack_App@dev/images/bonuses.jpg",
+      "image_url": "https://cdn.jsdelivr.net/gh/dBish6/Quest_Casino_Full-Stack_App@dev/static/carousel/images/bonuses.jpg",
       "sequence": {
         "title_emp": null,
         "link": null
