@@ -61,7 +61,7 @@ export async function registerUser(user: InitializeUser) {
         new UserNotifications({ _id: userId }),
         new PrivateChatMessage({ _id: userId })
       ];
-      for (const doc of docs) await doc.save({ session });
+      for await (const doc of docs) doc.save({ session });
     }).finally(() => session.endSession());
 
     logger.info(`User ${userId} was successfully registered in the database.`);
