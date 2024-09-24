@@ -32,11 +32,9 @@ const Image = forwardRef<HTMLImageElement, ImageProps>(
           complete();
         } else {
           img.onload = () => {
-            console.log("img onload", img.src);
             complete();
           }
           img.onerror = () => {
-            console.log("img onerror", img.src);
             img.src = noImage;
             complete();
           }
