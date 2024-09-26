@@ -1,26 +1,52 @@
+import { useRef, Fragment } from "react";
+
 export type IconIds = keyof typeof iconLib;
 
-export interface IconProps extends React.SVGProps<SVGSVGElement> {
+export interface IconProps extends Omit<React.SVGProps<SVGSVGElement>, "scale"> {
   id: IconIds;
+  scaleWithText?: boolean;
 }
 
 /**
  * Renders an SVG icon.
  */
-// prettier-ignore
-export default function Icon({id, fill = "var(--c-purple-50)", ...props}: IconProps) {
-  const icon = iconLib[id as keyof typeof iconLib];
+export default function Icon({id, fill = "var(--c-purple-50)", scaleWithText, style, ...props}: IconProps) {
+  const icon = iconLib[id as keyof typeof iconLib],
+    { width, height } = icon.size;
+
+  const handleFontScale = (elem: HTMLDivElement | null) => {
+    if (elem && elem.getAttribute("data-init") !== "true") {
+      const parentFontSize = parseFloat(window.getComputedStyle(elem.parentElement!).fontSize),
+        style = elem.style;
+
+      style.maxWidth = `${parseFloat(width) / parentFontSize}em`;
+      style.maxHeight = `${parseFloat(height) / parentFontSize}em`;
+      elem.setAttribute("data-init", "true")
+    }
+  },
+  Container = scaleWithText ? "div" : Fragment; // TODO: Watch out for hydration issues with this, it's looking okay as of now.
 
   return (
-    <svg
-      aria-label={icon["aria-label"]}
-      width={icon.size.width}
-      height={icon.size.height}
-      viewBox={`0 0 ${icon.size.width} ${icon.size.height}`}
-      {...props}
+    <Container
+      {...(Container === "div" && {
+        role: "presentation",
+        ref: handleFontScale,
+        style: {
+          width: "100%",
+          height: "100%",
+          ...style
+        },
+      })}
     >
-      <use href={`/icons/sprite.svg#${icon.id}`} fill={fill} />
-    </svg>
+      <svg
+        aria-label={icon["aria-label"]}
+        {...(!scaleWithText ? { width, height } : { preserveAspectRatio: "xMidYMax meet" })}
+        viewBox={`0 0 ${width} ${height}`}
+        {...props}
+      >
+        <use href={`/icons/sprite.svg#${icon.id}`} fill={fill} />
+      </svg>
+    </Container>
   );
 }
 
@@ -43,6 +69,18 @@ const iconLib = {
     id: "adjust",
     size: { width: "16", height: "16.656" },
     "aria-label": "Settings",
+  },
+
+  "all-24": {
+    id: "all",
+    size: { width: "24", height: "11.111" },
+    "aria-label": "All",
+  },
+
+  "alarm-clock-32": {
+    id: "alarm-clock",
+    size: { width: "31.998", height: "29.844" },
+    "aria-label": "Soon",
   },
 
   "badge-48": {
@@ -74,6 +112,11 @@ const iconLib = {
     "aria-label": "Categorize",
   },
 
+  "cards-24": {
+    id: "cards",
+    size: { width: "24", height: "24.799" },
+    "aria-label": "Cards",
+  },
 
   "check-mark-24": {
     id: "check-mark",
@@ -85,6 +128,18 @@ const iconLib = {
     id: "delete",
     size: { width: "18.858", height: "23.999" },
     "aria-label": "Delete",
+  },
+
+  // "direction-24": {
+  //   id: "direction",
+  //   size: { width: "24.18", height: "82.68" },
+  //   "aria-label": "Direction",
+  // },
+
+  "dice-24": {
+    id: "dice",
+    size: { width: "23.999", height: "23.536" },
+    "aria-label": "Dice",
   },
 
   "discord-20": {
@@ -192,9 +247,26 @@ const iconLib = {
   },
 
   "hand-cash-48": {
-    id: "info",
+    id: "hand-cash",
     size: { width: "48", height: "38.17" },
     "aria-label": "Cash In",
+  },
+
+  "heart-24": {
+    id: "heart",
+    size: { width: "24", height: "19.849" },
+    "aria-label": "Favourite",
+  },
+  "heart-13": {
+    id: "heart",
+    size: { width: "13.319", height: "11.015" },
+    "aria-label": "Favourite",
+  },
+
+  "infinity-24": {
+    id: "infinity",
+    size: { width: "24", height: "11.111" },
+    "aria-label": "All",
   },
 
   "info-24": {
@@ -205,6 +277,11 @@ const iconLib = {
   "info-21": {
     id: "info",
     size: { width: "21", height: "21" },
+    "aria-label": "Info",
+  },
+  "info-12": {
+    id: "info",
+    size: { width: "12", height: "12" },
     "aria-label": "Info",
   },
 
@@ -245,6 +322,12 @@ const iconLib = {
     id: "quote",
     size: { width: "12", height: "9.455" },
     "aria-label": "Quote",
+  },
+
+  "refresh-24": {
+    id: "refresh",
+    size: { width: "23.998", height: "19.595" },
+    "aria-label": "Refresh Users",
   },
 
   "scroll-48": {
@@ -293,6 +376,12 @@ const iconLib = {
     id: "send",
     size: { width: "18", height: "18.028" },
     "aria-label": "Send",
+  },
+
+  "slot-machine-24": {
+    id: "slot-machine",
+    size: { width: "24", height: "23.982" },
+    "aria-label": "Slots",
   },
 
   "speech-bubble-32": {
