@@ -31,3 +31,6 @@ export declare enum ChatEvent {
     CHAT_MESSAGE = "chat_message",
     CHAT_MESSAGE_SENT = "chat_message_sent"
 }
+export declare const GAME_STATUSES: readonly ["active", "development", "inactive"], GAME_CATEGORIES: readonly ["table", "slots", "dice"];
+export type GameStatus = (typeof GAME_STATUSES)[number];
+export type GameCategory = (typeof GAME_CATEGORIES)[number];
