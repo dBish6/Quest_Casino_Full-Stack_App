@@ -1,4 +1,4 @@
-import { useRef, Fragment } from "react";
+import { clampify } from "css-clamper";
 
 export type IconIds = keyof typeof iconLib;
 
@@ -14,39 +14,30 @@ export default function Icon({id, fill = "var(--c-purple-50)", scaleWithText, st
   const icon = iconLib[id as keyof typeof iconLib],
     { width, height } = icon.size;
 
-  const handleFontScale = (elem: HTMLDivElement | null) => {
+  const handleFontScale = (elem: SVGSVGElement | null) => {
     if (elem && elem.getAttribute("data-init") !== "true") {
-      const parentFontSize = parseFloat(window.getComputedStyle(elem.parentElement!).fontSize),
-        style = elem.style;
+      const style = elem.style,
+        numWidth = parseFloat(width)
 
-      style.maxWidth = `${parseFloat(width) / parentFontSize}em`;
-      style.maxHeight = `${parseFloat(height) / parentFontSize}em`;
+      elem.parentElement!.style.display = "inline-flex"
+
+      style.width = clampify(`${numWidth - 4}px`, `${numWidth}px`, "615px", "1640px");
+      style.height = "auto";
       elem.setAttribute("data-init", "true")
     }
-  },
-  Container = scaleWithText ? "div" : Fragment; // TODO: Watch out for hydration issues with this, it's looking okay as of now.
+  };
 
   return (
-    <Container
-      {...(Container === "div" && {
-        role: "presentation",
-        ref: handleFontScale,
-        style: {
-          width: "100%",
-          height: "100%",
-          ...style
-        },
-      })}
+    <svg
+      {...(scaleWithText && { ref: handleFontScale })}
+      aria-label={icon["aria-label"]}
+      width={width}
+      height={height}
+      viewBox={`0 0 ${width} ${height}`}
+      {...props}
     >
-      <svg
-        aria-label={icon["aria-label"]}
-        {...(!scaleWithText ? { width, height } : { preserveAspectRatio: "xMidYMax meet" })}
-        viewBox={`0 0 ${width} ${height}`}
-        {...props}
-      >
-        <use href={`/icons/sprite.svg#${icon.id}`} fill={fill} />
-      </svg>
-    </Container>
+      <use href={`/icons/sprite.svg#${icon.id}`} fill={fill} />
+    </svg>
   );
 }
 
@@ -129,12 +120,6 @@ const iconLib = {
     size: { width: "18.858", height: "23.999" },
     "aria-label": "Delete",
   },
-
-  // "direction-24": {
-  //   id: "direction",
-  //   size: { width: "24.18", height: "82.68" },
-  //   "aria-label": "Direction",
-  // },
 
   "dice-24": {
     id: "dice",
