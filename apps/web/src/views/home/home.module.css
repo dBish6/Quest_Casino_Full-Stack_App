@@ -1,12 +1,451 @@
-/* TODO: This is how you can make the icon scale with the heading. */
-/* & > h2 {
-    position: relative;
-    May need to make a Heading component that puts the padding as the width of the icon.
-    padding-left: 52px; 
-    & svg {
-      position: absolute;
-      left: 0;
-      height: 100%;
+.home :global(.viewport) > div {
+  & section {
+    margin-bottom: 3rem;
+
+    & > hgroup,
+    & header hgroup {
+      align-items: center;
+      gap: 0.75rem;
+      & h2 {
+        font: var(--h2);
+        font-size: var(--h2-clamp);
+      }
     }
-    font-size: var(--h1-clamp) !important;
-  } */
+    &.comingSoon ul li.game,
+    &.games {
+      border: 2px solid var(--c-purple-border);
+      border-radius: 12px;
+      background-color: var(--c-lvl-1-trns);
+      backdrop-filter: blur(40px);
+    }
+  }
+
+  & section.hero {
+    & .chips {
+      display: flex;
+      gap: 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    & .carousel {
+      position: relative;
+      height: 279px;
+      border: 2px solid rgba(95, 67, 178, 0.65);
+      border-radius: 12px;
+      background: linear-gradient(
+        105deg,
+        rgba(52, 37, 98, 0.65) 0%,
+        rgba(95, 67, 178, 0.65) 61%,
+        rgba(126, 48, 126, 0.65) 100%
+      );
+      backdrop-filter: blur(40px);
+      & .inner {
+        height: 100%;
+        & .slide {
+          display: flex;
+          height: inherit;
+          & h3 {
+            font: var(--h1);
+            font-size: var(--h1-clamp);
+            margin-bottom: 6px;
+            & span {
+              background: linear-gradient(100deg, var(--c-magenta-500), var(--c-purple-400));
+              background-clip: text;
+              color: transparent;
+              font-style: italic;
+            }
+          }
+          & > div:first-child {
+            width: 100%;
+          }
+
+          &[data-slide="News"],
+          &[data-slide="Events"] {
+            justify-content: space-between;
+            & > div:last-child {
+              max-width: 456px;
+              padding: 2rem 2rem 2rem 0;
+              & img {
+                border: 2px solid #735BBE;
+                border-radius: 6px;
+              }
+            }
+          }
+
+          &[data-slide="News"] {
+            & > div:first-child {
+              padding: 1.25rem 1.5rem 2rem 2rem;
+            }
+          }
+
+          &[data-slide="Events"] {
+            & > div:first-child {
+              & :global(.viewport) {
+                height: 100%;
+                padding: 1.25rem 2rem 1.25rem 2rem;
+                & > div {
+                  & .headline hr {
+                    border-top: 1px solid rgba(127, 105, 193, 0.82);
+                    margin-block: 1.063rem 1.25rem;
+                    width: calc(100% + 0.75rem);
+                    transform: translateX(-4px);
+                  }
+                }
+              }
+              & :global(.scrollbar) {
+                margin-block: 0.75rem;
+                transform: translateX(-8px);
+              }
+            }
+          }
+
+          &[data-slide="Players"] {
+            flex-direction: column;
+            padding: 1.25rem 1.5rem 2rem 2rem;
+            & > div:first-child {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+            }
+
+            & > div:last-child {
+              height: 100%;      
+              & :global(.viewport) {
+                & > div {
+                  & > p {
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                  }
+
+                  & ul {
+                    display: grid;
+                    grid-template-columns: repeat(4, minmax(100px, 1fr));
+                    gap: 1.5rem 1rem;
+                    & li.user {
+                      display: flex;
+                      align-items: center;
+                      & hgroup {
+                        margin-left: 0.5rem;
+                        & h4 {
+                          font: var(--h4);
+                        }
+                        & p {
+                          position: relative;
+                          bottom: 2px;
+                          margin-bottom: -2px;
+                          font: var(--para-x-small);
+                        }
+                      }
+
+                      & .hgroupSkel {
+                        flex-grow: 1;
+                        margin-left: 0.5rem;
+                        & div:first-child {
+                          margin-bottom: 5px;
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+
+      & .indicators {
+        position: absolute;
+        bottom: 10px;
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+        width: 100%;
+        & button {
+          width: 1rem;
+          height: 1rem;
+          border: 1px solid var(--c-purple-800);
+          background-color: var(--c-purple-400);
+          transition: 0.34s ease-in-out width, 0.34s ease-in-out border-radius;
+          &[aria-pressed="false"] {
+            border-radius: 50%;
+          }
+          &[aria-pressed="true"] {
+            width: 2rem;
+            border-radius: 1rem;
+          }
+        }
+      }
+    }
+  }
+
+  & section.comingSoon {
+    --_gameSoonCardWidth: 181px;
+    --_horz-scrollbar-height: 19px;
+
+    --_aside-dragger-width: 8px;
+
+    margin-bottom: calc(3rem - var(--_horz-scrollbar-height));
+
+    & > hgroup {
+      margin-bottom: 1rem;
+    }
+
+    & > div:last-child {
+      position: relative;
+      height: calc(var(--_gameSoonCardWidth) + var(--_horz-scrollbar-height));
+      & :global(.viewport) {
+        position: absolute;
+        width: calc(100% + calc(var(--padding-main-horz) + var(--padding-main-horz)) + var(--_aside-dragger-width));
+        padding-left: var(--padding-main-horz);
+        transform: translateX(calc(-1 * var(--padding-main-horz)));
+        
+        & > div ul.gamesSoon {
+          display: flex;
+          gap: 3rem;
+          & li.game {
+            grid-row: 1;
+            display: flex;
+            gap: 1rem;
+            width: 341.333px;
+            height: var(--_gameSoonCardWidth);
+            padding: 1.5rem 1rem 1.5rem 1.5rem;
+            overflow: hidden;
+            &:last-child {
+              margin-right: calc(var(--padding-main-horz) + var(--_aside-dragger-width));
+            }
+
+            & > div:first-child {
+              flex-shrink: 0;
+              position: relative;
+              width: 135px;
+              height: 100%;
+              & img {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                max-width: 100%;
+                max-height: 100%;
+                z-index: 1;
+              }
+              &:not(.imgSkel) {
+                border: 2px solid var(--c-purple-border);
+                border-radius: 6px;
+                background-color: var(--c-lvl-2);
+                &::after {
+                  content: "";
+                  position: absolute;
+                  left: 5px;
+                  bottom: 0;
+                  display: block;
+                  width: 100%;
+                  max-width: 121px;
+                  height: 48px;
+                  border-radius: 50%;
+                  background-color: var(--c-magenta-500);
+                  filter: blur(50px);
+                }
+              }
+            }
+            & > div:last-child {
+              flex-grow: 1;
+              & h3 {
+                font: var(--h3);
+                font-size: var(--h3-clamp);
+              }
+              & p {
+                font: var(--para-small);
+                font-size: var(--para-small-clamp);
+              }
+            }
+
+            &.skeleton {
+              & > div:last-child {
+                margin-top: 6px;
+                & > div:first-child {
+                  margin-bottom: 12px;
+                }
+                & .paraSkel:not(:last-child) {
+                  margin-bottom: 8px;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  & section.games {
+    & header {
+      position: relative;
+      display: grid;
+      grid-template-columns: auto 1fr minmax(0, 336px);
+      align-items: center;
+      padding: 1rem 2rem;
+      border-bottom: 2px solid var(--c-purple-border);
+      border-radius: 12px 12px 0 0 ;
+      background-color: var(--c-lvl-2);
+      & hgroup {
+        padding-right: 2rem;
+        border-right: 2px solid var(--c-purple-border);
+        margin-right: 1rem;
+        & svg {
+          transform: translateY(-3px);
+        }
+      }
+
+      & .filters {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        & button {
+          align-items: center;
+          gap: 0.5rem;
+          height: 36px;
+          font-size: var(--para-medium-clamp);
+          font-style: italic;
+          color: var(--c-heading-2);
+          opacity: 0.8;
+          transition: 0.33s ease-in-out margin-right, 0.22s ease-in-out filter, 0.22s ease-in-out opacity;
+          &[aria-pressed="false"] {
+            margin-right: 1rem;
+          }
+          &[aria-pressed="true"] {
+            padding: 6px 0.5rem;
+            border: 2px solid var(--c-purple-700);
+            border-radius: 6px;
+            filter: drop-shadow(0 0 0.75rem rgba(178, 67, 178, 0.35));
+            opacity: 1;
+          }
+          &:hover,
+          &:focus-visible {
+            opacity: 1;
+          }
+        }
+      }
+      & form {
+        & :global(.control) :global(.input) {
+          background-color: var(--c-lvl-3);
+        }
+      }
+    }
+
+    & > div:last-child :global(.viewport) {
+      padding-block: 1.5rem;
+      & > div {
+        padding-inline: 2rem;
+        & > p {
+          color: var(--c-heading-2);
+        }
+
+        & ul:global(#activeGames) {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, 168px);
+          justify-content: space-between;
+          gap: 2rem 2rem;
+          & li.game {
+            & article {
+              position: relative;
+              & > div:first-child {
+                position: absolute;
+                top: 1px;
+                right: 1px;
+                display: flex;
+                z-index: 1;
+                & button {
+                  border: 1px solid var(--c-purple-800);
+                  background-color: rgba(95, 67, 178, 0.5);
+                  transition:
+                    0.22s ease-in-out background-color,
+                    0.22s ease-in-out border-color;
+                  &:first-child {
+                    border-bottom-left-radius: 6px;
+                  }
+                  &:last-child {
+                    border-top-right-radius: 5px;
+                    & svg use {
+                      fill: #C63B50;
+                    }
+                    /* aria-pressed means that its their favourite. */
+                    &[aria-pressed="true"] svg use {
+                      fill: #db1e3a;
+                    }
+                  }
+
+                  /* TODO: Look for better colours? */
+                  &:hover,
+                  &:focus-visible {
+                    background-color: rgba(67, 48, 126, 0.8);
+                    border-color: var(--c-purple-600);
+                  }
+                  &:active,
+                  &[data-key-press="true"],
+                  &[aria-pressed="true"]
+                  {
+                    background: #201735;
+                    border-color: var(--c-purple-600);
+                  }
+                }
+              }
+
+              & a {
+                & .inner {
+                  height: 168px;
+                  border: 2px solid var(--c-purple-border);
+                  border-radius: 6px;
+                  & > div img {
+                    border-radius: 4px;
+                  }
+                }
+                & h3 {
+                  margin-top: 6px;
+                  font: var(--para-small);
+                  line-height: 130%;
+                }
+              }
+            }
+
+            &.skeleton .imgSkel {
+              height: 168px;
+              margin-bottom: 6px;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+.gameInfoCard {
+  width: 100vw;
+  max-width: 295px;
+  padding: 6px 0.75rem 0.5rem;
+  border: 2px solid var(--c-purple-border);
+  border-radius: 12px;
+  background-color: var(--c-lvl-4);
+
+  & > p {
+    font: var(--para-regular);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    & span {
+      font-weight: 700;
+      color: var(--c-status-green);
+    }
+  }
+  & > div {
+    height: 100%;
+    & :global(.viewport) {
+      max-height: 56.9px;
+      & > div p {
+        font: var(--para-x-small);
+      }
+    }
+    & :global(.scrollbar) {
+      margin-block: 2px !important;
+    }
+  }
+}

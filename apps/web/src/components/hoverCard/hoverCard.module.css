@@ -1,5 +1,4 @@
 .hoverCard.primary {
-  position: relative;
   border: 2px solid var(--c-purple-border);
   border-radius: 12px;
   background-color: var(--c-lvl-4);
@@ -21,7 +20,7 @@
     height: 18px;
   }
   & > span {
-    fill: var(--c-purple-border);
+    fill: var(--c-purple-800);
   }
 }
 

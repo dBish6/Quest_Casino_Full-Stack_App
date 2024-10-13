@@ -23,16 +23,14 @@ export interface HoverCardProps
     VariantProps<typeof hoverCard> {
   children: (props: { Arrow: typeof Arrow }) => React.ReactElement;
   Trigger: (triggerProps: HoverCardTriggerProps) => React.ReactElement;
-  arrow?: boolean;
   open?: boolean;
+  openDelay?: number;
 }
 
 const HoverCard = forwardRef<HTMLDivElement, HoverCardProps>(
-  ({ children, Trigger, className, intent, arrow, open, ...props }, ref) => {
-    console.log("className", className)
-    
+  ({ children, Trigger, className, intent, open, openDelay, ...props }, ref) => { 
     return (
-      <Root open={open}>
+      <Root open={open} openDelay={openDelay}>
         <RTrigger asChild>
           {Trigger({})}
         </RTrigger>
@@ -41,8 +39,8 @@ const HoverCard = forwardRef<HTMLDivElement, HoverCardProps>(
           <Content
             ref={ref}
             className={hoverCard({ className, intent })}
-            // side="top"
             sideOffset={6}
+            arrowPadding={12}
             {...props}
           >
             {children({ Arrow })}
