@@ -18,18 +18,19 @@ export interface FriendCredentials extends MinUserCredentials {
   bio?: string;
   /** The very last private message sent in the friend room (private room). */
   last_chat_message?: string;
-  activity: { status: ActivityStatuses, inactivity_timestamp?: string };
+  activity: { status: ActivityStatuses; inactivity_timestamp?: string };
 }
 
 /**
  * The user credentials on the client of the current user.
  */
-export interface UserCredentials extends Omit<FriendCredentials, "activity" > {
+export interface UserCredentials extends Omit<FriendCredentials, "activity"> {
   type: "standard" | "google";
   email_verified: boolean;
   region?: string;
   phone_number?: string;
   balance: number;
+  favourites: { [title: string]: boolean }
   friends: {
     pending: { [verification_token: string]: MinUserCredentials };
     list: { [verification_token: string]: FriendCredentials };

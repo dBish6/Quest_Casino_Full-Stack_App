@@ -1,6 +1,4 @@
-import { ChatRoomId } from "../typings/ChatRoomIds";
-
 export default interface TypingEventDto {
-  room_id: ChatRoomId;
+  friend_ver_token: string;
   is_typing: boolean;
 }
