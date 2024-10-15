@@ -46,6 +46,7 @@ export default function RegisterModal() {
       data: registerData,
       error: registerError,
       isSuccess: registerSuccess,
+      reset: registerReset
     },
   ] = useRegisterMutation();
 
@@ -57,6 +58,7 @@ export default function RegisterModal() {
         error: loginGoogleError,
         isLoading: loginGoogleLoading,
         isSuccess: loginGoogleSuccess,
+        reset: loginGoogleReset
       },
     ] = useLoginGoogleMutation();
 
@@ -106,7 +108,7 @@ export default function RegisterModal() {
     }
   }, [selected.country, worldData.regions]);
 
-  const handleValidationResponse = (data: {
+  const handleValidationResponse = async (data: {
     errors: Partial<RegisterBodyDto> & { bot: string };
     reqBody: RegisterBodyDto;
   }) => {
@@ -115,7 +117,7 @@ export default function RegisterModal() {
         if (data.errors.bot) (document.querySelector(".exitXl") as HTMLButtonElement).click();
         setErrors(data.errors);
       } else {
-        postRegister(data.reqBody).then((res) => {
+        await postRegister(data.reqBody).then((res) => {
           if (res.data?.message?.startsWith("Successfully")) formRef.current!.reset();
         });
       }
@@ -154,7 +156,11 @@ export default function RegisterModal() {
             fetcher={fetcher}
             method="post"
             action="/action/register"
-            onSubmit={() => setLoading(true)}
+            onSubmit={() => {
+              setLoading(true);
+              if (registerSuccess) registerReset();
+              if (loginGoogleSuccess) loginGoogleReset();
+            }}
             formLoading={processing}
             resSuccessMsg={
               (registerSuccess &&
@@ -253,7 +259,7 @@ export default function RegisterModal() {
                   name="country"
                   required="show"
                   error={form.error.country}
-                  Loader={() => <Spinner intent="primary" size="sm" />}
+                  Loader={<Spinner intent="primary" size="sm" />}
                   loaderTrigger={countriesLoading}
                   disabled={processing}
                   onFocus={() => {
@@ -286,7 +292,7 @@ export default function RegisterModal() {
                       ? selected.regions
                       : undefined
                   }
-                  Loader={() => <Spinner intent="primary" size="sm" />}
+                  Loader={<Spinner intent="primary" size="sm" />}
                   loaderTrigger={regionsLoading}
                   disabled={!selected.country || processing}
                   onFocus={getRegions}
@@ -309,7 +315,7 @@ export default function RegisterModal() {
                   id="calling_code"
                   name="calling_code"
                   error={form.error.calling_code}
-                  Loader={() => <Spinner intent="primary" size="sm" />}
+                  Loader={<Spinner intent="primary" size="sm" />}
                   loaderTrigger={countriesLoading}
                   disabled={processing}
                   onFocus={getCountries}

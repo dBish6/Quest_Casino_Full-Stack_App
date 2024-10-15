@@ -1,22 +1,39 @@
+import { clampify } from "css-clamper";
+
 export type IconIds = keyof typeof iconLib;
 
-export interface IconProps extends React.SVGProps<SVGSVGElement> {
+export interface IconProps extends Omit<React.SVGProps<SVGSVGElement>, "scale"> {
   id: IconIds;
+  scaleWithText?: boolean;
 }
 
 /**
  * Renders an SVG icon.
  */
-// prettier-ignore
-export default function Icon({id, fill = "var(--c-purple-50)", ...props}: IconProps) {
-  const icon = iconLib[id as keyof typeof iconLib];
+export default function Icon({id, fill = "var(--c-purple-50)", scaleWithText, style, ...props}: IconProps) {
+  const icon = iconLib[id as keyof typeof iconLib],
+    { width, height } = icon.size;
+
+  const handleFontScale = (elem: SVGSVGElement | null) => {
+    if (elem && elem.getAttribute("data-init") !== "true") {
+      const style = elem.style,
+        numWidth = parseFloat(width)
+
+      elem.parentElement!.style.display = "inline-flex"
+
+      style.width = clampify(`${numWidth - 4}px`, `${numWidth}px`, "615px", "1640px");
+      style.height = "auto";
+      elem.setAttribute("data-init", "true")
+    }
+  };
 
   return (
     <svg
+      {...(scaleWithText && { ref: handleFontScale })}
       aria-label={icon["aria-label"]}
-      width={icon.size.width}
-      height={icon.size.height}
-      viewBox={`0 0 ${icon.size.width} ${icon.size.height}`}
+      width={width}
+      height={height}
+      viewBox={`0 0 ${width} ${height}`}
       {...props}
     >
       <use href={`/icons/sprite.svg#${icon.id}`} fill={fill} />
@@ -28,14 +45,14 @@ export default function Icon({id, fill = "var(--c-purple-50)", ...props}: IconPr
  * The collection icons with their IDs to access the icons and default aria-labels.
  */
 const iconLib = {
-  "add-38": {
+  "add-15": {
     id: "add",
-    size: { width: "38", height: "38" },
+    size: { width: "15", height: "15" },
     "aria-label": "Add",
   },
-  "add-24": {
+  "add-10": {
     id: "add",
-    size: { width: "24", height: "24" },
+    size: { width: "10", height: "10" },
     "aria-label": "Add",
   },
 
@@ -43,6 +60,18 @@ const iconLib = {
     id: "adjust",
     size: { width: "16", height: "16.656" },
     "aria-label": "Settings",
+  },
+
+  "all-24": {
+    id: "all",
+    size: { width: "24", height: "11.111" },
+    "aria-label": "All",
+  },
+
+  "alarm-clock-32": {
+    id: "alarm-clock",
+    size: { width: "31.998", height: "29.844" },
+    "aria-label": "Soon",
   },
 
   "badge-48": {
@@ -74,6 +103,11 @@ const iconLib = {
     "aria-label": "Categorize",
   },
 
+  "cards-24": {
+    id: "cards",
+    size: { width: "24", height: "24.799" },
+    "aria-label": "Cards",
+  },
 
   "check-mark-24": {
     id: "check-mark",
@@ -85,6 +119,12 @@ const iconLib = {
     id: "delete",
     size: { width: "18.858", height: "23.999" },
     "aria-label": "Delete",
+  },
+
+  "dice-24": {
+    id: "dice",
+    size: { width: "23.999", height: "23.536" },
+    "aria-label": "Dice",
   },
 
   "discord-20": {
@@ -192,9 +232,26 @@ const iconLib = {
   },
 
   "hand-cash-48": {
-    id: "info",
+    id: "hand-cash",
     size: { width: "48", height: "38.17" },
     "aria-label": "Cash In",
+  },
+
+  "heart-24": {
+    id: "heart",
+    size: { width: "24", height: "19.849" },
+    "aria-label": "Favourite",
+  },
+  "heart-13": {
+    id: "heart",
+    size: { width: "13.319", height: "11.015" },
+    "aria-label": "Favourite",
+  },
+
+  "infinity-24": {
+    id: "infinity",
+    size: { width: "24", height: "11.111" },
+    "aria-label": "All",
   },
 
   "info-24": {
@@ -205,6 +262,11 @@ const iconLib = {
   "info-21": {
     id: "info",
     size: { width: "21", height: "21" },
+    "aria-label": "Info",
+  },
+  "info-12": {
+    id: "info",
+    size: { width: "12", height: "12" },
     "aria-label": "Info",
   },
 
@@ -247,6 +309,12 @@ const iconLib = {
     "aria-label": "Quote",
   },
 
+  "refresh-24": {
+    id: "refresh",
+    size: { width: "23.998", height: "19.595" },
+    "aria-label": "Refresh Users",
+  },
+
   "scroll-48": {
     id: "scroll",
     size: { width: "47.996", height: "43.425" },
@@ -278,6 +346,11 @@ const iconLib = {
     size: { width: "20.996", height: "21.022" },
     "aria-label": "Search",
   },
+  "search-18": {
+    id: "search",
+    size: { width: "18.003", height: "18.085" },
+    "aria-label": "Search",
+  },
 
   "send-24": {
     id: "send",
@@ -290,6 +363,17 @@ const iconLib = {
     "aria-label": "Send",
   },
 
+  "slot-machine-24": {
+    id: "slot-machine",
+    size: { width: "24", height: "23.982" },
+    "aria-label": "Slots",
+  },
+
+  "speech-bubble-32": {
+    id: "speech-bubble",
+    size: { width: "32", height: "29.584" },
+    "aria-label": "Reply",
+  },
   "speech-bubble-24": {
     id: "speech-bubble",
     size: { width: "24", height: "21.377" },

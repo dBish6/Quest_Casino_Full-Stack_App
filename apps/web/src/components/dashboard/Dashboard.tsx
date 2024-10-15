@@ -1,10 +1,10 @@
-import { Outlet, useLocation } from "react-router-dom";
+import { Outlet, useLocation, Link } from "react-router-dom";
 
 import NavAside from "./aside/Aside";
 import { ChatAside } from "@chatFeat/components/dashboard";
 
 import { Blob, Image, Icon } from "@components/common";
-import { ModalQueryKey, ModalTrigger } from "@components/modals";
+import { ModalTrigger } from "@components/modals";
 import { ScrollArea } from "@components/scrollArea";
 
 import logoTitle from "/images/logo-title.svg";
@@ -45,7 +45,9 @@ export function Header() {
       </Blob>
       <div className={s.inner}>
         <div>
-          <Image src={logoTitle} alt="Quest Casino" load={false} />
+          <Link to="/home">
+            <Image src={logoTitle} alt="Quest Casino Home" load={false} />
+          </Link>
           <span />
           {/* TODO: */}
           <h1>About</h1>
@@ -53,19 +55,19 @@ export function Header() {
         
         <div>
           <ModalTrigger
-            queryKey={ModalQueryKey.CASH_IN_MODAL}
+            queryKey="cash"
             buttonProps={{ intent: "primary", size: "xl" }}
           >
             Cash In
           </ModalTrigger>
           <ModalTrigger
-            queryKey={ModalQueryKey.MENU_MODAL}
+            queryKey="menu"
             buttonProps={{ intent: "primary", size: "xl", iconBtn: true }}
           >
             <Icon id="scroll-28" />
           </ModalTrigger>
           <ModalTrigger
-            queryKey={ModalQueryKey.NOTIFICATIONS_MODAL}
+            queryKey="notif"
             buttonProps={{ intent: "primary", size: "xl", iconBtn: true }}
           >
             <Icon id="bell-25" />

@@ -4,6 +4,8 @@ import { fn } from "@storybook/test";
 import Button from "./Button";
 import { Icon as CIcon } from "@components/common";
 
+const COMMON_INTENTS = ["primary", "secondary", "ghost"] as const;
+
 const meta: Meta<typeof Button> = {
   title: "Components/Controls/Button",
   component: Button,
@@ -12,9 +14,10 @@ const meta: Meta<typeof Button> = {
   },
   tags: ["autodocs"],
   argTypes: {
+    "aria-pressed": { control: { type: "boolean" } },
     intent: {
       control: { type: "radio" },
-      options: ["primary", "secondary"],
+      options: COMMON_INTENTS,
     },
     size: {
       control: { type: "select" },
@@ -28,11 +31,11 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-const groupStyle = {
+const groupStyle: React.CSSProperties  = {
   display: "flex",
   gap: "1.5rem",
   flexWrap: "wrap",
-} as const;
+};
 
 export const Intents: Story = {
   argTypes: {
@@ -52,17 +55,18 @@ export const Intents: Story = {
       <Button intent="ghost" {...args}>
         Ghost
       </Button>
+      <Button intent="chip" {...args}>
+        Chip
+      </Button>
     </div>
   ),
 };
 
 export const Sizes: Story = {
   argTypes: {
-    size: { table: { disable: true } },
+    size: { table: { disable: true } }
   },
-  args: {
-    intent: "primary",
-  },
+  args: { intent: "primary" },
   render: (args) => (
     <div style={groupStyle}>
       <Button size="xsm" {...args}>
@@ -81,54 +85,66 @@ export const Sizes: Story = {
         Extra Large
       </Button>
     </div>
-  ),
+  )
 };
 
 export const ExtraSmall: Story = {
   args: {
     intent: "primary",
     size: "xsm",
-    children: "Extra Small",
-  },
+    children: "Extra Small"
+  }
 },
  Small: Story = {
     args: {
       intent: "primary",
       size: "sm",
-      children: "Small",
-    },
+      children: "Small"
+    }
   },
   Medium: Story = {
+    argTypes: {
+      intent: {
+        control: { type: "radio" },
+        options: [...COMMON_INTENTS, "chip"]
+      }
+    },
     args: {
       intent: "primary",
       size: "md",
-      children: "Medium",
-    },
+      children: "Medium"
+    }
   },
   Large: Story = {
+    argTypes: {
+      intent: {
+        control: { type: "radio" },
+        options: [...COMMON_INTENTS, "chip"]
+      }
+    },
     args: {
+      "aria-pressed": "false",
       intent: "primary",
       size: "lrg",
-      children: "Large",
-    },
+      children: "Large"
+    }
   },
   ExtraLarge: Story = {
     args: {
       intent: "primary",
       size: "xl",
-      children: "Extra Large",
-    },
+      children: "Extra Large"
+    }
   };
 
 export const Icon: Story = {
     argTypes: {
-      // FIXME: Then you don't need to use bell probably.
-      size: { options: ["lrg", "xl"] },
+      size: { options: ["lrg", "xl"] }
     },
     args: {
       intent: "primary",
       size: "xl",
-      iconBtn: true,
+      iconBtn: true
     },
     render: (args) => (
       <Button {...args}>
@@ -138,12 +154,13 @@ export const Icon: Story = {
   },
   IconExit: Story = {
     argTypes: {
+      "aria-pressed": { table: { disable: true } },
       intent: { options: ["exit", "exit ghost"] },
-      size: { options: ["xl", "sm"] },
+      size: { options: ["xl", "sm"] }
     },
     args: {
       intent: "exit",
-      size: "xl",
+      size: "xl"
     },
-    render: (args) => <Button {...args} />,
+    render: (args) => <Button {...args} />
   };

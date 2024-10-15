@@ -2,11 +2,11 @@ import type { VariantProps } from "class-variance-authority";
 import type { FriendCredentials } from "@qc/typescript/typings/UserCredentials";
 
 import { forwardRef, Fragment } from "react";
-import { Root, Trigger, Portal, Content, Arrow } from "@radix-ui/react-hover-card";
 import { cva } from "class-variance-authority";
 
 import { ModalQueryKey, ModalTrigger } from "@components/modals";
 import { Image } from "@components/common";
+import { HoverCard } from "@components/hoverCard";
 import { ScrollArea } from "@components/scrollArea";
 
 import s from "./avatar.module.css";
@@ -41,6 +41,7 @@ const Avatar = forwardRef<HTMLDivElement, AvatarProps>(
   ({ className, intent = "primary", size = "sm", user, linkProfile = true, ...props }, ref) => {
     const ProfileShortView = linkProfile && user?.legal_name && user?.username ? ProfileHoverCard : Fragment,
       ProfileLink = linkProfile && user?.username ? ModalTrigger : "a"; // it has to be an "a" to match the server.
+    const userStatus = user?.activity?.status;
 
     return (
       // @ts-ignore
@@ -75,7 +76,15 @@ const Avatar = forwardRef<HTMLDivElement, AvatarProps>(
               alt="Profile Picture"
               fill
             />
-            {user?.status && <span aria-label={user.status} className={s.activityIndie} data-status={user.status || "offline"} />}
+            <span
+              aria-label={userStatus}
+              {...(!userStatus && {
+                "aria-hidden": "true",
+                style: { display: "none" },
+              })}
+              className={s.activityIndie}
+              data-status={userStatus}
+            />
           </div>
         </ProfileLink>
       </ProfileShortView>
@@ -84,38 +93,34 @@ const Avatar = forwardRef<HTMLDivElement, AvatarProps>(
 );
 export default Avatar;
 
-function ProfileHoverCard({ children, intent, size, user }:
-  React.PropsWithChildren<{ user: FriendCredentials } & VariantProps<typeof avatar>
->) {
+function ProfileHoverCard(
+  { children, intent, size, user }: { children: React.ReactElement; user: FriendCredentials } & VariantProps<typeof avatar>
+) {
   const legalName = user.legal_name;
 
   return (
-    <Root>
-      <Trigger asChild>{children}</Trigger>
+    <HoverCard
+      className={`${s.profileCard} ${s[intent!]} ${s[size!]}`}
+      Trigger={children}
+      asChild
+    >
+      {({ Arrow }) => (
+        <article>
+          <Arrow />
+          <ScrollArea orientation="vertical">
+            <hgroup>
+              <h4>{user.username}</h4>
+              <div role="presentation">
+                <span>{`${legalName.first} ${legalName.last}`}</span>
+                {/* TODO: Country flags. */}
+                {/* {user.country} */}
+              </div>
+            </hgroup>
 
-      <Portal>
-        <Content
-          className={`${s.profileCard} ${s[intent!]} ${s[size!]}`}
-          sideOffset={6}
-          asChild
-        >
-          <article>
-            <Arrow className={s.arrow} />
-            <ScrollArea orientation="vertical">
-              <hgroup>
-                <h4>{user.username}</h4>
-                <div role="presentation">
-                  <span>{`${legalName.first} ${legalName.last}`}</span>
-                  {/* TODO: Country flags. */}
-                  {/* {user.country} */}
-                </div>
-              </hgroup>
-
-              {user.bio && <p>{user.bio}</p>}
-            </ScrollArea>
-          </article>
-        </Content>
-      </Portal>
-    </Root>
+            {user.bio && <p>{user.bio}</p>}
+          </ScrollArea>
+        </article>
+      )}
+    </HoverCard>
   );
 }

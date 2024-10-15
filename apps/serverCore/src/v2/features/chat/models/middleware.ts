@@ -1,28 +1,34 @@
-import type { CallbackWithoutResultAndOptionalError } from "mongoose";
-import type { MessagePrivateDoc } from "@chatFeat/typings/Message";
+import type { CallbackWithoutResultAndOptionalError, Model } from "mongoose";
+import { GlobalChatMessageDoc, PrivateChatMessageDoc } from "@chatFeat/typings/ChatMessage";
+
+import MAX_MESSAGES_COUNT from "@chatFeat/constants/MAX_MESSAGES_COUNT";
 
 import { handleApiError } from "@utils/handleError";
 
-import { messagePrivateSchema } from "./schemas/messageSchema";
-import { MessagePrivate } from ".";
+import { globalChatMessageSchema, privateChatMessageSchema } from "./schemas/chatMessageSchema";
 
-async function handleMaxPrivateMessages(next: CallbackWithoutResultAndOptionalError) {
-  const maxMessages = 40,
-    // @ts-ignore
-    username = (this as MessagePrivateDoc).username;
-
+/**
+ * Deletes the oldest global chats messages from the database to maintain the max limit.
+ * @middleware Mongoose
+ */
+async function handleMaxGlobalMessages(next: CallbackWithoutResultAndOptionalError) {
   try {
-    const messageCount = await MessagePrivate.countDocuments({ username });
+    const maxMessages = MAX_MESSAGES_COUNT.global.stored,
+      PrivateChatMessage = this.model as Model<GlobalChatMessageDoc>;
 
-    if (messageCount >= maxMessages) {
-      const oldestMessage = await MessagePrivate.findOne({ username }).sort({ created_at: 1 });
-      if (oldestMessage) await oldestMessage.deleteOne();
-    }
-
+    const messageCount = await PrivateChatMessage.countDocuments({ room_id: this.room_id });
+    if (messageCount > maxMessages) 
+      await PrivateChatMessage.deleteMany({ room_id: this.room_id })
+        .sort({ "chats.created_at": 1 })
+        .limit(messageCount - maxMessages);
+    
     next();
-  } catch (error) {
-    next(handleApiError(error, "handleMaxPrivateMessages mongoose middleware error.", 500));
+  } catch (error: any) {
+    next(handleApiError(error, "handleMaxGlobalMessages mongoose middleware error."));
   }
 }
 
-messagePrivateSchema.pre("save", handleMaxPrivateMessages);
+globalChatMessageSchema.pre("insertMany", handleMaxGlobalMessages);
+globalChatMessageSchema.pre("save", handleMaxGlobalMessages);
+
+// TODO: Private

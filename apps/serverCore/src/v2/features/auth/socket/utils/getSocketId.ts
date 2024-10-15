@@ -1,14 +1,14 @@
-import type { ObjectId } from "mongoose";
+import { SocketError } from "@utils/handleError";
 import { redisClient } from "@cache";
 
 /**
  * Retrieves the auth namespace socket ID for a connected user.
- * @throws Not Found error.
+ * @throws `SocketError not found` only when the `isCurrentUser` parameter is true.
  */
-export default async function getSocketId(userId: ObjectId | string) {
-  const socketId = await redisClient.get(`user:${userId.toString()}:socket_id`);
-  if (!socketId)
-    throw Error("Unexpectedly couldn't find a user's socket id after connection.");
+export default async function getSocketId(verToken: string, isCurrentUser?: boolean) {
+  const socketId = await redisClient.get(`user:${verToken}:socket_id`);
+  if (isCurrentUser && !socketId)
+    throw new SocketError("Unexpectedly couldn't find a user's socket id after connection.", "not found");
 
   return socketId;
 }

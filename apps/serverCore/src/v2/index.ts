@@ -4,7 +4,7 @@
  *
  * Author: David Bishop
  * Creation Date: April 16, 2024
- * Last Updated: July 3, 2024
+ * Last Updated: Oct 15, 2024
  *
  * Description:
  * ...
@@ -18,7 +18,7 @@
  *  ...
  *
  * Change Log (Not yet, when it's released it would be):
- * The log is in the changelog.txt file at the base of this web directory.
+ * The log is in the changelog.txt file at the base of this serverCore directory.
  */
 
 import { createServer } from "http";
@@ -27,6 +27,8 @@ import Db from "@model/Db";
 import establishRedisConnection from "./cache";
 import initializeHttp from "./http";
 import initializeSocketIo from "./socket";
+
+import { logger } from "@qc/utils";
 
 export async function setupServer() {
   const { PROTOCOL, HOST, PORT: ENV_PORT } = process.env,
@@ -48,11 +50,11 @@ export async function setupServer() {
 
   httpServer.listen(PORT, HOST!, async () => {
     try {
-      console.log(
+      logger.info(
         `Server is running on ${PROTOCOL}${HOST}:${PORT}; Ctrl-C to terminate...`
       );
     } catch (error: any) {
-      console.error("Server start error:\n" + error.message);
+      logger.error("Server start error:\n" + error.message);
     }
   });
 };

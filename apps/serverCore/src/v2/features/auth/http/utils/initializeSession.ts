@@ -1,11 +1,13 @@
 import type { Response } from "express";
 import type { Identifier } from "@authFeat/services/authService";
 import type { UserCredentials } from "@qc/typescript/typings/UserCredentials";
-import type { GetUserBy, User, UserToClaims, RegistrationTypes } from "@authFeat/typings/User";
+import type { GetUserBy, User as UserFields, UserToClaims, RegistrationTypes } from "@authFeat/typings/User";
 
-import { handleApiError } from "@utils/handleError";
+import { handleHttpError } from "@utils/handleError";
 
-import { getUser } from "@authFeat/services/authService";
+import { User } from "@authFeat/models";
+
+import { populateUserDoc } from "@authFeat/services/authService";
 import { GenerateUserJWT } from "@authFeat/services/jwtService";
 import { deleteCsrfToken, generateCsrfToken } from "@authFeatHttp/services/csrfService";
 
@@ -23,7 +25,8 @@ export default async function initializeSession(
   csrfToken: string | undefined
 ) {
   try {
-    const user = await getUser(identifier.by, identifier.value);
+    const userQuery = User.findOne({ [identifier.by]: identifier.value }),
+      user = await userQuery.exec();
     if (!user) return "Couldn't find the user while session initialization.";
 
     const userToClaims = formatUserToClaims(user),
@@ -37,6 +40,7 @@ export default async function initializeSession(
 
     if (csrfToken) deleteCsrfToken(user.id, csrfToken);
 
+    // TODO: Try sameSite strict since it is same origin?
     res
       .cookie("session", accessToken, {
         path: "/",
@@ -54,13 +58,15 @@ export default async function initializeSession(
       })
       .setHeader("x-xsrf-token", newCsrfToken);
 
-    return formatClientUser(user);
+    const clientUser = await populateUserDoc(userQuery.clone()).client().populate("friends");
+    clientUser!.friends = ({ pending: {}, list: {} }) as UserFields["friends"];
+    return (clientUser! as unknown) as UserCredentials;
   } catch (error: any) {
-    throw handleApiError(error, "initializeSession error.", 500);
+    throw handleHttpError(error, "initializeSession error.");
   }
 }
 
-function formatUserToClaims(user: User): UserToClaims {
+function formatUserToClaims(user: UserFields): UserToClaims {
   return {
     _id: user._id,
     type: user.type as RegistrationTypes,
@@ -71,22 +77,5 @@ function formatUserToClaims(user: User): UserToClaims {
     country: user.country,
     region: user.region,
     phone_number: user.phone_number,
-  };
-}
-
-function formatClientUser(user: User): UserCredentials {
-  const { _id, email, verification_token, ...shared } = formatUserToClaims(user);
-  return {
-    ...shared,
-    avatar_url: user.avatar_url,
-    email_verified: user.email_verified,
-    ...(user.email_verified && { verification_token }),
-    balance: user.balance,
-    friends: (user.friends as unknown) as UserCredentials["friends"],
-    statistics: {
-      losses: user.statistics.losses,
-      wins: user.statistics.wins,
-      completed_quests: user.statistics.completed_quests,
-    },
   };
 }

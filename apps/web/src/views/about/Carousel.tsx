@@ -1,4 +1,5 @@
 import type { AnimationControls } from "framer-motion";
+import type Direction from "@typings/Direction";
 
 import { useRef, useState, useEffect } from "react";
 import { useAnimation, m } from "framer-motion";
@@ -25,8 +26,6 @@ interface TestimonialProps extends Testimonial {
   index: number;
   controls: AnimationControls;
 }
-
-type Directions = "left" | "right";
 
 interface CurrentState {
   slide: number;
@@ -67,7 +66,7 @@ const TESTIMONIALS: Testimonial[] = [
   ],
   NUM_TESTIMONIALS = TESTIMONIALS.length;
 
-const rotateTestimonials = (array: Testimonial[], direction: Directions) => {
+const rotateTestimonials = (array: Testimonial[], direction: Direction) => {
   let testimonials = [...array];
 
   if (direction === "left") testimonials.push(testimonials.shift()!);
@@ -87,7 +86,7 @@ export default function Carousel() {
 
   const controls = useAnimation();
 
-  const handleTransition = async (direction: Directions) => {
+  const handleTransition = async (direction: Direction) => {
     setTransitioning(true);
     const newSlide =
       direction === "left"
@@ -260,14 +259,15 @@ function Indicators({ currentSlide }: { currentSlide: number }) {
   return (
     <div className={s.indicators} role="list" aria-label="Slide indicators">
       {TESTIMONIALS.map((_, i) => {
-        const currSlide = currentSlide === 0 ? 5 : currentSlide;
+        const selected = currentSlide === 0 ? 5 : currentSlide;
 
         return (
           <span
             key={i}
             role="listitem"
-            aria-label={`Slide ${i + 1}${i + 1 === currSlide ? " Active" : ""}`}
-            aria-current={i + 1 === currSlide}
+            aria-label={`Slide ${i + 1}${i + 1 === selected ? " Active" : ""}`}
+            // FIXME: This should not be aria-current.
+            aria-current={i + 1 === selected}
           />
         );
       })}

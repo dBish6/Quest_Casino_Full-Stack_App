@@ -1,0 +1,43 @@
+.hoverCard.primary {
+  border: 2px solid var(--c-purple-border);
+  border-radius: 12px;
+  background-color: var(--c-lvl-4);
+  &[data-state="open"] {
+    animation: fadeIn ease-in-out 0.28s forwards;
+  }
+  &[data-state="closed"] {
+    animation: fadeOut ease-out 0.28s backwards;
+  }
+  /* 
+   Expands the card to cover the gap in between the avatar and the card
+   so it doesn't go in and out of the hover state.
+  */
+  &::before {
+    content: "";
+    position: absolute;
+    top: -11px;
+    width: 100%;
+    height: 18px;
+  }
+  & > span {
+    fill: var(--c-purple-800);
+  }
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}

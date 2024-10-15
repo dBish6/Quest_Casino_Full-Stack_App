@@ -1,5 +1,5 @@
 import nodemailer from "nodemailer";
-import { handleApiError } from "./handleError";
+import { HttpError, handleHttpError } from "./handleError";
 
 export default async function sendEmail(
   to: string,
@@ -24,7 +24,7 @@ export default async function sendEmail(
 
     transporter.verify((error: any) => {
       if (error)
-        throw handleApiError(error, "sendEmail verify SMTP error.", 500);
+        throw new HttpError("sendEmail verify SMTP error.", 500);
     });
 
     return await transporter.sendMail({
@@ -33,7 +33,7 @@ export default async function sendEmail(
       subject,
       html,
     });
-  } catch (error) {
-    throw handleApiError(error, "sendEmail error.", 500);
+  } catch (error: any) {
+    throw handleHttpError(error, "sendEmail error.");
   }
 }

@@ -1,20 +1,31 @@
-import { readdirSync, readFileSync, unlinkSync, writeFileSync } from "fs";
 import { resolve } from "path";
+import { unlinkSync, readdirSync, statSync, rmdirSync, readFileSync, existsSync, writeFileSync } from "fs";
 
 const buildDir = resolve("./build"),
   outputFile = resolve(buildDir, "bundle.d.ts");
 
-const files = readdirSync(buildDir).filter(
-  (file) => file.endsWith(".d.ts") && file !== "bundle.d.ts"
-);
+if (existsSync(outputFile)) unlinkSync(outputFile)
 
-let combined = "";
-for (const file of files) {
-  const filePath = resolve(buildDir, file);
-  const fileContent = readFileSync(filePath, "utf-8");
-  combined += fileContent + "\n";
+const filePaths = [],
+  directoryPaths = [];
+for (const file of readdirSync(buildDir)) {
+  const path = resolve(buildDir, file);
+  if (file.endsWith(".d.ts")) {
+    filePaths.push(path);
+  } else if (statSync(path).isDirectory()) {
+    directoryPaths.push(path);
 
-  unlinkSync(filePath);
+    readdirSync(path).forEach((file) => {
+      if (file.endsWith(".d.ts")) filePaths.push(resolve(path, file));
+    });
+  }
 }
 
-writeFileSync(outputFile, combined);
+let fileContent = "";
+for (const filePath of filePaths) {
+  fileContent += readFileSync(filePath, "utf-8");
+  unlinkSync(filePath);
+}
+if (directoryPaths.length) directoryPaths.forEach((dir) => rmdirSync(dir));
+
+writeFileSync(outputFile, fileContent);

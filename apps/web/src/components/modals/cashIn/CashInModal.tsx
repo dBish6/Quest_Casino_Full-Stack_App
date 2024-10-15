@@ -4,14 +4,13 @@ import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { Title } from "@radix-ui/react-dialog";
 
 import { capitalize } from "@qc/utils";
-import { isFormValidationError } from "@utils/forms";
 
 import useForm from "@hooks/useForm";
 // import {
 //   useCashInMutation
 // } from "@authFeat/services/authApi";
 
-import { ModalTemplate, ModalQueryKey } from "@components/modals";
+import { ModalTemplate } from "@components/modals";
 import { Form } from "@components/form";
 import { Button, Input } from "@components/common/controls";
 import { Icon, Link } from "@components/common";
@@ -23,42 +22,10 @@ import s from "./cashInModal.module.css";
 export default function CashInModal() {
   //   const { form, setLoading, setError, setErrors } = useForm<CashInBodyDto>();
 
-  //   const processingForm = registerLoading || form.processing,
-  //     processing = processingForm || loginGoogleLoading || googleLoading;
-
-  //   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-  //     e.preventDefault();
-  //     setLoading(true);
-
-  //     const form = e.target as HTMLFormElement,
-  //       field = form.querySelector<HTMLInputElement>("input")!;
-
-  //     try {
-  //       let error: string;
-  //       const key = field.name as keyof CashInBodyDto;
-
-  //       if (!field.value.length) {
-  //         return setError(key, `${capitalize(key)} is required.`);
-  //       }
-
-  //       register({ [key]: field.value }).then((res) => {
-  //         // prettier-ignore
-  //         if (isFormValidationError(res.error))
-  //             return setErrors(
-  //               ((res.error as FetchBaseQueryError).data?.ERROR as Record<string,string>) || {}
-  //             );
-
-  //         if (res.data?.message?.startsWith("Successfully")) form.reset();
-  //       });
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-
   return (
     <ModalTemplate
       aria-description="Deposit a amount below by entering the amount or by choosing any of the other third-party services. Keep in mind, that this casino is just for fun, a developer playing around, so no real cash is involved."
-      queryKey={ModalQueryKey.CASH_IN_MODAL}
+      queryKey="cash"
       width="368px"
       className={s.modal}
       //   onEscapeKeyDown={() => setErrors({})}

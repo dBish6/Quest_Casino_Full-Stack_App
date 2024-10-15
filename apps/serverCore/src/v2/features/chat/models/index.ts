@@ -1,8 +1,13 @@
-import type { PublicRooms } from "@chatFeat/typings/Rooms";
+import type { GlobalChatRoomId } from "@qc/typescript/typings/ChatRoomIds";
 
 import { model } from "mongoose";
-import { messageGlobalSchema, messagePrivateSchema } from "./schemas/messageSchema";
+import { globalChatMessageSchema, privateChatMessageSchema } from "./schemas/chatMessageSchema";
 import "./middleware";
 
-export const MessageGlobal = (continent: PublicRooms) => model(`message_global`, messageGlobalSchema, `message_${continent}`),
-    MessagePrivate = model(`message_private`, messagePrivateSchema)
+export const GlobalChatMessage = (continent: GlobalChatRoomId) =>
+  model(
+    "chat_message_global",
+    globalChatMessageSchema,
+    `chat_message_global_${continent.replace(" ", "_").toLowerCase()}`
+  ),
+  PrivateChatMessage = model("chat_message_private", privateChatMessageSchema);

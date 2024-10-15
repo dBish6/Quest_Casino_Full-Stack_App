@@ -1,16 +1,17 @@
 import { type ConnectOptions, connect } from "mongoose";
 import { logger } from "@qc/utils";
 
-const { DATABASE_URI_BASE, DATABASE_URI_GAME } = process.env;
+const { DATABASE_URI_BASE, DATABASE_URI_GAME, NODE_ENV } = process.env;
 
 export default class Db {
-  options: ConnectOptions;
+  public options: ConnectOptions;
 
   constructor(options?: ConnectOptions) {
     const ops = options ? { ...options } : {};
 
     this.options = {
       ...ops,
+      ...(NODE_ENV === "production" && { autoIndex: false }), // This is recommended, don't know if this would break everything.
       serverApi: {
         version: "1",
         strict: true,
@@ -20,7 +21,7 @@ export default class Db {
     };
   }
 
-  async connectBaseCluster() {
+  public async connectBaseCluster() {
     try {
       await connect(DATABASE_URI_BASE || "", this.options);
       logger.info("MongoDB connection established via baseDB!");

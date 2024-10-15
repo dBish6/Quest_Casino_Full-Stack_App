@@ -5,6 +5,7 @@
     "target": "ES6",
     "lib": ["ES2020"],
     // "outDir": "build",
+    "noImplicitThis": false,
     "paths": {
       "@cache": ["./src/v2/cache.ts"],
 
@@ -18,7 +19,13 @@
 
       "@csrfFeat/*": ["./src/v2/features/csrf/*"],
 
-      "@gamesFeat/*": ["./src/v2/features/games/*"],
+      "@gameFeat/*": ["./src/v2/features/game/*"],
+      "@gameFeatHttp/*": ["./src/v2/features/game/http/*"],
+
+      "@miscFeat/*": ["./src/v2/features/misc/*"],
+      "@miscFeatHttp/*": ["./src/v2/features/misc/http/*"],
+
+      "@constants/*": ["./src/v2/constants/*"],
 
       "@middleware/*": ["./src/v2/middleware/*"],
 

@@ -73,7 +73,6 @@ const meta: Meta<typeof ScrollArea> = {
   },
   decorators: [
     (Story, { args }) => {
-      // prettier-ignore
       useEffect(() => {
         const viewport = document.querySelector(".viewport") as HTMLDivElement,
          orientation = args.orientation;

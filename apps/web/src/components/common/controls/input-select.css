@@ -12,7 +12,7 @@
 
   & .input,
   & .select {
-    --_input-fade: rgba(239, 239, 239, 0.85);
+    --input-fade: rgba(239, 239, 239, 0.85);
 
     &.primary,
     &.callingCode {
@@ -26,9 +26,10 @@
       &[data-typing="true"],
       &[data-selected="true"] {
         & label {
-          top: -3%;
+          top: -4%;
           left: calc(1rem - 4px);
           padding-inline: 4px;
+          line-height: 1 !important;
         }
       }
       &[data-focused="true"] {
@@ -58,14 +59,14 @@
       }
 
       & label,
-      & > svg {
+      &.select > svg {
         position: absolute;
         top: 50%;
         transform: translateY(-50%);
       }
       & label {
         left: 1rem;
-        color: var(--_input-fade);
+        color: var(--input-fade);
         pointer-events: none;
         transition:
           0.28s ease-in-out color,

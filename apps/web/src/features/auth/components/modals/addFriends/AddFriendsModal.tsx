@@ -1,6 +1,6 @@
 import type { MinUserCredentials } from "@qc/typescript/typings/UserCredentials";
 
-import { useRef } from "react";
+import { useRef, useMemo } from "react";
 import { Title } from "@radix-ui/react-dialog";
 
 import { isFetchBaseQueryError } from "@utils/isFetchBaseQueryError";
@@ -8,7 +8,7 @@ import { isFetchBaseQueryError } from "@utils/isFetchBaseQueryError";
 import useUser from "@authFeat/hooks/useUser";
 import { useLazyGetUsersQuery, useManageFriendRequestMutation } from "@authFeat/services/authApi";
 
-import { ModalTemplate, ModalQueryKey } from "@components/modals";
+import { ModalTemplate } from "@components/modals";
 import { Icon, Avatar } from "@components/common";
 import { Button, Input } from "@components/common/controls";
 import { Form } from "@components/form";
@@ -18,21 +18,21 @@ import s from "./addFriendsModal.module.css";
 
 export default function AddFriendsModal() {
   const inputRef = useRef<HTMLInputElement>(null),
-   [getUsers, { data: searchData, error: searchError, isFetching: searchLoading }] = useLazyGetUsersQuery();
+    [getUsers, { data: searchData, error: searchError, isFetching: searchLoading }] = useLazyGetUsersQuery();
 
   const user = useUser(),
-    pendingFriends = user?.friends.pending;
+    pendingFriendsArr = useMemo(() => Object.values(user?.friends.pending || {}), [user?.friends.pending]);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const value = inputRef.current!.value;
-    if (value.length) getUsers(value.trim());
+    if (value.length) getUsers({ username: value.trim() });
   };
   
   return (
     <ModalTemplate
       aria-description="Search for users to add as friends by entering their username. View search results and manage pending friend requests."
-      queryKey={ModalQueryKey.ADD_FRIENDS_MODAL}
+      queryKey="add"
       width="455px" 
       className={s.modal}
     >
@@ -56,8 +56,10 @@ export default function AddFriendsModal() {
               intent="primary"
               size="xl"
               id="search"
+              type="search"
+              spellCheck="false"
               disabled={searchLoading}
-              Button={() => (
+              Button={
                 <Button
                   intent="primary"
                   size="xl"
@@ -66,7 +68,7 @@ export default function AddFriendsModal() {
                 >
                   <Icon id="search-24" />
                 </Button>
-              )}
+              }
             />
           </Form>
 
@@ -91,12 +93,12 @@ export default function AddFriendsModal() {
             )}
           </section>
 
-          {pendingFriends!.length > 0 && (
+          {pendingFriendsArr!.length > 0 && (
             <section aria-labelledby="hPending" className={s.pending}>
               <h3 id="hPending">Pending Friend Requests</h3>
 
               <ul aria-live="polite">
-                {pendingFriends!.map((request) => (
+                {pendingFriendsArr!.map((request) => (
                   <li>
                      <article
                       title={`${user!.username} | ${user!.legal_name.first} ${user!.legal_name.last}`}
@@ -133,8 +135,9 @@ function SearchUserCard({ user }: { user: MinUserCredentials }) {
         onClick={() => emitManageFriends({ action_type: "request", friend: user })}
       >
         <Details user={user} />
-
-        {manageFriendsLoading ? <Spinner intent="primary" size="md" /> : <Icon id="add-24" />}
+        <div className={s.addIcon}>
+          {manageFriendsLoading ? <Spinner intent="primary" size="md" /> : <Icon id="add-10" />}
+        </div>
       </Button>
       {(resError || manageFriendsData) && (
           <small role={resError ? "alert" : "status"} id="msg">

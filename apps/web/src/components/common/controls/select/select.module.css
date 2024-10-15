@@ -21,9 +21,10 @@
           }
         }
       }
-      &[data-selected="true"] {
+      &[data-selected="true"],
+      &[data-label-hidden="true"] {
         & select {
-          color: var(--_input-fade);
+          color: var(--input-fade);
         }
       }
 
@@ -55,7 +56,7 @@
         pointer-events: none;
         transition: 0.22s ease-in-out transform;
         & use {
-          fill: var(--_input-fade);
+          fill: var(--input-fade);
           transition: 0.28s ease-in-out fill;
         }
       }

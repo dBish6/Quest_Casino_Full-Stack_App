@@ -8,10 +8,14 @@
 import type { Request, Response, NextFunction } from "express";
 import type RegisterRequestDto from "@authFeatHttp/dtos/RegisterRequestDto";
 import type { LoginRequestDto, GoogleLoginRequestDto } from "@authFeatHttp/dtos/LoginRequestDto";
+import type { UpdateProfileRequestDto, UpdateUserFavouritesRequestDto, ResetPasswordRequestDto } from "@authFeatHttp/dtos/UpdateUserRequestDto";
 import type { DeleteNotificationsRequestDto } from "@authFeatHttp/dtos/DeleteNotificationsRequestDto";
 
+import USER_NOT_FOUND_MESSAGE from "@authFeat/constants/USER_NOT_FOUND_MESSAGE";
+import GENERAL_BAD_REQUEST_MESSAGE from "@constants/GENERAL_BAD_REQUEST_MESSAGE";
+
 import { logger } from "@qc/utils";
-import { handleApiError } from "@utils/handleError";
+import { handleHttpError } from "@utils/handleError";
 import initializeSession from "@authFeatHttp/utils/initializeSession";
 
 import { getUsers as getUsersService, getUser as getUserService } from "@authFeat/services/authService";
@@ -24,7 +28,7 @@ const authService = { getUsers: getUsersService, getUser: getUserService, ...htt
 /**
  * Starts the user registration and checks if the user already exits within the database.
  * @controller
- * @response `success`, `conflict`, or `ApiError`.
+ * @response `success`, `conflict`, `HttpError` or `ApiError`.
  */
 export async function register(
   req: RegisterRequestDto,
@@ -48,7 +52,7 @@ export async function register(
         "Successfully registered! You can now log in with your newly created profile."
     });
   } catch (error: any) {
-    next(handleApiError(error, "register controller error.", 500));
+    next(handleHttpError(error, "register controller error."));
   }
 }
 
@@ -56,7 +60,7 @@ export async function register(
 /**
  * Initializes the current user session.
  * @controller
- * @response `success` with the client formatted user, `internal`, or `ApiError`.
+ * @response `success` with the client formatted user, `not found`, or `HttpError`.
  */
 export async function login(
   req: LoginRequestDto,
@@ -74,9 +78,8 @@ export async function login(
     );
     delete req.loginMethod;
     if (typeof clientUser === "string")
-      // Status 500 because this should never happen.
-      return res.status(500).json({
-        ERROR: `${clientUser} Unexpectedly couldn't find the user after validation.`
+      return res.status(404).json({
+        ERROR: `${clientUser} ${USER_NOT_FOUND_MESSAGE}`
       });
 
     return res.status(200).json({
@@ -84,13 +87,13 @@ export async function login(
       user: clientUser
     });
   } catch (error: any) {
-    next(handleApiError(error, "login controller error.", 500));
+    next(handleHttpError(error, "login controller error."));
   }
 }
 /**
- * Initializes the current user session.
+ * Initializes the current user session via google.
  * @controller
- * @response `success`, `forbidden`, or `ApiError`.
+ * @response `success`, `forbidden`, or `HttpError`.
  */
 export async function loginGoogle(
   req: GoogleLoginRequestDto,
@@ -107,14 +110,14 @@ export async function loginGoogle(
       user: clientUser
     });
   } catch (error: any) {
-    next(handleApiError(error, "loginGoogle controller error.", 500));
+    next(handleHttpError(error, "loginGoogle controller error."));
   }
 }
 
 /**
  * Initiates email address verification.
  * @controller
- * @response `success`, `not found`, `forbidden`, or `ApiError`.
+ * @response `success`, `not found`, `forbidden`, or `HttpError`.
  */
 export async function emailVerify(
   req: Request,
@@ -124,20 +127,18 @@ export async function emailVerify(
   try {
     const { sub, verification_token } = req.decodedClaims!,
       result = await authService.emailVerify(sub, verification_token);
-    if (typeof result === "string")
-      return res.status(result === "User doesn't exist." ? 404 : 403).json({ ERROR: result });
 
     return res
       .status(200)
       .json({ message: "Email address successfully verified.", user: result });
   } catch (error: any) {
-    next(handleApiError(error, "emailVerify controller error.", 500));
+    next(handleHttpError(error, "emailVerify controller error."));
   }
 }
 /**
  * Initiates verification email sending.
  * @controller
- * @response `success`, `SMTP rejected` or `ApiError`.
+ * @response `success`, `SMTP rejected` or `HttpError`.
  */
 export async function sendVerifyEmail(
   req: Request,
@@ -153,45 +154,44 @@ export async function sendVerifyEmail(
         "Verification email successfully sent. If you can't find it in your inbox, please check your spam or junk folder."
     });
   } catch (error: any) {
-    next(handleApiError(error, "sendVerifyEmail controller error.", 500));
+    next(handleHttpError(error, "sendVerifyEmail controller error."));
   }
 }
 
 /**
  * Send all users or searched users by username, client formatted.
  * @controller
- * @response `success` with all users formatted for the client, or `ApiError`.
+ * @response `success` with all users formatted for the client, `forbidden`, `HttpError` or `ApiError`.
  */
-export async function getUsers(
-  req: Request,
-  res: Response,
-  next: NextFunction
-) {
-  const query = req.query.username as string;
+export async function getUsers(req: Request, res: Response, next: NextFunction) {
+  const { username, count } = req.query as Record<string, string>;
   let clientUsers;
 
   try {
-    if (query) clientUsers = await authService.searchUsers(query);
-    else { 
-      if (process.env.NODE_ENV !== "development")
-        return res.status(403).json({ ERROR: "Access denied." });
-
-      clientUsers = await authService.getUsers(true);
+    if (username) {
+      // Search for username.
+      clientUsers = await authService.searchUsers(username);
+    } else if (!count && process.env.NODE_ENV !== "development") {
+      // All users is restricted.
+      return res.status(403).json({ ERROR: "Access denied." });
+    } else {
+      // Else a random set of users based on count if provided.
+      clientUsers = await authService.getUsers(true, parseInt(count, 10));
     }
 
     return res.status(200).json({
-      message: `Successfully retrieved ${query ? "searched" : "all"} users.`,
+      message: `Successfully retrieved ${username ? "searched" : count ? `random ${count}` : "all"} users.`,
       users: clientUsers
     });
   } catch (error: any) {
-    next(handleApiError(error, "getUsers controller error.", 500));
+    next(handleHttpError(error, "getUsers controller error."));
   }
 }
 
 /**
  * Send a user or current user or even a user's notifications, client formatted.
  * @controller
- * @response `success` with the current user formatted for the client, `not found`, `forbidden`, or `ApiError`.
+ * @response `success` with the current user formatted for the client, `not found`, `forbidden`, `HttpError` or `ApiError`.
  */
 export async function getUser(req: Request, res: Response, next: NextFunction) {
   const query = req.query as Record<string, string>;
@@ -222,14 +222,119 @@ export async function getUser(req: Request, res: Response, next: NextFunction) {
       user: clientUser
     });
   } catch (error: any) {
-    next(handleApiError(error, "getUser controller error.", 500));
+    next(handleHttpError(error, "getUser controller error."));
+  }
+}
+
+// TODO:
+/**
+ * Update client profile call.
+ * @controller
+ * @response `success` or `HttpError`.
+ */
+export async function updateProfile(
+  req: UpdateProfileRequestDto, 
+  res: Response, 
+  next: NextFunction
+) {
+  const body = req.body;
+  
+  try {
+    const clientUser = await authService.updateProfile(
+      req.decodedClaims!.sub, 
+      body
+    );
+
+    return res.status(200).json({
+      message: "All refresh and csrf tokens successfully removed.",
+      user: clientUser
+    });
+  } catch (error: any) {
+    next(handleHttpError(error, "updateProfile controller error."));
+  }
+}
+
+/**
+ * Initiates storing or deleting the user's favourite games.
+ * @controller
+ * @response `success` with updated favourites, `bad request`, or `HttpError`.
+ */
+export async function updateUserFavourites(
+  req: UpdateUserFavouritesRequestDto, 
+  res: Response, 
+  next: NextFunction
+) {
+  const favourites = req.body.favourites;
+
+  try {
+    if (!Array.isArray(favourites) || !favourites.length)
+      return res.status(400).json({ ERROR: GENERAL_BAD_REQUEST_MESSAGE });
+
+    const updatedFavourites = await authService.updateUserFavourites(
+      req.decodedClaims!.sub,
+      req.body.favourites
+    );
+
+    return res.status(200).json({ 
+      message: "Successfully updated the user's favourites.",
+      favourites: updatedFavourites
+    });
+  } catch (error: any) {
+    next(handleHttpError(error, "updateUserFavourites controller error."));
+  }
+}
+
+/**
+ * ...
+ * @controller
+ * @response `success` or `HttpError`.
+ */
+export async function resetPassword(
+  req: ResetPasswordRequestDto, 
+  res: Response, 
+  next: NextFunction
+) {
+  try {
+    // const clientUser = await authService.updateUserFavourites(
+    //   req.decodedClaims!.sub
+    // );
+
+    return res.status(200).json({ 
+      message: "Password was reset successfully.",
+      // user: clientUser
+    });
+  } catch (error: any) {
+    next(handleHttpError(error, "resetPassword controller error."));
+  }
+}
+
+/**
+ * ...
+ * @controller
+ * @response `success` or `HttpError`.
+ */
+export async function sendResetPasswordEmail(
+  // req: Request & { body: { email: string }},
+  req: Request, res: Response, next: NextFunction
+) {
+  try {
+    // const clientUser = await authService.updateUserFavourites(
+    //   req.decodedClaims!.sub
+    // );
+
+    return res.status(200).json({ 
+      message: "",
+      // user: clientUser
+    });
+  } catch (error: any) {
+    next(handleHttpError(error, "sendResetPasswordEmail controller error."));
   }
 }
 
 /**
  * Clears every refresh token, csrf token and cookies from the current user.
  * @controller
- * @response `success` or `ApiError`.
+ * @response `success` or `HttpError`.
  */
 export async function clear(req: Request, res: Response, next: NextFunction) {
   try {
@@ -239,14 +344,14 @@ export async function clear(req: Request, res: Response, next: NextFunction) {
       message: "All refresh and csrf tokens successfully removed."
     });
   } catch (error: any) {
-    next(handleApiError(error, "clear controller error.", 500));
+    next(handleHttpError(error, "clear controller error."));
   }
 }
 
 /**
  * Deletes the current user.
  * @controller
- * @response `success`, or `ApiError`.
+ * @response `success`, or `HttpError`.
  */
 export async function deleteUser(
   req: Request,
@@ -260,13 +365,14 @@ export async function deleteUser(
 
     return res.status(200).json({ message: `User ${userId} successfully deleted.` });
   } catch (error: any) {
-    next(handleApiError(error, "deleteUser controller error.", 500));
+    next(handleHttpError(error, "deleteUser controller error."));
   }
 }
+
 /**
- * Deletes the given user notifications.
+ * Initiates deletion of the given user notifications.
  * @controller
- * @response `success` with sorted notifications, or `ApiError`.
+ * @response `success` with sorted notifications, or `HttpError`.
  */
 export async function deleteUserNotifications(
   req: DeleteNotificationsRequestDto, 
@@ -287,14 +393,14 @@ export async function deleteUserNotifications(
       user: { notifications: result.notifications },
     });
   } catch (error: any) {
-    next(handleApiError(error, "deleteUserNotifications controller error.", 500));
+    next(handleHttpError(error, "deleteUserNotifications controller error."));
   }
 }
 
 /**
  * Clears the session cookie and deletes the csrf token.
  * @controller
- * @response `success`, `internal`, or `ApiError`.
+ * @response `success`, `internal`, `HttpError` or `ApiError`.
  */
 export async function logout(
   req: Request,
@@ -315,6 +421,6 @@ export async function logout(
       .clearCookie("session").clearCookie("refresh")
       .json({ message: "Session cleared, log out successful." });
   } catch (error: any) {
-    next(handleApiError(error, "logout controller error.", 500));
+    next(handleHttpError(error, "logout controller error."));
   }
 }

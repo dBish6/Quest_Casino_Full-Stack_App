@@ -1,7 +1,7 @@
 import type { NotificationTypes, Notification, GetNotificationsResponseDto } from "@qc/typescript/dtos/NotificationsDto";
 import type { MinUserCredentials } from "@qc/typescript/typings/UserCredentials";
 
-import { Fragment, useEffect, useRef, useState } from "react";
+import { Fragment, useRef, useMemo, useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { AnimatePresence, m } from "framer-motion";
 import { Title } from "@radix-ui/react-dialog";
@@ -11,7 +11,7 @@ import { fadeInOut } from "@utils/animations";
 import displayNotificationMessage from "@authFeat/utils/displayNotificationMessage";
 import { isFetchBaseQueryError } from "@utils/isFetchBaseQueryError";
 
-import useResourceLoader from "@hooks/useResourceLoader";
+import useResourcesLoadedEffect from "@hooks/useResourcesLoadedEffect";
 
 import { useLazyGetUserQuery, useDeleteUserNotificationsMutation, useManageFriendRequestMutation } from "@authFeat/services/authApi";
 
@@ -35,29 +35,29 @@ interface NotificationSectionProps extends Omit<NotificationCardProps, "notif"> 
 }
 
 export default function NotificationsModal() {
-  const [searchParams] = useSearchParams();
+  const [searchParams] = useSearchParams(),
+    modalParam = searchParams.get(ModalQueryKey.NOTIFICATIONS_MODAL);
 
   const fadeVariant = fadeInOut({ in: 0.3, out: 0.58 });
-  const { resourcesLoaded } = useResourceLoader();
 
   const [ getNotifications, { data, isFetching: notifsLoading }] = useLazyGetUserQuery(),
     userNotifData = data?.user as GetNotificationsResponseDto;
 
   const [notifications, setNotifications] = useState<GetNotificationsResponseDto["notifications"] | Notification[]>([]),
-    categorizedNotifications = notifications && Object.entries(notifications);
+    categorizedNotificationsArr = useMemo(() => Object.entries(notifications), [notifications]);
 
   const [selectNotifs, setSelectNotifs] = useState<Map<string, Notification> | null>(null);
 
   const [postDeleteNotifications, { isLoading: deletionLoading }] = useDeleteUserNotificationsMutation();
 
-  useEffect(() => {
-    if (searchParams.has(ModalQueryKey.NOTIFICATIONS_MODAL) && resourcesLoaded) {
+  useResourcesLoadedEffect(() => {
+    if (modalParam) {
       if (unCategorizedNotifications.current) unCategorizedNotifications.current = [];
       const query = getNotifications({ notifications: true });
 
       return () => query.abort();
     }
-  }, [searchParams, resourcesLoaded]);
+  }, [modalParam]);
   useEffect(() => {
     if (userNotifData) setNotifications(userNotifData.notifications);
   }, [userNotifData]);
@@ -198,7 +198,7 @@ export default function NotificationsModal() {
                     iconBtn
                     onClick={toggleCategorization}
                   >
-                    <Icon id="border-horizontal-24" />
+                    <Icon aria-hidden="true" id="border-horizontal-24" />
                   </Button>
                   <Button
                     title="Delete Notifications"
@@ -211,7 +211,7 @@ export default function NotificationsModal() {
                     iconBtn
                     onClick={initializeDeletion}
                   >
-                    <Icon id="delete-19" />
+                    <Icon aria-hidden="true" id="delete-19" />
                   </Button>
                 </div>
 
@@ -227,7 +227,7 @@ export default function NotificationsModal() {
                     <p>You have no notifications.</p>
                   )
                 ) : (
-                  categorizedNotifications.map(([type, notifs]) => (
+                  categorizedNotificationsArr.map(([type, notifs]) => (
                     <NotificationSection
                       key={type}
                       type={type as NotificationTypes}
@@ -259,7 +259,7 @@ function NotificationSection({ type, notifs, selectNotifs, setSelectNotifs }: No
 
       <ul aria-label={`${type} notifications`}>
         {notifs.map((notif, i) => (
-          <li key={type ? i + type : i}>
+          <li key={notif.notification_id}>
             <NotificationCard
               notif={{ ...notif, type: type ?? notif.type }}
               selectNotifs={selectNotifs}
@@ -334,8 +334,9 @@ function NotificationCard({ notif, selectNotifs, setSelectNotifs }: Notification
   );
 }
 
-function FriendRequestCard({ avatar_url, legal_name, username }: MinUserCredentials) {
-  const actions = ["add", "decline"] as const;
+function FriendRequestCard(friend: MinUserCredentials) {
+  const { avatar_url, legal_name, username } = friend,
+    actions = ["add", "decline"] as const;
 
   const [emitManageFriends, { data: manageFriendsData, error: manageFriendsError }] = useManageFriendRequestMutation(),
     [loading, setLoading] = useState({ add: false, decline: false, fulfilled: false });
@@ -344,7 +345,8 @@ function FriendRequestCard({ avatar_url, legal_name, username }: MinUserCredenti
 
   const handleAction = (action: typeof actions[number]) => {
     setLoading((prev) => ({ ...prev, [action]: true }));
-    emitManageFriends({ action_type: action, friend: { username } })
+
+    emitManageFriends({ action_type: action, friend })
       .then((res) => {
         setLoading((prev) => ({ ...prev, fulfilled: !!res.data }));
         document.getElementById("friendScroll")!
@@ -361,7 +363,7 @@ function FriendRequestCard({ avatar_url, legal_name, username }: MinUserCredenti
         {...(loading.fulfilled && { style: { opacity: 0.68 } })}
       >
         <div>
-          <Avatar size="md" user={{ avatar_url }} showProfile={false} />
+          <Avatar size="md" user={{ avatar_url }} />
           <hgroup role="group" aria-roledescription="heading group">
             <h4>{username}</h4>
             <p aria-roledescription="subtitle">{`${legal_name.first} ${legal_name.last}`}</p>

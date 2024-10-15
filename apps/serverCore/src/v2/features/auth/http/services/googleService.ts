@@ -8,7 +8,7 @@ import querystring from "querystring";
 import { COUNTRIES } from "@qc/constants";
 
 import { logger } from "@qc/utils";
-import { handleApiError } from "@utils/handleError";
+import { handleHttpError, HttpError } from "@utils/handleError";
 import { registerUser } from "./httpAuthService";
 import initializeSession from "@authFeatHttp/utils/initializeSession";
 
@@ -74,7 +74,7 @@ export async function loginWithGoogle(
       return clientUser;
     }
   } catch (error: any) {
-    throw handleApiError(error, "loginWithGoogle service error.", 500);
+    throw handleHttpError(error, "loginWithGoogle service error.");
   }
 }
 
@@ -100,16 +100,12 @@ async function fetchAccessTokenToken(code: string, redirectUri: string) {
 
     if (!res.ok) {
       logger.error("fetchAccessTokenToken error:", data);
-      throw handleApiError(
-        new Error("Received a bad status from token request."),
-        "fetchAccessTokenToken error.",
-        403
-      );
+      throw new HttpError("Received a bad status from google token request.", 403);
     }
 
     return data.access_token;
-  } catch (error) {
-    throw handleApiError(error, "fetchIdToken error.", 500);
+  } catch (error: any) {
+    throw handleHttpError(error, "fetchIdToken error.");
   }
 }
 
@@ -126,14 +122,10 @@ async function fetchUserInfo(token: string) {
     logger.debug("google fetchUserInfo", res.status);
 
     if (!res.ok)
-      throw handleApiError(
-        new Error("Failed to fetch user info"),
-        "fetchUserInfo error",
-        500
-      );
+      throw new HttpError("Failed to fetch google user info.", 403);
 
     return data;
-  } catch (error) {
-    throw handleApiError(error, "fetchUserInfo error.", 500);
+  } catch (error: any) {
+    throw handleHttpError(error, "fetchUserInfo error.");
   }
 }

@@ -1,6 +1,6 @@
 import type { VariantProps } from "class-variance-authority";
 
-import { forwardRef, useRef } from "react";
+import { forwardRef, useRef, cloneElement } from "react";
 import { Label } from "@radix-ui/react-label";
 import { cva } from "class-variance-authority";
 
@@ -31,16 +31,17 @@ export interface SelectProps
       "size" | "required" | "onBlur" | "onKeyDown" | "onChange"
     >,
     VariantProps<typeof select> {
-  label?: string;
+  label: string;
+  id: string;
+  hideLabel?: boolean;
   required?: boolean | "show";
   error?: string | null;
-  Loader?: () => React.ReactElement;
+  Loader?: React.ReactElement;
   loaderTrigger?: boolean;
 }
 
-// prettier-ignore
 export const Select = forwardRef<HTMLSelectElement,React.PropsWithChildren<SelectProps>>(
-  ({ children, label, className, intent, size, style, required, error, Loader, loaderTrigger, ...props }, ref) => {
+  ({ children, label, hideLabel, className, intent, size, style, required, error, Loader, loaderTrigger, ...props }, ref) => {
     const selectContainerRef = useRef<HTMLDivElement>(null);
 
     return (
@@ -52,6 +53,7 @@ export const Select = forwardRef<HTMLSelectElement,React.PropsWithChildren<Selec
         <div
           ref={selectContainerRef}
           className={select({ className, intent, size })}
+          data-label-hidden={hideLabel}
           style={style}
           onClick={() => {
             const selectContainer = selectContainerRef.current!;
@@ -61,7 +63,7 @@ export const Select = forwardRef<HTMLSelectElement,React.PropsWithChildren<Selec
           }}
           data-disabled={props.disabled}
         >
-          <Label htmlFor={props.id}>
+          <Label htmlFor={props.id} {...(hideLabel && { style: { visibility: "hidden" } })}>
             {label}
             {required === "show" && (
               <span aria-hidden="true" className="required">
@@ -71,13 +73,11 @@ export const Select = forwardRef<HTMLSelectElement,React.PropsWithChildren<Selec
           </Label>
           <select
             {...(error && { "aria-errormessage": "formError", "aria-invalid": true })}
-            {...(Loader && {"aria-busy": loaderTrigger})}
+            {...(Loader && { "aria-live": "polite", "aria-busy": loaderTrigger })}
             ref={ref}
             required={required ? true : false}
             {...props}
 
-            // TODO: If there is a label the label should be up.
-            {...(!props.value && props.defaultValue && {style: {color: "var(--_input-fade)"}})}
             onBlur={() =>
               selectContainerRef.current!.removeAttribute("data-focused")
             }
@@ -91,7 +91,7 @@ export const Select = forwardRef<HTMLSelectElement,React.PropsWithChildren<Selec
                 : selectContainer.setAttribute("data-selected", "true");
             }}
           >
-            <option value="" />
+            <option value="" selected disabled hidden />
             {children}
           </select>
           <Icon
@@ -104,7 +104,7 @@ export const Select = forwardRef<HTMLSelectElement,React.PropsWithChildren<Selec
             }
           />
 
-          {Loader && (loaderTrigger && <Loader />)}
+          {Loader && (loaderTrigger && cloneElement(Loader))}
         </div>
         
         {error && (

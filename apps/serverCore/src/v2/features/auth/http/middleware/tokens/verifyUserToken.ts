@@ -1,7 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
 
 import { logger } from "@qc/utils";
-import { handleApiError } from "@utils/handleError";
+import { handleHttpError } from "@utils/handleError";
 
 import { JWTVerification } from "@authFeat/services/jwtService";
 import initializeSession from "@authFeatHttp/utils/initializeSession";
@@ -38,13 +38,13 @@ export default async function verifyUserToken(
         req.headers["x-xsrf-token"] as string,
       );
       if (typeof refreshResult === "string") return res.status(401).json({ ERROR: result.message });
-      logger.info("Session refresh was attached to the response.");
+      logger.debug("Session refresh was attached to the response.");
     }
 
     req.decodedClaims = result.claims;
-    logger.info("Access token successfully verified.");
+    logger.debug("Access token successfully verified.");
     next();
-  } catch (error) {
-    next(handleApiError(error, "http/verifyAccessToken middleware error.", 500));
+  } catch (error: any) {
+    next(handleHttpError(error, "http/verifyAccessToken middleware error."));
   }
 }

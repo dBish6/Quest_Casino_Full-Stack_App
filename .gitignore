@@ -182,9 +182,6 @@ dist
 .turbo
 .github
 .DS_Store
-front-end/src/features/games/blackjack/changeLog.txt
-back-end/model/credentials.json*
-Card Sound Effects All Sounds.mp3
 
 # End of https://www.toptal.com/developers/gitignore/api/node
 
@@ -192,3 +189,4 @@ Card Sound Effects All Sounds.mp3
 notes.txt
 *storybook.log
 stories
+*copy*

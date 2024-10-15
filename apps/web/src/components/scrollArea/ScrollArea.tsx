@@ -35,7 +35,6 @@ export interface ScrollAreaProps
   orientation: "vertical" | "horizontal" | "both";
 }
 
-// prettier-ignore
 const ScrollArea = forwardRef<HTMLDivElement, React.PropsWithChildren<ScrollAreaProps>>(
   ({ children, orientation, className, intent, scrollbarSize, ...props }, ref) => {
     return (

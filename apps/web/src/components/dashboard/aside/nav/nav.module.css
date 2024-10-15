@@ -1,6 +1,8 @@
 .container {
   & .divider {
     display: flex;
+    flex-direction: row-reverse;
+    gap: 4px;
     height: 14px;
     margin-block: 1.5rem 1rem;
     &:first-of-type {
@@ -10,7 +12,6 @@
     & h4 {
       font: var(--para-x-small);
       color: var(--c-purple-500);
-      margin-right: 4px;
       pointer-events: none;
     }
     & .line {
@@ -19,11 +20,18 @@
     }
   }
 
+  & :global(.control) {
+    margin-inline: 0.5rem;
+  }
+
   & nav {
     /* & div:first-child a:first-child svg {
       position: relative;
       bottom: 2px;
     } */
+    & div a {
+      margin-inline: 0.5rem;
+    }
     & div a:not(:last-child),
     & div button:not(:last-child) {
       /* margin-bottom: 1rem; */

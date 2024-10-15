@@ -8,6 +8,7 @@
 import type { ObjectId } from "mongoose";
 import type { InitializeUser, UserNotification, UserNotificationField } from "@authFeat/typings/User";
 import type { Notification } from "@qc/typescript/dtos/NotificationsDto";
+import type { UpdateProfileBodyDto, UpdateUserFavouritesBodyDto, ResetPasswordBodyDto } from "@qc/typescript/dtos/UpdateUserDto";
 
 import { Types, startSession  } from "mongoose";
 import { hash } from "bcrypt";
@@ -16,11 +17,15 @@ import { readFileSync } from "fs";
 import { dirname, resolve } from "path";
 import { fileURLToPath } from "url";
 
+import GENERAL_BAD_REQUEST_MESSAGE from "@constants/GENERAL_BAD_REQUEST_MESSAGE";
+import USER_NOT_FOUND_MESSAGE from "@authFeat/constants/USER_NOT_FOUND_MESSAGE";
+
 import { logger } from "@qc/utils";
-import { handleApiError } from "@utils/handleError";
+import { handleHttpError, HttpError } from "@utils/handleError";
 import sendEmail from "@utils/sendEmail";
 
-import { User, UserStatistics, UserActivity, UserNotifications } from "@authFeat/models";
+import { User, UserFriends, UserStatistics, UserActivity, UserNotifications } from "@authFeat/models";
+import { PrivateChatMessage } from "@chatFeat/models";
 import { redisClient } from "@cache";
 
 import { MINIMUM_USER_FIELDS, updateUserCredentials } from "@authFeat/services/authService";
@@ -31,51 +36,55 @@ import { deleteAllCsrfTokens } from "./csrfService";
  * Registers a new user in the database.
  */
 export async function registerUser(user: InitializeUser) {
-  const userId = new Types.ObjectId();
-  let verificationToken = randomUUID(); // For the email verification link and used for the socket.io friend rooms.
+  const userId = new Types.ObjectId(),
+    verificationToken = randomUUID()
 
-  const session = await startSession();
   try {
+    await redisClient.set(`user:${userId}:verification_token`, verificationToken);
+
+    if (user.password && user.type === "standard") user.password = await hash(user.password, 12);
+    else user.password = `${user.type} provided`;
+
+    const session = await startSession();
+
     await session.withTransaction(async () => {
-      if (user.password && user.type === "standard") user.password = await hash(user.password, 12);
-      else user.password = `${user.type} provided`;
-
-      if (!user.email_verified)
-        await redisClient.set(`user:${userId}:verification_token`, verificationToken);
-
       const docs = [
         new User({
           _id: userId,
           legal_name: { first: user.first_name, last: user.last_name },
           verification_token: verificationToken,
+          friends: userId,
           statistics: userId,
           activity: userId,
           notifications: userId,
           ...user,
         }),
+        new UserFriends({ _id: userId }),
         new UserStatistics({ _id: userId }),
         new UserActivity({ _id: userId }),
-        new UserNotifications({ _id: userId })
+        new UserNotifications({ _id: userId }),
+        new PrivateChatMessage({ _id: userId })
       ];
-      await Promise.all([docs.map((doc) => doc.save())])
-    });
+      for await (const doc of docs) doc.save({ session });
+    }).finally(() => session.endSession());
 
     logger.info(`User ${userId} was successfully registered in the database.`);
   } catch (error: any) {
-    throw handleApiError(error, "registerUser service error.", 500);
-  } finally {
-    session.endSession();
+    throw handleHttpError(error, "registerUser service error.");
   }
 }
 
 /**
  * Verifies the user's verification token that was used to create the unique verification link
  * and returns the verified user.
+ * @throws `HttpError 403` verification token disparity.
+ * @throws `HttpError 404` user not found.
  */
 export async function emailVerify(userId: string, verificationToken: string) {
   try {
     const cachedToken = await redisClient.get(`user:${userId}:verification_token`);
-    if (verificationToken !== cachedToken) return "Verification token disparity.";
+    if (verificationToken !== cachedToken) 
+      throw new HttpError("Verification token disparity.", 403);
 
     const clientUser = await updateUserCredentials(
       {
@@ -87,17 +96,16 @@ export async function emailVerify(userId: string, verificationToken: string) {
       },
       { new: true, forClient: true }
     );
-    if (!clientUser) return "User doesn't exist.";
-
     await redisClient.del(`user:${userId}:verification_token`);
     
     return clientUser;
   } catch (error: any) {
-    throw handleApiError(error, "emailVerify service error.", 500);
+    throw handleHttpError(error, "emailVerify service error.");
   }
 }
 /**
  * Sends an email with a verification link to the specified email address.
+ * @throws `HttpError 541` SMTP rejected.
  */
 export async function sendVerifyEmail(
   email: string,
@@ -124,15 +132,12 @@ export async function sendVerifyEmail(
 
     const info = await sendEmail(email, "Email Verification", html);
     if (info.rejected.length)
-      throw handleApiError(
-        Error(
-          "Your email was rejected by our SMTP server during sending. Please consider using a different email address. If the issue persists, feel free to reach out to support."
-        ),
-        "sendVerifyEmail service error.",
+      throw new HttpError(
+        "Your email was rejected by our SMTP server during sending. Please consider using a different email address. If the issue persists, feel free to reach out to support.",
         541
       );
   } catch (error: any) {
-    throw handleApiError(error, "sendVerifyEmail service error.", 500);
+    throw handleHttpError(error, "sendVerifyEmail service error.");
   }
 }
 
@@ -141,13 +146,11 @@ export async function sendVerifyEmail(
  */
 export async function searchUsers(username: string) {
   try {
-    const users = await User.find({
+    return await User.find({
       username: { $regex: username, $options: "i" }
     }).select(MINIMUM_USER_FIELDS).limit(50);
-
-    return users;
   } catch (error: any) {
-    throw handleApiError(error, "searchUsers service error.", 500);
+    throw handleHttpError(error, "searchUsers service error.");
   }
 }
 
@@ -215,10 +218,9 @@ export async function getSortedUserNotifications(
 
     return result.length > 0 ? result[0] : { notifications: { news: [], system: [], general: [] } };
   } catch (error: any) {
-    throw handleApiError(error, "getUserNotifications service error.", 500);
+    throw handleHttpError(error, "getUserNotifications service error.");
   }
 }
-
 /**
  * Delete one or multiple notifications of a user from the database.
  */
@@ -235,61 +237,108 @@ export async function deleteUserNotifications(
             filter: { _id: userId },
             update: {
               $pull: {
-                [`notifications.${toDelete.type}`]: { notification_id: toDelete.notification_id },
-              },
-            },
-          },
+                [`notifications.${toDelete.type}`]: { notification_id: toDelete.notification_id }
+              }
+            }
+          }
         }))
       );
     } else {
       const toDelete = notifications[0];
       await UserNotifications.findOneAndUpdate(
         { _id: userId },
-        { $pull: { [`notifications.${toDelete.type}`]: { notification_id: toDelete.notification_id } } },
+        { $pull: { [`notifications.${toDelete.type}`]: { notification_id: toDelete.notification_id } } }
       );
     }
 
     return getSortedUserNotifications(userId, categorize);
   } catch (error: any) {
-    throw handleApiError(error, "deleteUserNotifications service error.", 500);
+    throw handleHttpError(error, "deleteUserNotifications service error.");
   }
 }
 
 // /**
-//  * Updates the date of a user's activity_timestamp.
+//  * Updates the user's profile details based on the client edit
 //  */
-// export async function updateActivityTimestamp(userId: ObjectId | string) {
-//   try {
-//     // TODO:
-//     await UserStatistics.findOneAndUpdate(
-//       { _id: userId },
-//       { activity_timestamp: new Date() }
-//     );
-//     // await User.findOneAndUpdate(
-//     //   { _id: userId },
-//     //   { "activity.activity_timestamp": new Date() },
-//     //   { runValidators: true }
-//     // );
-//   } catch (error: any) {
-//     throw handleApiError(error, "updateActivityTimestamp service error.", 500);
-//   }
-// }
+export async function updateProfile(userId: ObjectId | string, body: UpdateProfileBodyDto) {
+  try {
+    // const updatedUser = await updateUserCredentials(
+    //   {
+    //     by: "_id",
+    //     value: userId
+    //   },
+    //   {
+    //     $set: { },
+    //   },
+    //   { new: true, forClient: true }
+    // )
+  } catch (error: any) {
+    throw handleHttpError(error, "updateProfile service error.", 500);
+  }
+}
 
-// /**
-//  * ...
-//  */
-// // TODO:
-// export async function updateProfile(userId: ObjectId | string) {
-//   try {
-//     // await User.findOneAndUpdate(
-//     //   { _id: userId },
-//     //
-//     //   { runValidators: true }
-//     // );
-//   } catch (error: any) {
-//     throw handleApiError(error, "updateUser service error.", 500);
-//   }
-// }
+/**
+ * Updates the user's favourite games in bulk by either adding or deleting
+ * entries from the database.
+ */
+export async function updateUserFavourites(
+  userId: ObjectId | string,
+  favourites: UpdateUserFavouritesBodyDto["favourites"]
+) {
+  try {
+    await User.bulkWrite(
+      favourites.map((favourite) => {
+        if (!["delete", "add"].includes(favourite.op))
+          throw new HttpError(GENERAL_BAD_REQUEST_MESSAGE, 400);
+
+        const isAdd = favourite.op === "add";
+        return {
+          updateOne: {
+            filter: { _id: userId },
+            update: {
+              [isAdd ? "$set" : "$unset"]: {
+                [`favourites.${favourite.title}`]: isAdd ? true : ""
+              }
+            }
+          }
+        };
+      })
+    );
+    const updatedUser = await User.findById(userId).select("favourites").lean();
+    if (!updatedUser) throw new HttpError(USER_NOT_FOUND_MESSAGE, 404);
+
+    return updatedUser?.favourites;
+  } catch (error: any) {
+    throw handleHttpError(error, "updateUserFavourites service error.");
+  }
+}
+
+/**
+ * 
+ */
+export async function resetPassword(
+  userId: ObjectId | string, 
+  password: ResetPasswordBodyDto
+) {
+  try {
+
+  } catch (error: any) {
+    throw handleHttpError(error, "resetPassword service error.");
+  }
+}
+
+/**
+ * 
+ */
+export async function sendResetPasswordEmail(
+  userId: ObjectId | string, email: string
+) {
+  try {
+    
+  } catch (error: any) {
+    throw handleHttpError(error, "sendResetPasswordEmail service error.");
+  }
+}
 
 /**
  * Deletes the user's refresh tokens and csrf tokens.
@@ -301,7 +350,7 @@ export async function wipeUser(userId: ObjectId | string) {
       deleteAllCsrfTokens(userId.toString()),
     ]);
   } catch (error: any) {
-    throw handleApiError(error, "deleteUser service error.", 500);
+    throw handleHttpError(error, "deleteUser service error.");
   }
 }
 
@@ -315,6 +364,6 @@ export async function deleteUser(userId: ObjectId | string) {
       clearAllSessions(userId.toString()),
     ]);
   } catch (error: any) {
-    throw handleApiError(error, "deleteUser service error.", 500);
+    throw handleHttpError(error, "deleteUser service error.");
   }
 }

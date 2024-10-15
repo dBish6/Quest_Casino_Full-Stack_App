@@ -4,7 +4,7 @@
  *
  * Author: David Bishop
  * Creation Date: April 16, 2024
- * Last Updated: July 31, 2024
+ * Last Updated: Oct 15, 2024
  *
  * Description:
  * .
@@ -18,6 +18,9 @@
 
 import { Navigate, type RouteObject } from "react-router-dom";
 
+import store from "@redux/store";
+import { apiEndpoints } from "@services/api";
+
 import HistoryProvider from "@utils/History";
 import { ToastsProvider } from "@components/toast";
 
@@ -26,11 +29,14 @@ import SocketListenersProvider from "@components/SetupSocketListeners";
 import { Dashboard } from "@components/dashboard";
 import { ModalsProvider } from "@components/modals";
 import VerificationHandler from "@components/VerificationHandler";
+import AwayActivityTracker from "@components/AwayActivityTracker";
 
 import { About, Home, Profile, Settings, Support } from "@views/index";
 import { Error } from "@views/errors";
 
 import registerAction from "@authFeat/actions/validateRegister";
+
+import { json } from "react-router-dom";
 
 import "./index.css";
 
@@ -52,6 +58,7 @@ export const routes: RouteObject[] = [
 
           <ModalsProvider />
           <VerificationHandler />
+          <AwayActivityTracker />
         </ResourceLoaderProvider>
       </>
     ),
@@ -59,28 +66,45 @@ export const routes: RouteObject[] = [
       {
         index: true,
         path: "about",
-        element: <About />,
+        element: <About />
       },
       {
         path: "home",
         element: <Home />,
+        shouldRevalidate: () => false,
+        loader: async () => {
+          const res = store.dispatch(apiEndpoints.getCarouselContent.initiate());
+
+          try {
+            const data = await res.unwrap();
+            return data;
+          } catch (error: any) {
+            if (error.data) return error;
+            else return json(
+              { ERROR: error.message || "An unexpected error occurred in the carousel loader." },
+              { status: 500 }
+            );
+          } finally {
+            res.unsubscribe()
+          }
+        }
       },
       {
         path: "/profile",
         children: [
           {
             path: "",
-            element: <Profile />,
+            element: <Profile />
           },
           {
             path: "settings",
-            element: <Settings />,
-          },
-        ],
+            element: <Settings />
+          }
+        ]
       },
       {
         path: "support",
-        element: <Support />,
+        element: <Support />
       },
       {
         path: "error-401",
@@ -88,9 +112,9 @@ export const routes: RouteObject[] = [
           <Error
             status={401}
             title="Unauthorized"
-            description="User authorization is required."
+            description="User authorization is missing or required."
           />
-        ),
+        )
       },
       {
         path: "error-403",
@@ -98,15 +122,23 @@ export const routes: RouteObject[] = [
           <Error
             status={403}
             title="Forbidden"
-            description="User authorization or CSRF token is not valid."
+            // FIXME: Change message.
+            // description="User authorization or CSRF token is not valid."
+            description="Malicious request or User authorization or CSRF token is not valid."
           />
-        ),
+        )
       },
       {
-        path: "error-404",
+        path: "error-404-page",
         element: (
-          <Error status={404} title="Not Found" description="Page not found." />
-        ),
+          <Error status={404} title="Page Not Found" description="The page you are looking for doesn't exist or was moved or deleted." />
+        )
+      },
+      {
+        path: "error-404-user",
+        element: (
+          <Error status={404} title="User Not Found" description="Unexpectedly we couldn't find your profile on our server." />
+        )
       },
       {
         path: "error-429",
@@ -116,7 +148,7 @@ export const routes: RouteObject[] = [
             title="Too Many Requests"
             description="You made too many requests to the our server in a short period, Quest Casino is temporarily locked down for you. Please come back again in an hour."
           />
-        ),
+        )
       },
       {
         path: "error-500",
@@ -126,15 +158,15 @@ export const routes: RouteObject[] = [
             title="Internal Server Error"
             description="Unexpected server error or couldn't establish a connection."
           />
-        ),
+        )
       },
       {
         ...(typeof window !== "undefined" && {
           path: "*",
-          element: <Navigate to="/error-404" replace />,
-        }),
-      },
-    ],
+          element: <Navigate to="/error-404-page" replace />,
+        })
+      }
+    ]
   },
   {
     path: "/action",
@@ -142,7 +174,7 @@ export const routes: RouteObject[] = [
       {
         path: "register",
         action: registerAction,
-      },
+      }
     ],
   },
 ];

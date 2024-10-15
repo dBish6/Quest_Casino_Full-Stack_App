@@ -1,8 +1,9 @@
-import { forwardRef, useRef, useEffect } from "react";
+import { forwardRef } from "react";
 
+import noImage from "/images/no-image.webp"
 import s from "./image.module.css";
 
-export interface ImageProps extends React.ComponentProps<"img"> {
+export interface ImageProps extends Omit<React.ComponentProps<"img">, "loading" | "aria-busy"> {
   src: string;
   alt: string;
   load?: boolean;
@@ -15,20 +16,34 @@ export interface ImageProps extends React.ComponentProps<"img"> {
   fill?: boolean;
 }
 
-// FIXME: It just gross looking.
 const Image = forwardRef<HTMLImageElement, ImageProps>(
   ({ src, alt, load = true, size, fill, ...props }, ref) => {
-    const containerRef = useRef<HTMLDivElement>(null),
-      imgRef = useRef<HTMLImageElement | null>(null);
+    const handleLazyLoad = (img: HTMLImageElement) => {
+      if (load && img.getAttribute("data-loaded") !== "true") {
+        const complete = () => {
+          img.parentElement!.setAttribute("data-loaded", "true");
+          img.setAttribute("aria-busy", "false");
 
-    useEffect(() => {
-      if (load && imgRef.current && imgRef.current.complete)
-        containerRef.current!.setAttribute("data-loaded", "true");
-    }, [imgRef.current]);
+          img.onload = null;
+          img.onerror = null;
+        }
+
+        if (img.complete) {
+          complete();
+        } else {
+          img.onload = () => {
+            complete();
+          }
+          img.onerror = () => {
+            img.src = noImage;
+            complete();
+          }
+        }
+      }
+    }
 
     return (
       <div
-        ref={containerRef}
         role="presentation"
         className={`${s.container}${load ? " " + s.load : ""}`}
         style={{
@@ -48,19 +63,20 @@ const Image = forwardRef<HTMLImageElement, ImageProps>(
         }}
       >
         <img
-          ref={(node) =>
-            ref
-              ? typeof ref === "function"
-                ? ref(node)
-                : (ref.current = node)
-              : (imgRef.current = node)
-          }
+          ref={(node) => {
+            if (typeof ref === "function") ref(node);
+            else if (ref) ref.current = node;
+
+            if (node) handleLazyLoad(node);
+          }}
           src={src}
           alt={alt}
           {...props}
+
+          {...(load && { "aria-busy": "true", loading: "lazy" })}
           style={{
             ...(fill
-              ? { width: "100%", height: "100%" }
+              ? { width: "100%", height: "100%", objectFit: "cover" }
               : size &&
                 Object.keys(size).length && {
                   ...(size.width && {

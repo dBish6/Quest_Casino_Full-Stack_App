@@ -18,7 +18,7 @@ export async function render(req: ERequest, res: EResponse, store: Store) {
 
   if (
     context instanceof Response ||
-    context.statusCode === 404 ||
+    context.statusCode === 404 && context.location.pathname !== "/home" ||
     context.location.pathname === "/"
   ) {
     throw context;

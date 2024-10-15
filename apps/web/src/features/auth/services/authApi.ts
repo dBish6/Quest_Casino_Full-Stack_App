@@ -3,25 +3,28 @@ import type { QueryReturnValue } from "@reduxjs/toolkit/dist/query/baseQueryType
 import type { FetchBaseQueryMeta, FetchBaseQueryError } from "@reduxjs/toolkit/dist/query/fetchBaseQuery";
 import type { PatchCollection } from "@reduxjs/toolkit/dist/query/core/buildThunks";
 import type { RootState } from "@redux/store";
-import type { UserCredentials, FriendCredentials, MinUserCredentials } from "@qc/typescript/typings/UserCredentials";
+import type { UserCredentials, MinUserCredentials, ActivityStatuses } from "@qc/typescript/typings/UserCredentials";
 
 import type { HttpResponse, SocketResponse } from "@typings/ApiResponse";
 import type RegisterBodyDto from "@qc/typescript/dtos/RegisterBodyDto";
 import type { LoginBodyDto, LoginGoogleBodyDto } from "@qc/typescript/dtos/LoginBodyDto";
-import type { ManageFriendRoomDto, ManageFriendRequestDto } from "@qc/typescript/dtos/ManageFriendDto";
 import type { GetNotificationsResponseDto, DeleteNotificationsBodyDto, Notification } from "@qc/typescript/dtos/NotificationsDto"
+import type { UpdateUserFavouritesBodyDto } from "@qc/typescript/dtos/UpdateUserDto";
+import type { ManageFriendRequestEventDto } from "@qc/typescript/dtos/ManageFriendEventDto";
+import type FriendActivityEventDto from "@authFeat/dtos/FriendActivityEventDto";
 
 import { AuthEvent } from "@qc/constants";
 
-import { type ActivityStatuses, logger } from "@qc/utils";
+import { logger } from "@qc/utils";
 import { history } from "@utils/History";
 import { isFetchBaseQueryError } from "@utils/isFetchBaseQueryError";
 
-import { createApi, baseQuery } from "@services/index";
+import { injectEndpoints, prepareHeadersAndOptions } from "@services/api";
 import { getSocketInstance, emitAsPromise } from "@services/socket";
 import allow500ErrorsTransform from "@services/allow500ErrorsTransform";
+import handleLogout from "./handleLogout";
 import handleSendVerifyEmail from "./handleSendVerifyEmail";
-import { UPDATE_USER_CREDENTIALS, INITIALIZE_SESSION, CLEAR_USER } from "@authFeat/redux/authSlice";
+import { UPDATE_USER_CREDENTIALS, SET_USER_FAVOURITES, UPDATE_USER_FRIENDS, UPDATE_USER_FRIEND_IN_LIST, INITIALIZE_SESSION } from "@authFeat/redux/authSlice";
 import { ADD_TOAST, unexpectedErrorToast } from "@redux/toast/toastSlice";
 
 const socket = getSocketInstance("auth");
@@ -31,18 +34,16 @@ export const authSocketListeners = {
   newNotification: "newNotification",
 } as const;
 
-const authApi = createApi({
-  reducerPath: "authApi",
-  baseQuery: baseQuery("/auth"),
-  tagTypes: ["Notification"],
+const authApi = injectEndpoints({
+  overrideExisting: true,
   endpoints: (builder) => ({
     /**
-     * 
+     * Creates a new user.
      * @request
      */
     register: builder.mutation<HttpResponse, RegisterBodyDto>({
       query: (user) => ({
-        url: "/register",
+        url: "/auth/register",
         method: "POST",
         body: user
       }),
@@ -50,35 +51,24 @@ const authApi = createApi({
     }),
 
     /**
-     * 
+     * Creates a user login session.
      * @request
      */
     login: builder.mutation<HttpResponse<{ user: UserCredentials }>, LoginBodyDto>({
       query: (credentials) => ({
-        url: "/login",
+        url: "/auth/login",
         method: "POST",
         body: credentials
       }),
       onQueryStarted: async (_, { dispatch, queryFulfilled }) => {
-        try {
-          const { data, meta } = await queryFulfilled;
+        const { data, meta } = await queryFulfilled;
 
-          if (meta?.response?.ok)
-            handleLoginSuccess(
-              dispatch,
-              data.user,
-              meta.response.headers.get("x-xsrf-token")!
-            );
-        } catch (error: any) {
-          if (isFetchBaseQueryError(error.error)) {
-            if (error.error.status === 404)
-              dispatch(
-                unexpectedErrorToast(
-                  "We couldn't find your profile on our server."
-                )
-              );
-          }
-        }
+        if (meta?.response?.ok)
+          handleLoginSuccess(
+            dispatch,
+            data.user,
+            meta.response.headers.get("x-xsrf-token")!
+          );
       },
       transformErrorResponse: (res, meta) => allow500ErrorsTransform(res, meta)
     }),
@@ -88,7 +78,7 @@ const authApi = createApi({
      */
     loginGoogle: builder.mutation<HttpResponse<{ user: UserCredentials }>, LoginGoogleBodyDto>({
       query: (credentials) => ({
-        url: "/login/google",
+        url: "/auth/login/google",
         method: "POST",
         body: credentials
       }),
@@ -111,32 +101,21 @@ const authApi = createApi({
      */
     emailVerify: builder.mutation<HttpResponse<{ user: UserCredentials }>, void>({
       query: () => ({
-        url: "/email-verify",
+        url: "/auth/email-verify",
         method: "POST"
       }),
       onQueryStarted: async (_, { dispatch, queryFulfilled }) => {
-        try {
-          const { data, meta } = await queryFulfilled;
+        const { data, meta } = await queryFulfilled;
 
-          if (meta?.response?.ok) {
-            dispatch(UPDATE_USER_CREDENTIALS(data.user));
-            dispatch(
-              ADD_TOAST({
-                message: data.message,
-                intent: "success",
-                duration: 65000,
-              })
-            );
-          }
-        } catch (error: any) {
-          if (isFetchBaseQueryError(error.error)) {
-            if (error.error.status === 404)
-              dispatch(
-                unexpectedErrorToast(
-                  "We couldn't find your profile on our server."
-                )
-              );
-          }
+        if (meta?.response?.ok) {
+          dispatch(UPDATE_USER_CREDENTIALS(data.user));
+          dispatch(
+            ADD_TOAST({
+              message: data.message,
+              intent: "success",
+              duration: 65000,
+            })
+          );
         }
       }
     }),
@@ -146,7 +125,7 @@ const authApi = createApi({
      */
     sendVerifyEmail: builder.mutation<HttpResponse, void>({
       query: () => ({
-        url: "/email-verify/send",
+        url: "/auth/email-verify/send",
         method: "POST"
       })
     }),
@@ -155,8 +134,13 @@ const authApi = createApi({
      * Gets all users or searches for users by username.
      * @request
      */
-    getUsers: builder.query<HttpResponse<{ users: MinUserCredentials[] | UserCredentials[] }>, string | void>({
-      queryFn: async (username, { getState }, _, baseQuery) => {
+    getUsers: builder.query<
+      HttpResponse<{ users: (MinUserCredentials[] & { bio?: string }) | UserCredentials[] }>,
+      { username?: string; count?: number }
+    >({
+      queryFn: async (query, { getState }, _, baseQuery) => {
+        const { username, count } = query;
+
         if (username && !(getState() as RootState).auth.user.credentials?.email_verified) 
           return {
             error: {
@@ -166,20 +150,20 @@ const authApi = createApi({
           };
         
         const res = await baseQuery({
-          url: "/users",
+          url: "/auth/users",
           method: "GET",
-          ...(username && { params: { username } }),
+          params: { ...(username && { username }), ...(count && { count }) },
         }) as QueryReturnValue<
-          HttpResponse<{ users: MinUserCredentials[] | UserCredentials[] }>,
+          HttpResponse<{ users: (MinUserCredentials[] & { bio?: string }) | UserCredentials[] }>,
           FetchBaseQueryError,
           FetchBaseQueryMeta
         >;
 
         return res.error
           ? {
-              error: res.error.status === 500 && res.meta?.request.url.includes("?username=", -1)
-                  ? allow500ErrorsTransform(res.error!, res.meta)
-                  : res.error,
+              error: res.meta?.request.url.includes("?", -1)
+                ? allow500ErrorsTransform(res.error!, res.meta)
+                : res.error,
             }
           : { data: res.data };
       }
@@ -189,24 +173,56 @@ const authApi = createApi({
      * 
      * @request
      */
-    getUser: builder.query<HttpResponse<{ user: UserCredentials | GetNotificationsResponseDto }>, { notifications: boolean } | void>({
+    getUser: builder.query<
+      HttpResponse<{ user: UserCredentials | GetNotificationsResponseDto }>,
+      { notifications: boolean } | void
+    >({
       query: (args) => ({
-        url: "/user",
+        url: "/auth/user",
         method: "GET",
         ...(args?.notifications && { params: { notifications: args.notifications } })
       }),
       providesTags: ["Notification"],
       onQueryStarted: (_, { dispatch, queryFulfilled }) => {
         queryFulfilled.catch((error) => {
-          if (isFetchBaseQueryError(error.error)) {
-            if (error.error.status === 404)
-              dispatch(
-                unexpectedErrorToast(
-                  "We couldn't find your profile on our server."
-                )
-              );
-          }
+          if (isFetchBaseQueryError(error.error) && error.error.status === 404)
+            dispatch(
+              unexpectedErrorToast("We couldn't find your profile on our server.")
+            );
         })
+      }
+    }),
+
+    /**
+     * Can add or delete the user's favourites.
+     * @request
+     */
+    updateUserFavourites: builder.mutation<
+      HttpResponse<{ favourites: UserCredentials["favourites"] }>,
+      UpdateUserFavouritesBodyDto
+    >({
+      queryFn: async (query, { getState, dispatch, signal }) => {
+        const res = await fetch("api/v2/auth/user/favourites", {
+            method: "PATCH",
+            body: JSON.stringify({ favourites: query.favourites }),
+            ...prepareHeadersAndOptions({ state: getState() as RootState }),
+            keepalive: true,
+            signal
+          }),
+          data: HttpResponse<{ favourites: UserCredentials["favourites"] }> = await res.json();
+
+        if (!res.ok) {
+          dispatch(
+            unexpectedErrorToast(
+              "There was an unexpected error adding your previously selected game favorites."
+            )
+          );
+
+          return { error: allow500ErrorsTransform(data, res) };
+        }
+
+        if (data.favourites) dispatch(SET_USER_FAVOURITES(data.favourites));
+        return { data };
       }
     }),
 
@@ -218,7 +234,7 @@ const authApi = createApi({
      */
     deleteUser: builder.mutation<HttpResponse, void>({
       query: () => ({
-        url: "/user/delete",
+        url: "/auth/user",
         method: "DELETE",
       })
     }),
@@ -232,20 +248,19 @@ const authApi = createApi({
       DeleteNotificationsBodyDto
     >({
       query: (body) => ({
-        url: "/user/delete/notifications",
-        method: "POST",
+        url: "/auth/user/notifications",
+        method: "DELETE",
         body
       }),
-      // invalidatesTags: ["Notification"]
     }),
 
     /**
-     * 
+     * Clears the user session.
      * @request
      */
     logout: builder.mutation<HttpResponse, { username: string }>({
       query: (username) => ({
-        url: "/logout",
+        url: "/auth/logout",
         method: "POST",
         body: username
       }),
@@ -254,10 +269,14 @@ const authApi = createApi({
         const { meta } = await queryFulfilled;
 
         if (meta?.response?.ok) {
-          dispatch(CLEAR_USER())
-          socket.disconnect()
-          getSocketInstance("chat").disconnect()
-          alert("User login session timed out.")
+          handleLogout(dispatch, socket); // Only using this here right now!
+          // dispatch(CLEAR_USER())
+          // dispatch(CLEAR_CHAT())
+
+          // socket.disconnect()
+          // getSocketInstance("chat").disconnect()
+
+          // alert("User login session timed out.")
         }
       }
     }),
@@ -266,28 +285,26 @@ const authApi = createApi({
      * Initializes all friend rooms and friend activity statuses.
      * @emitter
      */
-    initializeFriends: builder.mutation<SocketResponse, { friends: FriendCredentials[] }>({
+    initializeFriends: builder.mutation<
+      SocketResponse<{ friends: UserCredentials["friends"] }>, 
+      { verification_token: string }
+    >({
       queryFn: async (data) => emitAsPromise(socket)(AuthEvent.INITIALIZE_FRIENDS, data)
     }),
 
     /**
-     * Join and leaves of friend rooms.
+     * Manages friend requests including sending, accepting, and declining.
+     * Also, checks if the user is verified and avoids duplicate requests.
      * @emitter
      */
-    // Idk if I need this.
-    manageFriendRoom: builder.mutation<SocketResponse, ManageFriendRoomDto>({
-      queryFn: async (data) => emitAsPromise(socket)(AuthEvent.MANAGE_FRIEND_ROOM, data)
-    }),
-
-    /**
-     * Friend Requests and adding a friend.
-     * @emitter
-     */
-    manageFriendRequest: builder.mutation<SocketResponse<{ updated_user: UserCredentials }>, ManageFriendRequestDto>({
-      queryFn: async (data, { getState, dispatch }) => {
+    manageFriendRequest: builder.mutation<
+      SocketResponse<{ pending_friends: UserCredentials["friends"]["pending"] }>,
+      ManageFriendRequestEventDto
+    >({
+      queryFn: async (data, { getState }) => {
         const user = (getState() as RootState).auth.user.credentials;
 
-        // TODO: I may need the toasts later on, so they're left here.
+        // NOTE: I may need the toasts later on, so they're left here.
         if (!user?.email_verified) {
           const errorMsg = "You must be verified to add friends.";
 
@@ -306,7 +323,9 @@ const authApi = createApi({
           // );
           return { error: { allow: true, data: { ERROR: errorMsg }, status: "unauthorized" } };
         } else if (
-          user.friends.pending.concat(user.friends.list).some((friend) => friend.username === data.friend.username)
+          [user.friends.pending, user.friends.list].some(
+            (friend) => friend[data.friend.verification_token as any]?.username === data.friend.username  
+          )
         ) {
           const errorMsg = "You already requested or added this friend.";
           
@@ -321,15 +340,18 @@ const authApi = createApi({
         }
 
         const res = await emitAsPromise(socket)(AuthEvent.MANAGE_FRIEND_REQUEST, data);
-        console.log("res", res)
-        
+
         return res.error
           ? {
               error: {
                 ...res.error,
                 data: {
                   ...(allow500ErrorsTransform(res.error!, res.meta).data as any),
-                  ERROR: res.error.status === "unauthorized" ? res.error.ERROR : "An unexpected error occurred.",
+                  ERROR: 
+                    // res.error.data.ERROR.startsWith("Unexpectedly couldn't") || res.error.status !== "internal error"
+                    res.error.data?.ERROR.endsWith("in our system.") || res.error.status === "unauthorized"
+                      ? res.error.data.ERROR
+                      : "An unexpected error occurred."
                 }
               }
             }
@@ -337,41 +359,48 @@ const authApi = createApi({
       },
       onQueryStarted: async ({ action_type }, { dispatch, queryFulfilled }) => {
         try {
-          const { data } = await queryFulfilled;
+            const { data } = await queryFulfilled;
 
-          console.log("MANAGE FRIEND DATA", data)
+            logger.debug("MANAGE FRIEND", data)
 
-          if (data.status === "ok" && action_type === "request" && data.updated_user) {
-            dispatch(UPDATE_USER_CREDENTIALS(data.updated_user));
-            // dispatch(
-            //   ADD_TOAST({
-            //     title: action_type === "request" ? "Friend Request Sent" : "Friend Added",
-            //     message: data.message,
-            //     intent: "success",
-            //   })
-            // );
-          }
+            if (data.status === "ok" && action_type === "request" && data.pending_friends) {
+              dispatch(UPDATE_USER_FRIENDS({ pending: data.pending_friends }));
+              // dispatch(
+              //   ADD_TOAST({
+              //     title: action_type === "request" ? "Friend Request Sent" : "Friend Added",
+              //     message: data.message,
+              //     intent: "success",
+              //   })
+              // );
+            }
           } catch (error: any) {
             if (isFetchBaseQueryError(error.error)) {
-              const resError = error.error
+              // const resError = error.error
               // if (resError.status === "not found")
               //   dispatch(unexpectedErrorToast(resError.data.ERROR));
-              // else if (resError.status === "unauthorized" && resError.ERROR.includes("isn't verified."))
+              // else if ((resError.status === "unauthorized" && resError.ERROR.includes("isn't verified.")))
               //   dispatch(ADD_TOAST({ title: "Cannot Send", message: resError.data.ERROR, intent: "error" }));
+              // else if (resError.status === "bad request")
+              //   dispatch(ADD_TOAST({ title: "Already Sent/Friended", message: resError.data.ERROR, intent: "error" }));
             } else {
               logger.error("authApi manageFriendRequest error:\n", error.message);
             }
           }
       },
-      // transformErrorResponse: (res, meta) => allow500ErrorsTransform(res, meta)
     }),
 
     /**
-     * Receives new entries within the user's friends.
-     * @listener
-     * TODO:
+     * Sends the user's new activity status.
+     * @emitter
      */
-    // Idk what would be the socket response up here for a listener.
+    userActivity: builder.mutation<SocketResponse, { status: ActivityStatuses }>({
+      queryFn: async (data) => emitAsPromise(socket)(AuthEvent.USER_ACTIVITY, data)
+    }),
+
+    /**
+     * Receives new friends to be added or removed for the user's pending or friends list.
+     * @listener
+     */
     [authSocketListeners.friendsUpdate]: builder.mutation<{ resourcesLoaded?: boolean }, { resourcesLoaded?: boolean }>({
       queryFn: (loadedObj) => ({ data: loadedObj }),
       onQueryStarted: async (_, { dispatch, queryFulfilled }) => {
@@ -380,23 +409,16 @@ const authApi = createApi({
         if (data.resourcesLoaded) {
           logger.debug("friendsUpdate listener initialized.");
 
-          socket.on(AuthEvent.FRIENDS_UPDATE, (data: { friends: UserCredentials["friends"] }) => {
-            // let patchResult: PatchCollection | undefined;
-
+          socket.on(AuthEvent.FRIENDS_UPDATE, ({ friends }: { friends: UserCredentials["friends"] }) => {
             try {
-              console.log("FRIEND UPDATE", data);
+              logger.debug("FRIEND UPDATE", { friends });
 
-              dispatch(UPDATE_USER_CREDENTIALS({ friends: { list: data.friends } })); // TODO: Might be getting back single friends too if I remove friendActivity.
-
-              // patchResult = dispatch(
-              //   authApi.util.updateQueryData("", undefined, (cache) => {
-              //     console.log("CACHE", cache);
-              //     cache.push(data);
-              //   }
-              // ));
-              // authApi.util.invalidateTags([""]);
+              if ("list" in friends && "pending" in friends) {
+                dispatch(UPDATE_USER_FRIENDS(friends));
+              } else {
+                logger.error("authApi friendsUpdate error:\n", "Received incorrect friends object.")
+              }
             } catch (error: any) {
-              // if (patchResult) patchResult.undo();
               history.push("/error-500");
               logger.error("authApi friendsUpdate error:\n", error.message);
             }
@@ -406,40 +428,28 @@ const authApi = createApi({
     }),
 
     /**
-     * TODO:
+     * Receives status updates from friends in the user's friends list.
      * @listener
      */
     [authSocketListeners.friendActivity]: builder.mutation<{ resourcesLoaded?: boolean }, { resourcesLoaded?: boolean }>({
       queryFn: (loadedObj) => ({ data: loadedObj }),
-      onQueryStarted: async (_, { getState, dispatch, queryFulfilled }) => {
+      onQueryStarted: async (_, { dispatch, queryFulfilled }) => {
         const { data } = await queryFulfilled;
         
         if (data.resourcesLoaded) {
           logger.debug("friendActivity listener initialized.");
 
-          socket.on(AuthEvent.FRIEND_ACTIVITY, (data: { friend: FriendCredentials; status: ActivityStatuses }) => {
-            // let patchResult: PatchCollection | undefined;
-
+          socket.on(AuthEvent.FRIEND_ACTIVITY, ({ verification_token, status }: FriendActivityEventDto) => {
             try {
-              console.log("FRIEND ACTIVITY", data);
+              logger.debug("FRIEND ACTIVITY", { verification_token, status });
 
-              const state = (getState() as RootState).auth.user.credentials?.friends.list;
-              const friendChange = state?.find(({ username }) => username === data.friend.username )
-              // friendChange?.status = data.status;
-  
-              // dispatch(UPDATE_USER_CREDENTIALS({ friends: { list: ...friendChange! } }));
-  
-              // TODO: If what comes is status offline, disconnect from their room?
-
-              // patchResult = dispatch(
-              //   authApi.util.updateQueryData("", undefined, (cache) => {
-              //     console.log("CACHE", cache);
-              //     cache.push(data);
-              //   }
-              // ));
-              // authApi.util.invalidateTags([""]);
+              dispatch(
+                UPDATE_USER_FRIEND_IN_LIST({
+                  verToken: verification_token,
+                  update: { activity: { status } },
+                })
+              );
             } catch (error: any) {
-              // if (patchResult) patchResult.undo();
               history.push("/error-500");
               logger.error("authApi friendActivity error:\n", error.message);
             }
@@ -451,7 +461,6 @@ const authApi = createApi({
     /**
      * All incoming notifications from the server (friend requests, system messages, news, etc).
      * @listener
-     * // TODO:
      */
     [authSocketListeners.newNotification]: builder.mutation<{ resourcesLoaded?: boolean }, { resourcesLoaded?: boolean }>({
       queryFn: (loadedObj) => ({ data: loadedObj }),
@@ -461,12 +470,11 @@ const authApi = createApi({
         if (data.resourcesLoaded) {
           logger.debug("newNotification listener initialized.");
 
-          // socket.on(AuthEvent.NEW_NOTIFICATION, (data: { type: ServerNotificationTypes; message: ServerNotification }) => {
           socket.on(AuthEvent.NEW_NOTIFICATION, (data: { notification: Notification }) => {          
             let patchResult: PatchCollection | undefined;
 
             try {
-              console.log("NEW NOTIFICATION", data);
+              logger.debug("NEW NOTIFICATION", data);
               const { type, title, message, link } = data.notification;
 
               dispatch(
@@ -510,15 +518,11 @@ function handleLoginSuccess(
     // Removes the google params.
     for (const key of Array.from(params.keys())) {
       console.log("key", key);
-      // if (![ModalQueryKey.LOGIN_MODAL, ModalQueryKey.REGISTER_MODAL].includes(key as any)) {
-      // TODO: Find out what the specific keys from the google login can be and put them here and also delete login.
-      if (["login"].includes(key as any)) {
+      if ([""].includes(key as any)) {
         console.log("removed", key);
         params.delete(key);
       }
     }
-    // FIXME:
-    window.history.replaceState({}, document.title, params.toString());
 
     if (!params.has("register")) {
       if (!user.email_verified) {
@@ -530,9 +534,9 @@ function handleLoginSuccess(
             options: {
               button: {
                 sequence: "send verification email.",
-                onClick: () => handleSendVerifyEmail(dispatch),
-              },
-            },
+                onClick: () => handleSendVerifyEmail(dispatch)
+              }
+            }
           })
         );
       } else {
@@ -541,7 +545,7 @@ function handleLoginSuccess(
             title: "Welcome",
             message: `Welcome back ${user.username}!`,
             intent: "success",
-            duration: 65000,
+            duration: 65000
           })
         );
       }
@@ -558,9 +562,6 @@ function handleLoginSuccess(
 
 export const {
   endpoints: authEndpoints,
-  reducerPath: authApiReducerPath,
-  reducer: authApiReducer,
-  middleware: authMiddleware,
   useRegisterMutation,
   useLoginMutation,
   useLoginGoogleMutation,
@@ -568,12 +569,13 @@ export const {
   // useSendVerifyEmailMutation,
   useLazyGetUsersQuery,
   useLazyGetUserQuery,
+  useUpdateUserFavouritesMutation,
   useDeleteUserNotificationsMutation,
   // useDeleteUserMutation,
   useLogoutMutation,
   useInitializeFriendsMutation,
-  // useManageFriendRoomMutation,
   useManageFriendRequestMutation,
+  useUserActivityMutation
 } = authApi;
 
 export default authApi;

@@ -42,6 +42,9 @@
           margin-inline: 1.5rem;
           background-color: var(--c-purple-border);
         }
+        & h1 {
+          font-size: 32px;
+        }
       }
       & > div:last-child {
         gap: 1.5rem;

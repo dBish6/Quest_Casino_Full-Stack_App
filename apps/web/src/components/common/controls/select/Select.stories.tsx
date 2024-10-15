@@ -84,7 +84,7 @@ export const CallingCode: Story = {
     return (
       <Select
         {...args}
-        Loader={() => <Spinner intent="primary" size="sm" />}
+        Loader={<Spinner intent="primary" size="sm" />}
         loaderTrigger={!!data && !data.length}
         style={{ width: "126px" }}
         onFocus={async () => {
