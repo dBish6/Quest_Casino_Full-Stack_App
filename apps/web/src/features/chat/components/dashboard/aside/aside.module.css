@@ -75,7 +75,7 @@
           row-gap: 2rem;
           padding: 2rem;
           overflow-y: auto;
-          & .friendsPanel {
+          & .friendsEnlarged {
             grid-column: 1;
             grid-row: 2;
           }
@@ -116,7 +116,7 @@
         }
       }
 
-      & .friends {
+      & .friendsDefault {
         position: relative;
         display: flex;
         align-items: center;
@@ -177,7 +177,7 @@
       }
 
       /* Friends panel for enlarged chat. */
-      & .friendsPanel {
+      & .friendsEnlarged {
         z-index: 1;
         position: relative;
         & :global(.blob) {

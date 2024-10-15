@@ -1,8 +1,8 @@
 .chat {
   --_chat-head-height: 132.2px;
   --_chat-head-height-full: 80px;
-  --_input-height: 64px;
-  --_input-height-full: 86px;
+  --_input-height: 70px;
+  --_input-height-full: 88px;
 
   position: absolute;
   bottom: 0;
@@ -100,21 +100,38 @@
     }
   }
 
-  & form {
+  & .formContainer {
     position: absolute;
     bottom: 0;
     width: 100%;
     backdrop-filter: blur(15px);
     z-index: 2;
-    & :global(.control) {
-      opacity: 0.9;
+    &[data-restriction="true"] {
+      padding-bottom: 4px !important;
+    }
 
-      & small[role="alert"] {
-        font-size: 12px;
-        font-weight: 600;
-        & span {
-          font-size: 14px;
-          color: var(--c-status-yellow);
+    & .typingMessage {
+      position: absolute;
+      white-space: nowrap;
+      transition: 0.22s ease-in-out top;
+      & span {
+        display: inline-block;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        vertical-align: top;
+      }
+    }
+    & form {
+      & :global(.control) {
+        opacity: 0.9;
+
+        & small[role="alert"] {
+          font-size: 12px;
+          font-weight: 600;
+          & span {
+            font-size: 14px;
+            color: var(--c-status-yellow);
+          }
         }
       }
     }
@@ -181,6 +198,8 @@
 
             & p {
               font: var(--para-x-small);
+              word-break: normal;
+              overflow-wrap: anywhere;
             }
           }
 
@@ -198,8 +217,22 @@
       }
     }
 
-    & form {
-      padding: 0.5rem 0.75rem 1rem;
+    & .formContainer {
+      --_is-typing-txt-width: 46.2167px;
+      --_inline-padding: 0.75rem;
+
+      padding: 1.25rem var(--_inline-padding) 0.625rem;
+      & .typingMessage {
+        top: 2px;
+        width: calc(100% - var(--_inline-padding) - var(--_inline-padding));
+        font: var(--para-xx-small);
+        & span {
+          max-width: calc(100% - var(--_is-typing-txt-width));
+        }
+      }
+      & form :global(.control) small[role="alert"] {
+        margin-top: 2px;
+      }
     }
   }
 
@@ -345,18 +378,21 @@
       }
     }
 
-    & form {
-      padding: 22px 22px 1rem;
+    & .formContainer {
+      --_is-typing-txt-width: 55px;
+      --_inline-padding: 22px;
+
+      padding: 24px var(--_inline-padding) 1rem;
       border-radius: 0 0 12px 12px;
-      /* background: transparent linear-gradient(180deg, #100D20 0%, var(--c-purple-900) 100%); */
-      /* background: transparent linear-gradient(180deg, rgba(16, 13, 32, 0.8) 0%, rgb(40, 28, 75, 0.8) 100%); */
-      /* This looks pretty nice actually. */
       background: transparent linear-gradient(180deg, rgba(16, 13, 32, 0) 0%, rgb(40, 28, 75, 0.8) 100%);
-
-      /* background: transparent linear-gradient(180deg, rgba(16, 13, 32, 0.25) 0%, rgb(40, 28, 75, 0.8) 100%); */
-
-
-      /* background: transparent linear-gradient(180deg, var(--c-lvl-2) 0%, var(--c-purple-900) 100%); */
+      & .typingMessage {
+        top: 3px;
+        width: calc(100% - var(--_inline-padding) - var(--_inline-padding));
+        font: var(--para-x-small);
+        & span {
+          max-width: calc(100% - var(--_is-typing-txt-width));
+        }
+      }
     }
   }
 }

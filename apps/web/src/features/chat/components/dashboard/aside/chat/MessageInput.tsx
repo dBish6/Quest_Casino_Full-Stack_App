@@ -4,19 +4,15 @@ import type { DragPointsKey } from "../Aside";
 import { useRef } from "react";
 import { debounce } from "tiny-throttle";
 
-import { isFetchBaseQueryError } from "@utils/isFetchBaseQueryError";
-
-import { useAppSelector, useAppDispatch } from "@redux/hooks";
+import { useAppSelector } from "@redux/hooks";
 import { selectChatRoom, selectRestriction } from "@chatFeat/redux/chatSelectors";
-import { TOGGLE_RESTRICTION } from "@chatFeat/redux/chatSlice";
-// TODO: (Only do it for private) Typing might be here because it will be in the same div (Form right now)...?
-import { useTypingMutation, useTypingActivityMutation, useChatMessageMutation } from "@chatFeat/services/chatApi";
+import { useTypingMutation, useChatMessageMutation } from "@chatFeat/services/chatApi";
 
 import { Button, Input } from "@components/common/controls";
 import { Icon } from "@components/common";
 import { Form } from "@components/form";
 
-// import s from "./chat.module.css";
+import s from "./chat.module.css";
 
 interface MessageInputProps { 
   user: UserCredentials | null; 
@@ -24,13 +20,14 @@ interface MessageInputProps {
 }
 
 export default function MessageInput({ user, asideState }: MessageInputProps) {
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null),
+    typingMsgRef = useRef<HTMLParagraphElement>(null);
 
   const chatRoom = useAppSelector(selectChatRoom),
-    restriction = useAppSelector(selectRestriction),
-    dispatch = useAppDispatch();
+    restriction = useAppSelector(selectRestriction);
 
-  const [emitChatMessage, { isLoading: emitChatMessageLoading, error: emitChatMessageError }] = useChatMessageMutation(),
+  const [emitChatMessage, { isLoading: emitChatMessageLoading }] = useChatMessageMutation(),
+    [emitTyping] = useTypingMutation(),
     disableInput = chatRoom.loading || !chatRoom.currentId || emitChatMessageLoading || restriction.started;
 
   const debouncedSendChatMessage = debounce(async () => {
@@ -44,47 +41,80 @@ export default function MessageInput({ user, asideState }: MessageInputProps) {
         message: inputRef.current!.value
       });
 
-      console.log("res.data!", res.data)
-      if (res.data?.status === "ok") {
-        inputRef.current!.value = "";
-      } else if (isFetchBaseQueryError(res.error) && (res.error?.status as string) === "bad request") {
-        // Too many duplicate messages (restrict on spam).
-        dispatch(TOGGLE_RESTRICTION(true));
+      if (res.data?.status === "ok") inputRef.current!.value = "";
+    }
+  }, 700);
+
+  const typeTrueSent = useRef(false);
+  const handleTyping = () => {
+    const friend = chatRoom.targetFriend?.friend;
+
+    if (chatRoom.accessType === "private" && friend) {
+      const shouldEmit = !!inputRef.current!.value.length;
+
+      if (typeTrueSent.current !== shouldEmit) {
+        emitTyping({
+          friend_ver_token: friend.verification_token,
+          is_typing: shouldEmit
+        });
+        typeTrueSent.current = shouldEmit;
       }
     }
-  }, 700),
-    handleSendChatMessage = (e: React.FormEvent<HTMLFormElement>) => {
-      e.preventDefault();
-      debouncedSendChatMessage()
-    };
+  }
 
+  // TODO: textarea.
   return (
-    <Form onSubmit={handleSendChatMessage}>
-      <Input
-        ref={inputRef}
-        label="Message"
-        intent="primary"
-        size={asideState === "enlarged" ? "xl" : "lrg"}
-        id="messenger"
-        Button={() => (
-          <Button
-            intent="primary"
-            size={asideState === "enlarged" ? "xl" : "lrg"}
-            iconBtn
-            disabled={disableInput}
-          >
-            <Icon id={asideState === "enlarged" ? "send-24" : "send-18"} />
-          </Button>
-        )}
-        // user here is useUser and it's undefined on the server and loaded on the client, so user helps with hydration issues also.
-        error={user && restriction.started && (() => (
-          <>
-            Restriction expires in:{" "}
-            <span id="coolCounter"></span>
-          </>
-        ))}
-        disabled={disableInput}
-      />
-    </Form>
+    <div className={s.formContainer} data-restriction={restriction.started}>
+      {chatRoom.targetFriend?.isTyping && (
+        <p ref={typingMsgRef} className={s.typingMessage}>
+          <span>{chatRoom.targetFriend.friend!.username}</span> is typing...
+        </p>
+      )}
+
+      <Form
+        onSubmit={(e) => {
+          e.preventDefault();
+          debouncedSendChatMessage();
+        }}
+      >
+        <Input
+          ref={inputRef}
+          label="Message"
+          intent="primary"
+          size={asideState === "enlarged" ? "xl" : "lrg"}
+          id="messenger"
+          onInput={handleTyping}
+          onFocus={() => {
+            const typingMsgStyle = typingMsgRef.current?.style;
+            if (typingMsgStyle) typingMsgStyle.top = "-1px";
+          }}
+          onBlur={() => {
+            const typingMsgStyle = typingMsgRef.current?.style;
+            if (typingMsgStyle) 
+              typingMsgStyle.top = asideState === "enlarged" ? "3px" : "2px";
+          }}
+          Button={
+            <Button
+              intent="primary"
+              size={asideState === "enlarged" ? "xl" : "lrg"}
+              iconBtn
+              type="submit"
+              tabIndex={0}
+              disabled={disableInput}
+            >
+              <Icon id={asideState === "enlarged" ? "send-24" : "send-18"} />
+            </Button>
+          }
+          // user here is useUser and it's undefined on the server and loaded on the client, so user helps with hydration issues also.
+          error={user && restriction.started && (
+            <>
+              Restriction expires in:{" "}
+              <span id="coolCounter"></span>
+            </>
+          )}
+          disabled={disableInput}
+        />
+      </Form>
+    </div>
   );
 }

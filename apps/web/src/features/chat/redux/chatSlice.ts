@@ -15,7 +15,11 @@ export interface ChatRoomState {
   /** The last chat message sent in an ongoing private chat room. */
   readonly lastChatMessage?: LastChatMessageDto;
   /** The target friend to display in a private chat room. */
-  targetFriend?: { verTokenSnapshot: string; friend: FriendCredentials | null }
+  targetFriend?: { 
+    verTokenSnapshot: string; 
+    friend: FriendCredentials | null;
+    isTyping?: boolean; 
+  }
 }
 
 export interface ChatRestrictionState {

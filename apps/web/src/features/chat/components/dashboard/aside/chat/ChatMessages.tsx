@@ -14,11 +14,11 @@ import useResourcesLoadedEffect from "@hooks/useResourcesLoadedEffect";
 
 import { useAppSelector, useAppDispatch } from "@redux/hooks";
 import { selectChatRoom, selectInitialized } from "@chatFeat/redux/chatSelectors";
-import { SET_CHAT_INITIALIZED, SET_CHAT_ROOM_LOADING, UPDATE_CHAT_ROOM } from "@chatFeat/redux/chatSlice";
-import { useManageChatRoomMutation, useChatMessageSentMutation } from "@chatFeat/services/chatApi";
+import { SET_CHAT_INITIALIZED, SET_CHAT_ROOM_LOADING, UPDATE_CHAT_ROOM, UPDATE_TARGET_FRIEND } from "@chatFeat/redux/chatSlice";
+import { useManageChatRoomMutation, useChatMessageSentMutation, useFriendTypingActivityMutation } from "@chatFeat/services/chatApi";
 
 import { Avatar } from "@components/common";
-import { ModalQueryKey, ModalTrigger } from "@components/modals";
+import { ModalTrigger } from "@components/modals";
 import { SkeletonAvatar, SkeletonText, Skeleton } from "@components/loaders";
 import { ScrollArea } from "@components/scrollArea";
 import Timestamp from "../Timestamp";
@@ -53,7 +53,8 @@ export default function ChatMessages({ user, asideState }: ChatMessagesProps) {
   const { resourcesLoaded } = useResourceLoader();
 
   const [emitManageChatRoom] = useManageChatRoomMutation(),
-    [chatMessageSentListener] = useChatMessageSentMutation();
+    [chatMessageSentListener] = useChatMessageSentMutation(),
+    [friendTypingActivityListener] = useFriendTypingActivityMutation();
 
   /** 
    * The last message is a flag for an active private chat room also, so there is no need to search through users to find active chats.
@@ -90,50 +91,59 @@ export default function ChatMessages({ user, asideState }: ChatMessagesProps) {
         })
     }
   }
+
+  const setupChatListeners = async (): Promise<MutationActionCreatorResult<any>[]> => {
+    // Listens for new messages coming in.
+    const messageSentMutation = chatMessageSentListener({
+      resourcesLoaded,
+      callback: (chatMessage) => {
+        chatMsgs.current!.enqueue(chatMessage);
+        setChatMsgCount((prev) => prev + 1);
+      }
+    })
+    await messageSentMutation;
+
+    const typingActivityMutation = friendTypingActivityListener({ resourcesLoaded })
+    await typingActivityMutation;
+
+    return [messageSentMutation, typingActivityMutation]
+  }
   
   /** 
   * Handles joins, leaves and chat initialization.
-  */ 
+  */
+  // FIXME: You probably have to move the joining and leaving to the base Chat component because when the chat is shrunk, we don't want to keep joining and leaving...?
   useResourcesLoadedEffect(() => {
     (async () => {
       if (user?.email_verified && chatRoom.proposedId) {
         dispatch(SET_CHAT_ROOM_LOADING(true));
-        let listenMutation: MutationActionCreatorResult<any>;
+        let initialListenerMutations: MutationActionCreatorResult<any>[];
 
         const joinMutation = emitManageChatRoom({
           access_type: chatRoom.accessType,
           room_id: { leave: chatRoom.snapshotId, join: chatRoom.proposedId }, // Keeps swapping.
           last_message: chatRoom.lastChatMessage
         });
-        const res = (await joinMutation);
+        const res = await joinMutation;
 
         if (res.data?.status === "ok") {
           const data = res.data;
-          if (data.chat_id) {
-            if (data.chat_messages?.length) {
-              // Initializes messages.
-              chatMsgs.current = new CircularQueue(data.chat_messages);
-              setChatMsgCount(data.chat_messages.length);
-            } else if (chatRoom.accessType === "private" && data.chat_id) {
-              // On a new private room...
+          if (data.chat_id && data.chat_messages) {
+            // Initializes messages.
+            chatMsgs.current = new CircularQueue(data.chat_messages);
+            setChatMsgCount(data.chat_messages.length);
+            // On a new private room...
+            if (!data.chat_messages?.length && chatRoom.accessType === "private")
               handleLastMessage.new(data.chat_id);
-            }
 
-            logger.debug("Chat ID initialized.");
+            logger.debug("Chat ID and messages initialized.");
             dispatch(
               UPDATE_CHAT_ROOM({ currentId: data.chat_id })
             );
           }
-          // Listens for new messages coming in.
+
           if (!initialized) {
-            listenMutation = chatMessageSentListener({
-              resourcesLoaded,
-              callback: (chatMessage) => {
-                chatMsgs.current!.enqueue(chatMessage);
-                setChatMsgCount((prev) => prev + 1);
-              },
-            })
-            await listenMutation;
+            initialListenerMutations = await setupChatListeners();
 
             window.addEventListener("beforeunload", handleLastMessage.beforeunload);
             dispatch(SET_CHAT_INITIALIZED(true));
@@ -144,7 +154,7 @@ export default function ChatMessages({ user, asideState }: ChatMessagesProps) {
         }
 
         return () => {
-          [joinMutation, listenMutation].forEach((mutation) => mutation?.abort());
+          [joinMutation, ...initialListenerMutations].forEach((mutation) => mutation?.abort());
           window.removeEventListener("beforeunload", handleLastMessage.beforeunload);
         }
       }
@@ -159,10 +169,17 @@ export default function ChatMessages({ user, asideState }: ChatMessagesProps) {
   }, [chatRoom.accessType])
 
   /**
-   * Updates the user's last message sent on count.
+   * Updates the user's last message sent on count and also checks if clearing the is 
+   * typing message for a private room is needed.
    */
   useEffect(() => {
     handleLastMessage.update();
+
+    if (
+      chatRoom.accessType === "private" &&
+      chatMsgs.current?.peek()?.username === chatRoom.targetFriend?.friend?.username
+    )
+      dispatch(UPDATE_TARGET_FRIEND({ isTyping: false }));
   }, [chatMsgCount])
 
   const messageInputHeight = useRef(0);
@@ -186,7 +203,7 @@ export default function ChatMessages({ user, asideState }: ChatMessagesProps) {
        })
     }
   }, [chatRoom.loading, chatMsgCount])
-  
+
   const chatMessages = useMemo(() => {
     logger.debug("useMemo chatMsgs.current", chatMsgs.current);
     const chatMsgsJSX: React.JSX.Element[] = [],
@@ -283,7 +300,7 @@ export default function ChatMessages({ user, asideState }: ChatMessagesProps) {
         )
       ) : (
         <p>
-          <ModalTrigger queryKey={ModalQueryKey.LOGIN_MODAL} intent="primary">
+          <ModalTrigger queryKey="login" intent="primary">
             Login
           </ModalTrigger>{" "}
           to see the chat.

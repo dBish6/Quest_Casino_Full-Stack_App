@@ -20,7 +20,6 @@ import { Button, Select } from "@components/common/controls";
 import { Icon, Blob } from "@components/common";
 import ChatMessages from "./ChatMessages";
 import MessageInput from "./MessageInput";
-import { FriendsPanel } from "../Friends";
 import { ANIMATION_DURATION } from "../Aside";
 
 import s from "./chat.module.css";
@@ -32,7 +31,7 @@ interface RoomSwitcherProps {
   dispatch: AppDispatch;
 }
 
-interface ChatProps {
+export interface ChatProps {
   user: UserCredentials | null;
   friendsListArr: FriendCredentials[];
   asideState: DragPointsKey;
@@ -110,71 +109,67 @@ export default function Chat({ user, friendsListArr, asideState }: ChatProps) {
   }, [user?.email_verified, restriction.started]);
 
   return (
-    <>
-      {asideState === "enlarged" && <FriendsPanel user={user} friendsListArr={friendsListArr} />}
-
-      <m.section
-        id="chat"
-        className={s.chat}
-        variants={shrinkInOut}
-        initial="default"
-        animate={chat}
-        data-aside-state={asideState}
-      >
-        <div className={s.head}>
-          <div className={s.inner} data-chat-state={chat}>
-            {chat !== "full" && (
-              <Button
-                aria-label={chatState === "shrunk" ? "Enlarge Chat" : "Shrink Chat"}
-                aria-controls="chat"
-                aria-expanded={chatState === "enlarged"}
-                size="lrg"
-                iconBtn
-                onClick={() =>
-                  setSearchParams((params) => {
-                    params.has("chat")
-                      ? params.delete("chat", "shrunk")
-                      : params.set("chat", "shrunk");
-                    return params;
-                  })
-                }
-              >
-                <Icon id="expand-35" />
-              </Button>
-            )}
-            <hgroup>
-              <Icon aria-hidden="true" id={`speech-bubble-${chat === "full" ? "32" : "24"}`} />
-              <h3 id="hChat">Chat</h3>
-            </hgroup>
-
-            <RoomSwitcher user={user} friendsListArr={friendsListArr} chatState={chat} dispatch={dispatch} />
-          </div>
-          
-          {chat !== "shrunk" && (
-            <Blob svgWidth={chat === "full" ? "193.73px" : "155.361px"} svgHeight={chat === "full" ? "54.16px" : "51.866px"}>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 155.361 51.866"
-                preserveAspectRatio="xMidYMin meet"
-              >
-                <path
-                  d="M72.245 2.489c22.276 0 38.993-5.6 59.085 0s19.252 10.71 21.282 22.4 9.311 18.482-13.161 24.362-40.03 0-70.285 0c-30.018 0-49.72 4.656-60.435 0C2.931 46.739 0 44.608 0 27.129 0 8.368.875 7.923 8.731 5.287 20.114 1.464 43.51 2.489 72.245 2.489Z"
-                  fill="#b243b2"
-                />
-              </svg>
-            </Blob>
+    <m.section
+      id="chat"
+      className={s.chat}
+      variants={shrinkInOut}
+      initial="default"
+      // animate={asideState === "enlarged" ? "full" : chatState}
+      animate={chat}
+      data-aside-state={asideState}
+    >
+      <div className={s.head}>
+        <div className={s.inner} data-chat-state={chat}>
+          {chat !== "full" && (
+            <Button
+              aria-label={chatState === "shrunk" ? "Enlarge Chat" : "Shrink Chat"}
+              aria-controls="chat"
+              aria-expanded={chatState === "enlarged"}
+              size="lrg"
+              iconBtn
+              onClick={() =>
+                setSearchParams((params) => {
+                  params.has("chat")
+                    ? params.delete("chat", "shrunk")
+                    : params.set("chat", "shrunk");
+                  return params;
+                })
+              }
+            >
+              <Icon id="expand-35" />
+            </Button>
           )}
-        </div>
+          <hgroup>
+            <Icon aria-hidden="true" id={`speech-bubble-${chat === "full" ? "32" : "24"}`} />
+            <h3 id="hChat">Chat</h3>
+          </hgroup>
 
-        {/* FIXME: Very weird problem when ChatMessages rendered and going to asideState shrunk. */}
-        {(chatState !== "shrunk" || asideState === "enlarged") && (
-          <>
-            <ChatMessages user={user} asideState={asideState} />
-            <MessageInput user={user} asideState={asideState} />
-          </>
+          <RoomSwitcher user={user} friendsListArr={friendsListArr} chatState={chat} dispatch={dispatch} />
+        </div>
+        
+        {chat !== "shrunk" && (
+          <Blob svgWidth={chat === "full" ? "193.73px" : "155.361px"} svgHeight={chat === "full" ? "54.16px" : "51.866px"}>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 155.361 51.866"
+              preserveAspectRatio="xMidYMin meet"
+            >
+              <path
+                d="M72.245 2.489c22.276 0 38.993-5.6 59.085 0s19.252 10.71 21.282 22.4 9.311 18.482-13.161 24.362-40.03 0-70.285 0c-30.018 0-49.72 4.656-60.435 0C2.931 46.739 0 44.608 0 27.129 0 8.368.875 7.923 8.731 5.287 20.114 1.464 43.51 2.489 72.245 2.489Z"
+                fill="#b243b2"
+              />
+            </svg>
+          </Blob>
         )}
-      </m.section>
-    </>
+      </div>
+
+      {(chatState !== "shrunk" && asideState !== "shrunk") && (
+        <>
+          <ChatMessages user={user} asideState={asideState} />
+          <MessageInput user={user} asideState={asideState} />
+        </>
+      )}
+    </m.section>
   );
 }
 
@@ -237,7 +232,7 @@ function RoomSwitcher({ user, chatState, friendsListArr, dispatch }: RoomSwitche
             aria-controls="chatMsgs"
             intent="chip"
             size="md"
-            {...(user
+            {...(user?.email_verified
               ? {
                   "aria-pressed": current,
                   disabled: chatRoom.loading || current,
@@ -271,7 +266,7 @@ function RoomSwitcher({ user, chatState, friendsListArr, dispatch }: RoomSwitche
 
           return (
             <option key={verToken} value={verToken}>
-              <span aria-label={status} className={s.activityIndie} data-status={status || "offline"} />
+              <span aria-label={status} className={s.activityIndie} data-status={status} />
               {friend.username}
             </option>
           );

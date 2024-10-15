@@ -1,87 +1,32 @@
-import type { UserCredentials, FriendCredentials } from "@qc/typescript/typings/UserCredentials";
+import type { FriendsDefaultProps } from "./FriendsDefault";
+import type { FriendCredentials } from "@qc/typescript/typings/UserCredentials";
 import type { ChatRoomState } from "@chatFeat/redux/chatSlice";
-import type { AppDispatch } from "@redux/store";
 
-import { useSearchParams } from "react-router-dom";
-import { useRef, useState, useMemo, useEffect } from "react";
+import { useRef, useState, useMemo } from "react";
 
-import { useAppSelector, useAppDispatch } from "@redux/hooks";
-import { selectChatRoom } from "@chatFeat/redux/chatSelectors";
+import { useAppDispatch } from "@redux/hooks";
 import { UPDATE_USER_FRIEND_IN_LIST } from "@authFeat/redux/authSlice";
-import { UPDATE_CHAT_ROOM, UPDATE_TARGET_FRIEND } from "@chatFeat/redux/chatSlice";
+import { UPDATE_CHAT_ROOM } from "@chatFeat/redux/chatSlice";
 
 import { ScrollArea } from "@components/scrollArea";
-import { Avatar, Link, Blob, Icon } from "@components/common";
-import { ModalQueryKey, ModalTrigger } from "@components/modals";
+import { Avatar, Blob, Icon } from "@components/common";
 import { Form } from "@components/form";
 import { Input } from "@components/common/controls";
-import Timestamp from "./Timestamp";
+import Timestamp from "../Timestamp";
 
-import s from "./aside.module.css";
+import s from "../aside.module.css";
 
-interface FriendsProps {
-  user: UserCredentials | null;
-  friendsListArr: FriendCredentials[];
-}
-
-interface FriendsPanelProps extends FriendsProps {}
-
-interface FriendsDisplayProps {
-  type: "list" | "chat" | "chat prev";
+interface FriendsDisplayEnlargedProps {
   friend: FriendCredentials;
-  prevChatMessage?: string;
   targetFriend?: ChatRoomState["targetFriend"];
-  dispatch?: AppDispatch;
+  isPrev?: boolean;
 }
 
-/**
- * Used when the chat isn't enlarged, shown at the 'base' of the aside.
- */
-export default function Friends({ user, friendsListArr }: FriendsProps) {
-  return (
-    <section className={s.friends}>
-      <ModalTrigger queryKey={ModalQueryKey.ADD_FRIENDS_MODAL} intent="primary">
-        Add Friends
-      </ModalTrigger>
-
-      {!user ? (
-        <span style={{ alignSelf: "center", textAlign: "center" }}>
-          <ModalTrigger queryKey={ModalQueryKey.LOGIN_MODAL} intent="primary">
-            Login
-          </ModalTrigger>{" "}
-          to see friends.
-        </span>
-      ) : friendsListArr?.length ? (
-        <ScrollArea orientation="vertical" className={s.friendsList}>
-          <ul aria-label="Your Added Friends">
-            {friendsListArr.map((friend) => (
-              <FriendDisplay key={friend.verification_token} type="list" friend={friend} />
-            ))}
-          </ul>
-        </ScrollArea>
-      ) : (
-        <p aria-label="No Friends Found">
-          Meet people by playing some games! Or look through some{" "}
-          {/* TODO: Link in home. */}
-          <Link intent="primary" to={{ search: "?players=true" }}>
-            suggested players
-          </Link>
-          .
-        </p>
-      )}
-    </section>
-  );
+interface FriendsEnlargedProps extends FriendsDefaultProps {
+  chatRoom: ChatRoomState;
 }
 
-/**
- * Used with enlarged chat.
- */
-export function FriendsPanel({ user, friendsListArr }: FriendsPanelProps) {
-  const [searchParams] = useSearchParams();
-
-  const chatRoom = useAppSelector(selectChatRoom),
-    dispatch = useAppDispatch();
-
+export default function FriendsEnlarged({ user, chatRoom, friendsListArr }: FriendsEnlargedProps) {
   const friendsWithPrevChatsArr = useMemo(
     () => friendsListArr.filter((friend) => friend.last_chat_message !== undefined),
     [friendsListArr]
@@ -110,60 +55,9 @@ export function FriendsPanel({ user, friendsListArr }: FriendsPanelProps) {
       mergedFriendsArr.current = []
     }
   }
-
-  /**
-   * On `re-direct`. 
-   */
-  useEffect(() => {
-    if (user && searchParams.get("pm")) {
-      const verToken = searchParams.get("pm")!;
-
-      dispatch(UPDATE_TARGET_FRIEND({
-        verTokenSnapshot: user.friends.list[verToken].verification_token,
-        friend: user.friends.list[verToken],
-      }));
-    }
-  }, [searchParams]);
-  /** 
-   * Updates target friend on joins or leaves (currentId), the verTokenSnapshot is used with the `RoomSwitcher` buttons.
-   */
-  useEffect(() => {
-    if (user && chatRoom.currentId) {
-      if (chatRoom.accessType === "private") {
-        const friend = user.friends.list[chatRoom.proposedId!];
-
-        dispatch(UPDATE_TARGET_FRIEND({
-          verTokenSnapshot: friend.verification_token,
-          friend: friend
-        }));
-      } else {
-        dispatch(UPDATE_TARGET_FRIEND({ friend: null }));
-      }
-    }
-  }, [chatRoom.currentId]);
-
-  /**
-   * Updates the friend's last message in the current user's friend list if the target switches or the component un-mounts.
-   */
-  useEffect(() => {
-    if (chatRoom.targetFriend?.friend && chatRoom.accessType === "private") {
-      const updateFriendPrevChatMsg = () => {
-        if (chatRoom.lastChatMessage)
-          dispatch(
-            UPDATE_USER_FRIEND_IN_LIST({
-              verToken: chatRoom.targetFriend!.friend!.verification_token,
-              update: { last_chat_message: chatRoom.lastChatMessage.message },
-            })
-          );
-      }
-      updateFriendPrevChatMsg();
-
-      return () => updateFriendPrevChatMsg();
-    }
-  }, [chatRoom.targetFriend?.friend]);
   
   return (
-    <section className={s.friendsPanel}>
+    <section className={s.friendsEnlarged}>
       {chatRoom.targetFriend?.friend && (
         <Blob svgWidth="220.83px" svgHeight="169.179px">
           <svg
@@ -229,7 +123,7 @@ export function FriendsPanel({ user, friendsListArr }: FriendsPanelProps) {
                 intent="primary"
                 size="lrg"
                 id="searchFriends"
-                Icon={() => <Icon id="search-18" />}
+                Icon={<Icon id="search-18" />}
                 onInput={(e) => {
                   if (!e.currentTarget.value.length) setSearch((prev) => ({ ...prev, start: false }));
                 }}
@@ -244,12 +138,10 @@ export function FriendsPanel({ user, friendsListArr }: FriendsPanelProps) {
                     ) : (
                       <ul>
                         {search.results.map((friend) => (
-                          <FriendDisplay
+                          <FriendsDisplayEnlarged
                             key={friend.verification_token}
-                            type="chat"
                             friend={friend}
                             targetFriend={chatRoom.targetFriend}
-                            dispatch={dispatch}
                           />
                         ))}
                       </ul>
@@ -267,12 +159,11 @@ export function FriendsPanel({ user, friendsListArr }: FriendsPanelProps) {
                       ) : (
                         <ul>
                           {friendsWithPrevChatsArr.map((friend) => (
-                            <FriendDisplay
+                            <FriendsDisplayEnlarged
                               key={friend.verification_token}
-                              type="chat prev"
                               friend={friend}
                               targetFriend={chatRoom.targetFriend}
-                              dispatch={dispatch}
+                              isPrev={true}
                             />
                           ))}
                         </ul>
@@ -294,12 +185,10 @@ export function FriendsPanel({ user, friendsListArr }: FriendsPanelProps) {
                       ) : (
                         <ul>
                           {friendsListArr.map((friend) => (
-                            <FriendDisplay
+                            <FriendsDisplayEnlarged
                               key={friend.verification_token}
-                              type="chat"
                               friend={friend}
                               targetFriend={chatRoom.targetFriend}
-                              dispatch={dispatch}
                             />
                           ))}
                         </ul>
@@ -316,70 +205,59 @@ export function FriendsPanel({ user, friendsListArr }: FriendsPanelProps) {
   );
 }
 
-function FriendDisplay({ type, friend, targetFriend, dispatch }: FriendsDisplayProps) {
+function FriendsDisplayEnlarged({ friend, isPrev, targetFriend }: FriendsDisplayEnlargedProps) {
   const { status, inactivity_timestamp: timestamp } = friend.activity,
     isTarget = friend.verification_token === targetFriend?.friend?.verification_token;
 
-  return (
-    <>
-      {type === "list" ? (
-        <li className={s.friend}>
-          <Avatar size="lrg" user={friend} />
-          <h4>{friend.username}</h4>
-          <Link to={{ search: `?pm=${friend.verification_token}` }}>
-            Message
-          </Link>
-        </li>
-      ) : (
-        <li className={s.friend} data-target={isTarget}>
-          <Avatar size="md" user={friend} />
-          
-          {type === "chat prev" ? (
-            <button
-              {...(!isTarget && { title: "Enter Previous Chat Conversation" })}
-              aria-label={`Enter Previous Chat Conversation With ${friend.username}`}
-              aria-pressed={isTarget}
-              aria-controls="targetFriendDetails"
-              aria-expanded={!!targetFriend?.friend}
-              onClick={() => {
-                dispatch!(UPDATE_CHAT_ROOM({ proposedId: friend.verification_token, accessType: "private" }))
-              }}
-              disabled={isTarget}
-            >
-              <div>
-                <h5>{friend.username}</h5>
-                <Timestamp activity={{ status, timestamp }} prefix />
-              </div>
+  const dispatch = useAppDispatch();
 
-              <p>{friend.last_chat_message || `Introduce yourself to ${friend.username}!`}</p>
-            </button>
-          ) : (
-            <button
-              {...(!isTarget && { title: "Start or Enter Previous Chat Conversation" })}
-              // TODO: Idk if this is going to become too wordy.
-              aria-label={`Start a New Chat Conversation With ${friend.username}`}
-              aria-pressed={isTarget}
-              aria-controls="targetFriendDetails"
-              aria-expanded={!!targetFriend?.friend}
-              onClick={() => {
-                dispatch!(UPDATE_CHAT_ROOM({ proposedId: friend.verification_token, accessType: "private" }))
-                
-                if (!friend.last_chat_message)
-                  dispatch!(
-                    UPDATE_USER_FRIEND_IN_LIST({
-                      verToken: friend.verification_token,
-                      update: { last_chat_message: "" },
-                    })
-                  );
-              }}
-              disabled={isTarget}
-            >
-              <h5>{friend.username}</h5>
-              <Timestamp activity={{ status, timestamp }} prefix />
-            </button>
-          )}
-        </li>
+  return (
+    <li className={s.friend} data-target={isTarget}>
+      <Avatar size="md" user={friend} />
+      
+      {isPrev ? (
+        <button
+          {...(!isTarget && { title: "Enter Previous Chat Conversation" })}
+          aria-label={`Enter Previous Chat Conversation With ${friend.username}`}
+          aria-pressed={isTarget}
+          aria-controls="targetFriendDetails"
+          aria-expanded={!!targetFriend?.friend}
+          onClick={() => {
+            dispatch!(UPDATE_CHAT_ROOM({ proposedId: friend.verification_token, accessType: "private" }))
+          }}
+          disabled={isTarget}
+        >
+          <div>
+            <h5>{friend.username}</h5>
+            <Timestamp activity={{ status, timestamp }} prefix />
+          </div>
+
+          <p>{friend.last_chat_message || `Introduce yourself to ${friend.username}!`}</p>
+        </button>
+      ) : (
+        <button
+          {...(!isTarget && { title: "Start or Enter Previous Chat Conversation" })}
+          aria-label={`Start a New Chat Conversation With ${friend.username}`}
+          aria-pressed={isTarget}
+          aria-controls="targetFriendDetails"
+          aria-expanded={!!targetFriend?.friend}
+          onClick={() => {
+            dispatch!(UPDATE_CHAT_ROOM({ proposedId: friend.verification_token, accessType: "private" }))
+            
+            if (!friend.last_chat_message)
+              dispatch!(
+                UPDATE_USER_FRIEND_IN_LIST({
+                  verToken: friend.verification_token,
+                  update: { last_chat_message: "" },
+                })
+              );
+          }}
+          disabled={isTarget}
+        >
+          <h5>{friend.username}</h5>
+          <Timestamp activity={{ status, timestamp }} prefix />
+        </button>
       )}
-    </>
+    </li>
   );
 }
