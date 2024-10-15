@@ -42,11 +42,9 @@ const skeletonTitle = cva(`${s.skeleton} ${s.title}`, {
 
 export interface SkeletonProps extends React.ComponentProps<"div"> {}
 
-export const Skeleton = forwardRef<HTMLDivElement, SkeletonProps>(
-  ({ className, ...props }, ref) => {
-    return <SkeletonBase ref={ref} className={`${s.skeleton}${className ?  " " + className : ""}`} {...props} />
-  }
-);
+export const Skeleton = forwardRef<HTMLDivElement, SkeletonProps>(({ className, ...props }, ref) => {
+  return <SkeletonBase ref={ref} className={`${s.skeleton}${className ?  " " + className : ""}`} {...props} />
+});
 
 export const SkeletonTitle = forwardRef<HTMLDivElement, SkeletonProps & VariantProps<typeof skeletonTitle>>(
   ({ className, size, ...props }, ref) => {

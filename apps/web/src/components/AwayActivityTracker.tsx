@@ -29,6 +29,7 @@ export default function AwayActivityTracker() {
     }, ACTIVITY_THRESHOLD); // 6 Minutes
   };
 
+  // NOTE: No need to clear listeners on unmount since this component is always rendered.
   useResourcesLoadedEffect(() => {
     // They have to be verified to manage friends so.
     if (user?.email_verified) {
@@ -49,13 +50,6 @@ export default function AwayActivityTracker() {
       });
       document.addEventListener("mousedown", handleUserActivity);
       document.addEventListener("touchstart", handleUserActivity);
-
-      return () => {
-        clearInterval(ticker.current);
-        document.removeEventListener("keydown", handleUserActivity);
-        document.removeEventListener("mousedown", handleUserActivity);
-        document.addEventListener("touchstart", handleUserActivity);
-      };
     }
   }, [user?.email_verified]);
 

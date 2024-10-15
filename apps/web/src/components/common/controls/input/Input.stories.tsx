@@ -68,7 +68,7 @@ export const Password: Story = {
       <Input
         type={visible ? "text" : "password"}
         {...args}
-        Button={() => (
+        Button={
           <CButton
             aria-controls="password"
             aria-expanded={visible}
@@ -80,7 +80,7 @@ export const Password: Story = {
           >
             <CIcon id="eye-18" />
           </CButton>
-        )}
+        }
       />
     );
   },
@@ -94,7 +94,7 @@ export const Button: Story = {
   render: (args) => (
     <Input
       {...args}
-      Button={() => (
+      Button={
         <CButton
           intent="primary"
           size={args.size === "lrg" ? "lrg" : "xl"}
@@ -102,7 +102,7 @@ export const Button: Story = {
         >
           <CIcon id={args.size === "lrg" ? "send-18" : "send-24"} />
         </CButton>
-      )}
+      }
     />
   ),
 };
@@ -115,7 +115,7 @@ export const Icon: Story = {
   render: (args) => (
     <Input
       {...args}
-      Icon={() => <CIcon id={args.size === "lrg" ? "search-18" : "search-21"} />}
+      Icon={<CIcon id={args.size === "lrg" ? "search-18" : "search-21"} />}
     />
   ),
 };

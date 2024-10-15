@@ -65,7 +65,7 @@ export default function LoginWithGoogle({
       const mutation = handleCallback(code);
       return () => mutation.abort();
     };
-  }, [searchParams]);
+  }, [searchParams.get("code")]);
 
   return (
     <>

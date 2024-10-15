@@ -1,6 +1,6 @@
 import type { VariantProps } from "class-variance-authority";
 
-import { forwardRef, useRef } from "react";
+import { forwardRef, useRef, cloneElement } from "react";
 import { Label } from "@radix-ui/react-label";
 import { cva } from "class-variance-authority";
 
@@ -36,7 +36,7 @@ export interface SelectProps
   hideLabel?: boolean;
   required?: boolean | "show";
   error?: string | null;
-  Loader?: () => React.ReactElement;
+  Loader?: React.ReactElement;
   loaderTrigger?: boolean;
 }
 
@@ -104,7 +104,7 @@ export const Select = forwardRef<HTMLSelectElement,React.PropsWithChildren<Selec
             }
           />
 
-          {Loader && (loaderTrigger && <Loader />)}
+          {Loader && (loaderTrigger && cloneElement(Loader))}
         </div>
         
         {error && (

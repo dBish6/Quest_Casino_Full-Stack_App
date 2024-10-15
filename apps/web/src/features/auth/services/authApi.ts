@@ -9,6 +9,7 @@ import type { HttpResponse, SocketResponse } from "@typings/ApiResponse";
 import type RegisterBodyDto from "@qc/typescript/dtos/RegisterBodyDto";
 import type { LoginBodyDto, LoginGoogleBodyDto } from "@qc/typescript/dtos/LoginBodyDto";
 import type { GetNotificationsResponseDto, DeleteNotificationsBodyDto, Notification } from "@qc/typescript/dtos/NotificationsDto"
+import type { UpdateUserFavouritesBodyDto } from "@qc/typescript/dtos/UpdateUserDto";
 import type { ManageFriendRequestEventDto } from "@qc/typescript/dtos/ManageFriendEventDto";
 import type FriendActivityEventDto from "@authFeat/dtos/FriendActivityEventDto";
 
@@ -18,12 +19,12 @@ import { logger } from "@qc/utils";
 import { history } from "@utils/History";
 import { isFetchBaseQueryError } from "@utils/isFetchBaseQueryError";
 
-import { createApi, baseQuery } from "@services/index";
+import { injectEndpoints, prepareHeadersAndOptions } from "@services/api";
 import { getSocketInstance, emitAsPromise } from "@services/socket";
 import allow500ErrorsTransform from "@services/allow500ErrorsTransform";
+import handleLogout from "./handleLogout";
 import handleSendVerifyEmail from "./handleSendVerifyEmail";
-import { UPDATE_USER_CREDENTIALS, CLEAR_USER, UPDATE_USER_FRIENDS, INITIALIZE_SESSION, UPDATE_USER_FRIEND_IN_LIST } from "@authFeat/redux/authSlice";
-import { CLEAR_CHAT } from "@chatFeat/redux/chatSlice";
+import { UPDATE_USER_CREDENTIALS, SET_USER_FAVOURITES, UPDATE_USER_FRIENDS, UPDATE_USER_FRIEND_IN_LIST, INITIALIZE_SESSION } from "@authFeat/redux/authSlice";
 import { ADD_TOAST, unexpectedErrorToast } from "@redux/toast/toastSlice";
 
 const socket = getSocketInstance("auth");
@@ -33,18 +34,16 @@ export const authSocketListeners = {
   newNotification: "newNotification",
 } as const;
 
-const authApi = createApi({
-  reducerPath: "authApi",
-  baseQuery: baseQuery("/auth"),
-  tagTypes: ["Notification"],
+const authApi = injectEndpoints({
+  overrideExisting: true,
   endpoints: (builder) => ({
     /**
-     * 
+     * Creates a new user.
      * @request
      */
     register: builder.mutation<HttpResponse, RegisterBodyDto>({
       query: (user) => ({
-        url: "/register",
+        url: "/auth/register",
         method: "POST",
         body: user
       }),
@@ -52,12 +51,12 @@ const authApi = createApi({
     }),
 
     /**
-     * 
+     * Creates a user login session.
      * @request
      */
     login: builder.mutation<HttpResponse<{ user: UserCredentials }>, LoginBodyDto>({
       query: (credentials) => ({
-        url: "/login",
+        url: "/auth/login",
         method: "POST",
         body: credentials
       }),
@@ -79,7 +78,7 @@ const authApi = createApi({
      */
     loginGoogle: builder.mutation<HttpResponse<{ user: UserCredentials }>, LoginGoogleBodyDto>({
       query: (credentials) => ({
-        url: "/login/google",
+        url: "/auth/login/google",
         method: "POST",
         body: credentials
       }),
@@ -102,7 +101,7 @@ const authApi = createApi({
      */
     emailVerify: builder.mutation<HttpResponse<{ user: UserCredentials }>, void>({
       query: () => ({
-        url: "/email-verify",
+        url: "/auth/email-verify",
         method: "POST"
       }),
       onQueryStarted: async (_, { dispatch, queryFulfilled }) => {
@@ -126,7 +125,7 @@ const authApi = createApi({
      */
     sendVerifyEmail: builder.mutation<HttpResponse, void>({
       query: () => ({
-        url: "/email-verify/send",
+        url: "/auth/email-verify/send",
         method: "POST"
       })
     }),
@@ -135,8 +134,13 @@ const authApi = createApi({
      * Gets all users or searches for users by username.
      * @request
      */
-    getUsers: builder.query<HttpResponse<{ users: MinUserCredentials[] | UserCredentials[] }>, string | void>({
-      queryFn: async (username, { getState }, _, baseQuery) => {
+    getUsers: builder.query<
+      HttpResponse<{ users: (MinUserCredentials[] & { bio?: string }) | UserCredentials[] }>,
+      { username?: string; count?: number }
+    >({
+      queryFn: async (query, { getState }, _, baseQuery) => {
+        const { username, count } = query;
+
         if (username && !(getState() as RootState).auth.user.credentials?.email_verified) 
           return {
             error: {
@@ -146,20 +150,20 @@ const authApi = createApi({
           };
         
         const res = await baseQuery({
-          url: "/users",
+          url: "/auth/users",
           method: "GET",
-          ...(username && { params: { username } }),
+          params: { ...(username && { username }), ...(count && { count }) },
         }) as QueryReturnValue<
-          HttpResponse<{ users: MinUserCredentials[] | UserCredentials[] }>,
+          HttpResponse<{ users: (MinUserCredentials[] & { bio?: string }) | UserCredentials[] }>,
           FetchBaseQueryError,
           FetchBaseQueryMeta
         >;
 
         return res.error
           ? {
-              error: res.error.status === 500 && res.meta?.request.url.includes("?username=", -1)
-                  ? allow500ErrorsTransform(res.error!, res.meta)
-                  : res.error,
+              error: res.meta?.request.url.includes("?", -1)
+                ? allow500ErrorsTransform(res.error!, res.meta)
+                : res.error,
             }
           : { data: res.data };
       }
@@ -174,22 +178,51 @@ const authApi = createApi({
       { notifications: boolean } | void
     >({
       query: (args) => ({
-        url: "/user",
+        url: "/auth/user",
         method: "GET",
         ...(args?.notifications && { params: { notifications: args.notifications } })
       }),
       providesTags: ["Notification"],
       onQueryStarted: (_, { dispatch, queryFulfilled }) => {
         queryFulfilled.catch((error) => {
-          if (isFetchBaseQueryError(error.error)) {
-            if (error.error.status === 404)
-              dispatch(
-                unexpectedErrorToast(
-                  "We couldn't find your profile on our server."
-                )
-              );
-          }
+          if (isFetchBaseQueryError(error.error) && error.error.status === 404)
+            dispatch(
+              unexpectedErrorToast("We couldn't find your profile on our server.")
+            );
         })
+      }
+    }),
+
+    /**
+     * Can add or delete the user's favourites.
+     * @request
+     */
+    updateUserFavourites: builder.mutation<
+      HttpResponse<{ favourites: UserCredentials["favourites"] }>,
+      UpdateUserFavouritesBodyDto
+    >({
+      queryFn: async (query, { getState, dispatch, signal }) => {
+        const res = await fetch("api/v2/auth/user/favourites", {
+            method: "PATCH",
+            body: JSON.stringify({ favourites: query.favourites }),
+            ...prepareHeadersAndOptions({ state: getState() as RootState }),
+            keepalive: true,
+            signal
+          }),
+          data: HttpResponse<{ favourites: UserCredentials["favourites"] }> = await res.json();
+
+        if (!res.ok) {
+          dispatch(
+            unexpectedErrorToast(
+              "There was an unexpected error adding your previously selected game favorites."
+            )
+          );
+
+          return { error: allow500ErrorsTransform(data, res) };
+        }
+
+        if (data.favourites) dispatch(SET_USER_FAVOURITES(data.favourites));
+        return { data };
       }
     }),
 
@@ -201,7 +234,7 @@ const authApi = createApi({
      */
     deleteUser: builder.mutation<HttpResponse, void>({
       query: () => ({
-        url: "/user/delete",
+        url: "/auth/user",
         method: "DELETE",
       })
     }),
@@ -215,19 +248,19 @@ const authApi = createApi({
       DeleteNotificationsBodyDto
     >({
       query: (body) => ({
-        url: "/user/delete/notifications",
-        method: "POST",
+        url: "/auth/user/notifications",
+        method: "DELETE",
         body
       }),
     }),
 
     /**
-     * 
+     * Clears the user session.
      * @request
      */
     logout: builder.mutation<HttpResponse, { username: string }>({
       query: (username) => ({
-        url: "/logout",
+        url: "/auth/logout",
         method: "POST",
         body: username
       }),
@@ -236,13 +269,14 @@ const authApi = createApi({
         const { meta } = await queryFulfilled;
 
         if (meta?.response?.ok) {
-          dispatch(CLEAR_USER())
-          dispatch(CLEAR_CHAT())
+          handleLogout(dispatch, socket); // Only using this here right now!
+          // dispatch(CLEAR_USER())
+          // dispatch(CLEAR_CHAT())
 
-          socket.disconnect()
-          getSocketInstance("chat").disconnect()
+          // socket.disconnect()
+          // getSocketInstance("chat").disconnect()
 
-          alert("User login session timed out.")
+          // alert("User login session timed out.")
         }
       }
     }),
@@ -251,7 +285,10 @@ const authApi = createApi({
      * Initializes all friend rooms and friend activity statuses.
      * @emitter
      */
-    initializeFriends: builder.mutation<SocketResponse<{ friends: UserCredentials["friends"] }>, { verification_token: string }>({
+    initializeFriends: builder.mutation<
+      SocketResponse<{ friends: UserCredentials["friends"] }>, 
+      { verification_token: string }
+    >({
       queryFn: async (data) => emitAsPromise(socket)(AuthEvent.INITIALIZE_FRIENDS, data)
     }),
 
@@ -322,20 +359,20 @@ const authApi = createApi({
       },
       onQueryStarted: async ({ action_type }, { dispatch, queryFulfilled }) => {
         try {
-          const { data } = await queryFulfilled;
+            const { data } = await queryFulfilled;
 
-          logger.debug("MANAGE FRIEND", data)
+            logger.debug("MANAGE FRIEND", data)
 
-          if (data.status === "ok" && action_type === "request" && data.pending_friends) {
-            dispatch(UPDATE_USER_FRIENDS({ pending: data.pending_friends }));
-            // dispatch(
-            //   ADD_TOAST({
-            //     title: action_type === "request" ? "Friend Request Sent" : "Friend Added",
-            //     message: data.message,
-            //     intent: "success",
-            //   })
-            // );
-          }
+            if (data.status === "ok" && action_type === "request" && data.pending_friends) {
+              dispatch(UPDATE_USER_FRIENDS({ pending: data.pending_friends }));
+              // dispatch(
+              //   ADD_TOAST({
+              //     title: action_type === "request" ? "Friend Request Sent" : "Friend Added",
+              //     message: data.message,
+              //     intent: "success",
+              //   })
+              // );
+            }
           } catch (error: any) {
             if (isFetchBaseQueryError(error.error)) {
               // const resError = error.error
@@ -353,7 +390,7 @@ const authApi = createApi({
     }),
 
     /**
-     * Sends the user's new activity timestamp and or status.
+     * Sends the user's new activity status.
      * @emitter
      */
     userActivity: builder.mutation<SocketResponse, { status: ActivityStatuses }>({
@@ -481,7 +518,6 @@ function handleLoginSuccess(
     // Removes the google params.
     for (const key of Array.from(params.keys())) {
       console.log("key", key);
-      // TODO:
       if ([""].includes(key as any)) {
         console.log("removed", key);
         params.delete(key);
@@ -498,9 +534,9 @@ function handleLoginSuccess(
             options: {
               button: {
                 sequence: "send verification email.",
-                onClick: () => handleSendVerifyEmail(dispatch),
-              },
-            },
+                onClick: () => handleSendVerifyEmail(dispatch)
+              }
+            }
           })
         );
       } else {
@@ -509,7 +545,7 @@ function handleLoginSuccess(
             title: "Welcome",
             message: `Welcome back ${user.username}!`,
             intent: "success",
-            duration: 65000,
+            duration: 65000
           })
         );
       }
@@ -526,9 +562,6 @@ function handleLoginSuccess(
 
 export const {
   endpoints: authEndpoints,
-  reducerPath: authApiReducerPath,
-  reducer: authApiReducer,
-  middleware: authMiddleware,
   useRegisterMutation,
   useLoginMutation,
   useLoginGoogleMutation,
@@ -536,6 +569,7 @@ export const {
   // useSendVerifyEmailMutation,
   useLazyGetUsersQuery,
   useLazyGetUserQuery,
+  useUpdateUserFavouritesMutation,
   useDeleteUserNotificationsMutation,
   // useDeleteUserMutation,
   useLogoutMutation,

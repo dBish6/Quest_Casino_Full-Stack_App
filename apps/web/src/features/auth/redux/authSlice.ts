@@ -46,6 +46,12 @@ const authSlice = createSlice({
       state.user.credentials = deepMerge([state.user.credentials!, action.payload]);
     },
     /**
+     * Sets or overrides the user's favourites object.
+     */
+    SET_USER_FAVOURITES: (state, action: PayloadAction<UserCredentials["favourites"]>) => {
+      state.user.credentials!.favourites = action.payload;
+    },
+    /**
      * Updates the user's friends object.
      */
     UPDATE_USER_FRIENDS: (state, action: PayloadAction<Partial<UserCredentials["friends"]>>) => {
@@ -79,6 +85,7 @@ export const { name: authName, reducer: authReducer } = authSlice,
   {
     INITIALIZE_SESSION,
     UPDATE_USER_CREDENTIALS,
+    SET_USER_FAVOURITES,
     UPDATE_USER_FRIENDS,
     UPDATE_USER_FRIEND_IN_LIST,
     CLEAR_USER

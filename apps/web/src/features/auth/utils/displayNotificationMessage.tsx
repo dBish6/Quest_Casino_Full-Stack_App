@@ -1,16 +1,14 @@
 import type { To } from "react-router-dom";
 import { type LinkProps, Link } from "@components/common";
-import { ModalQueryKey, ModalTrigger } from "@components/modals";
+import { type ModalQueryKeyValues, ModalTrigger } from "@components/modals";
 
 export default function displayNotificationMessage(
   message: string,
   link: {
     to: To;
-    /**
-     * The part of the message that is the link.
-     */
+    /** The part of the message that is the link. */
     sequence: string;
-    queryKey?: ModalQueryKey
+    queryKey?: ModalQueryKeyValues
     options?: Omit<LinkProps, "to">;
    } | undefined
 ) {

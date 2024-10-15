@@ -35,7 +35,8 @@ interface NotificationSectionProps extends Omit<NotificationCardProps, "notif"> 
 }
 
 export default function NotificationsModal() {
-  const [searchParams] = useSearchParams();
+  const [searchParams] = useSearchParams(),
+    modalParam = searchParams.get(ModalQueryKey.NOTIFICATIONS_MODAL);
 
   const fadeVariant = fadeInOut({ in: 0.3, out: 0.58 });
 
@@ -50,13 +51,13 @@ export default function NotificationsModal() {
   const [postDeleteNotifications, { isLoading: deletionLoading }] = useDeleteUserNotificationsMutation();
 
   useResourcesLoadedEffect(() => {
-    if (searchParams.has(ModalQueryKey.NOTIFICATIONS_MODAL)) {
+    if (modalParam) {
       if (unCategorizedNotifications.current) unCategorizedNotifications.current = [];
       const query = getNotifications({ notifications: true });
 
       return () => query.abort();
     }
-  }, [searchParams]);
+  }, [modalParam]);
   useEffect(() => {
     if (userNotifData) setNotifications(userNotifData.notifications);
   }, [userNotifData]);
@@ -197,7 +198,7 @@ export default function NotificationsModal() {
                     iconBtn
                     onClick={toggleCategorization}
                   >
-                    <Icon id="border-horizontal-24" />
+                    <Icon aria-hidden="true" id="border-horizontal-24" />
                   </Button>
                   <Button
                     title="Delete Notifications"
@@ -210,7 +211,7 @@ export default function NotificationsModal() {
                     iconBtn
                     onClick={initializeDeletion}
                   >
-                    <Icon id="delete-19" />
+                    <Icon aria-hidden="true" id="delete-19" />
                   </Button>
                 </div>
 

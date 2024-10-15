@@ -2,7 +2,7 @@ import type { IconIds, LinkProps } from "@components/common";
 
 import { Title } from "@radix-ui/react-dialog";
 
-import { ModalTemplate, ModalQueryKey } from "@components/modals";
+import { ModalTemplate } from "@components/modals";
 import { Link, Icon } from "@components/common";
 import { Button } from "@components/common/controls";
 
@@ -35,7 +35,7 @@ export default function MenuModal({
     <ModalTemplate
       aria-description="..."
       // queryKey={`${queryKey}${slide}`}
-      queryKey={ModalQueryKey.MENU_MODAL}
+      queryKey="menu"
       width="768px"
       className={s.modal}
       // onCloseAutoFocus={() => setErrors({})}

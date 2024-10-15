@@ -8,10 +8,10 @@ import { authEndpoints } from "./authApi";
 import { ADD_TOAST } from "@redux/toast/toastSlice";
 
 export default async function handleSendVerifyEmail(
-  dispatch: ThunkDispatch<any, any, UnknownAction>
+  dispatch: ThunkDispatch<any, any, UnknownAction>, triggerId = "toastBtn"
 ) {
-  const button = document.getElementById("toastBtn");
-  if (!button) return logger.error("Button with ID 'toastBtn' not found.");
+  const button = document.getElementById(triggerId);
+  if (!button) return logger.error(`Button with ID '${triggerId}' was not found.`);
 
   const initialText = button?.innerText;
   button.setAttribute("aria-live", "polite");

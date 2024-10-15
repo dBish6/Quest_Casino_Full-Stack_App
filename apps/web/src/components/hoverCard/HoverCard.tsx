@@ -1,7 +1,7 @@
-import type { HoverCardContentProps, HoverCardTriggerProps } from "@radix-ui/react-hover-card";
+import type { HoverCardContentProps } from "@radix-ui/react-hover-card";
 import type { VariantProps } from "class-variance-authority";
 
-import { forwardRef } from "react";
+import { forwardRef, cloneElement } from "react";
 import { Root, Trigger as RTrigger, Portal, Content, Arrow } from "@radix-ui/react-hover-card";
 import { cva } from "class-variance-authority";
 
@@ -22,7 +22,7 @@ export interface HoverCardProps
   extends Omit<HoverCardContentProps, "children">,
     VariantProps<typeof hoverCard> {
   children: (props: { Arrow: typeof Arrow }) => React.ReactElement;
-  Trigger: (triggerProps: HoverCardTriggerProps) => React.ReactElement;
+  Trigger: React.ReactElement;
   open?: boolean;
   openDelay?: number;
 }
@@ -32,7 +32,7 @@ const HoverCard = forwardRef<HTMLDivElement, HoverCardProps>(
     return (
       <Root open={open} openDelay={openDelay}>
         <RTrigger asChild>
-          {Trigger({})}
+          {cloneElement(Trigger)}
         </RTrigger>
 
         <Portal>

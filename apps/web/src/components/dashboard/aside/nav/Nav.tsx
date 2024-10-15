@@ -1,7 +1,7 @@
 import { useLocation } from "react-router-dom";
 
 import { Icon, Link } from "@components/common";
-import { ModalQueryKey, ModalTrigger } from "@components/modals";
+import { ModalTrigger } from "@components/modals";
 import { Select } from "@components/common/controls";
 
 import s from "./nav.module.css";
@@ -32,13 +32,13 @@ export default function Nav() {
           </Link>
 
           {/* TODO: Open to certain slide. */}
-          <ModalTrigger queryKey={ModalQueryKey.MENU_MODAL}>
+          <ModalTrigger queryKey="menu">
             <Icon aria-hidden="true" id="list-16" /> Leaderboard
           </ModalTrigger>
-          <ModalTrigger queryKey={ModalQueryKey.MENU_MODAL}>
+          <ModalTrigger queryKey="menu">
             <Icon aria-hidden="true" id="scroll-16" /> Quests
           </ModalTrigger>
-          <ModalTrigger queryKey={ModalQueryKey.MENU_MODAL}>
+          <ModalTrigger queryKey="menu">
             <Icon aria-hidden="true" id="gift-16" /> Bonuses
           </ModalTrigger>
         </div>
@@ -66,8 +66,8 @@ function Divider({ heading, divide = true }: { heading?: string, divide?: boolea
 
   return (
     <div className={s.divider}>
-      {heading && <h4>{heading}</h4>}
       <Line className={s.line} />
+      {heading && <h4>{heading}</h4>}
     </div>
   );
 }

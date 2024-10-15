@@ -139,6 +139,17 @@
   font-weight: 700;
   font-style: normal;
 }
+@font-face {
+  font-family: "Enzo OT";
+  src:
+    url("/fonts/Enzo/EnzoOt-Bold-Italic.woff2") format("woff2"),
+    url("/fonts/Enzo/EnzoOt-Bold-Italic.woff") format("woff"),
+    url("/fonts/Enzo/EnzoOt-Bold-Italic.eot") format("embedded-opentype"),
+    url("/fonts/Enzo/EnzoOt-Bold-Italic.eot?#iefix") format("embedded-opentype"),
+    url("/fonts/Enzo/EnzoOt-Bold-Italic.tff") format("truetype");
+  font-weight: 700;
+  font-style: italic;
+}
 
 * {
   box-sizing: border-box;
@@ -237,6 +248,7 @@
   --h4: 700 18px/130% "Enzo OT", sans-serif;
   --h4-it: italic 500 18px/130% "Enzo OT", sans-serif;
 
+  /* All clamps are from 615px (min vw) and 1640px (max vw) I think. */
   --h1-clamp: clamp(2rem, 1.625rem + 0.975609756097561vw, 2.625rem);
   --h2-clamp: clamp(1.75rem, 1.6rem + 0.3902439024390244vw, 2rem);
   --h3-clamp: clamp(1.1875rem, 1rem + 0.4878048780487805vw, 1.5rem);
@@ -303,15 +315,22 @@ select {
 
 main {
   grid-column: 2;
-  & .viewport {
-    --_padding-vert: 2rem;
+  & > div > .viewport {
+    --padding-main-vert: 2rem;
+    --padding-main-horz: 1.5rem;
 
+    width: calc(100% + 0.5rem);
     height: calc(
-      var(--dashboard-height) - var(--_padding-vert) - var(--_padding-vert) -
+      var(--dashboard-height) - var(--padding-main-vert) - var(--padding-main-vert) -
         1rem
     );
-    padding: var(--_padding-vert) 1.5rem;
+    padding: var(--padding-main-vert) calc(var(--padding-main-horz) + 0.5rem)
+      var(--padding-main-vert) var(--padding-main-horz);
     border-bottom: 2px solid var(--c-purple-border);
+
+    & section:last-of-type {
+      margin-bottom: 0;
+    }
   }
 }
 

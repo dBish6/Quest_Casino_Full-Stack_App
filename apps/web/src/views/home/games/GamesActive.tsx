@@ -176,7 +176,7 @@ function GameCardActive({ game, user, selectedFavGames, ...props }: GameCardActi
             <HoverCard
               id={`info-${game.title}`}
               className={s.gameInfoCard}
-              Trigger={() => (
+              Trigger={
                 <Button 
                   aria-controls={`info-${game.title}`}
                   aria-expanded={keepInfoOpen ? "true" : "false"}
@@ -187,7 +187,7 @@ function GameCardActive({ game, user, selectedFavGames, ...props }: GameCardActi
                 >
                   <Icon id="info-12" />
                 </Button>
-              )}
+              }
               open={keepInfoOpen}
               openDelay={keepInfoOpen ? 0 : 500}
             >
@@ -382,7 +382,7 @@ export function GamesSearch({ gameData, setGameData }: GamesSearchProps) {
         id="searchGames"
         type="search"
         spellCheck="false"
-        Icon={() => <Icon id="search-24" />}
+        Icon={<Icon id="search-24" />}
         onInput={(e) => {
           if (!e.currentTarget.value) {
             setGameData((prev) => ({

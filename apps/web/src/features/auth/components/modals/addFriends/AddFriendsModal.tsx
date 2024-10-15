@@ -8,7 +8,7 @@ import { isFetchBaseQueryError } from "@utils/isFetchBaseQueryError";
 import useUser from "@authFeat/hooks/useUser";
 import { useLazyGetUsersQuery, useManageFriendRequestMutation } from "@authFeat/services/authApi";
 
-import { ModalTemplate, ModalQueryKey } from "@components/modals";
+import { ModalTemplate } from "@components/modals";
 import { Icon, Avatar } from "@components/common";
 import { Button, Input } from "@components/common/controls";
 import { Form } from "@components/form";
@@ -18,7 +18,7 @@ import s from "./addFriendsModal.module.css";
 
 export default function AddFriendsModal() {
   const inputRef = useRef<HTMLInputElement>(null),
-   [getUsers, { data: searchData, error: searchError, isFetching: searchLoading }] = useLazyGetUsersQuery();
+    [getUsers, { data: searchData, error: searchError, isFetching: searchLoading }] = useLazyGetUsersQuery();
 
   const user = useUser(),
     pendingFriendsArr = useMemo(() => Object.values(user?.friends.pending || {}), [user?.friends.pending]);
@@ -26,13 +26,13 @@ export default function AddFriendsModal() {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const value = inputRef.current!.value;
-    if (value.length) getUsers(value.trim());
+    if (value.length) getUsers({ username: value.trim() });
   };
   
   return (
     <ModalTemplate
       aria-description="Search for users to add as friends by entering their username. View search results and manage pending friend requests."
-      queryKey={ModalQueryKey.ADD_FRIENDS_MODAL}
+      queryKey="add"
       width="455px" 
       className={s.modal}
     >
@@ -56,8 +56,10 @@ export default function AddFriendsModal() {
               intent="primary"
               size="xl"
               id="search"
+              type="search"
+              spellCheck="false"
               disabled={searchLoading}
-              Button={() => (
+              Button={
                 <Button
                   intent="primary"
                   size="xl"
@@ -66,7 +68,7 @@ export default function AddFriendsModal() {
                 >
                   <Icon id="search-24" />
                 </Button>
-              )}
+              }
             />
           </Form>
 

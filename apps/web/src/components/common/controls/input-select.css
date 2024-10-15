@@ -26,9 +26,10 @@
       &[data-typing="true"],
       &[data-selected="true"] {
         & label {
-          top: -3%;
+          top: -4%;
           left: calc(1rem - 4px);
           padding-inline: 4px;
+          line-height: 1 !important;
         }
       }
       &[data-focused="true"] {

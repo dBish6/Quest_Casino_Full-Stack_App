@@ -10,7 +10,7 @@ import useForm from "@hooks/useForm";
 //   useCashInMutation
 // } from "@authFeat/services/authApi";
 
-import { ModalTemplate, ModalQueryKey } from "@components/modals";
+import { ModalTemplate } from "@components/modals";
 import { Form } from "@components/form";
 import { Button, Input } from "@components/common/controls";
 import { Icon, Link } from "@components/common";
@@ -25,7 +25,7 @@ export default function CashInModal() {
   return (
     <ModalTemplate
       aria-description="Deposit a amount below by entering the amount or by choosing any of the other third-party services. Keep in mind, that this casino is just for fun, a developer playing around, so no real cash is involved."
-      queryKey={ModalQueryKey.CASH_IN_MODAL}
+      queryKey="cash"
       width="368px"
       className={s.modal}
       //   onEscapeKeyDown={() => setErrors({})}

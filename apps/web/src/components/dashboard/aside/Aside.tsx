@@ -6,7 +6,7 @@ import { useLogoutMutation } from "@authFeat/services/authApi";
 
 import { ScrollArea } from "@components/scrollArea";
 import { Avatar, Link, Icon, Blob } from "@components/common";
-import { ModalQueryKey, ModalTrigger } from "@components/modals";
+import { ModalTrigger } from "@components/modals";
 import { Button } from "@components/common/controls";
 import Nav from "./nav/Nav";
 
@@ -65,7 +65,7 @@ export default function Aside() {
                     <Button onClick={() => postLogout({ username: user!.username })}>{status}</Button>
                   </Link>
                 ) : (
-                  <ModalTrigger queryKey={ModalQueryKey.LOGIN_MODAL} intent="primary">
+                  <ModalTrigger queryKey="login" intent="primary">
                     Login
                   </ModalTrigger>
                 )}

@@ -259,7 +259,7 @@ export default function RegisterModal() {
                   name="country"
                   required="show"
                   error={form.error.country}
-                  Loader={() => <Spinner intent="primary" size="sm" />}
+                  Loader={<Spinner intent="primary" size="sm" />}
                   loaderTrigger={countriesLoading}
                   disabled={processing}
                   onFocus={() => {
@@ -292,7 +292,7 @@ export default function RegisterModal() {
                       ? selected.regions
                       : undefined
                   }
-                  Loader={() => <Spinner intent="primary" size="sm" />}
+                  Loader={<Spinner intent="primary" size="sm" />}
                   loaderTrigger={regionsLoading}
                   disabled={!selected.country || processing}
                   onFocus={getRegions}
@@ -315,7 +315,7 @@ export default function RegisterModal() {
                   id="calling_code"
                   name="calling_code"
                   error={form.error.calling_code}
-                  Loader={() => <Spinner intent="primary" size="sm" />}
+                  Loader={<Spinner intent="primary" size="sm" />}
                   loaderTrigger={countriesLoading}
                   disabled={processing}
                   onFocus={getCountries}

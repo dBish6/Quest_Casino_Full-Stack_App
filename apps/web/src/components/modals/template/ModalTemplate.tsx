@@ -29,11 +29,12 @@ export enum ModalQueryKey {
   // TODO:
   VIEW_PROFILE_MODAL = "prof"
 }
+export type ModalQueryKeyValues = `${ModalQueryKey}`;
 
 export interface ModalTemplateProps
   extends Omit<DialogContentProps, "children" | "onInteractOutside"> {
   children: (props: { close: () => void }) => React.ReactNode;
-  queryKey: ModalQueryKey;
+  queryKey: ModalQueryKeyValues;
   width: React.CSSProperties["maxWidth"];
 }
 
@@ -164,45 +165,44 @@ const ModalTemplate = forwardRef<HTMLDivElement, ModalTemplateProps>(
 );
 export default ModalTemplate;
 
-const RESTRICTED_MODALS: ReadonlySet<ModalQueryKey> = new Set([
+const RESTRICTED_MODALS: ReadonlySet<ModalQueryKeyValues> = new Set([
   ModalQueryKey.NOTIFICATIONS_MODAL,
   ModalQueryKey.ADD_FRIENDS_MODAL,
 ]);
 
 export const ModalTrigger = forwardRef<
-  HTMLAnchorElement, Omit<LinkProps, "to"> & { queryKey: ModalQueryKey, buttonProps?: ButtonProps }
+  HTMLAnchorElement, Omit<LinkProps, "to"> & { queryKey: ModalQueryKeyValues, buttonProps?: ButtonProps }
 >(({ children, queryKey, buttonProps, ...props }, ref) => {
-    const [searchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
 
-    const user = useAppSelector(selectUserCredentials),
-      dispatch = useAppDispatch()
+  const user = useAppSelector(selectUserCredentials),
+    dispatch = useAppDispatch()
 
-    return (
-      <Button asChild {...buttonProps} >
-        <Link
-          aria-haspopup="dialog"
-          aria-expanded={searchParams.has(queryKey)}
-          aria-controls={queryKey}
-          ref={ref}
-          to={{ search: `?${queryKey}=true` }}
-          {...props}
-          onClick={(e) => {
-            if (RESTRICTED_MODALS.has(queryKey) && !user)
-              dispatch(
-                ADD_TOAST({
-                  title: "Login Required",
-                  message:
-                    "You must be logged in to have access to this feature.",
-                  intent: "error",
-                })
-              )
+  return (
+    <Button asChild {...buttonProps} >
+      <Link
+        aria-haspopup="dialog"
+        aria-expanded={searchParams.has(queryKey)}
+        aria-controls={queryKey}
+        ref={ref}
+        to={{ search: `?${queryKey}=true` }}
+        {...props}
+        onClick={(e) => {
+          if (RESTRICTED_MODALS.has(queryKey) && !user)
+            dispatch(
+              ADD_TOAST({
+                title: "Login Required",
+                message:
+                  "You must be logged in to have access to this feature.",
+                intent: "error",
+              })
+            )
 
-            if (props.onClick) props.onClick(e);
-          }}
-        >
-          {children}
-        </Link>
-      </Button>
-    );
-  }
-);
+          if (props.onClick) props.onClick(e);
+        }}
+      >
+        {children}
+      </Link>
+    </Button>
+  );
+});

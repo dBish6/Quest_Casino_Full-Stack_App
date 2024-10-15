@@ -11,11 +11,13 @@ import { rootReducer } from "./reducers";
 
 import { loadState, saveState } from "./persist";
 import { apiErrorHandler } from "@services/apiErrorHandler";
-import { authMiddleware } from "@authFeat/services/authApi";
-import { chatMiddleware } from "@chatFeat/services/chatApi";
+import { apiMiddleware } from "@services/api";
 
-const preloadedState = deepMerge([(window.__PRELOADED_STATE__ || {}), loadState()])
-delete window.__PRELOADED_STATE__;
+let preloadedState = {};
+if (typeof window !== "undefined") {
+  preloadedState = deepMerge([(window?.__PRELOADED_STATE__ || {}), loadState()])
+  delete window?.__PRELOADED_STATE__;
+}
 
 const store = configureStore({
   reducer: rootReducer,
@@ -25,7 +27,7 @@ const store = configureStore({
       serializableCheck: {
         ignoredActionPaths: ["meta.baseQueryMeta.request", "meta.baseQueryMeta.response", "meta.arg.originalArgs.callback", "payload.callback", "payload.options.button.onClick"],
       },
-    }).concat(apiErrorHandler, authMiddleware, chatMiddleware),
+    }).concat(apiErrorHandler, apiMiddleware),
 });
 
 store.subscribe(
@@ -49,7 +51,7 @@ store.subscribe(
       auth: { user: targetPersistAuth },
       chat: targetPersistChat
     };
-    saveState(persisted);
+    if (typeof localStorage !== "undefined") saveState(persisted);
   }, 1000)
 );
 
