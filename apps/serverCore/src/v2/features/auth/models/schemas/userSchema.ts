@@ -19,7 +19,7 @@ export const userFriendsSchema = new Schema<
       validate: {
         validator: (friends: Map<any, any>) => friends.size <= 50,
         message: "Pending friends exceeded the maximum of 50 friends.",
-      },
+      }
     },
     list: {
       type: Map,
@@ -28,8 +28,8 @@ export const userFriendsSchema = new Schema<
       validate: {
         validator: (friends: Map<any, any>) => friends.size <= 50,
         message: "Friends list exceeded the maximum of 50 friends.",
-      },
-    },
+      }
+    }
   },
   {
     collection: "user_friends",
@@ -49,9 +49,9 @@ export const userStatisticsSchema = new Schema<
         total: { type: Number },
         table: { type: Number },
         slots: { type: Number },
-        dice: { type: Number }
+        dice: { type: Number },
       },
-      default: { total: 0, table: 0, slots: 0, dice: 0 }
+      default: { total: 0, table: 0, slots: 0, dice: 0 },
     },
     wins: {
       _id: false,
@@ -61,7 +61,7 @@ export const userStatisticsSchema = new Schema<
         slots: { type: Number },
         dice: { type: Number },
         streak: { type: Number },
-        win_rate: { type: Number }
+        win_rate: { type: Number },
       },
       default: {
         total: 0,
@@ -69,13 +69,40 @@ export const userStatisticsSchema = new Schema<
         slots: 0,
         dice: 0,
         streak: 0,
-        win_rate: 0
+        win_rate: 0,
       },
     },
-    completed_quests: {
-      type: Map,
-      of: Boolean,
-      default: new Map([])
+    progress: {
+      _id: false,
+      quest: {
+        type: Map,
+        of: {
+          quest: { type: Schema.Types.ObjectId, ref: "quest" },
+          current: { type: Number, required: true, default: 0 },
+          completed: {
+            type: Boolean,
+            required: true,
+            default: false,
+            validate: {
+              validator: function (value: boolean) {
+                return !(value === true && this.current < this.cap);
+              },
+              message: "Quest cannot be marked as completed unless the current progress equals or exceeds the cap.",
+            },
+          },
+        },
+        // default: new Map([])
+      },
+      bonus: {
+        type: Map,
+        of: {
+          bonus: { type: Schema.Types.ObjectId, ref: "bonus" },
+          current: { type: Number, required: true, default: 0 },
+          activated: { type: Boolean, required: true, default: false },
+          completed: { type: Boolean, required: true, default: false }, // When activated and reaches the expiry.
+        },
+        // default: new Map([])
+      }
     }
   },
   {
@@ -94,10 +121,10 @@ export const userActivitySchema = new Schema<
       type: [
         {
           _id: false,
-          game_name: { type: String },
+          game_name: { type: String, required: true },
           result: {
-            outcome: { type: String, enum: ["win", "loss"] },
-            earnings: { type: Number },
+            outcome: { type: String, enum: ["win", "loss"], required: true },
+            earnings: { type: Number, required: true },
           },
           timestamp: { type: Date, default: Date.now }
         }
@@ -142,8 +169,8 @@ export const userNotificationsSchema = new Schema<
       general: { 
         _id: false,
         type: [notification]
-      },
-    },
+      }
+    }
   },
   {
     collection: "user_notifications",
@@ -160,14 +187,13 @@ const userSchema = new Schema<UserDoc, Model<UserDoc>>(
         values: ["standard", "google"],
         message: "type field must be either standard or google."
       },
+      immutable: true,
       required: true
     },
     avatar_url: {
       type: String,
       validate: {
-        validator: (url: string) => {
-          return /^https?:\/\//.test(url);
-        },
+        validator: (url: string) => /^https?:\/\//.test(url),
         message: (props: any) => `${props.value} is not a valid URL.`
       }
     },
@@ -188,21 +214,17 @@ const userSchema = new Schema<UserDoc, Model<UserDoc>>(
       type: String,
       minlength: [3, "username field is less than the min of 3 characters."],
       maxlength: [24, "username field exceeds the max of 24 characters."],
-      unique: true,
+      unique: true, // TODO: Remove this and make a middleware that not on the error from this since this creates a index we don't need.
       required: true
     },
-    verification_token: { type: String, required: true },
+    verification_token: { type: String, immutable: true, required: true },
     password: { type: String, required: true },
     country: { type: String, required: true },
     region: { type: String },
     phone_number: {
       type: String,
       validate: {
-        validator: (phone?: string) => {
-          return (
-            !phone || /^\+\d{1,6}\s\(\d{1,4}\)\s\d{1,4}-\d{1,4}$/.test(phone)
-          );
-        },
+        validator: (phone?: string) => !phone || /^\+\d{1,6}\s\(\d{1,4}\)\s\d{1,4}-\d{1,4}$/.test(phone),
         message: (props: any) => `${props.value} is not a valid phone number.`
       }
     },
@@ -211,6 +233,7 @@ const userSchema = new Schema<UserDoc, Model<UserDoc>>(
       maxlength: [338, "bio field exceeds the max of 338 characters."]
     },
     balance: { type: Number, default: 0 },
+    favourites: { type: Map, of: Boolean, default: new Map() },
     friends: {
       type: Schema.Types.ObjectId,
       ref: "friends",
@@ -230,7 +253,7 @@ const userSchema = new Schema<UserDoc, Model<UserDoc>>(
       type: Schema.Types.ObjectId,
       ref: "notifications",
       required: true
-    },
+    }
   },
   { collection: "user", ...defaults.options }
 );

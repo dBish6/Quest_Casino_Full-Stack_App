@@ -8,9 +8,11 @@
 import type { Request, Response, NextFunction } from "express";
 import type RegisterRequestDto from "@authFeatHttp/dtos/RegisterRequestDto";
 import type { LoginRequestDto, GoogleLoginRequestDto } from "@authFeatHttp/dtos/LoginRequestDto";
+import type { UpdateProfileRequestDto, UpdateUserFavouritesRequestDto, ResetPasswordRequestDto } from "@authFeatHttp/dtos/UpdateUserRequestDto";
 import type { DeleteNotificationsRequestDto } from "@authFeatHttp/dtos/DeleteNotificationsRequestDto";
 
 import USER_NOT_FOUND_MESSAGE from "@authFeat/constants/USER_NOT_FOUND_MESSAGE";
+import GENERAL_BAD_REQUEST_MESSAGE from "@constants/GENERAL_BAD_REQUEST_MESSAGE";
 
 import { logger } from "@qc/utils";
 import { handleHttpError } from "@utils/handleError";
@@ -58,7 +60,7 @@ export async function register(
 /**
  * Initializes the current user session.
  * @controller
- * @response `success` with the client formatted user, `internal`, or `HttpError`.
+ * @response `success` with the client formatted user, `not found`, or `HttpError`.
  */
 export async function login(
   req: LoginRequestDto,
@@ -89,7 +91,7 @@ export async function login(
   }
 }
 /**
- * Initializes the current user session.
+ * Initializes the current user session via google.
  * @controller
  * @response `success`, `forbidden`, or `HttpError`.
  */
@@ -161,25 +163,24 @@ export async function sendVerifyEmail(
  * @controller
  * @response `success` with all users formatted for the client, `forbidden`, `HttpError` or `ApiError`.
  */
-export async function getUsers(
-  req: Request,
-  res: Response,
-  next: NextFunction
-) {
-  const query = req.query.username as string;
+export async function getUsers(req: Request, res: Response, next: NextFunction) {
+  const { username, count } = req.query as Record<string, string>;
   let clientUsers;
 
   try {
-    if (query) clientUsers = await authService.searchUsers(query);
-    else { 
-      if (process.env.NODE_ENV !== "development")
-        return res.status(403).json({ ERROR: "Access denied." });
-
-      clientUsers = await authService.getUsers(true);
+    if (username) {
+      // Search for username.
+      clientUsers = await authService.searchUsers(username);
+    } else if (!count && process.env.NODE_ENV !== "development") {
+      // All users is restricted.
+      return res.status(403).json({ ERROR: "Access denied." });
+    } else {
+      // Else a random set of users based on count if provided.
+      clientUsers = await authService.getUsers(true, parseInt(count, 10));
     }
 
     return res.status(200).json({
-      message: `Successfully retrieved ${query ? "searched" : "all"} users.`,
+      message: `Successfully retrieved ${username ? "searched" : count ? `random ${count}` : "all"} users.`,
       users: clientUsers
     });
   } catch (error: any) {
@@ -225,6 +226,111 @@ export async function getUser(req: Request, res: Response, next: NextFunction) {
   }
 }
 
+// TODO:
+/**
+ * Update client profile call.
+ * @controller
+ * @response `success` or `HttpError`.
+ */
+export async function updateProfile(
+  req: UpdateProfileRequestDto, 
+  res: Response, 
+  next: NextFunction
+) {
+  const body = req.body;
+  
+  try {
+    const clientUser = await authService.updateProfile(
+      req.decodedClaims!.sub, 
+      body
+    );
+
+    return res.status(200).json({
+      message: "All refresh and csrf tokens successfully removed.",
+      user: clientUser
+    });
+  } catch (error: any) {
+    next(handleHttpError(error, "updateProfile controller error."));
+  }
+}
+
+/**
+ * Initiates storing or deleting the user's favourite games.
+ * @controller
+ * @response `success` with updated favourites, `bad request`, or `HttpError`.
+ */
+export async function updateUserFavourites(
+  req: UpdateUserFavouritesRequestDto, 
+  res: Response, 
+  next: NextFunction
+) {
+  const favourites = req.body.favourites;
+
+  try {
+    if (!Array.isArray(favourites) || !favourites.length)
+      return res.status(400).json({ ERROR: GENERAL_BAD_REQUEST_MESSAGE });
+
+    const updatedFavourites = await authService.updateUserFavourites(
+      req.decodedClaims!.sub,
+      req.body.favourites
+    );
+
+    return res.status(200).json({ 
+      message: "Successfully updated the user's favourites.",
+      favourites: updatedFavourites
+    });
+  } catch (error: any) {
+    next(handleHttpError(error, "updateUserFavourites controller error."));
+  }
+}
+
+/**
+ * ...
+ * @controller
+ * @response `success` or `HttpError`.
+ */
+export async function resetPassword(
+  req: ResetPasswordRequestDto, 
+  res: Response, 
+  next: NextFunction
+) {
+  try {
+    // const clientUser = await authService.updateUserFavourites(
+    //   req.decodedClaims!.sub
+    // );
+
+    return res.status(200).json({ 
+      message: "Password was reset successfully.",
+      // user: clientUser
+    });
+  } catch (error: any) {
+    next(handleHttpError(error, "resetPassword controller error."));
+  }
+}
+
+/**
+ * ...
+ * @controller
+ * @response `success` or `HttpError`.
+ */
+export async function sendResetPasswordEmail(
+  // req: Request & { body: { email: string }},
+  req: Request, res: Response, next: NextFunction
+) {
+  try {
+    // const clientUser = await authService.updateUserFavourites(
+    //   req.decodedClaims!.sub
+    // );
+
+    return res.status(200).json({ 
+      message: "",
+      // user: clientUser
+    });
+  } catch (error: any) {
+    next(handleHttpError(error, "sendResetPasswordEmail controller error."));
+  }
+}
+
 /**
  * Clears every refresh token, csrf token and cookies from the current user.
  * @controller
@@ -262,8 +368,9 @@ export async function deleteUser(
     next(handleHttpError(error, "deleteUser controller error."));
   }
 }
+
 /**
- * Deletes the given user notifications.
+ * Initiates deletion of the given user notifications.
  * @controller
  * @response `success` with sorted notifications, or `HttpError`.
  */

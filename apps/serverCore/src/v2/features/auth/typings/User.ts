@@ -1,9 +1,10 @@
 import type { Document, ObjectId } from "mongoose";
 import type { JwtPayload } from "jsonwebtoken";
+import type DefaultDocFields from "@typings/DefaultDocFields";
 import type RegisterBodyDto from "@qc/typescript/dtos/RegisterBodyDto";
 import type { ActivityStatuses } from "@qc/typescript/typings/UserCredentials";
 import type { NotificationTypes, Notification } from "@qc/typescript/dtos/NotificationsDto";
-import type DefaultDocFields from "@typings/DefaultDocFields";
+import type { GameQuestDoc, GameBonusDoc } from "@gameFeat/typings/Game";
 
 export type RegistrationTypes = "standard" | "google";
 export type GetUserBy = "_id" | "email" | "username" | "verification_token";
@@ -33,9 +34,7 @@ export interface UserToClaims {
 }
 
 export interface UserClaims extends JwtPayload {
-  /**
-   * The user's `_id` as a string.
-   */
+  /** The user's `_id` as a string. */
   sub: string;
   type: RegistrationTypes;
   legal_name: { first: string; last: string };
@@ -61,9 +60,7 @@ export interface User extends DefaultDocFields {
   email: string;
   email_verified: boolean;
   username: string;
-  /**
-   * Used as a verification token for generating a unique verification link and used with friend rooms.
-   */
+  /** Used as a verification token for generating a unique verification link and used with friend rooms. */
   verification_token: string;
   password: string;
   country: string;
@@ -71,6 +68,7 @@ export interface User extends DefaultDocFields {
   phone_number?: string;
   bio?: string;
   balance: number;
+  favourites: Map<string, boolean>;
   friends: UserDocFriends;
   statistics: UserDocStatistics;
   activity: UserDocActivity;
@@ -109,7 +107,25 @@ export interface UserDocStatistics extends Document, DefaultDocFields {
     streak: number;
     win_rate: number;
   };
-  completed_quests: Map<string, boolean>;
+  progress: {
+    quest: Map<
+      string,
+      {
+        quest: GameQuestDoc;
+        current: number;
+        completed: boolean;
+      }
+    >;
+    bonus: Map<
+      string,
+      {
+        bonus: GameBonusDoc;
+        current: number;
+        activated: boolean;
+        completed: boolean;
+      }
+    >;
+  };
 }
 
 export interface UserDocActivity extends Document, DefaultDocFields {

@@ -15,10 +15,19 @@ router.post("/email-verify", verifyUserToken, verifyCsrfToken, authController.em
 router.post("/email-verify/send", verifyUserToken, verifyCsrfToken, authController.sendVerifyEmail);
 
 router.get("/users", verifyUserToken, authController.getUsers);
-router.get("/user", verifyUserToken, authController.getUser); 
+router.get("/user", verifyUserToken, authController.getUser);
+router.patch("/user", verifyUserToken, verifyCsrfToken, authController.updateProfile);
+router.patch("/user/favourites", verifyUserToken, verifyCsrfToken, authController.updateUserFavourites);
+
+// TODO: router.patch("/user/forgot-password", verifyUserToken, verifyCsrfToken, authController.resetPassword);
+// TODO: router.post("/user/forgot-password/send", verifyUserToken, verifyCsrfToken, authController.resetPassword);
+router.patch("/user/reset-password", verifyUserToken, verifyCsrfToken, authController.resetPassword);
+router.post("/user/reset-password/send", verifyUserToken, verifyCsrfToken, authController.sendResetPasswordEmail);
+
 router.post("/user/clear", verifyUserToken, verifyCsrfToken, authController.clear);
-router.delete("/user/delete", verifyUserToken, verifyCsrfToken, authController.deleteUser);
-router.post("/user/delete/notifications", verifyUserToken, verifyCsrfToken, authController.deleteUserNotifications);
+router.delete("/user", verifyUserToken, verifyCsrfToken, authController.deleteUser);
+router.delete("/user/favourites", verifyUserToken, verifyCsrfToken, authController.updateUserFavourites);
+router.delete("/user/notifications", verifyUserToken, verifyCsrfToken, authController.deleteUserNotifications);
 
 router.post("/logout", authController.logout);
 

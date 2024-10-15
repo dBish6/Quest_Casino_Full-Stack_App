@@ -4,7 +4,7 @@
  *
  * Author: David Bishop
  * Creation Date: April 16, 2024
- * Last Updated: Sept 13, 2024
+ * Last Updated: Oct 15, 2024
  *
  * Description:
  * ...
@@ -18,7 +18,7 @@
  *  ...
  *
  * Change Log (Not yet, when it's released it would be):
- * The log is in the changelog.txt file at the base of this web directory.
+ * The log is in the changelog.txt file at the base of this serverCore directory.
  */
 
 import { createServer } from "http";

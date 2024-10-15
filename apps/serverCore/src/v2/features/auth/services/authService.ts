@@ -8,6 +8,8 @@
 import type { ObjectId, PopulateOptions, Query, UpdateQuery, QueryOptions } from "mongoose";
 import type { GetUserBy, UserDoc, UserDocFriends, UserDocStatistics, UserDocActivity, UserDocNotifications } from "@authFeat/typings/User";
 
+import CLIENT_COMMON_EXCLUDE from "@constants/CLIENT_COMMON_EXCLUDE";
+
 import { handleApiError, ApiError } from "@utils/handleError";
 
 import { User, UserFriends, UserStatistics, UserActivity, UserNotifications } from "@authFeat/models";
@@ -17,11 +19,10 @@ export interface Identifier<TBy> {
   value: ObjectId | string;
 }
 
-export const CLIENT_USER_SHARED_EXCLUDE = "-_id -created_at -updated_at",
-  /**
-   * Type `UserCredentials` (minus the friends because they get initialized elsewhere).
-   */
-  CLIENT_USER_FIELDS = `${CLIENT_USER_SHARED_EXCLUDE} -email -password -friends -activity -notifications`;
+/**
+ * Type `UserCredentials` (minus the friends because they get initialized elsewhere).
+ */
+export const CLIENT_USER_FIELDS = `${CLIENT_COMMON_EXCLUDE} -email -password -friends -activity -notifications`;
 
 /**
  * Type `MinUserCredentials`.
@@ -69,9 +70,10 @@ export function populateUserDoc<TUserDoc = UserDoc>(query: Query<any, UserDoc>) 
       query.select(CLIENT_USER_FIELDS).populate([
         {
           path: "statistics",
-          select: CLIENT_USER_SHARED_EXCLUDE
+          select: CLIENT_COMMON_EXCLUDE
         }
       ]),
+    min: (): Query<TUserDoc | null, UserDoc> => query.select(MINIMUM_USER_FIELDS) as any
   };
 }
 
@@ -79,22 +81,32 @@ export function populateUserDoc<TUserDoc = UserDoc>(query: Query<any, UserDoc>) 
  * Populates specific fields on the `UserDocFriends`.
  */
 function populateUserFriendsDoc(query: Query<UserDocFriends | null, UserDocFriends>) {
-  return query.select(CLIENT_USER_SHARED_EXCLUDE).populate(USER_FRIENDS_POPULATE);
+  return query.select(CLIENT_COMMON_EXCLUDE).populate(USER_FRIENDS_POPULATE);
 }
 
 /**
- * Gets all users from the database.
+ * Gets all users or a random set of users from the database.
+ * @param randomize Serves as a flag and limit of users taken.
  */
-export async function getUsers(forClient?: boolean) {
+export async function getUsers(forClient?: boolean, randomize?: number) {
   try {
-    return await populateUserDoc<UserDoc[]>(User.find())[forClient ? "client" : "full"]();
+    const query = User.find();
+
+    if (randomize && !isNaN(randomize)) {
+      const totalUsers = await User.countDocuments();
+      query.skip(Math.floor(Math.random() * (totalUsers - randomize))).limit(randomize);
+    }
+    
+    return await populateUserDoc<UserDoc[]>(query)[
+      forClient ? (randomize ? "min" : "client") : "full"
+    ]();
   } catch (error: any) {
     throw handleApiError(error, "getUsers service error.");
   }
 }
 
 /**
- * Gets a user from the database based on the specified criteria.
+ * Gets a user from the database optionally for the client or internal use.
  */
 export async function getUser(
   by: GetUserBy,

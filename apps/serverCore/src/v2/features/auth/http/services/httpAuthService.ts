@@ -8,6 +8,7 @@
 import type { ObjectId } from "mongoose";
 import type { InitializeUser, UserNotification, UserNotificationField } from "@authFeat/typings/User";
 import type { Notification } from "@qc/typescript/dtos/NotificationsDto";
+import type { UpdateProfileBodyDto, UpdateUserFavouritesBodyDto, ResetPasswordBodyDto } from "@qc/typescript/dtos/UpdateUserDto";
 
 import { Types, startSession  } from "mongoose";
 import { hash } from "bcrypt";
@@ -15,6 +16,9 @@ import { randomUUID } from "crypto";
 import { readFileSync } from "fs";
 import { dirname, resolve } from "path";
 import { fileURLToPath } from "url";
+
+import GENERAL_BAD_REQUEST_MESSAGE from "@constants/GENERAL_BAD_REQUEST_MESSAGE";
+import USER_NOT_FOUND_MESSAGE from "@authFeat/constants/USER_NOT_FOUND_MESSAGE";
 
 import { logger } from "@qc/utils";
 import { handleHttpError, HttpError } from "@utils/handleError";
@@ -91,7 +95,7 @@ export async function emailVerify(userId: string, verificationToken: string) {
         $set: { email_verified: true },
       },
       { new: true, forClient: true }
-    )
+    );
     await redisClient.del(`user:${userId}:verification_token`);
     
     return clientUser;
@@ -217,7 +221,6 @@ export async function getSortedUserNotifications(
     throw handleHttpError(error, "getUserNotifications service error.");
   }
 }
-
 /**
  * Delete one or multiple notifications of a user from the database.
  */
@@ -234,17 +237,17 @@ export async function deleteUserNotifications(
             filter: { _id: userId },
             update: {
               $pull: {
-                [`notifications.${toDelete.type}`]: { notification_id: toDelete.notification_id },
-              },
-            },
-          },
+                [`notifications.${toDelete.type}`]: { notification_id: toDelete.notification_id }
+              }
+            }
+          }
         }))
       );
     } else {
       const toDelete = notifications[0];
       await UserNotifications.findOneAndUpdate(
         { _id: userId },
-        { $pull: { [`notifications.${toDelete.type}`]: { notification_id: toDelete.notification_id } } },
+        { $pull: { [`notifications.${toDelete.type}`]: { notification_id: toDelete.notification_id } } }
       );
     }
 
@@ -257,18 +260,85 @@ export async function deleteUserNotifications(
 // /**
 //  * Updates the user's profile details based on the client edit
 //  */
-// // TODO:
-// export async function updateProfile(userId: ObjectId | string) {
-//   try {
-//     // await User.findOneAndUpdate(
-//     //   { _id: userId },
-//     //
-//     //   { runValidators: true }
-//     // );
-//   } catch (error: any) {
-//     throw handleApiError(error, "updateUser service error.", 500);
-//   }
-// }
+export async function updateProfile(userId: ObjectId | string, body: UpdateProfileBodyDto) {
+  try {
+    // const updatedUser = await updateUserCredentials(
+    //   {
+    //     by: "_id",
+    //     value: userId
+    //   },
+    //   {
+    //     $set: { },
+    //   },
+    //   { new: true, forClient: true }
+    // )
+  } catch (error: any) {
+    throw handleHttpError(error, "updateProfile service error.", 500);
+  }
+}
+
+/**
+ * Updates the user's favourite games in bulk by either adding or deleting
+ * entries from the database.
+ */
+export async function updateUserFavourites(
+  userId: ObjectId | string,
+  favourites: UpdateUserFavouritesBodyDto["favourites"]
+) {
+  try {
+    await User.bulkWrite(
+      favourites.map((favourite) => {
+        if (!["delete", "add"].includes(favourite.op))
+          throw new HttpError(GENERAL_BAD_REQUEST_MESSAGE, 400);
+
+        const isAdd = favourite.op === "add";
+        return {
+          updateOne: {
+            filter: { _id: userId },
+            update: {
+              [isAdd ? "$set" : "$unset"]: {
+                [`favourites.${favourite.title}`]: isAdd ? true : ""
+              }
+            }
+          }
+        };
+      })
+    );
+    const updatedUser = await User.findById(userId).select("favourites").lean();
+    if (!updatedUser) throw new HttpError(USER_NOT_FOUND_MESSAGE, 404);
+
+    return updatedUser?.favourites;
+  } catch (error: any) {
+    throw handleHttpError(error, "updateUserFavourites service error.");
+  }
+}
+
+/**
+ * 
+ */
+export async function resetPassword(
+  userId: ObjectId | string, 
+  password: ResetPasswordBodyDto
+) {
+  try {
+
+  } catch (error: any) {
+    throw handleHttpError(error, "resetPassword service error.");
+  }
+}
+
+/**
+ * 
+ */
+export async function sendResetPasswordEmail(
+  userId: ObjectId | string, email: string
+) {
+  try {
+    
+  } catch (error: any) {
+    throw handleHttpError(error, "sendResetPasswordEmail service error.");
+  }
+}
 
 /**
  * Deletes the user's refresh tokens and csrf tokens.

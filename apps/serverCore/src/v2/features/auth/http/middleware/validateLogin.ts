@@ -41,7 +41,7 @@ export default async function validateLogin(
     req.loginMethod = loginMethod;
     logger.debug(`Login ${user.id} successfully validated.`);
     next();
-  } catch (error) {
-    next(handleApiError(error, "validateLogin middleware error.", 500));
+  } catch (error: any) {
+    next(handleApiError(error, "validateLogin middleware error."));
   }
 }

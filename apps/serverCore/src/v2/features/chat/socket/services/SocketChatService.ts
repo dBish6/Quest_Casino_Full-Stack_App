@@ -15,6 +15,7 @@ import type TypingEventDto from "@qc/typescript/dtos/TypingEventDto";
 import type ChatMessageEventDto from "@qc/typescript/dtos/ChatMessageEventDto";
 
 import { ChatEvent } from "@qc/constants";
+import GENERAL_BAD_REQUEST_MESSAGE from "@constants/GENERAL_BAD_REQUEST_MESSAGE";
 
 import { logger } from "@qc/utils";
 import { handleSocketError, SocketError } from "@utils/handleError";
@@ -41,7 +42,10 @@ export default class SocketChatService {
   /**
    * Handles joins, leaves and replacements of chat rooms and can cache the user's last_message if needed.
    */
-  public async manageChatRoom({ access_type, room_id, last_message }: ManageChatRoomEventDto, callback: SocketCallback) {
+  public async manageChatRoom(
+    { access_type, room_id, last_message }: ManageChatRoomEventDto, 
+    callback: SocketCallback
+  ) {
     logger.debug("socket manageChatRoom:", { access_type, room_id, last_message });
 
     try {
@@ -59,9 +63,7 @@ export default class SocketChatService {
           }
         }
       } else {
-        throw new SocketError(
-          "The provided data is invalid or there was no data provided.", "bad request"
-        );
+        throw new SocketError(GENERAL_BAD_REQUEST_MESSAGE, "bad request");
       }
 
       // On a leave, the last_message comes from private chat rooms to be attached to friends if defined.
@@ -78,8 +80,8 @@ export default class SocketChatService {
         const [action, id] = entries[i];
 
         if (entries.length > 2 || !MANAGE_CHAT_ROOM_ACTIONS.includes(action as any)) 
-          throw new SocketError("Access Denied 1", "forbidden");
-        else if (!chatRoomsUtils.isRoomId(id || "")) throw new SocketError("Access Denied 2", "forbidden");
+          throw new SocketError("Access Denied", "forbidden");
+        else if (!chatRoomsUtils.isRoomId(id || "")) throw new SocketError("Access Denied", "forbidden");
 
         // Join or leaves the room.
         this.socket[action as typeof MANAGE_CHAT_ROOM_ACTIONS[number]](id);
@@ -109,25 +111,22 @@ export default class SocketChatService {
   }
 
   /**
-   * Notifies when a user starts or stops typing in a chat room.
+   * Notifies the friend when the user starts or stops typing in private chat rooms.
    */
-  public typing({ room_id, is_typing }: TypingEventDto, callback: SocketCallback) {
-    logger.debug("socket manageTyping", { room_id, is_typing });
+  public async typing({ friend_ver_token, is_typing }: TypingEventDto, callback: SocketCallback) {
+    logger.debug("socket typing", { friend_ver_token, is_typing });
 
     try {
-      if (!chatRoomsUtils.isRoomId(room_id)) throw new SocketError("Access Denied", "forbidden");
-
-      this.socket.in(room_id).emit("typing_activity", {
-        verification_token: this.socket.decodedClaims!.verification_token,
-        is_typing
-      });
+      this.socket
+        .to(getFriendRoom(this.socket.decodedClaims!.verification_token, friend_ver_token))
+        .emit(ChatEvent.FRIEND_TYPING_ACTIVITY, { is_typing });
 
       callback({
         status: "ok",
-        message: "Successfully sent the typing status to chat room.",
+        message: "Successfully sent the typing status to the chat room.",
       });
     } catch (error: any) {
-      return handleSocketError(callback, error, "manageTyping service error.");
+      return handleSocketError(callback, error, "typing service error.");
     }
   }
 
@@ -144,6 +143,7 @@ export default class SocketChatService {
       data.created_at = new Date();
 
       // TODO: Make handling dups better, like if the message is similar and if they send the same message again after they send a normal message.
+      // TODO: Also, should have it per username or something (or do it on the client).
       if (message === this.duplicateMessages.last) this.duplicateMessages.count++;
 
       if (this.duplicateMessages.count) {
@@ -151,7 +151,7 @@ export default class SocketChatService {
           this.duplicateMessages.count = 0;
           await this.cacheChatMessage(data);
         }
-        if (this.duplicateMessages.count === 3)
+        if (this.duplicateMessages.count >= 3)
           return callback({ status: "bad request", ERROR: "Duplicate messages count exceed max." })
       } else {
         await this.cacheChatMessage(data);
@@ -197,6 +197,7 @@ export default class SocketChatService {
   private async cacheChatMessage(chatMessage: Omit<ChatMessage, "_id"> | LastChatMessageDto, isLast?: boolean) {
     try {
       if (isLast) {
+        // TODO: If the last message sent in a private chat was 3 days ago, save it anyways? If there is no message just cache?  (prob should use db for totally inactive users).
         await redisClient.set(`chat:${chatMessage.room_id}:last_message`, chatMessage.message);
       } else {
         await archiveChatMessageQueue(chatMessage.room_id, this.socket.decodedClaims!.sub);

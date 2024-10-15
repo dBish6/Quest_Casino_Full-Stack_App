@@ -304,8 +304,7 @@ export default class SocketAuthService {
   }
 
   /**
-   * Updates the user activity status and sends an the updated status to a friend(s) of the user and 
-   * also join and leaves friend rooms if needed.
+   * Updates the user activity status and sends an the updated status to a friend(s) of the user.
    */
   public async emitFriendActivity(
     user: UserClaims,
@@ -319,8 +318,8 @@ export default class SocketAuthService {
 
         const friendSocketId = await getSocketId(friendToken);
         // If there is a socketId, it means they're connected, so they're online or away.
-        if (friendSocketId) 
-          this.socket
+        if (friendSocketId) // FIXME: Wait, is this supposed to be this.io?
+          this.io
             .to(friendSocketId)
             .emit(AuthEvent.FRIEND_ACTIVITY, { verification_token: userToken, status });
       }
@@ -328,7 +327,7 @@ export default class SocketAuthService {
       await this.cacheUserActivityStatus(status, user);
 
       if ((typeof friend as any)[Symbol.iterator] === "function") {
-        for (const fri of friend as Iterable<UserDoc>) await handleActivity(fri);
+        for await (const fri of friend as Iterable<UserDoc>) handleActivity(fri);
       } else {
         await handleActivity(friend as UserDoc);
       }

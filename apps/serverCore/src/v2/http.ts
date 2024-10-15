@@ -20,6 +20,7 @@ import morgan from "morgan";
 
 import authRouter from "@authFeatHttp/routes/authRoute";
 // import chatRouter from "@chatFeatHttp/routes/chatRoute";
+import gameRouter from "@gameFeatHttp/routes/gameRoute"
 
 import apiErrorHandler from "@middleware/apiErrorHandler";
 
@@ -63,6 +64,7 @@ export default function initializeHttp(corsOptions: CorsOptions) {
   // *Routers*
   app.use(`${baseUrl}/auth`, authRouter);
   // app.use(`${baseUrl}/chat`, chatRouter);
+  app.use(`${baseUrl}/game`, gameRouter);
 
   // Test entry route.
   app.get(`${baseUrl}/`, async (_, res) => {
