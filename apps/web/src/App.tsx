@@ -4,7 +4,7 @@
  *
  * Author: David Bishop
  * Creation Date: April 16, 2024
- * Last Updated: Oct 15, 2024
+ * Last Updated: Oct 16, 2024
  *
  * Description:
  * .
@@ -16,7 +16,7 @@
  * The log is in the changelog.txt file at the base of this web directory.
  */
 
-import { Navigate, type RouteObject } from "react-router-dom";
+import { type RouteObject, Navigate, json } from "react-router-dom";
 
 import store from "@redux/store";
 import { apiEndpoints } from "@services/api";
@@ -31,17 +31,12 @@ import { ModalsProvider } from "@components/modals";
 import VerificationHandler from "@components/VerificationHandler";
 import AwayActivityTracker from "@components/AwayActivityTracker";
 
-import { About, Home, Profile, Settings, Support } from "@views/index";
+import { RestrictView, About, Home, Profile, Settings, Support } from "@views/index";
 import { Error } from "@views/errors";
 
 import registerAction from "@authFeat/actions/validateRegister";
 
-import { json } from "react-router-dom";
-
 import "./index.css";
-
-// TODO: Could just make a prop?
-const restricted = new Set(["/profile"]);
 
 export const routes: RouteObject[] = [
   {
@@ -60,6 +55,8 @@ export const routes: RouteObject[] = [
           <VerificationHandler />
           <AwayActivityTracker />
         </ResourceLoaderProvider>
+
+        <Navigate to="/home" replace />
       </>
     ),
     children: [
@@ -91,6 +88,7 @@ export const routes: RouteObject[] = [
       },
       {
         path: "/profile",
+        element: <RestrictView />,
         children: [
           {
             path: "",
@@ -122,8 +120,6 @@ export const routes: RouteObject[] = [
           <Error
             status={403}
             title="Forbidden"
-            // FIXME: Change message.
-            // description="User authorization or CSRF token is not valid."
             description="Malicious request or User authorization or CSRF token is not valid."
           />
         )
