@@ -18,7 +18,7 @@
 
 import { type RouteObject, Navigate, json } from "react-router-dom";
 
-import store from "@redux/store";
+import store from "./redux";
 import { apiEndpoints } from "@services/api";
 
 import HistoryProvider from "@utils/History";
@@ -56,7 +56,7 @@ export const routes: RouteObject[] = [
           <AwayActivityTracker />
         </ResourceLoaderProvider>
 
-        <Navigate to="/home" replace />
+        <Navigate to="/home" replace /> {/* They get redirected on the server, this is just in case for the client. */}
       </>
     ),
     children: [
@@ -70,7 +70,7 @@ export const routes: RouteObject[] = [
         element: <Home />,
         shouldRevalidate: () => false,
         loader: async () => {
-          const res = store.dispatch(apiEndpoints.getCarouselContent.initiate());
+          const res = (await store()).dispatch(apiEndpoints.getCarouselContent.initiate());
 
           try {
             const data = await res.unwrap();

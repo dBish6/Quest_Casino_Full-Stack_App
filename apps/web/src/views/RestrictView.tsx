@@ -10,7 +10,7 @@ export default function RestrictView() {
   const userToken = useAppSelector(selectUserCsrfToken),
     dispatch = useAppDispatch();
 
-  if (userToken) {
+  if (!userToken) {
     dispatch(
       ADD_TOAST({
         title: "Login Session Required",
