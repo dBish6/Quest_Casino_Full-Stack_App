@@ -4,7 +4,7 @@
  *
  * Author: David Bishop
  * Creation Date: April 16, 2024
- * Last Updated: Oct 16, 2024
+ * Last Updated: Oct 18, 2024
  *
  * Description:
  * .
@@ -56,7 +56,10 @@ export const routes: RouteObject[] = [
           <AwayActivityTracker />
         </ResourceLoaderProvider>
 
-        <Navigate to="/home" replace /> {/* They get redirected on the server, this is just in case for the client. */}
+        {/* They get redirected on the server, this is just in case for the client. */}
+        {typeof window !== "undefined" && window.location.pathname === "/" && (
+          <Navigate to="/home" replace />
+        )}
       </>
     ),
     children: [

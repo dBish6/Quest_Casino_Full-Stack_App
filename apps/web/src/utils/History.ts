@@ -2,6 +2,11 @@ import { useRef, useEffect } from "react";
 import type { NavigateFunction, To, NavigateOptions } from "react-router-dom";
 import { useLocation, useNavigate } from "react-router-dom";
 
+/**
+ * Programmatic navigation; allows the use of `useNavigate` outside react components. A custom interface that 
+ * somewhat mimics the native history API, with a length variable counts their history only in this app. Also, 
+ * includes a `locationReload` method to refresh the current page.
+ */
 class History {
   private navigate: NavigateFunction | null = null;
   public readonly length = 0;
@@ -22,19 +27,20 @@ class History {
     this.navigate!(1 as any, { ...options });
   }
 
-  public reload() {
+  public locationReload() {
     return window.location.reload();
   }
 }
 
 export type CustomHistory = InstanceType<typeof History>;
-export let history: CustomHistory; 
+//** Use this everywhere instead of `useNavigate` for consistency. */
+export let history: CustomHistory = {} as any;
 
 export default function HistoryProvider() {
   const navigate = useNavigate(),
     location = useLocation();
 
-  if (typeof window !== "undefined" && !history) 
+  if (typeof window !== "undefined" && !Object.hasOwn(history, "push")) 
     history = new History(navigate);
   
   const initialLoad = useRef(true);
