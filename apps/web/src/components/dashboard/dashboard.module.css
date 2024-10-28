@@ -1,4 +1,5 @@
 .dashboard {
+  /* position: relative; */
   display: grid;
   /* grid-template-columns: 254px 1fr 214px; */
   grid-template-columns: 254px 1fr auto;
@@ -54,6 +55,21 @@
           margin-right: 0.5rem;
         }
       }
+    }
+  }
+
+  & main .scrollMain > :global(.viewport) {
+    width: calc(100% + 0.5rem);
+    height: calc(
+      var(--dashboard-height) - var(--padding-main-vert) - var(--padding-main-vert) -
+        1rem
+    );
+    padding: var(--padding-main-vert) calc(var(--padding-main-horz) + 0.5rem)
+      var(--padding-main-vert) var(--padding-main-horz);
+    border-bottom: 2px solid var(--c-purple-border);
+
+    & section:last-of-type {
+      margin-bottom: 0;
     }
   }
 }

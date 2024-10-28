@@ -59,17 +59,11 @@ export default function FriendsEnlarged({ user, chatRoom, friendsListArr }: Frie
   return (
     <section className={s.friendsEnlarged}>
       {chatRoom.targetFriend?.friend && (
-        <Blob svgWidth="220.83px" svgHeight="169.179px">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 220.83 169.179"
-            preserveAspectRatio="xMidYMin meet"
-          >
-            <path
-              d="M60.948.044C144.617 2.63 224.816-11.08 217.212 39.866s26.97 89.089-29.53 126.707c-32.606 1.552-36.1-2.081-83.159-4.867s-56.909 25.769-82.672-13.307S-22.721-2.542 60.948.044Z"
-              fill="rgba(178,67,178,0.6)"
-            />
-          </svg>
+        <Blob svgWidth={220.83} svgHeight={169.179}>
+          <path
+            d="M60.948.044C144.617 2.63 224.816-11.08 217.212 39.866s26.97 89.089-29.53 126.707c-32.606 1.552-36.1-2.081-83.159-4.867s-56.909 25.769-82.672-13.307S-22.721-2.542 60.948.044Z"
+            fill="rgba(178,67,178,0.6)"
+          />
         </Blob>
       )}
       <div className={s.inner} role="group" aria-roledescription="chat room management">

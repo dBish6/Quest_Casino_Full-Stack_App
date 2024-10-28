@@ -1,4 +1,5 @@
 import { Outlet, useLocation, Link } from "react-router-dom";
+import { Fragment } from "react";
 
 import NavAside from "./aside/Aside";
 import { ChatAside } from "@chatFeat/components/dashboard";
@@ -10,7 +11,7 @@ import { ScrollArea } from "@components/scrollArea";
 import logoTitle from "/images/logo-title.svg";
 import s from "./dashboard.module.css";
 
-export interface DashboardProps extends React.ComponentProps<"main"> {
+export interface DashboardMainProps extends React.ComponentProps<"main"> {
   scrollable?: boolean;
 }
 
@@ -31,17 +32,11 @@ export function Header() {
 
   return (
     <header id="dashHeader" className={s.header}>
-      <Blob svgWidth="329.838px" svgHeight="65.308px">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 329.838 65.308"
-          preserveAspectRatio="xMidYMin meet"
-        >
-          <path
-            d="M34 0c7.963 0 128.815 2.2 128.815 2.2s143.043-6.628 153.261 7.57 32.731 40.893-18.9 53.23c-32.279 7.713-142.529-6.38-142.529-6.38S41.8 63 34 63C15.224 63 0 48.9 0 31.5S15.224 0 34 0Z"
-            fill="rgba(178,67,178,0.5)"
-          />
-        </svg>
+      <Blob svgWidth={329.838} svgHeight={65.308}>
+        <path
+          d="M34 0c7.963 0 128.815 2.2 128.815 2.2s143.043-6.628 153.261 7.57 32.731 40.893-18.9 53.23c-32.279 7.713-142.529-6.38-142.529-6.38S41.8 63 34 63C15.224 63 0 48.9 0 31.5S15.224 0 34 0Z"
+          fill="rgba(178,67,178,0.5)"
+        />
       </Blob>
       <div className={s.inner}>
         <div>
@@ -78,15 +73,22 @@ export function Header() {
   );
 }
 
-export function Main({
-  children,
-  ...props
-}: React.PropsWithChildren<React.ComponentProps<"main">>) {
+export function Main(
+  { children, scrollable = true, ...props }: React.PropsWithChildren<DashboardMainProps>
+) {
+  const ScrollElem = (scrollable ? ScrollArea : Fragment) as any;
+
   return (
     <main {...props}>
-      <ScrollArea scrollbarSize="5" orientation="vertical">
+      <ScrollElem
+        {...(scrollable && {
+          scrollbarSize: "5",
+          orientation: "vertical",
+          className: s.scrollMain,
+        })}
+      >
         {children}
-      </ScrollArea>
+      </ScrollElem>
     </main>
   );
 }

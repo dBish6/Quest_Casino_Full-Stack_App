@@ -314,24 +314,10 @@ select {
 }
 
 main {
+  --padding-main-vert: 2rem;
+  --padding-main-horz: 1.5rem;
+
   grid-column: 2;
-  & > div > .viewport {
-    --padding-main-vert: 2rem;
-    --padding-main-horz: 1.5rem;
-
-    width: calc(100% + 0.5rem);
-    height: calc(
-      var(--dashboard-height) - var(--padding-main-vert) - var(--padding-main-vert) -
-        1rem
-    );
-    padding: var(--padding-main-vert) calc(var(--padding-main-horz) + 0.5rem)
-      var(--padding-main-vert) var(--padding-main-horz);
-    border-bottom: 2px solid var(--c-purple-border);
-
-    & section:last-of-type {
-      margin-bottom: 0;
-    }
-  }
 }
 
 h1,

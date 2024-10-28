@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 
+import CURRENT_YEAR from "@constants/CURRENT_YEAR";
+
 import { useAppSelector } from "@redux/hooks";
 import { selectUserCredentials } from "@authFeat/redux/authSelectors";
 import { useLogoutMutation } from "@authFeat/services/authApi";
@@ -17,25 +19,17 @@ export default function Aside() {
     user = useAppSelector(selectUserCredentials),
     [postLogout] = useLogoutMutation();
 
-  const currentYear = new Date().getFullYear().toString();
-
   useEffect(() => {
     setStatus(user ? "Logout" : "Login");
   }, [user]);
 
   return (
     <aside id="asideLeft" className={s.aside}>
-      <Blob svgWidth="220.83px" svgHeight="201.251px">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 220.83 201.251"
-          preserveAspectRatio="xMidYMin meet"
-        >
-          <path
-            d="M60.948.052c83.669 3.076 163.868-13.232 156.264 47.371s26.97 105.978-29.53 150.728c-32.606 1.846-36.1-2.475-83.159-5.79s-56.909 30.654-82.672-15.83S-22.721-3.024 60.948.052Z"
-            fill="rgba(178,67,178,0.6)"
-          />
-        </svg>
+      <Blob svgWidth={220.83} svgHeight={201.251}>
+        <path
+          d="M60.948.052c83.669 3.076 163.868-13.232 156.264 47.371s26.97 105.978-29.53 150.728c-32.606 1.846-36.1-2.475-83.159-5.79s-56.909 30.654-82.672-15.83S-22.721-3.024 60.948.052Z"
+          fill="rgba(178,67,178,0.6)"
+        />
       </Blob>
       <div className={s.inner}>
         <ScrollArea orientation="vertical">
@@ -89,7 +83,7 @@ export default function Aside() {
             </Link>
           </div>
           <small>
-            Copyright © <time dateTime={currentYear}>{currentYear}</time> Quest
+            Copyright © <time dateTime={CURRENT_YEAR}>{CURRENT_YEAR}</time> Quest
             Casino
           </small>
         </footer>
