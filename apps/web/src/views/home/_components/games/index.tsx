@@ -4,7 +4,7 @@ import { ScrollArea } from "@components/scrollArea";
 import GamesDev from "./GamesDev";
 import GamesActive from "./GamesActive";
 
-import s from "../home.module.css";
+import s from "../../home.module.css";
 
 interface GamesActiveProps {
   status: "active" | "development";

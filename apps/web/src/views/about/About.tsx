@@ -1,5 +1,5 @@
 import { Main } from "@components/dashboard";
-import Carousel from "./Carousel";
+import Carousel from "./_Carousel";
 import { Link } from "@components/common";
 
 import s from "./about.module.css";

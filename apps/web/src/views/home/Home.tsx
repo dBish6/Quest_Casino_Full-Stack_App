@@ -1,4 +1,4 @@
-import type { CarouselContentResponseDto } from "./Carousel";
+import type { CarouselContentResponseDto } from "./_components/Carousel";
 import type Game from "@typings/Game";
 
 import { useLoaderData } from "react-router-dom";
@@ -8,8 +8,8 @@ import { useLazyGetGamesQuery } from "@services/api";
 
 import { Main } from "@components/dashboard";
 import { Icon } from "@components/common";
-import Carousel from "./Carousel";
-import { Games, GamesFilters, GamesSearch } from "./games";
+import Carousel from "./_components/Carousel";
+import { Games, GamesFilters, GamesSearch } from "./_components/games";
 
 import s from "./home.module.css";
 
@@ -159,6 +159,7 @@ export default function Home() {
 
   return (
     <Main className={s.home}>
+      {/* FIXME: aria-label */}
       <section aria-label="" className={s.hero}>
         <Carousel
           {...(!(carouselContent as any)?.data?.ERROR && { content: carouselContent })}
@@ -174,7 +175,13 @@ export default function Home() {
         <Games status="development" games={gameData.development} gamesLoading={gamesLoading} />
       </section>
 
-      <section aria-labelledby="hGames" className={s.games} aria-busy={gamesLoading} aria-live="polite">
+      <section
+        aria-labelledby="hGames"
+        id="games"
+        className={s.games}
+        aria-busy={gamesLoading}
+        aria-live="polite"
+      >
         <header>
           <hgroup>
             <Icon aria-hidden="true" id="joystick-32" scaleWithText />

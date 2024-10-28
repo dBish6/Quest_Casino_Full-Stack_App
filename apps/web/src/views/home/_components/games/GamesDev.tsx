@@ -3,7 +3,7 @@ import type Game from "@typings/Game";
 import { Image } from "@components/common";
 import { Skeleton, SkeletonText, SkeletonTitle } from "@components/loaders";
 
-import s from "../home.module.css";
+import s from "../../home.module.css";
 
 export default function GamesDev({ games }: { games: (Game | undefined)[] }) {
   return games.map((game, i) => <GameCardDev key={i} game={game} />)

@@ -1,5 +1,5 @@
 import type Game from "@typings/Game";
-import type { GameDataState } from "../Home";
+import type { GameDataState } from "../../Home";
 import type { UserCredentials } from "@qc/typescript/typings/UserCredentials";
 import type { IconIds } from "@components/common";
 
@@ -20,7 +20,7 @@ import { HoverCard } from "@components/hoverCard";
 import { Form } from "@components/form";
 import { Skeleton, SkeletonText } from "@components/loaders";
 
-import s from "../home.module.css";
+import s from "../../home.module.css";
 
 interface GamesFiltersProps { 
   gameData: GameDataState["active"]; 
@@ -306,7 +306,6 @@ export function GamesFilters({ gameData, setGameData }: GamesFiltersProps) {
 
   return (
     <div role="group" aria-label="Filter Games by Category" id="filters" className={s.filters}>
-      {/* TODO: Probably would be a scrollArea (try not to till a point). */}
       {BTN_MAP.map(({ text, icon }) => {
         const selected = filterSelected === text;
 
