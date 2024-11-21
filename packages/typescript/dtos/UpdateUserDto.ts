@@ -1,22 +1,18 @@
-import { UserCredentials } from "../typings/UserCredentials";
-
 export interface UpdateProfileBodyDto {
   avatar_url?: string;
-  legal_name?: { first: string; last: string };
+  first_name?: string;
+  last_name?: string;
   username?: string;
   bio?: string;
-
   email?: string;
-  // password: string;
-
-  country: string;
+  country?: string;
   region?: string;
   phone_number?: string;
 }
 
 export interface UpdateProfileResponseDto {
-  user: UserCredentials;
-  refreshed: boolean;
+  user: UpdateProfileBodyDto;
+  refreshed?: string;
 }
 
 export type FavouriteOperations = "delete" | "add";
@@ -24,7 +20,6 @@ export interface UpdateUserFavouritesBodyDto {
   favourites: { op: "delete" | "add"; title: string }[];
 }
 
-export interface ResetPasswordBodyDto {
-  old: string;
-  new: string;
-}
+export type SendConfirmPasswordEmailBodyDto =
+  | { password: { old: string; new: string } }
+  | { password: string; verification_token: string };

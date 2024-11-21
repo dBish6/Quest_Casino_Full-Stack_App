@@ -4,26 +4,46 @@ import useResourcesLoadedEffect from "@hooks/useResourcesLoadedEffect";
 
 import { useAppSelector } from "@redux/hooks";
 import { selectUserCredentials } from "@authFeat/redux/authSelectors";
-import { useEmailVerifyMutation } from "@authFeat/services/authApi";
+import { useEmailVerifyMutation, useResetPasswordMutation } from "@authFeat/services/authApi";
 
 import { OverlayLoader } from "@components/loaders";
 
 export default function VerificationHandler() {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const user = useAppSelector(selectUserCredentials),
-    [postEmailVerify, { isLoading }] = useEmailVerifyMutation();
+    [postEmailVerify, { isLoading: emailLoading }] = useEmailVerifyMutation(),
+    [postResetPassword, { isLoading: resetLoading }] = useResetPasswordMutation(),
+    isLoading = emailLoading || resetLoading;
 
   // They'll be redirected when still signed in from the email.
   useResourcesLoadedEffect(() => {
     if (user?.email_verified === false) {
-      const token = searchParams.get("verify");
-
-      if (token) {
-        const mutation = postEmailVerify(undefined);
-
+      const emailVerifyToken = searchParams.get("prof-ver");
+      if (emailVerifyToken) {
+        const mutation = postEmailVerify({ verification_token: emailVerifyToken });
+        mutation.then((res) => {
+          if (res.data?.message?.includes("successfully"))
+            setSearchParams((params) => {
+              params.delete("prof-ver");
+              return params;
+            });
+        });
         return () => mutation.abort();
       }
+    }
+
+    const confirmResetPasswordToken = searchParams.get("conf-ver");
+    if (confirmResetPasswordToken) {
+      const mutation = postResetPassword({ verification_token: confirmResetPasswordToken });
+      mutation.then((res) => {
+        if (res.data?.message?.includes("successfully"))
+          setSearchParams((params) => {
+            params.delete("conf-ver");
+            return params;
+          });
+      });
+      return () => mutation.abort();
     }
   }, []);
 

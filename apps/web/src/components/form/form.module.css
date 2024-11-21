@@ -3,10 +3,15 @@
   display: block;
   margin-bottom: 1rem;
   font: var(--para-regular);
+  & button {
+    display: inline;
+    font: var(--para-regular);
+  }
 }
 .successMsg {
   color: var(--c-status-green);
-  & a {
+  & a,
+  & button {
     &:hover,
     &:focus-visible,
     &:active,
@@ -17,7 +22,8 @@
 }
 .errorMsg {
   color: var(--c-status-red);
-  & a {
+  & a,
+  & button {
     &:hover,
     &:focus-visible,
     &:active,

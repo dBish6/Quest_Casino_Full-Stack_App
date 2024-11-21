@@ -102,7 +102,8 @@
       color: var(--c-purple-50);
     }
     &:active,
-    &[data-key-press="true"] {
+    &[data-key-press="true"],
+    &[aria-pressed="true"] {
       background-color: rgba(95, 67, 178, 0.25);
     }
   }

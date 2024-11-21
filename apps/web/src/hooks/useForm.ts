@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 
 export interface FormState<T = Partial<Record<string, string>>> {
-  error: Partial<T>;
+  error: Partial<T & { global: string }>;
   processing: boolean;
 }
 
@@ -26,18 +26,20 @@ export default function useForm<T = Partial<Record<string, string>>>() {
   const formRef = useRef<HTMLFormElement>(null),
     [form, setForm] = useState<FormState<T>>({
       error: {},
-      processing: false,
+      processing: false
     });
+
+  type TForm = T & { global: string };
 
   const setLoading = (bool: boolean) =>
     setForm((prev) => ({ ...prev, processing: bool }));
 
-  const setErrors = (errors: Partial<T>) =>
+  const setErrors = (errors: Partial<TForm>) =>
     setForm((prev) => ({
       ...prev,
       error: errors,
     }));
-  const setError = (key: keyof T, value: string) =>
+  const setError = (key: keyof TForm, value: string) =>
     setForm((prev) => ({
       ...prev,
       error: {
