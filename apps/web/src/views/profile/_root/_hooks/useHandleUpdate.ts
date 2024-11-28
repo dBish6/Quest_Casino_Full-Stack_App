@@ -50,7 +50,7 @@ export function useHandleUpdate(
     password.current = null
     updateReset();
 
-    const fields = e.currentTarget.querySelectorAll<HTMLInputElement>("input, select");
+    const fields = e.currentTarget.querySelectorAll<HTMLInputElement>("input, textarea, select");
     let formData = new FormData();
 
     for (const field of fields) {
@@ -63,7 +63,8 @@ export function useHandleUpdate(
       }
       let credential;
 
-      if (field.name === "calling_code") credential = user.callingCode;
+      if (["first_name", "last_name"].includes(field.name)) credential = user.legal_name![field.name.split("_")[0]! as keyof typeof user["legal_name"]];
+      else if (field.name === "calling_code") credential = user.callingCode;
       else if (field.name === "phone_number") credential = user.number;
       else credential = user[field.name as keyof typeof user];
 
@@ -78,9 +79,6 @@ export function useHandleUpdate(
     }
     if (password.current?.old_password || password.current?.new_password)
       Object.entries(password.current).forEach(([key, value]) => formData.append(key, value));
-
-    console.log("password.current", password.current)
-    console.log("formData", formData)
 
     const formDataLength = Array.from(formData.values()).length;
     if (formDataLength <= 1) {

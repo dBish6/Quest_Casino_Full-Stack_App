@@ -1,9 +1,7 @@
-import { useState, useEffect } from "react";
-
 import CURRENT_YEAR from "@constants/CURRENT_YEAR";
 
-import { useAppSelector } from "@redux/hooks";
-import { selectUserCredentials } from "@authFeat/redux/authSelectors";
+import useUser from "@authFeat/hooks/useUser";
+
 import { useLogoutMutation } from "@authFeat/services/authApi";
 
 import { ScrollArea } from "@components/scrollArea";
@@ -15,13 +13,8 @@ import Nav from "./nav/Nav";
 import s from "./aside.module.css";
 
 export default function Aside() {
-  const [status, setStatus] = useState<"Logout" | "Login">("Login"), // Because to match the server.
-    user = useAppSelector(selectUserCredentials),
+  const user = useUser(),
     [postLogout] = useLogoutMutation();
-
-  useEffect(() => {
-    setStatus(user ? "Logout" : "Login");
-  }, [user]);
 
   return (
     <aside id="asideLeft" className={s.aside}>
@@ -37,9 +30,9 @@ export default function Aside() {
             <Avatar size="xxl" {...(user && { user: { avatar_url: user.avatar_url } })} />
 
             <div className={s.details}>
-              {user && status === "Logout" && (
+              {user && (
                 <>
-                  <h3>{user.username}</h3>
+                  <h3 title={user.username}>{user.username}</h3>
                   <div>
                     <span className={s.wins}>
                       <span>{user.statistics.wins.total}</span> Wins
@@ -52,11 +45,11 @@ export default function Aside() {
                 </>
               )}
 
-              <div className={s.log} data-user={status}>
+              <div className={s.log} data-user={user ? "online" : "offline"}>
                 <span />
-                {status === "Logout" ? (
+                {user ? (
                   <Link asChild intent="primary" to="">
-                    <Button onClick={() => postLogout({ username: user!.username })}>{status}</Button>
+                    <Button onClick={() => postLogout({ username: user!.username })}>Logout</Button>
                   </Link>
                 ) : (
                   <ModalTrigger queryKey="login" intent="primary">

@@ -14,20 +14,19 @@
     white-space: nowrap;
   }
 }
-button.google {
+a.google {
   width: 100%;
+  gap: 0.5rem;
+  & svg {
+    & use {
+      fill: var(--c-heading-2);
+    }
+  }
   &[disabled] {
     opacity: 0.68;
   }
-  & span {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 0.5rem;
-    & svg {
-      & use {
-        fill: var(--c-heading-2);
-      }
-    }
+  &:active,
+  &[data-key-press="true"] {
+    top: 0 !important;
   }
 }

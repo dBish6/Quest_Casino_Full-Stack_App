@@ -40,7 +40,7 @@
         & div[role="group"]:last-of-type {
           & > :global(.control):first-of-type {
             max-width: 126px;
-            & :global(.select) {
+            & :global(.selectInner) {
               border-top-right-radius: 0;
               border-bottom-right-radius: 0;
               & label :global(.required) {
@@ -48,7 +48,7 @@
               }
             }
           }
-          & > :global(.control):last-of-type :global(.input) {
+          & > :global(.control):last-of-type :global(.inputInner) {
             right: 2px;
             width: calc(100% + 2px) !important;
             border-top-left-radius: 0;

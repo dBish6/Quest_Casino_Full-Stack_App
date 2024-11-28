@@ -17,91 +17,104 @@
     background-color: var(--c-lvl-1-trns);
     backdrop-filter: blur(50px);
 
-    & > div:first-child :global(.viewport) {
-      max-height: 100%;
-      padding: 1.5rem 1.5rem 0;
-      & > div {
-        & .user {
-          position: relative;
-          display: flex;
-          align-items: center;
-          flex-direction: column;
+    & > div:first-child {
+      min-width: 0;
+      
+      & :global(.viewport) {
+        max-height: 100%;
+        padding: 1.5rem 1.5rem 0;
 
-          & .details {
+        & > div {
+          display: initial !important;
+
+          & .user {
+            width: 100%;
+            position: relative;
             display: flex;
             align-items: center;
             flex-direction: column;
-            margin-top: 4px;
-            text-align: center;
-            & h3 {
-              font: var(--h3);
-              font-weight: 500;
-              font-style: italic;
-              margin-bottom: 1px;
-            }
-            & > div:first-of-type {
-              position: relative;
-              bottom: 4px;
-              display: flex;
-              align-items: center;
-              margin-bottom: -4px;
-              & .wins,
-              & .streak {
-                font: var(--para-small);
-                font-weight: 300;
-              }
-              & .wins span {
-                font-weight: 400;
-                color: var(--c-status-green);
-              }
-              & .divider {
-                display: inline-block;
-                width: 1px;
-                height: 13px;
-                margin-inline: 13px;
-                background-color: var(--c-para-faded);
-              }
-              & .streak span {
-                font-weight: 400;
-                color: #de9e1e;
-              }
-            }
 
-            & .log {
-              position: relative;
+            & .details {
+              width: inherit;
               display: flex;
               align-items: center;
-              &[data-user="Logout"] {
-                & span {
-                  left: calc(-8px - 4px);
-                  width: 8px;
-                  height: 8px;
-                  background-color: var(--c-status-green);
+              flex-direction: column;
+              margin-top: 4px;
+              text-align: center;
+              & h3 {
+                max-width: 100%;
+                margin-bottom: 1px;
+                font: var(--h3);
+                font-weight: 500;
+                font-style: italic;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+                overflow: hidden;
+              }
+              & > div:first-of-type {
+                position: relative;
+                bottom: 4px;
+                display: flex;
+                align-items: center;
+                margin-bottom: -4px;
+                & .wins,
+                & .streak {
+                  font: var(--para-small);
+                  font-weight: 300;
                 }
-                & button {
-                  font: var(--para-regular);
+                & .wins span {
+                  font-weight: 400;
+                  color: var(--c-status-green);
+                }
+                & .divider {
+                  display: inline-block;
+                  width: 1px;
+                  height: 13px;
+                  margin-inline: 13px;
+                  background-color: var(--c-para-faded);
+                }
+                & .streak span {
+                  font-weight: 400;
+                  color: #de9e1e;
                 }
               }
-              &[data-user="Login"] {
+
+              & .log {
+                position: relative;
+                display: flex;
+                align-items: center;
+                &[data-user="online"] {
+                  & span {
+                    left: calc(-8px - 4px);
+                    width: 8px;
+                    height: 8px;
+                    background-color: var(--c-status-green);
+                  }
+                  & button {
+                    font: var(--para-regular);
+                  }
+                }
+                &[data-user="offline"] {
+                  & span {
+                    left: calc(-9px - 4px);
+                    width: 9px;
+                    height: 9px;
+                    transform: translateY(1px);
+                    background-color: var(--c-status-red);
+                  }
+                  & a {
+                    font-weight: 600;
+                  }
+                }
                 & span {
-                  left: calc(-9px - 4px);
-                  width: 9px;
-                  height: 9px;
-                  transform: translateY(1px);
-                  background-color: var(--c-status-red);
-                }
-                & a {
-                  font-weight: 600;
-                }
-              }
-              & span {
-                position: absolute;
-                border-radius: 50%;
-                &[data-user="Logout"] {
-                  background-color: var(--c-status-green);
-                }
-                &[data-user="Login"] {
-                  background-color: var(--c-status-red);
+                  position: absolute;
+                  border-radius: 50%;
+                  &[data-user="online"] {
+                    background-color: var(--c-status-green);
+                  }
+                  &[data-user="offline"] {
+                    background-color: var(--c-status-red);
+                  }
                 }
               }
             }

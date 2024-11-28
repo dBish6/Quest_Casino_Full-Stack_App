@@ -23,7 +23,7 @@ export interface FormProps extends Omit<React.ComponentProps<"form">, "aria-erro
 }
 
 const Form = forwardRef<HTMLFormElement, React.PropsWithChildren<FormProps>>(
-  ({ children, fetcher, formLoading, resSuccessMsg, resError, clearErrors, noBots, ...props }, ref) => {
+  ({ children, fetcher, formLoading, resSuccessMsg, resError, clearErrors, noBots, className, ...props }, ref) => {
     const FormElm = (fetcher ? fetcher.Form : "form") as React.ElementType<React.ComponentProps<"form">>;
 
     useEffect(() => {
@@ -89,6 +89,7 @@ const Form = forwardRef<HTMLFormElement, React.PropsWithChildren<FormProps>>(
           {...(resError && { "aria-errormessage": "globalFormError" })}
           autoComplete="off"
           noValidate
+          className={className}
           {...props}
         >
           {children}

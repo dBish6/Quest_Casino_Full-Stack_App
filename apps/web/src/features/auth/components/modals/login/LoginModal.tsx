@@ -10,10 +10,10 @@ import useForm from "@hooks/useForm";
 import useSwitchModal from "@authFeat/hooks/useSwitchModal";
 import { useLoginMutation, useLoginGoogleMutation } from "@authFeat/services/authApi";
 
-import { ModalTemplate, ModalQueryKey } from "@components/modals";
+import { ModalTemplate, ModalTrigger } from "@components/modals";
 import { Form } from "@components/form";
 import { Button, Input } from "@components/common/controls";
-import { Icon, Link } from "@components/common";
+import { Icon } from "@components/common";
 import { LoginWithGoogle } from "@authFeat/components/loginWithGoogle";
 import { Spinner } from "@components/loaders";
 
@@ -21,7 +21,7 @@ import s from "./loginModal.module.css";
 
 export default function LoginModal() {
   const { form, setLoading, setError, setErrors } = useForm<LoginBodyDto>();
-  const { handleSwitch } = useSwitchModal(ModalQueryKey.LOGIN_MODAL);
+  const { handleSwitch } = useSwitchModal("login");
 
   const [
     postLogin,
@@ -85,9 +85,9 @@ export default function LoginModal() {
   return (
     <ModalTemplate
       aria-description="Login with your Quest Casino profile by providing the details below."
-      queryKey={ModalQueryKey.LOGIN_MODAL}
+      queryKey="login"
       width="368px"
-      className={`modal ${s.modal}`}
+      className={s.modal}
       onCloseAutoFocus={() => setErrors({})}
     >
       {() => (
@@ -103,7 +103,7 @@ export default function LoginModal() {
             onSubmit={handleSubmit}
             formLoading={processingForm}
             resError={(loginError || loginGoogleError) as any}
-            clearErrors={() => setErrors({})}
+            noBots
           >
             <div className="inputs">
               <Input
@@ -127,11 +127,20 @@ export default function LoginModal() {
                 required
                 error={form.error.password}
                 disabled={processing}
+                Button="password"
                 onInput={() => setError("password", "")}
               />
-
-              <input type="hidden" id="bot" name="bot" />
             </div>
+            <div className={s.forgot}>
+              <ModalTrigger
+                queryKey="forgot"
+                intent="primary"
+                onClick={(e) => handleSwitch(e)}
+              >
+                Forgot Password?
+              </ModalTrigger>
+            </div>
+
             <Button
               aria-label="Log In"
               aria-live="polite"
@@ -150,7 +159,7 @@ export default function LoginModal() {
           </Form>
 
           <LoginWithGoogle
-            queryKey={ModalQueryKey.LOGIN_MODAL}
+            queryKey="login"
             postLoginGoogle={postLoginGoogle}
             setGoogleLoading={setGoogleLoading}
             processing={{
@@ -162,13 +171,13 @@ export default function LoginModal() {
 
           <span className={s.haveAcc}>
             Don't have an account?{" "}
-            <Link
+            <ModalTrigger
+              queryKey="register"
               intent="primary"
-              to={{ search: "?register=true" }}
               onClick={(e) => handleSwitch(e)}
             >
               Register
-            </Link>
+            </ModalTrigger>
           </span>
         </>
       )}

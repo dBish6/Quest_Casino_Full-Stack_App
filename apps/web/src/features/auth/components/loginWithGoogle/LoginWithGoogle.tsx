@@ -5,7 +5,7 @@ import { useAppSelector } from "@redux/hooks";
 import { selectUserOStateToken } from "@authFeat/redux/authSelectors";
 
 import { Button } from "@components/common/controls";
-import { Icon } from "@components/common";
+import { Link, Icon } from "@components/common";
 import { Spinner } from "@components/loaders";
 
 import s from "./loginWithGoogle.module.css";
@@ -79,8 +79,8 @@ export default function LoginWithGoogle({
         </span>
         <hr aria-hidden="true" />
       </div>
-      {/* TODO: Try button asChild and use a link????? */}
       <Button
+        asChild
         aria-label="Google"
         aria-describedby="logWit"
         aria-live="polite"
@@ -88,11 +88,8 @@ export default function LoginWithGoogle({
         size="xl"
         className={s.google}
         disabled={processing.all}
-        onClick={() =>
-          window.open(createGoogleOAuthUrl(), "_blank", "noopener,noreferrer")
-        }
       >
-        <span>
+        <Link to={createGoogleOAuthUrl()} external>
           {processing.google ? (
             <Spinner intent="primary" size="md" />
           ) : (
@@ -100,7 +97,7 @@ export default function LoginWithGoogle({
               <Icon aria-hidden="true" id="google-24" /> Google
             </>
           )}
-        </span>
+        </Link>
       </Button>
     </>
   );

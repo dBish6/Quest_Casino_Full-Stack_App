@@ -35,7 +35,6 @@ interface ProfilePersonalProps {
 function parsePhoneNumber(phoneNumber: string | undefined) {
   if (!phoneNumber) return {};
   const [callingCode, ...rest] = phoneNumber.split(" ");
-  console.log("callingCode", callingCode)
   return { callingCode, number: rest.join(" ") };
 };
 
@@ -289,7 +288,7 @@ export default function Personal({ user }: ProfilePersonalProps) {
             size="xl"
             type="submit"
             className="formBtn"
-            disabled={processing || !!user.locked}
+            disabled={processing || user.locked === "attempts"}
           >
             {processing ? (
               <Spinner intent="primary" size="md" />

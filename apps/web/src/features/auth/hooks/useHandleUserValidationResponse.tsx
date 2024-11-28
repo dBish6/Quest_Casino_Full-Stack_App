@@ -41,7 +41,7 @@ export default function useHandleUserValidationResponse(
         if (data.errors) {
           if (data.errors.bot) (document.querySelector(".exitXl") as HTMLButtonElement)?.click();
           form.setErrors(data.errors);
-        } else if (data.reqBody) {
+        } else if (data.reqBody && !data.reqBody.avatar_url) {
           const body = { ...data.reqBody, ...options.extraBody };
 
           const mutation = mutationTrigger(body);

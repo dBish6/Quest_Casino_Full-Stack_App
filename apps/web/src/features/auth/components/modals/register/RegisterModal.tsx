@@ -1,20 +1,20 @@
 import type RegisterBodyDto from "@qc/typescript/dtos/RegisterBodyDto";
-import type { Country } from "@qc/constants";
-import type { Region, Regions } from "@authFeat/typings/Region";
 
 import { useFetcher } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Title } from "@radix-ui/react-dialog";
 
 import formatPhoneNumber from "@authFeat/utils/formatPhoneNumber";
-import getSelectedRegion from "@authFeat/utils/getSelectedRegion";
-import displayNotificationMessage from "@authFeat/utils/displayNotificationMessage";
+import parseMessageWithLink from "@authFeat/utils/parseMessageWithLink";
 
 import useForm from "@hooks/useForm";
+import useWorldData from "@authFeat/hooks/useWorldData";
 import useSwitchModal from "@authFeat/hooks/useSwitchModal";
+import useHandleUserValidationResponse from "@authFeat/hooks/useHandleUserValidationResponse";
+
 import { useRegisterMutation, useLoginGoogleMutation } from "@authFeat/services/authApi";
 
-import { ModalTemplate, ModalQueryKey, ModalTrigger } from "@components/modals";
+import { ModalTemplate, ModalTrigger } from "@components/modals";
 import { Form } from "@components/form";
 import { Button, Input, Select } from "@components/common/controls";
 import { Icon, Link } from "@components/common";
@@ -26,19 +26,19 @@ import s from "./registerModal.module.css";
 export default function RegisterModal() {
   const fetcher = useFetcher(),
     { formRef, form, setLoading, setError, setErrors } = useForm<
-      RegisterBodyDto & { calling_code: string }
+      RegisterBodyDto & { con_password: string; calling_code: string }
     >();
 
-  const { handleSwitch } = useSwitchModal(ModalQueryKey.REGISTER_MODAL);
+  const { handleSwitch } = useSwitchModal("register");
 
-  const [worldData, setWorldData] = useState<{
-      countries: Country[] | null;
-      regions: Regions[];
-    }>({ countries: null, regions: [] }),
-    [selected, setSelected] = useState<{
-      country: string;
-      regions: Region[] | string;
-    }>({ country: "", regions: [] });
+  const {
+    worldData,
+    selected,
+    setSelected,
+    getCountries,
+    getRegions,
+    loading
+  } = useWorldData(setError);
 
   const [
     postRegister,
@@ -62,80 +62,21 @@ export default function RegisterModal() {
       },
     ] = useLoginGoogleMutation();
 
-  const countriesLoading = !!worldData.countries && !worldData.countries.length,
-    regionsLoading = !!selected.country && !selected.regions.length;
-
   const processing = form.processing || loginGoogleLoading || googleLoading;
 
-  const getCountries = async () => {
-    if (!worldData.countries?.length) {
-      setWorldData((prev) => ({
-        ...prev,
-        countries: [],
-      }));
-      const { COUNTRIES } = await import("@qc/constants");
-      setWorldData((prev) => ({
-        ...prev,
-        countries: COUNTRIES,
-      }));
-    }
-  };
-
-  const getRegions = async () => {
-    if (!worldData.regions?.length) {
-      setWorldData((prev) => ({
-        ...prev,
-        regions: [],
-      }));
-      const regionsData = (await import("@authFeat/constants/REGIONS")).default;
-      setWorldData((prev) => ({
-        ...prev,
-        regions: regionsData,
-      }));
-    }
-  };
-
-  useEffect(() => {
-    if (selected.country && worldData.regions?.length) {
-      setSelected((prev) => ({
-        ...prev,
-        regions: getSelectedRegion(
-          worldData.regions,
-          selected.country,
-          setError
-        ),
-      }));
-    }
-  }, [selected.country, worldData.regions]);
-
-  const handleValidationResponse = async (data: {
-    errors: Partial<RegisterBodyDto> & { bot: string };
-    reqBody: RegisterBodyDto;
-  }) => {
-    try {
-      if (data.errors) {
-        if (data.errors.bot) (document.querySelector(".exitXl") as HTMLButtonElement).click();
-        setErrors(data.errors);
-      } else {
-        await postRegister(data.reqBody).then((res) => {
-          if (res.data?.message?.startsWith("Successfully")) formRef.current!.reset();
-        });
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-  useEffect(() => {
-    if (fetcher.data) handleValidationResponse(fetcher.data);
-  }, [fetcher.data]);
+  useHandleUserValidationResponse(fetcher, { formRef, setLoading, setErrors }, postRegister);
 
   return (
     <ModalTemplate
       aria-description="Register a profile at Quest Casino by providing the details below or by pressing the google button."
-      queryKey={ModalQueryKey.REGISTER_MODAL}
+      queryKey="register"
       width="496px"
       className={s.modal}
-      onCloseAutoFocus={() => setErrors({})}
+      onCloseAutoFocus={() => {
+        setErrors({});
+        registerReset();
+        loginGoogleReset();
+      }}
     >
       {() => (
         <>
@@ -155,26 +96,26 @@ export default function RegisterModal() {
             ref={formRef}
             fetcher={fetcher}
             method="post"
-            action="/action/register"
+            action="/action/user/validate"
             onSubmit={() => {
               setLoading(true);
-              if (registerSuccess) registerReset();
-              if (loginGoogleSuccess) loginGoogleReset();
+              registerReset();
+              loginGoogleReset();
             }}
             formLoading={processing}
             resSuccessMsg={
               (registerSuccess &&
-                displayNotificationMessage(registerData.message, {
-                  to: { search: `?${ModalQueryKey.LOGIN_MODAL}=true` },
+                parseMessageWithLink(registerData.message, {
                   sequence: "log in",
-                  queryKey: ModalQueryKey.LOGIN_MODAL,
+                  queryKey: "login",
                   options: { onClick: (e) => handleSwitch(e) }
                 })) ||
               (loginGoogleSuccess &&
                 `Welcome ${loginGoogleData.user.username}! You're all set, continue to use Google to log in to use your profile. Best of luck and have fun!`)
             }
-            resError={(fetcher.data?.ERROR || registerError || loginGoogleError) as any}
+            resError={fetcher.data?.ERROR || registerError || loginGoogleError}
             clearErrors={() => setErrors({})}
+            noBots
           >
             <div className="inputs">
               <div role="group">
@@ -260,7 +201,7 @@ export default function RegisterModal() {
                   required="show"
                   error={form.error.country}
                   Loader={<Spinner intent="primary" size="sm" />}
-                  loaderTrigger={countriesLoading}
+                  loaderTrigger={loading.countries}
                   disabled={processing}
                   onFocus={() => {
                     getCountries();
@@ -270,7 +211,7 @@ export default function RegisterModal() {
                     setError("country", "");
                     setSelected((prev) => ({
                       ...prev,
-                      country: (e.target as HTMLSelectElement).value,
+                      country: (e.target as HTMLSelectElement).value
                     }));
                   }}
                 >
@@ -293,8 +234,8 @@ export default function RegisterModal() {
                       : undefined
                   }
                   Loader={<Spinner intent="primary" size="sm" />}
-                  loaderTrigger={regionsLoading}
-                  disabled={!selected.country || processing}
+                  loaderTrigger={loading.regions}
+                  disabled={processing || !selected.country}
                   onFocus={getRegions}
                 >
                   {selected.regions.length &&
@@ -316,7 +257,7 @@ export default function RegisterModal() {
                   name="calling_code"
                   error={form.error.calling_code}
                   Loader={<Spinner intent="primary" size="sm" />}
-                  loaderTrigger={countriesLoading}
+                  loaderTrigger={loading.countries}
                   disabled={processing}
                   onFocus={getCountries}
                   onInput={() => setError("calling_code", "")}
@@ -343,8 +284,6 @@ export default function RegisterModal() {
                   disabled={processing}
                 />
               </div>
-
-              <input type="hidden" id="bot" name="bot" />
             </div>
 
             <div className={s.submit}>
@@ -378,7 +317,7 @@ export default function RegisterModal() {
           </Form>
 
           <LoginWithGoogle
-            queryKey={ModalQueryKey.REGISTER_MODAL}
+            queryKey="register"
             postLoginGoogle={postLoginGoogle}
             setGoogleLoading={setGoogleLoading}
             processing={{
@@ -391,7 +330,7 @@ export default function RegisterModal() {
           <span className={s.already}>
             Already have a account?{" "}
             <ModalTrigger
-              queryKey={ModalQueryKey.LOGIN_MODAL}
+              queryKey="login"
               intent="primary"
               onClick={(e) => handleSwitch(e)}
             >

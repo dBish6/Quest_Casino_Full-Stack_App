@@ -22,7 +22,7 @@ interface FormFields {
   con_password: string;
 }
 
-function ForgotPasswordModal() {
+function ResetPasswordModal() {
   const [searchParams] = useSearchParams();
 
   const fetcher = useFetcher(),
@@ -152,6 +152,6 @@ function ForgotPasswordModal() {
   );
 }
 
-ForgotPasswordModal.restricted = "loggedIn";
+ResetPasswordModal.restricted = "loggedIn";
 
-export default verTokenRequiredView(ForgotPasswordModal, "reset");
+export default verTokenRequiredView(ResetPasswordModal, "reset");
