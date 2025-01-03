@@ -4,8 +4,7 @@ import type { TimeoutObj } from "@services/socket";
 import { createContext, useRef, useState, useLayoutEffect } from "react";
 import { LazyMotion } from "framer-motion";
 
-import { logger } from "@qc/utils";
-import delay from "@utils/delay";
+import { logger, delay } from "@qc/utils";
 import { history } from "@utils/History";
 
 import { useAppSelector, useAppDispatch } from "@redux/hooks";
@@ -25,10 +24,10 @@ export const ResourceLoaderContext = createContext<ResourceLoaderContextValues |
 
 export default function ResourceLoaderProvider({ children }: React.PropsWithChildren<{}>) {
   const framerFeatureBundleRef = useRef<FeatureBundle>(),
-  [progress, setProgress] = useState({
-    loading: false, // I would love to show the loader initially but the portal in OverlayLoader breaks hydration.
-    message: "Loading animating magic...",
-  });
+    [progress, setProgress] = useState({
+      loading: false, // I would love to show the loader initially but the portal in OverlayLoader breaks hydration.
+      message: "Loading animating magic..."
+    });
 
   const userToken = useAppSelector(selectUserCsrfToken),
     user = useAppSelector(selectUserCredentials),
@@ -38,7 +37,7 @@ export default function ResourceLoaderProvider({ children }: React.PropsWithChil
     [emitInitFriends] = useInitializeFriendsMutation();
 
   const initializeFriends = async () => {
-    mutation.current = emitInitFriends({ verification_token: user!.verification_token });
+    mutation.current = emitInitFriends({ member_id: user!.member_id! });
     mutation.current.then((res: any) => {
       if (res.data?.status === "ok") dispatch(UPDATE_USER_FRIENDS(res.data.friends));
     })
@@ -86,7 +85,7 @@ export default function ResourceLoaderProvider({ children }: React.PropsWithChil
   }
 
   return (
-    <ResourceLoaderContext.Provider value={{ resourcesLoaded: framerFeatureBundleRef.current && progress.loading === false }}> 
+    <ResourceLoaderContext.Provider value={{ resourcesLoaded: framerFeatureBundleRef.current && progress.loading === false }}>
       {progress.loading && <OverlayLoader message={progress.message} />}
       <LazyMotion features={framerFeatureBundleRef.current! || {}} strict>
         {children}

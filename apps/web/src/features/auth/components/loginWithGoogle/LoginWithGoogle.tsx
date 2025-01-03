@@ -70,14 +70,14 @@ export default function LoginWithGoogle({
   return (
     <>
       <div className={s.or}>
-        <hr />
-        <span
+        <span />
+        <p
           id="logWit"
-          aria-description="Register with other third party services."
+          aria-label="Or register/login with other third-party services."
         >
           Or Login With
-        </span>
-        <hr aria-hidden="true" />
+        </p>
+        <span />
       </div>
       <Button
         asChild

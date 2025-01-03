@@ -16,9 +16,9 @@ export interface ChatRoomState {
   readonly lastChatMessage?: LastChatMessageDto;
   /** The target friend to display in a private chat room. */
   targetFriend?: { 
-    verTokenSnapshot: string; 
+    memberIdSnapshot: string,
     friend: FriendCredentials | null;
-    isTyping?: boolean; 
+    isTyping?: boolean;
   }
 }
 

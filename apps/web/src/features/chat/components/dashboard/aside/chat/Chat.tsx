@@ -50,38 +50,26 @@ const shrinkInOut: Variants = {
   },
   shrunk: {
     height: "81.2px",
-    transition: { type: "spring", duration: 0.85 },
-  },
+    transition: { type: "spring", duration: 0.85 }
+  }
 };
 
 export default function Chat({ user, friendsListArr, asideState }: ChatProps) {
   const [searchParams, setSearchParams] = useSearchParams(),
     chatState = searchParams.get("chat") || "enlarged";
 
-  // TODO: Change name to chatPoint idk
   const [chat, setChat] = useState<ChatPointsKey>(chatState as ChatPointsKey);
 
   const restriction = useAppSelector(selectRestriction), dispatch = useAppDispatch(),
     restrictionManager = useRef(new RestrictionManager(dispatch));
 
-  useEffect(() => {
-    if (searchParams.has("pm") && !searchParams.has("aside", "enlarged")) {
-      setSearchParams((params) => {
-        params.set("aside", "enlarged");
-        return params;
-      });
-    }
-  }, [searchParams]);
-
-  // TODO: Don't know about the transitioning yet.
   const prev = useRef("");
   useEffect(() => {
     if (asideState === "enlarged") {
       setChat("full");
     } else if (prev.current === "enlarged") {
-      setTimeout(() => setChat(chatState as ChatPointsKey), ANIMATION_DURATION - 350);
+      setTimeout(() => setChat(chatState as ChatPointsKey), ANIMATION_DURATION - 650);
     } else {
-      // setChat(asideState === "enlarged" ? "full" : chatState as ChatPointsKey);
       setChat(chatState as ChatPointsKey);
     }
 
@@ -114,7 +102,6 @@ export default function Chat({ user, friendsListArr, asideState }: ChatProps) {
       className={s.chat}
       variants={shrinkInOut}
       initial="default"
-      // animate={asideState === "enlarged" ? "full" : chatState}
       animate={chat}
       data-aside-state={asideState}
     >
@@ -161,7 +148,8 @@ export default function Chat({ user, friendsListArr, asideState }: ChatProps) {
         )}
       </div>
 
-      {(chatState !== "shrunk" && asideState !== "shrunk") && (
+      {((asideState === "enlarged" && chatState === "shrunk") ||
+        (chatState !== "shrunk" && asideState !== "shrunk")) && (
         <>
           <ChatMessages user={user} asideState={asideState} />
           <MessageInput user={user} asideState={asideState} />
@@ -197,9 +185,9 @@ function RoomSwitcher({ user, chatState, friendsListArr, dispatch }: RoomSwitche
           ...(btnText === "global"
             ? { proposedId: user!.country }
             : {
-                ...(chatRoom.targetFriend?.verTokenSnapshot
-                  ? { proposedId: chatRoom.targetFriend.verTokenSnapshot }
-                  : { proposedId: null, currentId: null }),
+                ...(chatRoom.targetFriend?.memberIdSnapshot
+                  ? { proposedId: chatRoom.targetFriend.memberIdSnapshot }
+                  : { proposedId: null, currentId: null })
               }),
           accessType: btnText
         })
@@ -260,10 +248,10 @@ function RoomSwitcher({ user, chatState, friendsListArr, dispatch }: RoomSwitche
         {user?.email_verified && <option value={user.country}>Global</option>}
         {friendsListArr.map((friend) => {
           const status = friend.activity.status,
-            verToken = friend.verification_token;
+            memberId = friend.member_id;
 
           return (
-            <option key={verToken} value={verToken}>
+            <option key={memberId} value={memberId}>
               <span aria-label={status} className={s.activityIndie} data-status={status} />
               {friend.username}
             </option>

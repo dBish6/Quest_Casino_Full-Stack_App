@@ -6,6 +6,8 @@ import store from "@redux/store";
 
 import { routes } from "./App";
 
+import "./index.css";
+
 function hydrate() {
   const router = createBrowserRouter(routes);
 

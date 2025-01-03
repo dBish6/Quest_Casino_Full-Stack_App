@@ -41,7 +41,7 @@ function parsePhoneNumber(phoneNumber: string | undefined) {
 export default function Personal({ user }: ProfilePersonalProps) {
   const [userEmail, setUserEmail] = useState(user.email),
     [parsedPhone, setParsedPhone] = useState<ParsedPhone>(parsePhoneNumber(user.phone_number)),
-    oldPasswordInputRef = useRef<HTMLInputElement | null>();
+    oldPasswordInputRef = useRef<HTMLInputElement>(null);
 
   const MButton = useRef(m(Button));
 
@@ -50,7 +50,7 @@ export default function Personal({ user }: ProfilePersonalProps) {
   const dispatch = useAppDispatch();
 
   const [
-    postUpdateProfile,
+    patchUpdateProfile,
     {
       data: updateData,
       error: updateError,
@@ -71,7 +71,7 @@ export default function Personal({ user }: ProfilePersonalProps) {
 
   const { fetcher, useForm, handleSubmit } = useHandleUpdate(
       { ...user, email: userEmail, ...parsedPhone },
-      { postUpdateProfile, postSendConfirmPasswordEmail },
+      { patchUpdateProfile, postSendConfirmPasswordEmail },
       () => {
         updateReset();
         confirmReset();
@@ -287,7 +287,6 @@ export default function Personal({ user }: ProfilePersonalProps) {
             intent="primary"
             size="xl"
             type="submit"
-            className="formBtn"
             disabled={processing || user.locked === "attempts"}
           >
             {processing ? (

@@ -50,7 +50,7 @@ export default function LoginModal() {
       (document.querySelector(".exitXl") as HTMLButtonElement).click();
   }, [loginSuccess, loginGoogleSuccess]);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
 
@@ -73,10 +73,10 @@ export default function LoginModal() {
         reqBody[key] = field.value || null;
       }
 
-      if (Object.keys(reqBody).length === 2)
-        postLogin(reqBody as LoginBodyDto).then((res) => {
-          if (res.data?.message?.endsWith("successfully.")) form.reset();
-        });
+      if (Object.keys(reqBody).length === 2) {
+        const res = await postLogin(reqBody as LoginBodyDto);
+        if (res.data?.message?.endsWith("successfully.")) form.reset();
+      }
     } finally {
       setLoading(false);
     }
@@ -133,7 +133,7 @@ export default function LoginModal() {
             </div>
             <div className={s.forgot}>
               <ModalTrigger
-                queryKey="forgot"
+                query={{ param: "forgot" }}
                 intent="primary"
                 onClick={(e) => handleSwitch(e)}
               >
@@ -172,7 +172,7 @@ export default function LoginModal() {
           <span className={s.haveAcc}>
             Don't have an account?{" "}
             <ModalTrigger
-              queryKey="register"
+              query={{ param: "register" }}
               intent="primary"
               onClick={(e) => handleSwitch(e)}
             >

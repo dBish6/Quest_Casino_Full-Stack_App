@@ -61,10 +61,14 @@
             }
             &[role="cell"] {
               width: fit-content;
+              min-width: 0;
               font-size: 21px;
               font-weight: 600;
               text-align: center;
               line-height: normal;
+              white-space: nowrap;
+              text-overflow: ellipsis;
+              overflow: hidden;
             }
           }
         }
@@ -103,7 +107,7 @@
 
     & .quests {
       --_questChipHeight: 35px;
-      --_horz-scrollbar-height: 19px;
+      --_horz-scrollbar-height: 0px;
 
       & > div:first-of-type {
         position: relative;

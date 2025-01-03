@@ -1,6 +1,9 @@
-import { useRef, useEffect } from "react";
 import type { NavigateFunction, To, NavigateOptions } from "react-router-dom";
+
+import { useRef, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+
+import preserveUrl from "./preserveUrl";
 
 /**
  * Programmatic navigation; allows the use of `useNavigate` outside react components. A custom interface that 
@@ -8,7 +11,7 @@ import { useLocation, useNavigate } from "react-router-dom";
  * includes a `locationReload` method to refresh the current page.
  */
 class History {
-  private navigate: NavigateFunction | null = null;
+  private navigate: NavigateFunction;
   public readonly length = 0;
 
   constructor(useNavigate: NavigateFunction) {
@@ -16,19 +19,24 @@ class History {
   }
 
   public push(target: To, options?: NavigateOptions) {
-    this.navigate!(target, { ...options })
+    const { pathname, search, hash } = preserveUrl(target, window.location);
+    this.navigate({ pathname, search, ...(hash && { hash }) }, { ...options })
   }
 
   public back(options?: NavigateOptions) {
-    this.navigate!(-1 as any, { ...options });
+    this.navigate(-1 as any, { ...options });
   }
 
   public forward(options?: NavigateOptions) {
-    this.navigate!(1 as any, { ...options });
+    this.navigate(1 as any, { ...options });
   }
 
   public locationReload() {
     return window.location.reload();
+  }
+
+  public replacePath(target: string) {
+    return window.location.href = target;
   }
 }
 

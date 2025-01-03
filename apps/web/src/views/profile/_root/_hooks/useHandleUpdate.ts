@@ -14,7 +14,7 @@ import { ADD_TOAST } from "@redux/toast/toastSlice";
 
 export function useHandleUpdate(
   user: Partial<Omit<UserProfileCredentials, "phone_number"> & ParsedPhone>,
-  mutationTrigger: { postUpdateProfile: any; postSendConfirmPasswordEmail?: any },
+  mutationTrigger: { patchUpdateProfile: any; postSendConfirmPasswordEmail?: any },
   updateReset: () => void,
   onSuccess?: (data: NonNullable<MutationResponse["data"]>) => void
 ) {
@@ -54,26 +54,28 @@ export function useHandleUpdate(
     let formData = new FormData();
 
     for (const field of fields) {
-      if (field.name === "bot") {
-        formData.append(field.name, field.value);
+      const key = field.name, value = field.value;
+
+      if (key === "bot") {
+        formData.append(key, value);
         continue;
-      } else if (["old_password", "new_password"].includes(field.name)) {
-        password.current = { ...(password.current || {}), [field.name]: field.value };
+      } else if (["old_password", "new_password"].includes(key)) {
+        password.current = { ...(password.current || {}), [key]: value };
         continue;
       }
       let credential;
 
-      if (["first_name", "last_name"].includes(field.name)) credential = user.legal_name![field.name.split("_")[0]! as keyof typeof user["legal_name"]];
-      else if (field.name === "calling_code") credential = user.callingCode;
-      else if (field.name === "phone_number") credential = user.number;
-      else credential = user[field.name as keyof typeof user];
+      if (["first_name", "last_name"].includes(key)) credential = user.legal_name![key.split("_")[0]! as keyof typeof user["legal_name"]];
+      else if (key === "calling_code") credential = user.callingCode;
+      else if (key === "phone_number") credential = user.number;
+      else credential = user[key as keyof typeof user];
 
-      if (field.value.length && field.value !== credential) {
-        if (["calling_code", "phone_number"].includes(field.name)) {
+      if (value.length && value !== credential) {
+        if (["calling_code", "phone_number"].includes(key)) {
           formData.append("calling_code", fields[1].value);
           formData.append("phone_number", fields[2].value);
         } else {
-          formData.append(field.name, field.value);
+          formData.append(key, value);
         }
       }
     }
@@ -102,7 +104,7 @@ export function useHandleUpdate(
       setErrors: form.setErrors,
       setLoading: form.setLoading
     },
-    mutationTrigger.postUpdateProfile,
+    mutationTrigger.patchUpdateProfile,
     {
       success: (data, meta) => {
         if (onSuccess) onSuccess(data);

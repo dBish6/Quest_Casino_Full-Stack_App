@@ -11,7 +11,7 @@ export default function preserveUrl(to: To, location: reactLocation<any> | Locat
     hashOverride = override[0]?.split("#") || [];
 
   return {
-    pathname: override[0] ? override[0] : typeof to === "string" ? to : to.pathname || "",
+    pathname: override[0] ? override[0] : typeof to === "string" ? to : to.pathname || location.pathname,
     search:
       override[1]
         ? `?${override[1]}`

@@ -52,6 +52,12 @@ const authSlice = createSlice({
       state.user.credentials!.favourites = action.payload;
     },
     /**
+     * Sets or overrides the user's settings object.
+     */
+    SET_USER_SETTINGS: (state, action: PayloadAction<UserCredentials["settings"]>) => {
+      state.user.credentials!.settings = action.payload;
+    },
+    /**
      * Updates the user's friends object.
      */
     UPDATE_USER_FRIENDS: (state, action: PayloadAction<Partial<UserCredentials["friends"]>>) => {
@@ -62,9 +68,9 @@ const authSlice = createSlice({
      */
     UPDATE_USER_FRIEND_IN_LIST: (
       state,
-      action: PayloadAction<{ verToken: string; update: Partial<FriendCredentials> }>
+      action: PayloadAction<{ memberId: string; update: Partial<FriendCredentials> }>
     ) => {
-      const key = action.payload.verToken,
+      const key = action.payload.memberId,
         friendState = state.user.credentials!.friends.list[key];
 
       if (!friendState)
@@ -86,6 +92,7 @@ export const { name: authName, reducer: authReducer } = authSlice,
     INITIALIZE_SESSION,
     UPDATE_USER_CREDENTIALS,
     SET_USER_FAVOURITES,
+    SET_USER_SETTINGS,
     UPDATE_USER_FRIENDS,
     UPDATE_USER_FRIEND_IN_LIST,
     CLEAR_USER

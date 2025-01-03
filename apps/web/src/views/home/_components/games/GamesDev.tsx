@@ -1,4 +1,4 @@
-import type Game from "@typings/Game";
+import type { Game } from "@qc/typescript/dtos/GetGamesDto";
 
 import { Image } from "@components/common";
 import { Skeleton, SkeletonText, SkeletonTitle } from "@components/loaders";

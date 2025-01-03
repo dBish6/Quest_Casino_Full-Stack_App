@@ -37,9 +37,7 @@ const toastSlice = createSlice({
       state.count = [...state.count, { ...action.payload, id: nanoid() }];
     },
     REMOVE_TOAST: (state, action: PayloadAction<{ id: string }>) => {
-      state.count = state.count.filter(
-        (toast) => toast.id !== action.payload.id
-      );
+      state.count = state.count.filter((toast) => toast.id !== action.payload.id);
     },
     CLEAR_TOASTS: (state) => {
       state.count = [];
@@ -54,19 +52,19 @@ export default toastSlice;
 
 export const unexpectedErrorToast = createAction(
   ADD_TOAST.type,
-  function (message: string) {
+  function (message?: string, askRefresh: boolean = true) {
     return {
       payload: {
         title: "Unexpected Error",
-        message: `${message ?? "An unexpected error occurred."} Please try refreshing the page. If the error persists, feel free to reach out to support.`,
+        message: `${message ?? "An unexpected error occurred."}${askRefresh ? " Please try refreshing the page." : ""} If the error persists, feel free to reach out to support.`,
         intent: "error",
         options: {
           link: {
             sequence: "support",
-            to: "/support",
-          },
-        },
-      },
+            to: "/support"
+          }
+        }
+      }
     };
   }
 );

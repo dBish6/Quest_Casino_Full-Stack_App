@@ -1,11 +1,11 @@
 import { useAppSelector } from "@redux/hooks";
 import { selectUserCredentials } from "@authFeat/redux/authSelectors";
 
-import CashInModal from "./cashIn/CashInModal";
-import MenuModal from "./menu/MenuModal";
-import { RegisterModal, LoginModal, AddFriendsModal, NotificationsModal } from "@authFeat/components/modals";
+import MenuModal from "@gameFeat/components/modals/menu/MenuModal";
+import { RegisterModal, LoginModal, AddFriendsModal, NotificationsModal, ForgotPasswordModal, ResetPasswordModal, ViewProfileModal, ViewPaymentHistoryModal, ViewCompletedQuestsModal } from "@authFeat/components/modals";
+import BankModal from "@gameFeat/components/modals/bank/BankModal";
 
-export const Modals = [CashInModal, MenuModal, RegisterModal, LoginModal, AddFriendsModal, NotificationsModal];
+const Modals = [MenuModal, RegisterModal, LoginModal, AddFriendsModal, NotificationsModal, ForgotPasswordModal, ResetPasswordModal, ViewProfileModal, ViewPaymentHistoryModal, ViewCompletedQuestsModal, BankModal];
 
 export default function ModalsProvider() {
   const user = useAppSelector(selectUserCredentials);
@@ -13,6 +13,15 @@ export default function ModalsProvider() {
   return Modals.map((Modal, i) => {
     const restrict = (Modal as any).restricted;
 
-    return Modal && ((restrict === "loggedOut" ? !user : user) ? null : <Modal key={i} />);
+    return (
+      Modal &&
+      ((
+        restrict === "loggedOut"
+          ? !user 
+          : restrict === "loggedIn"
+            ? user
+            : false
+      ) ? null : <Modal key={i} />)
+    );
   });
 }

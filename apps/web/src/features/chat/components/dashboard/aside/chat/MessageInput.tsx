@@ -51,10 +51,10 @@ export default function MessageInput({ user, asideState }: MessageInputProps) {
 
     if (chatRoom.accessType === "private" && friend) {
       const shouldEmit = !!inputRef.current!.value.length;
-
+      
       if (typeTrueSent.current !== shouldEmit) {
         emitTyping({
-          friend_ver_token: friend.verification_token,
+          friend_member_id: friend.member_id!,
           is_typing: shouldEmit
         });
         typeTrueSent.current = shouldEmit;

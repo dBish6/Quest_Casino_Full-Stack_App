@@ -1,0 +1,138 @@
+.history {
+  & header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 1rem;
+    & hgroup {
+      align-items: center;
+      gap: 0.75rem;
+      &[data-scale-text="false"] h2 {
+        font: var(--h2);
+        font-size: var(--h2-clamp);
+      }
+      &[data-scale-text="true"] h2 {
+        font: var(--h3);
+      }
+    }
+  }
+  & div[role="table"] {
+    width: 100%;
+    border: 2px solid var(--c-purple-border);
+    border-radius: 6px;
+    background-color: transparent;
+    margin-bottom: 1rem;
+
+    & div[role="rowgroup"] {
+      & div[role="row"] {
+        display: grid;
+        grid-template-columns: minmax(0, 127px) minmax(0, 75px) minmax(0, 127px);
+        & div[role="columnheader"],
+        & div[role="cell"] {
+          &:first-child {
+            border-right: 2px solid var(--c-purple-border);
+          }
+          &:nth-child(2) {
+            border-right: 2px solid var(--c-purple-border);
+          }
+        }
+      }
+    }
+    /* thead */
+    & div[role="rowgroup"]:nth-child(2) {
+      background-color: var(--c-purple-900);
+      & div[role="row"] {
+        height: 28px;
+        border-bottom: 2px solid var(--c-purple-border);
+        & div[role="columnheader"] {
+          display: flex;
+          align-items: center;
+          height: 100%;
+          padding-inline: 0.5rem;
+          font: var(--para-x-small);
+          font-weight: 600;
+          &:nth-child(2),
+          &:last-child {
+            display: flex;
+          }
+          &:nth-child(2) {
+            justify-content: space-between;
+          }
+          &:last-child {
+            justify-content: space-between;
+          }
+          & button {
+            z-index: 1;
+            background-color: transparent;
+            transition:
+              0.22s ease-in-out transform,
+              0.22s ease-in-out color;
+            &[aria-pressed="true"] {
+              transform: rotate(-180deg);
+            }
+          }
+        }
+      }
+    }
+    /* tbody */
+    & div[role="rowgroup"]:last-child {
+      & div[role="row"] {
+        &:nth-child(2n) {
+          background-color: var(--c-lvl-4);
+        }
+        &:not(:last-child) {
+          border-bottom: 2px solid var(--c-purple-border);
+        }
+        &:last-child {
+          border-bottom-right-radius: 5px;
+          border-bottom-left-radius: 5px;
+        }
+
+        & div[role="cell"] {
+          padding: 6px 8px;
+          line-height: normal !important;
+          overflow: hidden;
+          overflow-wrap: break-word;
+          text-overflow: ellipsis;
+          @supports (display: -webkit-box) and (-webkit-line-clamp: 2) {
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 2;
+            white-space: normal;
+          }
+          white-space: nowrap;
+          &:first-child {
+            font: var(--para-small);
+          }
+          &:nth-child(2) {
+            display: flex;
+            flex-direction: column;
+            font: var(--para-x-small);
+            font-weight: 600 !important;
+            &[data-outcome="win"] {
+              color: var(--c-status-green);
+            }
+            &[data-outcome="draw"] {
+              color: var(--c-status-yellow);
+            }
+            &[data-outcome="loss"] {
+              color: var(--c-status-red);
+            }
+            & span {
+              font: var(--para-small);
+              margin-bottom: -2px;
+              transform: translateY(-2);
+            }
+          }
+          &:last-child {
+            font: var(--para-small);
+          }
+        }
+      }
+    }
+  }
+}
+
+/* .resentGame {
+
+} */

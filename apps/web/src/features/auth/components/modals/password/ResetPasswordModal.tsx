@@ -72,11 +72,9 @@ function ResetPasswordModal() {
     >
       {() => (
         <>
-          <hgroup className="head">
-            <Title asChild>
-              <h2>Reset</h2>
-            </Title>
-          </hgroup>
+          <Title asChild>
+            <h2 className="head">Reset</h2>
+          </Title>
 
           <Form
             ref={formRef}
@@ -139,7 +137,7 @@ function ResetPasswordModal() {
 
           <div className={s.back}>
             <ModalTrigger
-              queryKey="login"
+              query={{ param: "login" }}
               intent="primary"
               onClick={(e) => handleSwitch(e)}
             >

@@ -1,5 +1,5 @@
-.container {
-  & :global(.input) {
+.control {
+  & :global(.inputInner) {
     &:global(.primary) {
       background-color: var(--c-lvl-2);
       &[data-focused="true"] {
@@ -14,10 +14,16 @@
         }
       }
 
-      & input {
+      & input,
+      & textarea {
         padding-inline: 16px;
         background-color: transparent;
         color: var(--input-fade);
+      }
+      & textarea {
+        max-width: 100%;
+        max-height: 100%;
+        /* resize: both; */
       }
 
       &.button {

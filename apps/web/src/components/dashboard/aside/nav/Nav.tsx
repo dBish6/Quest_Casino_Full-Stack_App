@@ -1,3 +1,5 @@
+import type { BreakpointContextValues } from "@components/dashboard/Breakpoint";
+
 import { useLocation } from "react-router-dom";
 
 import { Icon, Link } from "@components/common";
@@ -6,7 +8,7 @@ import { Select } from "@components/common/controls";
 
 import s from "./nav.module.css";
 
-export default function Nav() {
+export default function Nav({ viewport }: { viewport: BreakpointContextValues["viewport"] }) {
   const location = useLocation();
 
   return (
@@ -14,42 +16,46 @@ export default function Nav() {
       <Divider heading="Profile" divide={false} />
       <nav>
         <div>
-          <Link to="/profile" nav>
-            <Icon aria-hidden="true" id="edit-16" /> Edit Profile
+          <Link
+            {...(location.pathname.match(/^\/profile(\/)?$/) && {
+              "aria-current": "page"
+            })}
+            to="/profile"
+          >
+            <Icon aria-hidden="true" id={viewport === "small" ? "edit-14" : "edit-16"} /> Edit Profile
           </Link>
           <Link to="/profile/settings" nav>
-            <Icon aria-hidden="true" id="adjust-16" /> Settings
+            <Icon aria-hidden="true" id={viewport === "small" ? "adjust-14" : "adjust-16"} /> Settings
           </Link>
         </div>
 
         <Divider heading="Menu" />
         <div className={s.menu}>
           <Link
-            to={{ pathname: "/home", hash: "#games" }}
-            {...(location.hash.includes("games") && { "aria-current": "page" })}
+            to={{ pathname: "/home", hash: "games" }}
+            {...(location.hash.includes("games") && { "aria-current": "location" })}
           >
-            <Icon aria-hidden="true" id="joystick-16" /> Games
+            <Icon aria-hidden="true" id={viewport === "small" ? "joystick-14" : "joystick-16"} /> Games
           </Link>
 
-          {/* TODO: Open to certain slide. */}
-          <ModalTrigger queryKey="menu">
-            <Icon aria-hidden="true" id="list-16" /> Leaderboard
+          <ModalTrigger query={{ param: "menu", value: "Leaderboard" }}>
+            <Icon aria-hidden="true" id={viewport === "small" ? "list-14" : "list-16"} /> Leaderboard
           </ModalTrigger>
-          <ModalTrigger queryKey="menu">
-            <Icon aria-hidden="true" id="scroll-16" /> Quests
+          <ModalTrigger query={{ param: "menu", value: "Quests" }}>
+            <Icon aria-hidden="true" id={viewport === "small" ? "scroll-14" : "scroll-16"} /> Quests
           </ModalTrigger>
-          <ModalTrigger queryKey="menu">
-            <Icon aria-hidden="true" id="gift-16" /> Bonuses
+          <ModalTrigger query={{ param: "menu", value: "Bonuses" }}>
+            <Icon aria-hidden="true" id={viewport === "small" ? "gift-14" : "gift-16"} /> Bonuses
           </ModalTrigger>
         </div>
       </nav>
 
-      <Languages />
+      <Languages viewport={viewport} />
 
       <Divider />
       <nav>
         <div>
-          <Link to="/about">About Us</Link>
+          <Link to={{ pathname: "/about" }}>About Us</Link>
           <Link to="/support">Contact Support</Link>
         </div>
         <div>
@@ -73,14 +79,15 @@ function Divider({ heading, divide = true }: { heading?: string, divide?: boolea
 }
 
 /* TODO: Languages */
-function Languages() {
+function Languages({ viewport }: { viewport: BreakpointContextValues["viewport"] }) {
   return (
     <>
       <Divider heading="Language" />
       <Select
         label="Language"
         intent="primary"
-        size="lrg"
+        size={viewport === "small" ? "md" : "lrg"}
+        id="languageSelect"
         // Loader={() => <Spinner intent="primary" size="sm" />}
         // loaderTrigger={countriesLoading}
         // disabled={countriesLoading}

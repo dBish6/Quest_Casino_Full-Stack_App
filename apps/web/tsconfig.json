@@ -13,9 +13,11 @@
 
       "@authFeat/*": ["./src/features/auth/*"],
       "@chatFeat/*": ["./src/features/chat/*"],
-      "@gamesFeat/*": ["./src/features/games/*"],
+      "@gameFeat/*": ["./src/features/game/*"],
 
       "@components/*": ["./src/components/*"],
+
+      "@constants/*": ["./src/constants/*"],
 
       "@hooks/*": ["./src/hooks/*"],
 

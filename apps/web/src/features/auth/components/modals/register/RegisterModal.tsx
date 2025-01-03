@@ -330,7 +330,7 @@ export default function RegisterModal() {
           <span className={s.already}>
             Already have a account?{" "}
             <ModalTrigger
-              queryKey="login"
+              query={{ param: "login" }}
               intent="primary"
               onClick={(e) => handleSwitch(e)}
             >

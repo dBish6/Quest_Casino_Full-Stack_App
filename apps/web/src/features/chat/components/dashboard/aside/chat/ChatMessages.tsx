@@ -59,7 +59,7 @@ export default function ChatMessages({ user, asideState }: ChatMessagesProps) {
   /** 
    * The last message is a flag for an active private chat room also, so there is no need to search through users to find active chats.
    */
-  const handleLastMessage = {
+  const handleLastMessage = Object.freeze({
     /** 
      * Handles initialization for a new private chat room with no messages, marking it as a `Previous Chat`.
      */
@@ -90,7 +90,7 @@ export default function ChatMessages({ user, asideState }: ChatMessagesProps) {
           last_message: chatRoom.lastChatMessage
         })
     }
-  }
+  });
 
   const setupChatListeners = async (): Promise<MutationActionCreatorResult<any>[]> => {
     // Listens for new messages coming in.
@@ -107,7 +107,7 @@ export default function ChatMessages({ user, asideState }: ChatMessagesProps) {
     await typingActivityMutation;
 
     return [messageSentMutation, typingActivityMutation]
-  }
+  };
   
   /** 
   * Handles joins, leaves and chat initialization.
@@ -159,7 +159,7 @@ export default function ChatMessages({ user, asideState }: ChatMessagesProps) {
         }
       }
     })();
-  }, [user?.email_verified, chatRoom.proposedId])
+  }, [user?.email_verified, chatRoom.proposedId]);
 
   /**
    * Happens when currentId switches to null when private button is pressed.
@@ -300,7 +300,7 @@ export default function ChatMessages({ user, asideState }: ChatMessagesProps) {
         )
       ) : (
         <p>
-          <ModalTrigger queryKey="login" intent="primary">
+          <ModalTrigger query={{ param: "login" }} intent="primary">
             Login
           </ModalTrigger>{" "}
           to see the chat.
@@ -326,7 +326,7 @@ const ChatMessageBubble = {
             {chatMsg ? (
               <>
                 <Avatar user={{ avatar_url: chatMsg.avatar_url }} />
-                <h4>{chatMsg?.username === user?.username ? "You" : chatMsg.username}</h4>
+                <h4 title={chatMsg.username}>{chatMsg?.username === user?.username ? "You" : chatMsg.username}</h4>
               </>
             ) : (
               <>
@@ -384,7 +384,7 @@ const ChatMessageBubble = {
             <div className={s.bubble}>
               {["top", "single"].includes(groupLevel!) && (
                 <div className={s.header}>
-                  <h4>{chatMsg?.username === user?.username ? "You" : chatMsg.username}</h4>
+                  <h4 title={chatMsg.username}>{chatMsg.username === user?.username ? "You" : chatMsg.username}</h4>
                   <Timestamp aria-hidden="true" activity={{ timestamp: chatMsg.created_at }}/>
                 </div>
               )}

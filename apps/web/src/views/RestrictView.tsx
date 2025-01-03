@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import { Outlet } from "react-router-dom";
 
 import { history } from "@utils/History";
@@ -7,21 +8,24 @@ import { selectUserCsrfToken } from "@authFeat/redux/authSelectors";
 import { ADD_TOAST } from "@redux/toast/toastSlice";
 
 export default function RestrictView() {
+  const redirected = useRef(false);
+
   const userToken = useAppSelector(selectUserCsrfToken),
     dispatch = useAppDispatch();
 
-  if (!userToken && typeof window !== "undefined") {
+  if (typeof window !== "undefined" && !userToken && !redirected.current) {
     dispatch(
       ADD_TOAST({
         title: "Login Session Required",
         message: "You must be logged in to access that page.",
         intent: "error",
-        duration: 65000
+        duration: 6500
       })
     );
-    history.length 
-      ? history.back({ replace: true }) : history.push("/home", { replace: true });
-      
+    if (history.length) history.back({ replace: true }) 
+    else history.push("/home", { replace: true });
+
+    redirected.current = true;
     return null;
   }
 

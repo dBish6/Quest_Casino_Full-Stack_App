@@ -1,21 +1,21 @@
-import type Game from "@typings/Game";
+import type { Game } from "@qc/typescript/dtos/GetGamesDto";
 import type { GameDataState } from "../../Home";
 import type { UserCredentials } from "@qc/typescript/typings/UserCredentials";
+import type { SetStableSearchParams } from "@hooks/useStableSearchParams";
+import type { BreakpointContextValues } from "@components/dashboard";
 import type { IconIds } from "@components/common";
 
 import { useState, useEffect, useRef } from "react";
-import { useSearchParams } from "react-router-dom";
 import { m, useAnimate } from "framer-motion";
 
-import useUser from "@authFeat/hooks/useUser";
-import useStableSearchParams from "@hooks/useStableSearchParams";
-import { useAppSelector } from "@redux/hooks";
-import { selectUserCredentials } from "@authFeat/redux/authSelectors";
+import getStorageKey from "@utils/getStorageKey";
+import handleFilterActiveGames from "../../_utils/handleFilterActiveGames";
+
 import { useUpdateUserFavouritesMutation } from "@authFeat/services/authApi";
 
 import { ScrollArea } from "@components/scrollArea";
 import { Image, Link, Icon } from "@components/common";
-import { Button, Input } from "@components/common/controls";
+import { Button, Input, Select } from "@components/common/controls";
 import { HoverCard } from "@components/hoverCard";
 import { Form } from "@components/form";
 import { Skeleton, SkeletonText } from "@components/loaders";
@@ -25,9 +25,14 @@ import s from "../../home.module.css";
 interface GamesFiltersProps { 
   gameData: GameDataState["active"]; 
   setGameData: React.Dispatch<React.SetStateAction<GameDataState>>;
+  searchParams: URLSearchParams;
+  setStableSearchParams: SetStableSearchParams;
+  user: UserCredentials | null;
 }
 
-interface GamesSearchProps extends GamesFiltersProps {}
+interface GamesSearchProps extends GamesFiltersProps {
+  viewport: BreakpointContextValues["viewport"];
+}
 
 interface SelectedFavourites {
   [title: string]: "delete" | "add"
@@ -44,33 +49,23 @@ interface GameCardActiveProps {
   user: UserCredentials | null;
 }
 
-const BTN_MAP: ReadonlyArray<Readonly<{ text: string; icon: IconIds }>> = [
+const FILTER_OPTIONS: ReadonlyArray<Readonly<{ text: string; icon: IconIds }>> = [
   { text: "All", icon: "infinity-24" },
   { text: "Table", icon: "cards-24" },
   { text: "Slots", icon: "slot-machine-24" },
   { text: "Dice", icon: "dice-24" },
   { text: "Favourites", icon: "heart-24" }
-]
+];
 
-/** 
- * To store selected favorites that are pending to be sent to the server.
- * Used in case of logout when favorites are selected.
- */
-function getStorageKey (username: string) {
-  return `qc:user:${username}:favorites`;
-};
-
-export default function GamesActive({ games }: { games: (Game | undefined)[] }) {
+export default function GamesActive({ games, user }: { games: (Game | undefined)[], user: UserCredentials | null }) {
   const [gameInfoOpen, setGameInfoOpen] = useState<{ [key: string]: boolean }>({});
-
-  const user = useUser();
 
   const [patchUpdateUserFavourites] = useUpdateUserFavouritesMutation(),
     selectedFavGames = useRef<SelectedFavourites>({});
 
-  function handlePostNewFavourites() {
+  const handlePatchNewFavourites = () => {
     if (user) {
-      const key = getStorageKey(user.username),
+      const key = getStorageKey(user.member_id, "favorites"),
         pendingFavourites: SelectedFavourites = JSON.parse(localStorage.getItem(key) || "{}");
 
       const favouritesArr = Object.entries(pendingFavourites).map(([title, op]) => ({ op, title }));
@@ -83,15 +78,15 @@ export default function GamesActive({ games }: { games: (Game | undefined)[] }) 
   
   useEffect(() => {
     if (games.length) {
-      window.removeEventListener("beforeunload", handlePostNewFavourites); // On new user.
+      window.removeEventListener("beforeunload", handlePatchNewFavourites); // On new user.
 
-      handlePostNewFavourites(); // Checks initially if there is any pending favourites.
-      if (user) 
-        window.addEventListener("beforeunload", handlePostNewFavourites);
+      handlePatchNewFavourites(); // Checks initially if there is any pending favourites.
+      if (user)
+        window.addEventListener("beforeunload", handlePatchNewFavourites);
       
       return () => {
-        window.removeEventListener("beforeunload", handlePostNewFavourites);
-        handlePostNewFavourites(); // They go to a different page.
+        window.removeEventListener("beforeunload", handlePatchNewFavourites);
+        handlePatchNewFavourites(); // They go to a different page.
       }
     }
   }, [user?.type]); // user.type so it can run on login/logout and not credential updates.
@@ -122,9 +117,9 @@ function GameCardActive({ game, user, selectedFavGames, ...props }: GameCardActi
   const favBtnLabels = {
     "true": `Add ${game?.title} to Your Favorites`,
     "false": `Remove ${game?.title} from your favorites`
-  }
+  };
 
-  const [scope, animate] = useAnimate()
+  const [scope, animate] = useAnimate();
 
   useEffect(() => {
     const delay = props.index * 0.05;
@@ -138,8 +133,8 @@ function GameCardActive({ game, user, selectedFavGames, ...props }: GameCardActi
             mass: 1.5,
             stiffness: 175,
             damping: 14,
-            delay,
-          },
+            delay
+          }
         }
       );
   }, [props.games]);
@@ -155,7 +150,7 @@ function GameCardActive({ game, user, selectedFavGames, ...props }: GameCardActi
     else delete selectedFavGames.current[gameTitle];
 
     localStorage.setItem(
-      getStorageKey(user!.username), JSON.stringify(selectedFavGames.current) // I know stringify sucks but we don't have a lot of games anyways.
+      getStorageKey(user!.member_id, "favorites"), JSON.stringify(selectedFavGames.current) // I know stringify sucks but we don't have a lot of games anyways.
     );
 
     const isPressed = target.getAttribute("aria-pressed")!;
@@ -166,7 +161,7 @@ function GameCardActive({ game, user, selectedFavGames, ...props }: GameCardActi
       target.setAttribute("aria-label", favBtnLabels[isPressed as "false"]);
       target.setAttribute("aria-pressed", "true");
     }
-  }
+  };
   
   return (
     <li id="game" className={`${s.game}${!game ? " " + s.skeleton : ""}`}>
@@ -208,11 +203,11 @@ function GameCardActive({ game, user, selectedFavGames, ...props }: GameCardActi
               )
                 ? {
                   "aria-label": `Remove ${game.title} from your favorites`,
-                  "aria-pressed": true,
+                  "aria-pressed": true
                 }
               : {
                   "aria-label": `Add ${game.title} to Your Favorites`,
-                  "aria-pressed": false,
+                  "aria-pressed": false
                 })}
               size="sm"
               iconBtn
@@ -251,12 +246,9 @@ function GameCardActive({ game, user, selectedFavGames, ...props }: GameCardActi
   );
 }
 
-export function GamesFilters({ gameData, setGameData }: GamesFiltersProps) {
-  const [searchParams, setSearchParams] = useSearchParams(),
-    filterSelected = searchParams.get("fil") || "All",
+export function GamesFilters({ gameData, setGameData, searchParams, ...props }: GamesFiltersProps) {
+  const filterSelected = searchParams.get("fil") || "All",
     filterSelectedBtnRef = useRef<HTMLButtonElement>(null);
-
-  const user = useAppSelector(selectUserCredentials);
 
   useEffect(() => {
     if (gameData.initial.length) filterSelectedBtnRef.current!.click();
@@ -264,7 +256,7 @@ export function GamesFilters({ gameData, setGameData }: GamesFiltersProps) {
 
   /** Spacing between filter buttons when selected. */
   useEffect(() => {
-    if (filterSelected) {
+    if (filterSelected && window.innerWidth > 1192) {
       const filterBtns = document.querySelectorAll<HTMLButtonElement>("#filters button");
       
       for (const btn of filterBtns) {
@@ -272,41 +264,22 @@ export function GamesFilters({ gameData, setGameData }: GamesFiltersProps) {
         if (filterSelected === filter && filterSelected !== "All") {
           const prevBtn = btn.previousSibling as HTMLButtonElement;
           if (prevBtn) prevBtn.style.marginRight = "0";
-        } else {
-        btn.style.marginRight = "1rem";
+        } else if (filterBtns[filterBtns.length - 1].innerText !== filter) {
+          btn.style.marginRight = "1rem";
         }
       }
     }
   }, [filterSelected]);
 
-  const handleFilterActiveGames = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-    const target = e.currentTarget,
-      filter = target.innerText;
-
-    let filteredGames = gameData.searched.length ? gameData.searched : gameData.initial;
-    if (filter !== "All") {
-      const filter = target.innerText;
-
-      filteredGames = filteredGames.filter((game) =>
-        filter === "Favourites"
-          ? game.title === (user?.favourites[game.title] || "")
-          : game.category === filter.toLowerCase()
-      );
-      searchParams.set("fil", filter);
-    } else {
-      searchParams.delete("fil");
-    }
-
-    setGameData((prev) => ({
-      ...prev,
-      active: { ...prev.active, current: filteredGames }
-    }));
-    setSearchParams(searchParams);
-  }
-
   return (
-    <div role="group" aria-label="Filter Games by Category" id="filters" className={s.filters}>
-      {BTN_MAP.map(({ text, icon }) => {
+    <ScrollArea
+      role="group"
+      aria-label="Filter Games by Category"
+      orientation="horizontal"
+      id="filters"
+      className={s.filters}
+    >
+      {FILTER_OPTIONS.map(({ text, icon }) => {
         const selected = filterSelected === text;
 
         return (
@@ -315,20 +288,35 @@ export function GamesFilters({ gameData, setGameData }: GamesFiltersProps) {
             {...(selected && { ref: filterSelectedBtnRef })}
             aria-pressed={selected}
             aria-controls="activeGames"
-            onClick={(e) => handleFilterActiveGames(e)}
+            onClick={(e) =>
+              handleFilterActiveGames(
+                e,
+                props.user,
+                searchParams,
+                props.setStableSearchParams,
+                gameData,
+                setGameData
+              )
+            }
           >
             <Icon aria-hidden="true" id={icon} scaleWithText />
             {text}
           </Button>
         );
       })}
-    </div>
-  )
+    </ScrollArea>
+  );
 }
 
-export function GamesSearch({ gameData, setGameData }: GamesSearchProps) {
-  const [searchParams, setStableSearchParams] = useStableSearchParams(),
-    search = searchParams.get("gs");
+export function GamesSearch({
+  gameData,
+  setGameData,
+  viewport,
+  searchParams,
+  setStableSearchParams,
+  user
+}: GamesSearchProps) {
+  const search = searchParams.get("gs");
 
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -337,8 +325,7 @@ export function GamesSearch({ gameData, setGameData }: GamesSearchProps) {
       inputRef.current!.value = search;
       handleSearch()
     }
-  }, [gameData.initial])
-  
+  }, [gameData.initial]);
 
   const handleSearch = () => {
     const value = inputRef.current!.value.toLowerCase().trim();
@@ -362,7 +349,7 @@ export function GamesSearch({ gameData, setGameData }: GamesSearchProps) {
       }
     }));
     setStableSearchParams();
-  }
+  };
 
   return (
     <Form
@@ -377,11 +364,11 @@ export function GamesSearch({ gameData, setGameData }: GamesSearchProps) {
         aria-controls="activeGames"
         label="Search"
         intent="primary"
-        size="xl"
+        size={viewport === "small" ? "lrg" : "xl"}
         id="searchGames"
         type="search"
         spellCheck="false"
-        Icon={<Icon id="search-24" />}
+        Icon={<Icon id={viewport === "small" ? "search-21" : "search-24"} />}
         onInput={(e) => {
           if (!e.currentTarget.value) {
             setGameData((prev) => ({
@@ -395,6 +382,32 @@ export function GamesSearch({ gameData, setGameData }: GamesSearchProps) {
           }
         }}
       />
+      {viewport === "small" && (
+        <Select
+          aria-controls="activeGames"
+          label="Type"
+          intent="primary"
+          size="lrg"
+          id="type"
+          defaultValue={searchParams.get("fil") || "All"}
+          onInput={(e) =>
+            handleFilterActiveGames(
+              e,
+              user,
+              searchParams,
+              setStableSearchParams,
+              gameData,
+              setGameData
+            )
+          }
+        >
+          {FILTER_OPTIONS.map(({ text }) => (
+            <option key={text} value={text}>
+              {text}
+            </option>
+          ))}
+        </Select>
+      )}
     </Form>
-  )
+  );
 }

@@ -98,7 +98,7 @@ export default function ForgotPasswordModal() {
 
           <div className={s.back}>
             <ModalTrigger
-              queryKey="login"
+              query={{ param: "login" }}
               intent="primary"
               onClick={(e) => handleSwitch(e)}
             >

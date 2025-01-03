@@ -1,16 +1,9 @@
 import type { RootState } from "@redux/store";
-import type Game from "@typings/Game";
-import type { GameStatus } from "@qc/constants";
+import type { CarouselContentResponseDto } from "@views/home/_components/Carousel";
 
 import type { HttpResponse } from "@typings/ApiResponse";
-import type { CarouselContentResponseDto } from "@views/home/Carousel";
 
 import { buildCreateApi, coreModule, reactHooksModule, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-
-import { isFetchBaseQueryError } from "@utils/isFetchBaseQueryError";
-
-import allow500ErrorsTransform from "@services/allow500ErrorsTransform";
-import { unexpectedErrorToast } from "@redux/toast/toastSlice";
 
 export const createApi = buildCreateApi(
   coreModule(),
@@ -34,11 +27,11 @@ export function prepareHeadersAndOptions(custom?: { state: RootState }): Record<
           return {
             headers: {
               "Content-Type": "application/json",
-              ...(csrfToken && { "x-xsrf-token": csrfToken }),
-            },
+              ...(csrfToken && { "x-xsrf-token": csrfToken })
+            }
           };
         })()),
-    credentials: "same-origin",
+    credentials: "same-origin"
   };
 }
 
@@ -70,59 +63,12 @@ const api = createApi({
                 ERROR: (data as any).message || "Unexpectedly failed to fetch carousel content.", 
                 allow: true
               },
-              status: res.status,
-            },
+              status: res.status
+            }
           };
 
         return { data: { message: "Successfully retrieved carousel content", ...data } };
       }
-    }),
-
-    /**
-     * 
-     * @request
-     */
-    getGames: builder.query<HttpResponse<{ games: Game[] }>, { status?: GameStatus } | void>({
-      query: (status) => ({
-        url: "/game/games",
-        method: "GET",
-        ...(status && { params: status })
-      }),
-      onQueryStarted: (_, { dispatch, queryFulfilled }) => {
-        queryFulfilled.catch((error) => {
-          if (isFetchBaseQueryError(error.error) && (error.error.status as number) >= 500)
-            dispatch(
-              unexpectedErrorToast("Unexpectedly, there was an issue retrieving our games from the server.")
-            );
-        })
-      },
-      transformErrorResponse: (res, meta) => allow500ErrorsTransform(res, meta)
-    }),
-
-    /**
-     * 
-     * @request
-     * // TODO: DTO if needed.
-     */
-    getQuests: builder.query<HttpResponse, void>({
-      query: (user) => ({
-        url: "/game/quests",
-        method: "POST",
-        body: user
-      })
-    }),
-
-    /**
-     * 
-     * @request
-     * // TODO: DTO if needed.
-     */
-    getBonuses: builder.query<HttpResponse, void>({
-      query: (user) => ({
-        url: "/game/quests",
-        method: "POST",
-        body: user
-      })
     })
   })
 });
@@ -133,11 +79,7 @@ export const {
   reducer: apiReducer,
   middleware: apiMiddleware,
   // enhanceEndpoints,
-  injectEndpoints,
-  // Games
-  useLazyGetGamesQuery,
-  useLazyGetQuestsQuery,
-  useLazyGetBonusesQuery
+  injectEndpoints
 } = api;
 
 export default api;

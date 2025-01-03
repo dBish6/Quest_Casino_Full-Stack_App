@@ -1,6 +1,5 @@
 import { forwardRef } from "react";
 
-import noImage from "/images/no-image.webp"
 import s from "./image.module.css";
 
 export interface ImageProps extends Omit<React.ComponentProps<"img">, "loading" | "aria-busy"> {
@@ -35,7 +34,7 @@ const Image = forwardRef<HTMLImageElement, ImageProps>(
             complete();
           }
           img.onerror = () => {
-            img.src = noImage;
+            img.src = "/images/no-image.webp";
             complete();
           }
         }

@@ -10,20 +10,20 @@ export interface IconProps extends Omit<React.SVGProps<SVGSVGElement>, "scale"> 
 /**
  * Renders an SVG icon.
  */
-export default function Icon({id, fill = "var(--c-purple-50)", scaleWithText, style, ...props}: IconProps) {
+export default function Icon({ id, fill = "var(--c-purple-50)", scaleWithText, style, ...props }: IconProps) {
   const icon = iconLib[id as keyof typeof iconLib],
     { width, height } = icon.size;
 
   const handleFontScale = (elem: SVGSVGElement | null) => {
     if (elem && elem.getAttribute("data-init") !== "true") {
       const style = elem.style,
-        numWidth = parseFloat(width)
+        numWidth = parseFloat(width);
 
-      elem.parentElement!.style.display = "inline-flex"
+      elem.parentElement!.style.display = "inline-flex";
 
       style.width = clampify(`${numWidth - 4}px`, `${numWidth}px`, "615px", "1640px");
       style.height = "auto";
-      elem.setAttribute("data-init", "true")
+      elem.setAttribute("data-init", "true");
     }
   };
 
@@ -61,6 +61,11 @@ const iconLib = {
     size: { width: "16", height: "16.656" },
     "aria-label": "Settings"
   },
+  "adjust-14": {
+    id: "adjust",
+    size: { width: "13.996", height: "14.515" },
+    "aria-label": "Settings"
+  },
 
   "all-24": {
     id: "all",
@@ -85,6 +90,17 @@ const iconLib = {
     "aria-label": "Identification"
   },
 
+  "bar-chart-38": {
+    id: "bar-chart",
+    size: { width: "38.931", height: "27.893" },
+    "aria-label": "Statistics"
+  },
+  "bar-chart-28": {
+    id: "bar-chart",
+    size: { width: "28", height: "20.062" },
+    "aria-label": "Statistics"
+  },
+
   "bell-45": {
     id: "bell",
     size: { width: "44.999", height: "48.866" },
@@ -95,7 +111,6 @@ const iconLib = {
     size: { width: "25.782", height: "27.998" },
     "aria-label": "Notifications"
   },
-  // Only used in testing, will change probably.
   "bell-22": {
     id: "bell",
     size: { width: "21.1", height: "23.999" },
@@ -119,6 +134,26 @@ const iconLib = {
     size: { width: "24", height: "16.961" },
     "aria-label": "Success"
   },
+  "check-mark-20": {
+    id: "check-mark",
+    size: { width: "20.002", height: "14.136" },
+    "aria-label": "Success"
+  },
+  "check-mark-18": {
+    id: "check-mark",
+    size: { width: "18", height: "12.721" },
+    "aria-label": "Success"
+  },
+  "check-mark-16": {
+    id: "check-mark",
+    size: { width: "16", height: "11.308" },
+    "aria-label": "Success"
+  },
+  "check-mark-14": {
+    id: "check-mark",
+    size: { width: "14", height: "9.894" },
+    "aria-label": "Success"
+  },
 
   "debit-card-38": {
     id: "debit-card",
@@ -126,9 +161,19 @@ const iconLib = {
     "aria-label": "Payment Card"
   },
 
+  "delete-22": {
+    id: "delete",
+    size: { width: "22.004", height: "28.003" },
+    "aria-label": "Delete"
+  },
   "delete-19": {
     id: "delete",
     size: { width: "18.858", height: "23.999" },
+    "aria-label": "Delete"
+  },
+  "delete-15": {
+    id: "delete",
+    size: { width: "15.002", height: "19.092" },
     "aria-label": "Delete"
   },
 
@@ -141,6 +186,11 @@ const iconLib = {
   "discord-20": {
     id: "discord",
     size: { width: "19.997", height: "15.21" },
+    "aria-label": "Discord"
+  },
+  "discord-18": {
+    id: "discord",
+    size: { width: "18", height: "13.691" },
     "aria-label": "Discord"
   },
 
@@ -212,21 +262,31 @@ const iconLib = {
     size: { width: "14", height: "7.778" },
     "aria-label": "Expand"
   },
+  "expand-10": {
+    id: "expand-sharp",
+    size: { width: "10", height: "6" },
+    "aria-label": "Expand"
+  },
 
   "eye-18": {
     id: "eye",
     size: { width: "18.002", height: "9.061" },
-    "aria-label": "Hide Password"
+    "aria-label": "Show Password"
   },
-  "eye-closed-18": {
-    id: "eye-closed",
-    size: { width: "17.998", height: "15.007" },
+  "eye-14": {
+    id: "eye",
+    size: { width: "14", height: "7.047" },
     "aria-label": "Show Password"
   },
 
   "facebook-18": {
     id: "facebook",
     size: { width: "18", height: "18" },
+    "aria-label": "Facebook"
+  },
+  "facebook-16": {
+    id: "facebook",
+    size: { width: "16", height: "16" },
     "aria-label": "Facebook"
   },
 
@@ -245,6 +305,11 @@ const iconLib = {
     size: { width: "15.996", height: "16.714" },
     "aria-label": "Bonuses"
   },
+  "gift-14": {
+    id: "gift",
+    size: { width: "13.997", height: "14.625" },
+    "aria-label": "Bonuses"
+  },
 
   "google-24": {
     id: "google",
@@ -252,9 +317,25 @@ const iconLib = {
     "aria-label": "Google"
   },
 
+  "hamburger-32": {
+    id: "hamburger",
+    size: { width: "32.049", height: "23" },
+    "aria-label": "Menu"
+  },
+  "hamburger-24": {
+    id: "hamburger",
+    size: { width: "24.099", height: "17" },
+    "aria-label": "Menu"
+  },
+
   "hand-cash-48": {
     id: "hand-cash",
     size: { width: "48", height: "38.17" },
+    "aria-label": "Cash In"
+  },
+  "hand-cash-24": {
+    id: "hand-cash",
+    size: { width: "23.998", height: "19.083" },
     "aria-label": "Cash In"
   },
 
@@ -296,6 +377,11 @@ const iconLib = {
     size: { width: "18", height: "18" },
     "aria-label": "Instagram"
   },
+  "instagram-16": {
+    id: "instagram",
+    size: { width: "16", height: "16" },
+    "aria-label": "Instagram"
+  },
 
   "joystick-32": {
     id: "joystick",
@@ -305,6 +391,11 @@ const iconLib = {
   "joystick-16": {
     id: "joystick",
     size: { width: "15.996", height: "17.714" },
+    "aria-label": "Games"
+  },
+  "joystick-14": {
+    id: "joystick",
+    size: { width: "13.996", height: "15.499" },
     "aria-label": "Games"
   },
 
@@ -323,6 +414,28 @@ const iconLib = {
     size: { width: "15.998", height: "16.328" },
     "aria-label": "Leaderboard"
   },
+  "list-14": {
+    id: "list",
+    size: { width: "13.997", height: "14.285" },
+    "aria-label": "Leaderboard"
+  },
+
+  "lock-32": {
+    id: "lock",
+    size: { width: "31.222", height: "36.821" },
+    "aria-label": "Privacy"
+  },
+
+  "notepad-32": {
+    id: "notepad",
+    size: { width: "32", height: "37.958" },
+    "aria-label": "Activity"
+  },
+  "notepad-24": {
+    id: "notepad",
+    size: { width: "23.605", height: "28" },
+    "aria-label": "Activity"
+  },
 
   "quote-12": {
     id: "quote",
@@ -333,6 +446,11 @@ const iconLib = {
   "refresh-24": {
     id: "refresh",
     size: { width: "23.998", height: "19.595" },
+    "aria-label": "Refresh Users"
+  },
+  "refresh-18": {
+    id: "refresh",
+    size: { width: "17.999", height: "14.697" },
     "aria-label": "Refresh Users"
   },
 
@@ -356,6 +474,12 @@ const iconLib = {
     size: { width: "16", height: "14.476" },
     "aria-label": "Quests"
   },
+  "scroll-14": {
+    id: "scroll",
+    size: { width: "14", height: "12.667" },
+    "aria-label": "Quests"
+  },
+
 
   "search-24": {
     id: "search",
@@ -382,6 +506,12 @@ const iconLib = {
     id: "send",
     size: { width: "18", height: "18.028" },
     "aria-label": "Send"
+  },
+
+  "settings-32": {
+    id: "settings",
+    size: { width: "32", height: "33.603" },
+    "aria-label": "Settings"
   },
 
   "slot-machine-24": {
@@ -416,5 +546,5 @@ const iconLib = {
     id: "warning",
     size: { width: "24", height: "24.327" },
     "aria-label": "Warning"
-  },
+  }
 };

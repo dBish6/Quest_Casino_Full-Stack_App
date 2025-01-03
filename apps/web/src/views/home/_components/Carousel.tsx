@@ -97,7 +97,7 @@ function formatContent(content: SlideEntryDto) {
   return { title, description };
 }
 
-export default function Carousel({ content }: { content?: CarouselContentResponseDto }) {
+export default function Carousel({ content, breakpoint }: { content?: CarouselContentResponseDto; breakpoint: boolean }) {
   const [searchParams, setSearchParams] = useSearchParams(),
     slideParam = content ? ((searchParams.get("hs") || "News") as HeroCarouselSlides) : "Players",
     heroSlides = (content ? HERO_SLIDES : HERO_SLIDES.slice(-1)) as typeof HERO_SLIDES;
@@ -112,7 +112,7 @@ export default function Carousel({ content }: { content?: CarouselContentRespons
   }, [slideParam]);
 
   useEffect(() => {
-    // FIXME: When there is on initially.
+    // FIXME: When there is one initially, doesn't navigate right.
     // if (content && !slideParam) {
     if (content) {
       let interval: NodeJS.Timeout | undefined = undefined;
@@ -138,11 +138,10 @@ export default function Carousel({ content }: { content?: CarouselContentRespons
           return (
             <Button
               key={slideName}
-              aria-labelledby="heroSlide"
               aria-pressed={selected}
               aria-controls="heroSlide"
               intent="chip"
-              size="lrg"
+              size={breakpoint ? "md" : "lrg"}
               onClick={() => {
                 setInteraction(true);
                 setSearchParams((params) => {
@@ -196,7 +195,9 @@ export default function Carousel({ content }: { content?: CarouselContentRespons
                 const SlideComponent = Slide[currentSlide];
 
                 const slideCont = content?.[currentSlide.toLowerCase() as keyof CarouselContentResponseDto] as any,
-                  props = currentSlide === "Events" ? slideCont?.entries : { ...slideCont, usersDataRef };
+                  props = currentSlide === "Events"
+                    ? slideCont?.entries
+                    : { ...slideCont, usersDataRef, ...(currentSlide === "Players" && { breakpoint }) };
                   
                 return (
                   <>
@@ -227,7 +228,11 @@ export default function Carousel({ content }: { content?: CarouselContentRespons
 
 const Slide = {
   News: (content: SlideEntryDto) => {
-    return <SlideHeadline {...content} />;
+    return (
+      <ScrollArea orientation="vertical">
+        <SlideHeadline {...content} />
+      </ScrollArea>
+    );
   },
   Events: ({ entries }: { entries: SlideEntryDto[] }) => {
     return (
@@ -241,34 +246,60 @@ const Slide = {
       </ScrollArea>
     );
   },
-  Players: ({ usersDataRef }: { usersDataRef: React.MutableRefObject<MinUserCredentials[]> }) => {
+  Players: ({ usersDataRef, breakpoint }: { usersDataRef: React.MutableRefObject<MinUserCredentials[]>; breakpoint: boolean }) => {
+    const scrollAreaRef = useRef<HTMLDivElement>(null);
+
     const user = useUser(),
       dispatch = useAppDispatch();
 
-    const [getUsers, { isFetching: usersLoading }] = useLazyGetUsersQuery(),
+    const [getUsers, { isFetching: usersLoading, isUninitialized }] = useLazyGetUsersQuery(),
       [usersData, setUsersData] = useState<MinUserCredentials[]>([]),
-      query = useRef<any>(),
-      count = useRef(8);
+      [count, setCount] = useState(0),
+      countRef = useRef(0),
+      query = useRef<any>();
 
     const GetRandomUsers = throttle(() => {
-      query.current = getUsers({ count: count.current });
+      query.current = getUsers({ count });
       query.current.then((res: any) => {
-        if (res.isSuccess) {
+        if (res.isSuccess && res.data?.users) {
           setUsersData(res.data.users);
           usersDataRef.current = res.data.users; // Saves the data for when moving to other slides and coming back.
         }
       });
     }, 1000);
   
-    // Initialize
     useEffect(() => {
       if (user?.email_verified) {
-        if (!usersDataRef.current.length) GetRandomUsers();
-        else setUsersData(usersDataRef.current)
+        const handleUserCount = () => {
+          let newCount = 0;
 
-        return () => query.current && query.current.abort();
+          if (window.innerWidth <= 562) {
+            scrollAreaRef.current!.style.setProperty("--_column-count", "3");
+            newCount = 6;
+          } else {
+            scrollAreaRef.current!.style.setProperty("--_column-count", "4");
+            newCount = 8;
+          }
+
+          if (countRef.current !== newCount) {
+            countRef.current = newCount;
+            setCount(newCount);
+            if (usersDataRef.current.length)
+              setUsersData(usersDataRef.current.slice(0, newCount));
+          }
+        };
+        window.removeEventListener("resize", handleUserCount);
+        handleUserCount();
+  
+        window.addEventListener("resize", handleUserCount);
+        return () => window.removeEventListener("resize", handleUserCount);
       }
     }, [user?.email_verified]);
+
+    useEffect(() => {
+      if (count && !usersDataRef.current.length && isUninitialized)
+        GetRandomUsers();
+    }, [count]);
 
     return (
       <>
@@ -278,16 +309,17 @@ const Slide = {
             title="Refresh Users"
             aria-pressed={usersLoading}
             intent="primary"
-            size="lrg"
+            size={breakpoint ? "md" : "lrg"}
             iconBtn
             disabled={usersLoading || !user?.email_verified}
             onClick={GetRandomUsers}
           >
-            <Icon id="refresh-24" />
+            <Icon id={breakpoint ? "refresh-18" : "refresh-24"} />
           </Button>
         </div>
 
         <ScrollArea
+          ref={scrollAreaRef}
           aria-label={`${usersLoading ? "Loading" : ""}Users to Meet`}
           aria-live="polite"
           orientation="horizontal"
@@ -310,11 +342,11 @@ const Slide = {
             ) : usersLoading || usersData?.length ? (
               <ul>
                 {usersLoading
-                  ? Array.from({ length: count.current }).map((_, i) => (
-                      <RandomUserCard key={i} />
+                  ? Array.from({ length: count }).map((_, i) => (
+                      <RandomUserCard key={i} breakpoint={breakpoint} />
                     ))
                   : usersData!.map((user) => (
-                      <RandomUserCard key={user.username} ranUser={user} />
+                      <RandomUserCard key={user.username} ranUser={user} breakpoint={breakpoint} />
                     ))}
               </ul>
             ) : (
@@ -322,7 +354,7 @@ const Slide = {
             )
           ) : (
             <p>
-              <ModalTrigger queryKey="login" intent="primary">
+              <ModalTrigger query={{ param: "login" }} intent="primary">
                 Login
               </ModalTrigger>{" "}
               to see other players!
@@ -345,16 +377,19 @@ function SlideHeadline(content: SlideEntryDto) {
   );
 }
 
-function RandomUserCard({ ranUser }: { ranUser?: MinUserCredentials }) {
+function RandomUserCard({ ranUser, breakpoint }: { ranUser?: MinUserCredentials; breakpoint: boolean }) {
   return (
     <li className={s.user}>
       {ranUser ? (
         <>
-          <Avatar size="lrg" user={ranUser} />
+          <Avatar size={breakpoint ? "md" : "lrg"} user={ranUser} />
 
           <hgroup role="group" aria-roledescription="heading group">
-            <h4>{ranUser.username}</h4>
-            <p aria-roledescription="subtitle">
+            <h4 title={ranUser.username}>{ranUser.username}</h4>
+            <p
+              title={`${ranUser.legal_name.first} ${ranUser.legal_name.last}`}
+              aria-roledescription="subtitle"
+            >
               {ranUser.legal_name.first} {ranUser.legal_name.last}
             </p>
           </hgroup>

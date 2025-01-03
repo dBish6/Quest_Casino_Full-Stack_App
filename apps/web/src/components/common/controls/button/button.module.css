@@ -1,4 +1,5 @@
 .button {
+  cursor: pointer;
   &.icon {
     display: flex;
     justify-content: center;
@@ -19,6 +20,15 @@
     &:not([aria-live])[disabled] {
       opacity: 0.48;
     }
+    & > span[role="status"] {
+      margin-inline: auto;
+    }
+
+    &a {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
   }
   &.primary,
   &.chip {
@@ -28,8 +38,8 @@
     transition: 0.22s ease-in-out border-color;
     &::before,
     &::after {
-      position: absolute;
       content: "";
+      position: absolute;
       inset: 0;
       /* border-radius: 6px; */
       z-index: -1;
@@ -77,11 +87,13 @@
       0.22s ease-in-out background-color,
       0.22s ease-in-out border-color;
     &:hover,
-    &:focus-visible {
+    &:focus-visible,
+    &[aria-pressed="true"] {
       border-color: var(--c-purple-600);
     }
     &:active,
-    &[data-key-press="true"] {
+    &[data-key-press="true"],
+    &[aria-pressed="true"] {
       background: #201735;
       border-color: var(--c-purple-600);
     }
@@ -126,6 +138,47 @@
     }
   }
 
+  &.switch {
+    position: relative;
+    /* min-width: 72px; */
+    border: 2px solid var(--c-purple-800);
+    border-radius: 6rem;
+    background-color: var(--c-lvl-2);
+    z-index: 1;
+    transition: 0.22s ease-in-out background-color;
+    &::before {
+      content: "";
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      display: block;
+      border-radius: 50%;
+      background-color: var(--c-purple-400);
+      transition: 0.38s ease-in-out left; 
+    },
+    &::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: 6rem;
+      z-index: -1;
+      opacity: 0;
+      transition: opacity 0.22s ease-in-out;
+    }
+    &::after {
+      background: linear-gradient(180deg, var(--c-purple-700), #2b1f51);
+    }
+    &:hover,
+    &:focus-visible {
+      background-color: var(--c-lvl-4);
+    }
+    &:active::after,
+    &[data-key-press="true"]::after,
+    &[aria-checked="true"]::after {
+      opacity: 1;
+    }
+  }
+
   &.exit:not(.ghost) {
     border: 2px solid #52396e;
     border-radius: 6px;
@@ -144,11 +197,26 @@
   &.xsm {
     &:not(.icon) {
       font: var(--para-xx-small);
+      font-size: 8px;
     }
-    font-size: 8px;
     height: 18px;
     &.icon {
       width: 18px;
+    }
+    &.switch {
+      min-width: 52px;
+      &::before {
+        left: 3px;
+        width: 10px;
+        height: calc(100% - 2px - 2px);
+      }
+      &:active,
+      &[data-key-press="true"],
+      &[aria-checked="true"] {
+        &::before {
+          left: calc(100% - 10px - 2px);
+        }
+      }
     }
   }
   &.sm {
@@ -158,6 +226,21 @@
     height: 24px;
     &.icon {
       width: 24px;
+    }
+    &.switch {
+      min-width: 60px;
+      &::before {
+        left: 3px;
+        width: 14px;
+        height: calc(100% - 3px - 3px);
+      }
+      &:active,
+      &[data-key-press="true"],
+      &[aria-checked="true"] {
+        &::before {
+          left: calc(100% - 14px - 3px);
+        }
+      }
     }
   }
   &.md {
@@ -175,6 +258,21 @@
         width: 32px;
       }
     }
+    &.switch {
+      min-width: 72px;
+      &::before {
+        left: 4px;
+        width: 20px;
+        height: calc(100% - 4px - 4px);
+      }
+      &:active,
+      &[data-key-press="true"],
+      &[aria-checked="true"] {
+        &::before {
+          left: calc(100% - 20px - 4px);
+        }
+      }
+    }
   }
   &.lrg {
     &.chip {
@@ -185,6 +283,21 @@
     &.icon {
       width: 40px;
     }
+    &.switch {
+      min-width: 84px;
+      &::before {
+        left: 5px;
+        width: 26px;
+        height: calc(100% - 5px - 5px);
+      }
+      &:active,
+      &[data-key-press="true"],
+      &[aria-checked="true"] {
+        &::before {
+          left: calc(100% - 26px - 5px);
+        }
+      }
+    }
   }
   &.xl {
     &:not(.icon) {
@@ -193,6 +306,21 @@
     height: 48px;
     &.icon {
       width: 48px;
+    }
+    &.switch {
+      min-width: 94px;
+      &::before {
+        left: 6px;
+        width: 32px;
+        height: calc(100% - 6px - 6px);
+      }
+      &:active,
+      &[data-key-press="true"],
+      &[aria-checked="true"] {
+        &::before {
+          left: calc(100% - 32px - 6px);
+        }
+      }
     }
   }
 }

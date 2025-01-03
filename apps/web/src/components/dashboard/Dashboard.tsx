@@ -1,18 +1,24 @@
-import { Outlet, useLocation, Link } from "react-router-dom";
+import { Outlet, useSearchParams, useLocation } from "react-router-dom";
 import { Fragment } from "react";
+
+import formatCurrency from "@authFeat/utils/formatCurrency";
+
+import useBreakpoint from "@hooks/useBreakpoint";
+import useUser from "@authFeat/hooks/useUser";
 
 import NavAside from "./aside/Aside";
 import { ChatAside } from "@chatFeat/components/dashboard";
 
-import { Blob, Image, Icon } from "@components/common";
+import { Blob, Image, Icon, Link } from "@components/common";
+import { Button } from "@components/common/controls";
 import { ModalTrigger } from "@components/modals";
 import { ScrollArea } from "@components/scrollArea";
 
-import logoTitle from "/images/logo-title.svg";
 import s from "./dashboard.module.css";
 
 export interface DashboardMainProps extends React.ComponentProps<"main"> {
-  scrollable?: boolean;
+  className: string;
+  scrollable?: boolean | "horizontal";
 }
 
 export default function Dashboard() {
@@ -27,8 +33,14 @@ export default function Dashboard() {
   );
 }
 
-export function Header() {
-  const location = useLocation();
+export function Header() {;
+  const [_, setSearchParams] = useSearchParams(),
+    location = useLocation();
+
+  const { viewport, title } = useBreakpoint();
+
+  const user = useUser(),
+    formattedBalance = user?.balance ? formatCurrency(user.balance, true) : "MISSING";
 
   return (
     <header id="dashHeader" className={s.header}>
@@ -39,56 +51,116 @@ export function Header() {
         />
       </Blob>
       <div className={s.inner}>
-        <div>
+        {["medium", "small"].includes(viewport) && (
+          <div className={s.ham}>
+            <Button
+              intent="primary"
+              size={viewport === "small" ? "lrg" : "xl"}
+              iconBtn
+              onClick={() =>
+                setSearchParams((params) => {
+                  params.set("ham", "true");
+                  return params;
+                })
+              }
+            >
+              <Icon id={viewport === "small" ? "hamburger-24" : "hamburger-32"} />
+            </Button>
+            {viewport === "small" && (
+              <ModalTrigger
+                query={{ param: "notif" }}
+                buttonProps={{ intent: "primary", size: "lrg", iconBtn: true }}
+              >
+                <Icon id="bell-22" />
+              </ModalTrigger>
+            )}
+          </div>
+        )}
+
+        <div className={s.title}>
           <Link to="/home">
-            <Image src={logoTitle} alt="Quest Casino Home" load={false} />
+            <Image
+              src={title.main ? "/logo.svg" : "/images/logo-title.svg"}
+              alt="Quest Casino Home" load={false}
+            />
           </Link>
-          <span />
+          {viewport === "large" && <span />}
           {/* TODO: */}
-          <h1>About</h1>
+          <h1>
+            About
+            {/* Title Outlet */}
+          </h1>
         </div>
         
-        <div>
+        <div className={s.cash}>
+          {user && (
+            <div aria-label="Current Balance" title={"$" + formattedBalance}>
+              <span>Balance</span>
+              <span><span>$</span>{formattedBalance}</span>
+            </div>
+          )}
           <ModalTrigger
-            queryKey="cash"
-            buttonProps={{ intent: "primary", size: "xl" }}
+            aria-label="Make Payment"
+            query={{ param: "bank" }}
+            buttonProps={{ 
+              intent: "primary", 
+              ...(viewport === "small"
+                ? {
+                    size: "lrg",
+                    iconBtn: true
+                  }
+                : {
+                    size: "xl"
+                  })
+            }}
           >
-            Cash In
-          </ModalTrigger>
-          <ModalTrigger
-            queryKey="menu"
-            buttonProps={{ intent: "primary", size: "xl", iconBtn: true }}
-          >
-            <Icon id="scroll-28" />
-          </ModalTrigger>
-          <ModalTrigger
-            queryKey="notif"
-            buttonProps={{ intent: "primary", size: "xl", iconBtn: true }}
-          >
-            <Icon id="bell-25" />
+            {viewport === "small" ? <Icon aria-hidden="true" id="hand-cash-24" /> : "Bank"}
           </ModalTrigger>
         </div>
+        
+        {["large", "medium"].includes(viewport) && (
+          <div className={s.notif}>
+            <ModalTrigger
+              query={{ param: "menu", value: "Quests" }}
+              buttonProps={{ intent: "primary", size: "xl", iconBtn: true }}
+            >
+              <Icon id="scroll-28" />
+            </ModalTrigger>
+            <ModalTrigger
+              query={{ param: "notif" }}
+              buttonProps={{ intent: "primary", size: "xl", iconBtn: true }}
+            >
+              <Icon id="bell-25" />
+            </ModalTrigger>
+          </div>
+        )}
       </div>
     </header>
   );
 }
 
-export function Main(
-  { children, scrollable = true, ...props }: React.PropsWithChildren<DashboardMainProps>
-) {
-  const ScrollElem = (scrollable ? ScrollArea : Fragment) as any;
+export function Main({
+  children,
+  scrollable = true,
+  ...props
+}: React.PropsWithChildren<DashboardMainProps>) {
+  const { viewport } = useBreakpoint(),
+    ScrollElem = (scrollable ? ScrollArea : Fragment) as any;
 
   return (
     <main {...props}>
       <ScrollElem
         {...(scrollable && {
           scrollbarSize: "5",
-          orientation: "vertical",
-          className: s.scrollMain,
+          orientation: scrollable === "horizontal" ? "horizontal" : "vertical",
+          className: "scrollMain",
+          "data-horz": scrollable === "horizontal"
         })}
       >
         {children}
       </ScrollElem>
+      {["medium", "small"].includes(viewport) && <span className="border left" />}
+      <span className="border bottom" />
     </main>
   );
 }

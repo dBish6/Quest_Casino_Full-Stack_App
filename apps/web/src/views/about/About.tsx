@@ -55,7 +55,7 @@ export default function About() {
           Quest Casino is more than just a gaming platform; it's a haven for
           players looking for a safe, transparent, and enjoyable online casino
           experience. Join us today and become a part of our growing community!
-          We're here to provide a new standard in online gaming.
+          We're here to provide a new standard in online gambling.
         </p>
 
         <Carousel />

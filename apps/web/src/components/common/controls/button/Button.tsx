@@ -16,33 +16,33 @@ const button = cva(s.button, {
       primary: s.primary,
       secondary: s.secondary,
       ghost: s.ghost,
-      // Chips are used for toggle buttons, but you can with primary too.
       chip: s.chip,
+      switch: s.switch,
       exit: `${s.icon} ${s.exit}`,
-      "exit ghost": `${s.icon} ${s.exit} ${s.ghost}`,
+      "exit ghost": `${s.icon} ${s.exit} ${s.ghost}`
     },
     size: {
       xsm: s.xsm,
       sm: s.sm,
       md: s.md,
       lrg: s.lrg,
-      xl: s.xl,
-    },
-  },
+      xl: s.xl
+    }
+  }
 });
 
 export interface ButtonProps
   extends React.ComponentProps<"button">,
     VariantProps<typeof button> {
   asChild?: boolean;
+  visual?: boolean;
   iconBtn?: boolean;
 }
 
-// prettier-ignore
 const Button = forwardRef<HTMLButtonElement, React.PropsWithChildren<ButtonProps>>(
-  ({ children, className, intent, size, asChild, iconBtn, ...props }, ref) => {
-    const Element = asChild ? Slot : "button";
-    const iconFill = intent?.includes("ghost") ? "var(--c-status-red)" : "var(--c-purple-800)"
+  ({ children, className, intent, size, asChild, visual, iconBtn, ...props }, ref) => {
+    const Element = visual ? "span" : asChild ? Slot : "button";
+    const iconFill = intent?.includes("ghost") ? "var(--c-status-red)" : "var(--c-purple-800)";
 
     return (
       <Element
@@ -51,16 +51,13 @@ const Button = forwardRef<HTMLButtonElement, React.PropsWithChildren<ButtonProps
         {...props}
         onKeyDown={(e) => {
           keyPress(e, () =>
-            (e.target as HTMLButtonElement).setAttribute(
-              "data-key-press",
-              "true"
-            )
+            e.currentTarget.setAttribute("data-key-press", "true")
           );
           if (props.onKeyDown) props.onKeyDown(e);
         }}
         onKeyUp={(e) => {
           keyPress(e, () =>
-            (e.target as HTMLButtonElement).removeAttribute("data-key-press")
+            e.currentTarget.removeAttribute("data-key-press")
           );
           if (props.onKeyDown) props.onKeyDown(e);
         }}
@@ -73,7 +70,7 @@ const Button = forwardRef<HTMLButtonElement, React.PropsWithChildren<ButtonProps
           ) : (
             <Icon id="exit-10" fill={iconFill} />
           )
-        ) : (
+        ) : intent !== "switch" && (
           children
         )}
       </Element>

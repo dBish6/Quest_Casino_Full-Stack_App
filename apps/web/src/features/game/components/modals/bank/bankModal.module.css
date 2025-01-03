@@ -1,0 +1,109 @@
+.modal {
+  --_tabs-height: 72px;
+
+  & > :global(.scrollbar) {
+    margin-top: calc(var(--_tabs-height) + 0.5rem) !important;
+  }
+  & > :global(.viewport) {
+    max-height: 551px;
+    padding-top: calc(var(--_tabs-height) + 0.5rem) !important;
+    padding-bottom: 1rem !important;
+
+    & > div {
+      & .tabs {
+        position: absolute;
+        top: 0;
+        left: 0;
+        display: flex;
+        width: calc(100% + 2px + 2px + 2px);
+        transform: translate(-2px, -2px);
+        & button {
+          height: var(--_tabs-height);
+          background: var(--c-lvl-2);
+          &:first-child {
+            width: 95%;
+            border-radius: 12px 0 0 0;
+          }
+          &:last-child {
+            width: 100%;
+            transform: translateX(-2px);
+            border-radius: 0 12px 0 0;
+          }
+          &:active,
+          &[data-key-press="true"],
+          &[aria-pressed="true"] {
+            background: #201735;
+            z-index: 1;
+          }
+        }
+      }
+
+      & form {
+        & :global(.inputs) {
+          & :global(.control) {
+            position: relative;
+            & > span {
+              position: absolute;
+              left: 1rem;
+              top: 7.25px;
+              font: var(--para-regular);
+              font-weight: 600;
+              color: var(--c-status-green);
+            }
+
+            & :global(.inputInner) {
+              & label {
+                left: 27px;
+              }
+              & input {
+                padding-left: 27px;
+              }
+            }
+          }
+        }
+      }
+
+      & .or {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-block: 1.25rem 1rem;
+        & span {
+          width: 100%;
+          border-top: 1px solid var(--c-purple-border);
+        }
+        & p {
+          color: var(--c-heading-2);
+          background-color: inherit;
+          white-space: nowrap;
+        }
+      }
+      & > button {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 2.5px;
+        width: 100%;
+        &:first-of-type {
+          margin-bottom: 2rem;
+        }
+        &:last-of-type {
+          margin-bottom: 2rem;
+        }
+
+        & img {
+          width: 36px;
+          height: 36px;
+        }
+      }
+
+      & .support {
+        font: var(--para-small);
+        color: var(--c-para-faded);
+        & a {
+          color: var(--c-para);
+        }
+      }
+    }
+  }
+}

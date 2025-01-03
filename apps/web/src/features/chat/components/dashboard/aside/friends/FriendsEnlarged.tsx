@@ -12,6 +12,7 @@ import { ScrollArea } from "@components/scrollArea";
 import { Avatar, Blob, Icon } from "@components/common";
 import { Form } from "@components/form";
 import { Input } from "@components/common/controls";
+import { ModalTrigger } from "@components/modals";
 import Timestamp from "../Timestamp";
 
 import s from "../aside.module.css";
@@ -133,7 +134,7 @@ export default function FriendsEnlarged({ user, chatRoom, friendsListArr }: Frie
                       <ul>
                         {search.results.map((friend) => (
                           <FriendsDisplayEnlarged
-                            key={friend.verification_token}
+                            key={friend.member_id}
                             friend={friend}
                             targetFriend={chatRoom.targetFriend}
                           />
@@ -154,7 +155,7 @@ export default function FriendsEnlarged({ user, chatRoom, friendsListArr }: Frie
                         <ul>
                           {friendsWithPrevChatsArr.map((friend) => (
                             <FriendsDisplayEnlarged
-                              key={friend.verification_token}
+                              key={friend.member_id}
                               friend={friend}
                               targetFriend={chatRoom.targetFriend}
                               isPrev={true}
@@ -168,7 +169,12 @@ export default function FriendsEnlarged({ user, chatRoom, friendsListArr }: Frie
                   <hr className={s.divider} />
 
                   <section className={s.friendsListContainer}>
-                    <h4 className="hUnderline">Friends</h4>
+                    <div>
+                      <h4 className="hUnderline">Friends</h4>
+                      <ModalTrigger query={{ param: "add" }} intent="primary">
+                        Add Friends
+                      </ModalTrigger>
+                    </div>
 
                     <ScrollArea
                       orientation="vertical"
@@ -180,7 +186,7 @@ export default function FriendsEnlarged({ user, chatRoom, friendsListArr }: Frie
                         <ul>
                           {friendsListArr.map((friend) => (
                             <FriendsDisplayEnlarged
-                              key={friend.verification_token}
+                              key={friend.member_id}
                               friend={friend}
                               targetFriend={chatRoom.targetFriend}
                             />
@@ -201,7 +207,7 @@ export default function FriendsEnlarged({ user, chatRoom, friendsListArr }: Frie
 
 function FriendsDisplayEnlarged({ friend, isPrev, targetFriend }: FriendsDisplayEnlargedProps) {
   const { status, inactivity_timestamp: timestamp } = friend.activity,
-    isTarget = friend.verification_token === targetFriend?.friend?.verification_token;
+    isTarget = friend.member_id === targetFriend?.friend?.member_id;
 
   const dispatch = useAppDispatch();
 
@@ -216,9 +222,9 @@ function FriendsDisplayEnlarged({ friend, isPrev, targetFriend }: FriendsDisplay
           aria-pressed={isTarget}
           aria-controls="targetFriendDetails"
           aria-expanded={!!targetFriend?.friend}
-          onClick={() => {
-            dispatch!(UPDATE_CHAT_ROOM({ proposedId: friend.verification_token, accessType: "private" }))
-          }}
+          onClick={() => 
+            dispatch!(UPDATE_CHAT_ROOM({ proposedId: friend.member_id, accessType: "private" }))
+          }
           disabled={isTarget}
         >
           <div>
@@ -236,13 +242,12 @@ function FriendsDisplayEnlarged({ friend, isPrev, targetFriend }: FriendsDisplay
           aria-controls="targetFriendDetails"
           aria-expanded={!!targetFriend?.friend}
           onClick={() => {
-            dispatch!(UPDATE_CHAT_ROOM({ proposedId: friend.verification_token, accessType: "private" }))
-            
+            dispatch!(UPDATE_CHAT_ROOM({ proposedId: friend.member_id, accessType: "private" }));
             if (!friend.last_chat_message)
               dispatch!(
                 UPDATE_USER_FRIEND_IN_LIST({
-                  verToken: friend.verification_token,
-                  update: { last_chat_message: "" },
+                  memberId: friend.member_id!,
+                  update: { last_chat_message: "" }
                 })
               );
           }}

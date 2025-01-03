@@ -27,7 +27,7 @@ export default function parseMessageWithLink(
               ? { asChild: true, to: "" }
               : { to: link.to || "" })}
             intent="primary"
-            {...(link.queryKey && { queryKey: link.queryKey })}
+            {...(link.queryKey && { query: { param: link.queryKey } })}
             {...link.options}
           >
             {link.options?.button ? (

@@ -1,12 +1,16 @@
-import type { Variants } from "framer-motion";
+import type { PanInfo } from "framer-motion";
 
 import { useSearchParams } from "react-router-dom";
-import { useState, useMemo, useEffect, useRef } from "react";
-import { useMotionValue, useDragControls, AnimatePresence, m } from "framer-motion";
+import { useMemo, useEffect, useRef } from "react";
+import { useMotionValue, useAnimation, useAnimate, AnimatePresence, m } from "framer-motion";
+import { isMobile } from "detect-if-mobile";
+import { debounce } from "tiny-throttle";
 
 import { fadeInOut } from "@utils/animations";
 
+import useBreakpoint from "@hooks/useBreakpoint";
 import useUser from "@authFeat/hooks/useUser";
+import useResourcesLoadedEffect from "@hooks/useResourcesLoadedEffect";
 
 import { Friends } from "./friends";
 import { Chat } from "./chat";
@@ -18,41 +22,11 @@ import s from "./aside.module.css";
 export type DragPointsKey = "default" | "enlarged" | "shrunk";
 
 export const ANIMATION_DURATION = 850;
-const dragPoints: Variants = {
-  default: {
-    width: "222px",
-    maxWidth: "none",
-    transition: { type: "spring", duration: ANIMATION_DURATION / 1000 },
-    // transitionEnd: {
-    //   position: "initial",
-    // },
-  },
-  enlarged: (x) => {
-    return {
-      // position: "absolute",
-      width: "100vw",
-      maxWidth: "945px",
-      transition: { type: "spring", duration: ANIMATION_DURATION / 1000 },
-    };
-  },
-  shrunk: (x) => {
-    return {
-      // TODO: For phone just shrunk or enlarged.
-      // width: "82px",
-      width: "9px",
-      maxWidth: "none",
-      transition: { type: "spring", duration: ANIMATION_DURATION / 1000 },
-      // transitionEnd: {
-      //   position: "initial",
-      // },
-    };
-  },
-};
+/** Drag breakpoints widths. */
+const breakpoints = { shrunk: 9, default: 222, enlarged: 945 };
 
-// Could use this for width?
-// onPan={(e, info) => containerY.set(info.offset.y)}
-
-const keyboardTrap = (e: KeyboardEvent, focusableElems: HTMLElement[]) => {
+// FIXME: Dragging from shrunk then back to shrunk again breaks the aside on small viewport.
+function keyboardTrap(e: KeyboardEvent, focusableElems: HTMLElement[]) {
   if (e.key === "Tab") {
     const firstElem = focusableElems[0];
     let lastElem = focusableElems[focusableElems.length - 1]; // The last element is the send button.
@@ -71,25 +45,111 @@ const keyboardTrap = (e: KeyboardEvent, focusableElems: HTMLElement[]) => {
   }
 };
 
-// FIXME: Keyboard (Arrow Keys).
 export default function Aside() {
-  const [searchParams, setSearchParams] = useSearchParams(),
-    asideState = (searchParams.get("aside") || "default") as DragPointsKey;
+  const { viewport } = useBreakpoint(),
+    onMobile = useRef(isMobile()); // TODO: Check on a phone.
 
+  const [searchParams, setSearchParams] = useSearchParams(),
+    asideState = (searchParams.get("aside") || (viewport === "small" ? "shrunk" : "default")) as DragPointsKey;
   const asideDrawerRef = useRef<HTMLDivElement>(null),
     keyboardTrapRef = useRef<(e: KeyboardEvent) => void>(() => {});
 
-  // TODO: Nice transition from enlarged to default.
-  const [lazyShow, setLazyShow] = useState(false);
-
-  const x = useMotionValue(0),
-    controls = useDragControls(),
+  const width = useMotionValue<number>(breakpoints[asideState]),
+    snapControls = useAnimation(),
+    [scope, animate] = useAnimate<HTMLDivElement>(),
     fadeVariant = fadeInOut();
 
   const user = useUser(),
     friendsListArr = useMemo(() => Object.values(user?.friends.list || {}), [user?.friends.list]);
 
+  const handleDrag = (e: PointerEvent, info: PanInfo) => {
+    if (
+      onMobile.current
+        ? (e.target as HTMLElement).closest("input, textarea, select")
+        : document.activeElement?.ariaLabel !== "Drag Panel"
+    )
+      return;
+
+    const { shrunk, enlarged } = breakpoints;
+
+    let newWidth = width.get() || breakpoints[asideState];
+    if (asideState === "enlarged") {
+      // Range of [enlarged, enlarged]
+      newWidth = Math.max(enlarged / 1.5, Math.min(enlarged, newWidth - info.delta.x));
+    } else {
+      // Range of [shrunk, enlarged].
+      newWidth = Math.max(shrunk + 147, Math.min(Math.min(557, enlarged / 1.8), newWidth - info.delta.x));
+    }
+
+    width.set(newWidth);
+  };
+
+  const handleSnapPoint = (key?: string, override?: DragPointsKey) => {
+    let point = override || asideState;
+
+    if (!override) {
+      switch (asideState) {
+        case "default":
+          if (key === "ArrowLeft" || width.get()! > breakpoints.default + 50) point = "enlarged";
+          else if (key === "ArrowRight" || width.get()! < breakpoints.default - 50) point = "shrunk";
+          break;
+
+        case "shrunk":
+          if (key === "ArrowLeft" || viewport !== "small") point = "default";
+          else point = "enlarged";
+          break;
+
+        case "enlarged":
+          if (key === "ArrowRight" || width.get()! <= Math.min(breakpoints.enlarged, window.innerWidth) - 65)
+            point = viewport === "small" ? "shrunk" : "default";
+          else point = "enlarged";
+          break;
+
+        default:
+          break;
+      }
+    }
+    
+    setSearchParams((params) => {
+      point === "default" || (point === "shrunk" && viewport === "small")
+        ? params.delete("aside")
+        : params.set("aside", point);
+      return params;
+    });
+    snapControls.start({
+      width: breakpoints[point],
+      transition: { width: { type: "spring", duration: ANIMATION_DURATION / 1000 } }
+    });
+  };
+  const handleKeySnap = debounce((e: React.KeyboardEvent<HTMLButtonElement>) => {
+    if (["ArrowLeft", "ArrowRight"].includes(e.key)) handleSnapPoint(e.key);
+  }, 200);
+
+  useResourcesLoadedEffect(() => {
+    if (viewport === "small") handleSnapPoint("", "shrunk");
+  }, [viewport]);
+  
   // NOTE: No need to clear eventListeners on unmount because this component will always be on screen, can't anyways.
+  useEffect(() => {
+    const handleResize = () => breakpoints.enlarged = Math.min(window.innerWidth, 945);
+    handleResize();
+    window.addEventListener("resize", handleResize);
+
+    const handleKeyNavigation = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.key === "q") 
+        document.querySelector<HTMLButtonElement>(`button[aria-label="Drag Panel"`)!.focus()
+    };
+    window.addEventListener("keydown", handleKeyNavigation);
+  }, []);
+
+  useEffect(() => {
+    if (scope.current)
+      animate(scope.current,
+        { opacity: [0, 1] },
+        { opacity: { duration: ANIMATION_DURATION / 1000 - .33 } }
+      );
+  }, [asideState]);
+
   useEffect(() => {
     // Hides all content for screen readers when aside is enlarged.
     const elems = document.querySelectorAll("#dashHeader, #asideLeft, main");
@@ -113,16 +173,6 @@ export default function Aside() {
     }
   }, [asideState]);
 
-  useEffect(() => {
-    if (asideState !== "enlarged") {
-      setTimeout(() => {
-        setLazyShow(true);
-      }, ANIMATION_DURATION - 350);
-    } else {
-      setLazyShow(false)
-    }
-  }, [asideState]);
-
   return (
     <>
       <AnimatePresence>
@@ -139,45 +189,13 @@ export default function Aside() {
       <aside id="asideRight" className={s.aside}>
         <m.div
           ref={asideDrawerRef}
-          // role="group"
           aria-roledescription="drawer"
           id="asideDrawer"
           className={s.drawer}
-          variants={dragPoints}
-          initial="default"
-          animate={asideState}
-          custom={x}
-          drag="x"
-          dragControls={controls}
-          dragListener={false}
-          dragConstraints={{ left: 0, right: 0 }}
-          dragElastic={0.2}
-          // onDrag={(e) => console.log(x.get())}
-          onDragEnd={() => {
-            const position = x.get();
-
-            if (asideState === "shrunk") {
-              if (position <= -83) {
-                searchParams.set("aside", "enlarged");
-              } else if (position <= -22.5) {
-                searchParams.delete("aside");
-              }
-            } else if (asideState === "enlarged") {
-              if (position >= 148) {
-                searchParams.set("aside", "shrunk");
-              } else if (position >= 22.5) {
-                searchParams.delete("aside");
-              }
-            } else {
-              if (position >= 22.5) {
-                searchParams.set("aside", "shrunk");
-              } else if (position <= -22.5) {
-                searchParams.set("aside", "enlarged");
-              }
-            }
-            setSearchParams(searchParams);
-          }}
-          style={{ x }}
+          animate={snapControls}
+          onPan={handleDrag}
+          onPanEnd={() => handleSnapPoint()}
+          style={{ width }}
           data-aside-state={asideState}
         >
           <Button
@@ -185,13 +203,13 @@ export default function Aside() {
             aria-controls="asideDrawer"
             aria-expanded={asideState === "enlarged"}
             className={s.dragger}
-            onPointerDown={(e) => controls.start(e)}
+            onKeyDown={handleKeySnap}
           >
             <div />
           </Button>
 
-          <div className={s.content}>
-            {asideState !== "shrunk" && (asideState !== "enlarged" && lazyShow) && (
+          <m.div ref={scope} className={s.content}>
+            {asideState !== "shrunk" && asideState !== "enlarged" && (
               <hgroup className={s.head}>
                 <div
                   role="presentation"
@@ -205,7 +223,7 @@ export default function Aside() {
                       setSearchParams((params) => {
                         params.set("chat", "shrunk");
                         return params;
-                      }),
+                      })
                   })}
                 >
                   <Icon aria-hidden="true" id="user-24" />
@@ -214,12 +232,12 @@ export default function Aside() {
               </hgroup>
             )}
 
-            {asideState !== "shrunk" &&
+            {asideState !== "shrunk" && (
               <Friends user={user} asideState={asideState} friendsListArr={friendsListArr} />
-            }
+            )}
 
             <Chat user={user} friendsListArr={friendsListArr} asideState={asideState} />
-          </div>
+          </m.div>
         </m.div>
       </aside>
     </>

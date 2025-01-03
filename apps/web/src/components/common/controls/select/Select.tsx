@@ -9,20 +9,18 @@ import { Icon } from "@components/common";
 import "../input-select.css";
 import s from "./select.module.css";
 
-const select = cva("select", {
+const select = cva("selectInner", {
   variants: {
     intent: {
       primary: "primary",
       callingCode: "callingCode",
+      ghost: "ghost"
     },
     size: {
       md: "md",
-      lrg: "lrg",
-    },
-  },
-  defaultVariants: {
-    size: "lrg",
-  },
+      lrg: "lrg"
+    }
+  }
 });
 
 export interface SelectProps
@@ -48,7 +46,7 @@ export const Select = forwardRef<HTMLSelectElement,React.PropsWithChildren<Selec
       <div
         role="presentation"
         aria-live="assertive"
-        className={`control ${s.container}`}
+        className={`control ${s.control}`}
       >
         <div
           ref={selectContainerRef}
@@ -62,8 +60,10 @@ export const Select = forwardRef<HTMLSelectElement,React.PropsWithChildren<Selec
               : selectContainerRef.current!.setAttribute("data-focused", "true");
           }}
           data-disabled={props.disabled}
+
+          {...(!!props.defaultValue && { "data-selected": true })} // So the label stays up when there is a default value initially.
         >
-          <Label htmlFor={props.id} {...(hideLabel && { style: { visibility: "hidden" } })}>
+          <Label htmlFor={props.id} {...((hideLabel || intent === "ghost") && { style: { position: "absolute", opacity: 0 } })}>
             {label}
             {required === "show" && (
               <span aria-hidden="true" className="required">
@@ -76,6 +76,7 @@ export const Select = forwardRef<HTMLSelectElement,React.PropsWithChildren<Selec
             {...(Loader && { "aria-live": "polite", "aria-busy": loaderTrigger })}
             ref={ref}
             required={required ? true : false}
+            defaultValue=""
             {...props}
 
             onBlur={() =>
@@ -91,7 +92,7 @@ export const Select = forwardRef<HTMLSelectElement,React.PropsWithChildren<Selec
                 : selectContainer.setAttribute("data-selected", "true");
             }}
           >
-            <option value="" selected disabled hidden />
+            <option value="" hidden />
             {children}
           </select>
           <Icon
