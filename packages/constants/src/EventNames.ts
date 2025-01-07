@@ -18,3 +18,8 @@ export enum ChatEvent {
   CHAT_MESSAGE = "chat_message",
   CHAT_MESSAGE_SENT = "chat_message_sent",
 }
+
+export enum GameEvent {
+  MANAGE_RECORD = "manage_record",
+  MANAGE_PROGRESS = "manage_progress",
+}

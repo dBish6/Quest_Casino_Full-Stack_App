@@ -5,7 +5,6 @@ export interface Country {
   continent: string;
 }
 
-
 export const COUNTRIES = [
   {
     name: "Afghanistan",
