@@ -68,3 +68,28 @@ export const unexpectedErrorToast = createAction(
     };
   }
 );
+
+/**
+ * This will rarely happen since most browsers delete the Access token's cookie (session cookie) when it's expired 
+ * but some browsers may not delete cookies by default so this is just in case.
+ */
+
+
+export const authTokenExpiredToast = createAction(
+  ADD_TOAST.type,
+  function () {
+    return {
+      payload: {
+        title: "Session Expired",
+        message: "Your login session has expired, log in.",
+        intent: "error",
+        options: {
+          link: {
+            sequence: "log in",
+            to: `${window.location.pathname}?login=true`
+          }
+        }
+      }
+    };
+  }
+);

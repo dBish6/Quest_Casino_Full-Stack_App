@@ -36,15 +36,14 @@ const authState: AuthState = {
           total: 0,
           table: 0,
           slots: 0,
-          dice: 0,
+          dice: 0
         },
         wins: {
           total: 0,
           table: 0,
           slots: 0,
           dice: 0,
-          streak: 0,
-          win_rate: 0,
+          streak: 0
         },
         progress: {
           quest: {},
@@ -53,8 +52,8 @@ const authState: AuthState = {
       },
       ...({ status: "online" } as any) // Testing purposes; so we can see a "friend" status indicator.
     },
-    token: { csrf: null },
-  },
+    token: { csrf: null }
+  }
 };
 
 const toastState: ToastState = {

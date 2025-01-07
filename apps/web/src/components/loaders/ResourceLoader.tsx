@@ -65,7 +65,7 @@ export default function ResourceLoaderProvider({ children }: React.PropsWithChil
             });
             if (user?.email_verified) {
               // The user must be verified to establish socket connection.
-              await socketInstancesConnectionProvider(timeoutObj);
+              await socketInstancesConnectionProvider(timeoutObj, user.username, dispatch);
               await initializeFriends();
             }
           } catch (error: any) {

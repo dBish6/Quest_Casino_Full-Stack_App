@@ -7,6 +7,7 @@ import type RegisterBodyDto from "@qc/typescript/dtos/RegisterBodyDto";
 import type { LoginBodyDto, LoginGoogleBodyDto } from "@qc/typescript/dtos/LoginBodyDto";
 import type { GetNotificationsResponseDto, DeleteNotificationsBodyDto, Notification } from "@qc/typescript/dtos/NotificationsDto"
 import type { UpdateProfileBodyDto, UpdateProfileResponseDto, UpdateUserFavouritesBodyDto, SendConfirmPasswordEmailBodyDto } from "@qc/typescript/dtos/UpdateUserDto";
+import type LogoutBodyDto from "@qc/typescript/dtos/LogoutBodyDto";
 import type { ManageFriendRequestEventDto } from "@qc/typescript/dtos/ManageFriendEventDto";
 import type FriendActivityEventDto from "@authFeat/dtos/FriendActivityEventDto";
 
@@ -489,14 +490,26 @@ const authApi = injectEndpoints({
     }),
 
     /**
+     * Refreshes the user session (used on socket error).
+     * @request
+     */
+    refresh: builder.mutation<HttpResponse, { username: string }>({
+      query: (username) => ({
+        url: "/auth/user/refresh",
+        method: "POST",
+        body: username
+      })
+    }),
+
+    /**
      * Clears the user session.
      * @request
      */
-    logout: builder.mutation<HttpResponse, { username: string }>({
-      query: (username) => ({
-        url: "/auth/logout",
+    logout: builder.mutation<HttpResponse, LogoutBodyDto>({
+      query: (body) => ({
+        url: "/auth/user/logout",
         method: "POST",
-        body: username
+        body
       }),
       onQueryStarted: async (_, { dispatch, queryFulfilled }) => {
         const { meta } = await queryFulfilled;
@@ -523,9 +536,7 @@ const authApi = injectEndpoints({
      * @emitter
      */
     manageFriendRequest: builder.mutation<
-      SocketResponse<{
-        pending_friends: UserCredentials["friends"]["pending"];
-      }>,
+      SocketResponse<{ pending_friends: UserCredentials["friends"]["pending"] }>,
       ManageFriendRequestEventDto
     >({
       queryFn: async (data, { getState }) => {

@@ -20,5 +20,5 @@ export default {
     postcssCustomMedia(),
     postcssFlexbugsFixes(),
     cssnano({ preset: "default" })
-  ],
+  ]
 };

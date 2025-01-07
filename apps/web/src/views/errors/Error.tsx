@@ -5,15 +5,13 @@ import { history } from "@utils/History";
 
 import { useAppDispatch, useAppSelector } from "@redux/hooks";
 import { selectUserCredentials } from "@authFeat/redux/authSelectors";
-import { useLogoutMutation } from "@authFeat/services/authApi";
-import { getSocketInstance } from "@services/socket";
+import { attemptLogout } from "@authFeat/services/handleLogout";
 
 import { Main } from "@components/dashboard";
 import { Button } from "@components/common/controls";
 import { Link } from "@components/common";
 
 import s from "./errors.module.css";
-import handleLogout from "@authFeat/services/handleLogout";
 
 export interface ErrorPageProps {
   status: number;
@@ -29,25 +27,8 @@ export default function Error({ status, title, description }: ErrorPageProps) {
     dispatch = useAppDispatch();
 
   if (user && LOGOUT_STATUSES.has(status)) {
-    const [postLogout] = useLogoutMutation();
-
     useEffect(() => {
-      const attemptLogout = () => {
-        const docStyle = document.documentElement.style;
-        docStyle.pointerEvents = "none";
-        docStyle.cursor = "wait";
-
-        return postLogout({ username: user!.username }).finally(() => {
-          docStyle.pointerEvents = "";
-          docStyle.cursor = "";
-          setSearchParams({});
-        });
-      };
-
-      attemptLogout().catch(() =>
-        // Even when it errors, we try again, but even if that fails we clear the user, we need to get them out of here.
-        attemptLogout().catch(() => handleLogout(dispatch, getSocketInstance("auth")))
-      );
+      attemptLogout(dispatch, user.username, setSearchParams);
     }, []);
   }
 

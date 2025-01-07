@@ -28,7 +28,7 @@ export default function LoginModal() {
     {
       error: loginError,
       isLoading: loginLoading,
-      isSuccess: loginSuccess,
+      isSuccess: loginSuccess
     },
   ] = useLoginMutation();
 
@@ -38,7 +38,7 @@ export default function LoginModal() {
       {
         error: loginGoogleError,
         isLoading: loginGoogleLoading,
-        isSuccess: loginGoogleSuccess,
+        isSuccess: loginGoogleSuccess
       },
     ] = useLoginGoogleMutation();
 
@@ -107,15 +107,15 @@ export default function LoginModal() {
           >
             <div className="inputs">
               <Input
-                label="Email or Username"
+                label="Email"
                 intent="primary"
                 size="lrg"
-                id="email_username"
-                name="email_username"
+                id="email"
+                name="email"
                 required
-                error={form.error.email_username}
+                error={form.error.email}
                 disabled={processing}
-                onInput={() => setError("email_username", "")}
+                onInput={() => setError("email", "")}
               />
               <Input
                 label="Password"

@@ -1,5 +1,6 @@
 import type { ThunkDispatch, UnknownAction } from "@reduxjs/toolkit";
 import type { Socket } from "socket.io-client";
+import type { SetURLSearchParams } from "react-router-dom";
 
 import { logger } from "@qc/utils";
 
@@ -45,4 +46,28 @@ export async function handleLogoutButton(
       logger.error("handleLogoutButton error:\n", error.message);
     }
   });
+}
+
+export async function attemptLogout(
+  dispatch: ThunkDispatch<any, any, UnknownAction>,
+  username: string,
+  setSearchParams?: SetURLSearchParams
+) {
+  const attempt = async () => {
+    const docStyle = document.documentElement.style;
+    docStyle.pointerEvents = "none";
+    docStyle.cursor = "wait";
+
+    await dispatch(authEndpoints.logout.initiate({ username, lax: true }))
+      .finally(() => {
+        docStyle.pointerEvents = "";
+        docStyle.cursor = "";
+        if (setSearchParams) setSearchParams({});
+      });
+  };
+
+  await attempt().catch(async () =>
+    // Even when it errors, we try again, but even if that fails we clear the user anyways, we need to get them out of here.
+    await attempt().catch(() => handleLogout(dispatch, getSocketInstance("auth")))
+  );
 }
