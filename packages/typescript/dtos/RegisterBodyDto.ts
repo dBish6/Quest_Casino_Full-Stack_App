@@ -4,7 +4,6 @@ export default interface RegisterBodyDto {
   email: string;
   username: string;
   password: string;
-  con_password: string;
   country: string;
   region?: string;
   phone_number?: string;

@@ -1,6 +1,6 @@
 export type GlobalChatRoomId = "North America" | "Europe" | "Asia";
 /**
- * `verification_token` of the user's friend.
+ * Both the user's and the friend's `member_id`.
  */
 export type PrivateChatRoomId = string;
 

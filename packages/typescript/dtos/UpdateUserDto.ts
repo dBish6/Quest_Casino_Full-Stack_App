@@ -1,3 +1,8 @@
+import { UserCredentials } from "../typings/UserCredentials";
+
+export interface UpdateUserSettingsDto extends Omit<UserCredentials["settings"], "blocked_list"> {
+  blocked_list: { op: "delete" | "add"; member_id: string }[];
+};
 export interface UpdateProfileBodyDto {
   avatar_url?: string;
   first_name?: string;
@@ -8,10 +13,11 @@ export interface UpdateProfileBodyDto {
   country?: string;
   region?: string;
   phone_number?: string;
+  settings?: UpdateUserSettingsDto;
 }
 
 export interface UpdateProfileResponseDto {
-  user: UpdateProfileBodyDto;
+  user: Partial<UserCredentials & { email: string }>;
   refreshed?: string;
 }
 
