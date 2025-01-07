@@ -3,22 +3,17 @@ import { Request, Response, NextFunction } from "express";
 import { logger } from "@qc/utils";
 import { handleHttpError } from "@utils/handleError";
 
+import { KEY } from "@authFeat/http/services/csrfService";
 import { redisClient } from "@cache";
 
 /**
  * Verifies the Cross-Site Request Forgery (CSRF) token
- * @middleware This should be used on routes that manipulate data (e.g. POST, PATCH, PUT, DELETE).
+ * @middleware This should be used on routes that manipulate data (e.g., POST, PATCH, PUT, DELETE).
  * @response `unauthorized`, `forbidden`, or `HttpError`.
  */
-export default async function verifyCsrfToken(
-  req: Request,
-  res: Response,
-  next: NextFunction
-) {
+export default async function verifyCsrfToken(req: Request, res: Response, next: NextFunction) {
   try {
-    const cachedTokens = await redisClient.sMembers(
-        `user:${req.decodedClaims!.sub}:csrf_tokens`
-      ),
+    const cachedTokens = await redisClient.sMembers(KEY(req.userDecodedClaims!.sub)),
       receivedToken = req.headers["x-xsrf-token"];
 
     if (!cachedTokens || !receivedToken)

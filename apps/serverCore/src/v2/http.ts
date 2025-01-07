@@ -21,6 +21,7 @@ import morgan from "morgan";
 import authRouter from "@authFeatHttp/routes/authRoute";
 // import chatRouter from "@chatFeatHttp/routes/chatRoute";
 import gameRouter from "@gameFeatHttp/routes/gameRoute"
+import paymentRouter from "@paymentFeatHttp/routes/paymentRoute"
 
 import apiErrorHandler from "@middleware/apiErrorHandler";
 
@@ -42,12 +43,12 @@ export default function initializeHttp(corsOptions: CorsOptions) {
   // Rate-limiting; used to limit repeated requests.
   app.use(
     rateLimit({
-      windowMs: 60 * 60 * 1000, // 60 Minutes
+      windowMs: 60 * 60 * 1000, // 60 minutes.
       max: 55, // limits each IP to 55 requests per windowMs.
       handler: (_: express.Request, res: express.Response) => 
         res.status(429).json({
           status: 429,
-          ERROR: "Too many requests made from this IP, please try again after an hour.",
+          ERROR: "Too many requests made from this IP, please try again after an hour."
         })
     })
   );
@@ -64,7 +65,8 @@ export default function initializeHttp(corsOptions: CorsOptions) {
   // *Routers*
   app.use(`${baseUrl}/auth`, authRouter);
   // app.use(`${baseUrl}/chat`, chatRouter);
-  app.use(`${baseUrl}/game`, gameRouter);
+  app.use(`${baseUrl}/`, gameRouter);
+  app.use(`${baseUrl}/payment`, paymentRouter);
 
   // Test entry route.
   app.get(`${baseUrl}/`, async (_, res) => {

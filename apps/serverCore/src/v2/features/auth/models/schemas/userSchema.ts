@@ -4,6 +4,7 @@ import type { UserDoc, UserDocFriends, UserDocStatistics, UserDocActivity, UserD
 import { Schema } from "mongoose";
 import { randomUUID } from "crypto";
 
+import { validateEmail } from "@qc/utils";
 import defaults from "@utils/schemaDefaults";
 
 export const userFriendsSchema = new Schema<
@@ -18,7 +19,7 @@ export const userFriendsSchema = new Schema<
       default: new Map(),
       validate: {
         validator: (friends: Map<any, any>) => friends.size <= 50,
-        message: "Pending friends exceeded the maximum of 50 friends.",
+        message: "Pending friends exceeded the maximum of 50 friends."
       }
     },
     list: {
@@ -27,7 +28,7 @@ export const userFriendsSchema = new Schema<
       default: new Map(),
       validate: {
         validator: (friends: Map<any, any>) => friends.size <= 50,
-        message: "Friends list exceeded the maximum of 50 friends.",
+        message: "Friends list exceeded the maximum of 50 friends."
       }
     }
   },
@@ -49,9 +50,9 @@ export const userStatisticsSchema = new Schema<
         total: { type: Number },
         table: { type: Number },
         slots: { type: Number },
-        dice: { type: Number },
+        dice: { type: Number }
       },
-      default: { total: 0, table: 0, slots: 0, dice: 0 },
+      default: { total: 0, table: 0, slots: 0, dice: 0 }
     },
     wins: {
       _id: false,
@@ -60,48 +61,35 @@ export const userStatisticsSchema = new Schema<
         table: { type: Number },
         slots: { type: Number },
         dice: { type: Number },
-        streak: { type: Number },
-        win_rate: { type: Number },
+        streak: { type: Number }
       },
       default: {
         total: 0,
         table: 0,
         slots: 0,
         dice: 0,
-        streak: 0,
-        win_rate: 0,
-      },
+        streak: 0
+      }
     },
     progress: {
       _id: false,
       quest: {
         type: Map,
         of: {
+          _id: false,
           quest: { type: Schema.Types.ObjectId, ref: "quest" },
-          current: { type: Number, required: true, default: 0 },
-          completed: {
-            type: Boolean,
-            required: true,
-            default: false,
-            validate: {
-              validator: function (value: boolean) {
-                return !(value === true && this.current < this.cap);
-              },
-              message: "Quest cannot be marked as completed unless the current progress equals or exceeds the cap.",
-            },
-          },
+          current: { type: Number, default: 0 }
         },
-        // default: new Map([])
+        default: new Map()
       },
       bonus: {
         type: Map,
         of: {
+          _id: false,
           bonus: { type: Schema.Types.ObjectId, ref: "bonus" },
-          current: { type: Number, required: true, default: 0 },
-          activated: { type: Boolean, required: true, default: false },
-          completed: { type: Boolean, required: true, default: false }, // When activated and reaches the expiry.
+          current: { type: Number, default: 0 }
         },
-        // default: new Map([])
+        default: new Map()
       }
     }
   },
@@ -117,26 +105,52 @@ export const userActivitySchema = new Schema<
 >(
   {
     _id: { type: Schema.Types.ObjectId, immutable: true },
-    history: {
+    game_history: {
       type: [
         {
           _id: false,
           game_name: { type: String, required: true },
           result: {
-            outcome: { type: String, enum: ["win", "loss"], required: true },
-            earnings: { type: Number, required: true },
+            outcome: { type: String, enum: ["win", "draw", "loss"], required: true }, // draw could be a push in blackjack.
+            earnings: { 
+              type: String,
+              set: (odd: number) => odd.toFixed(2),
+              validate: {
+                validator: (odds: string) => /^\d+\.\d{2}$/.test(odds),
+                message: (props: any) => `${props.value} is not a valid reward (e.g., 8.25).`
+              },
+              default: "0.00"
+            }
           },
           timestamp: { type: Date, default: Date.now }
         }
       ]
     },
-    recently_played: { type: String },
+    payment_history: {
+      type: [
+        {
+          // @ts-ignore
+          _id: false,
+          type: { type: String, enum: ["deposit", "withdraw"] },
+          amount: {
+            type: Number,
+            default: 0,
+            validate: {
+              validator: (value: number) => value > 0,
+              message: (props: any) => `${props.value} is not a positive number.`
+            },
+            set: (value: number) => Math.round(value * 100) / 100
+          },
+          timestamp: { type: Date, default: Date.now }
+        }
+      ]
+    }
   },
   {
     collection: "user_activity",
     ...defaults.options
   }
-);
+).index({ "game_history.timestamp": -1 });
 
 const notification = new Schema({
   _id: { type: Schema.Types.ObjectId, immutable: true },
@@ -148,7 +162,7 @@ const notification = new Schema({
     sequence: { type: String },
     to: { type: String }
   },
-  created_at: { type: Date, default: Date.now },
+  created_at: { type: Date, default: Date.now }
 }).index({ created_at: -1 });
 export const userNotificationsSchema = new Schema<
   UserDocNotifications,
@@ -181,6 +195,12 @@ export const userNotificationsSchema = new Schema<
 const userSchema = new Schema<UserDoc, Model<UserDoc>>(
   {
     _id: { type: Schema.Types.ObjectId, immutable: true },
+    member_id: { 
+      type: String,
+      immutable: true,
+      unique: true,
+      default: () => randomUUID()
+    },
     type: {
       type: String,
       enum: {
@@ -207,17 +227,20 @@ const userSchema = new Schema<UserDoc, Model<UserDoc>>(
       lowercase: true,
       trim: true,
       unique: true,
-      required: true
+      required: true,
+      validate: {
+        validator: (email: string) => !validateEmail(email),
+        message: (props: any) => `${props.value} is a valid email.`
+      }
     },
     email_verified: { type: Boolean, default: false },
     username: {
       type: String,
       minlength: [3, "username field is less than the min of 3 characters."],
       maxlength: [24, "username field exceeds the max of 24 characters."],
-      unique: true, // TODO: Remove this and make a middleware that not on the error from this since this creates a index we don't need.
+      unique: true,
       required: true
     },
-    verification_token: { type: String, immutable: true, required: true },
     password: { type: String, required: true },
     country: { type: String, required: true },
     region: { type: String },
@@ -232,8 +255,31 @@ const userSchema = new Schema<UserDoc, Model<UserDoc>>(
       type: String,
       maxlength: [338, "bio field exceeds the max of 338 characters."]
     },
-    balance: { type: Number, default: 0 },
+    balance: {
+      type: Number,
+      default: 0,
+      set: (value: number) => Math.round(value * 100) / 100
+    },
     favourites: { type: Map, of: Boolean, default: new Map() },
+    limit_changes: { country: { type: Number } },
+    locked: {
+      type: String,
+      enum: {
+        values: ["suspicious", "banned", "attempts"],
+        message: "Reason for locking is not valid."
+      }
+    },
+    settings: {
+      _id: false,
+      notifications: { type: Boolean, default: true },
+      blocked_list: {
+        type: Map,
+        of: { type: Schema.Types.ObjectId, ref: "user" },
+        default: new Map()
+      },
+      visibility: { type: Boolean, default: true },
+      block_cookies: { type: Boolean, default: false }
+    },
     friends: {
       type: Schema.Types.ObjectId,
       ref: "friends",

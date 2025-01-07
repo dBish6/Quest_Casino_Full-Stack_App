@@ -42,16 +42,17 @@ export default class SocketAuthService {
    * 
    * Should only be used on login.
    */
-  public async initializeFriends({ verification_token }: { verification_token: string }, callback: SocketCallback) {
-    logger.debug("socket initializeFriends:", { verification_token });
-
+  public async initializeFriends({ member_id }: { member_id: string }, callback: SocketCallback) {
+    logger.debug("socket initializeFriends:", { member_id });
+  
     try {
-      const user = this.socket.decodedClaims!,
-        userFriends = await getUserFriends(user.sub, { lean: true });
+      const user = this.socket.userDecodedClaims!;
+      if (member_id !== user.member_id) throw new SocketError("Access Denied", "forbidden"); // Why not.
 
-      let initFriends: UserCredentials["friends"] = { 
-        pending: userFriends.pending as any,
-        list: {} 
+      const userFriends = await getUserFriends(user.sub, { lean: true });
+      let initFriends: UserCredentials["friends"] = {
+        pending: Object.fromEntries(userFriends.pending),
+        list: {}
       };
 
       if (!userFriends.list.size) {
@@ -70,7 +71,7 @@ export default class SocketAuthService {
           const [activityStatus, inactivityTimestamp, lastPrivateChatMsg] = await Promise.all([
             redisClient.get(`user:${friend.id}:activity:status`),
             redisClient.get(`user:${friend.id}:activity:inactivity_timestamp`),
-            redisClient.get(`chat:${getFriendRoom(user.verification_token, friend.verification_token)}:last_message`)
+            redisClient.get(`chat:${getFriendRoom(user.member_id, friend.member_id)}:last_message`)
           ]);
 
           const formattedFriend = (friend as unknown) as FriendCredentials;
@@ -101,8 +102,8 @@ export default class SocketAuthService {
     logger.debug("socket manageFriendRequest:", { action_type, friend });
 
     try {
-      const user = this.socket.decodedClaims!,
-        recipient = await getUser("username", friend.username);
+      const user = this.socket.userDecodedClaims!,
+        recipient = await getUser("username", friend.username, { lean: true });
       if (!recipient) 
         throw new SocketError("Unexpectedly we couldn't find this user in our system.", "not found");
 
@@ -121,7 +122,7 @@ export default class SocketAuthService {
           // Adds the pending friend to the sender.
           updatedFriends = await updateUserFriends(
             { by: "_id", value: user.sub },
-            { $set: { [`pending.${recipient.verification_token}`]: recipient._id } },
+            { $set: { [`pending.${recipient.member_id}`]: recipient._id } },
             { session, new: true }
           );
 
@@ -164,16 +165,16 @@ export default class SocketAuthService {
                 {
                   // Removes the pending friend from the initial sender of the request.
                   ...(i === 1 && {
-                    $unset: { [`pending.${user.verification_token}`]: "" }
+                    $unset: { [`pending.${user.member_id}`]: "" }
                   }),
                   // Adds both users to their corresponding friend list.
                   $set: {
                     ...(i === 0
                       ? {
-                          [`list.${initialSender.verification_token}`]: initialSender._id
+                          [`list.${initialSender.member_id}`]: initialSender._id
                         }
                       : {
-                          [`list.${user.verification_token}`]: user._id
+                          [`list.${user.member_id}`]: user._id
                         })
                   },
                 },
@@ -181,7 +182,7 @@ export default class SocketAuthService {
               );
 
               if (i === 1) {
-                const friendSocketId = await getSocketId(initialSender.verification_token);
+                const friendSocketId = await getSocketId(initialSender.member_id);
                 if (friendSocketId) this.io.to(friendSocketId).emit(AuthEvent.FRIENDS_UPDATE, { friends: updatedFriends });
               } else {
                 this.socket.emit(AuthEvent.FRIENDS_UPDATE, { friends: updatedFriends });
@@ -220,7 +221,7 @@ export default class SocketAuthService {
             // Removes the pending friend from the initial sender of the request.
             updateUserFriends(
               { by: "_id", value: initialSender._id },
-              { $unset: { [`pending.${user.verification_token}`]: "" } },
+              { $unset: { [`pending.${user.member_id}`]: "" } },
               { session, new: true }
             ),
             // Issues the info notification to the initial sender without the NEW_NOTIFICATION event call.
@@ -234,32 +235,32 @@ export default class SocketAuthService {
           return updatedFriends;
         }).finally(() => session.endSession());
 
-        const socketId = await getSocketId(initialSender.verification_token);
+        const socketId = await getSocketId(initialSender.member_id);
         if (socketId) this.io.to(socketId).emit(AuthEvent.FRIENDS_UPDATE, { friends: updatedFriends });
 
         return callback({
           status: "ok", 
-          message: `Declined ${recipient.username}'s friend request.`,
+          message: `Declined ${recipient.username}'s friend request.`
         });
       }
 
       return callback({
         status: "bad request", 
-        message: "There was no data provided or the action_type is invalid.",
+        message: "There was no data provided or the action_type is invalid."
       });
     } catch (error: any) {
-      return handleSocketError(callback, error, "manageFriends service error.");
+      return handleSocketError(callback, error, "manageFriendRequest service error.");
     }
   }
 
   /**
-   * Handles new incoming activity of the user. 
+   * Handles new incoming activity of the user (inactivity_timestamp, and user status). 
    */
   public async userActivity({ status }: { status: ActivityStatuses }, callback: SocketCallback) {
     logger.debug("socket userActivity:", { status });
 
     try {
-      const user = this.socket.decodedClaims!,
+      const user = this.socket.userDecodedClaims!,
         userFriends = await getUserFriends(user.sub);
 
       // The client only shows the timestamp if their away or offline because the user would just be "Last Seen Just Now" if they're online.
@@ -271,7 +272,7 @@ export default class SocketAuthService {
       return callback({
         status: "ok",
         message:
-          "Activity updated successfully. Friend events and room management also completed successfully.",
+          "Activity updated successfully. Friend events and room management also completed successfully."
       });
     } catch (error: any) {
       return handleSocketError(callback, error, "newActivity service error.");
@@ -285,12 +286,12 @@ export default class SocketAuthService {
     logger.debug(`Auth socket instance disconnected; ${this.socket.id}.`);
 
     try {
-      const user = this.socket.decodedClaims!;
+      const user = this.socket.userDecodedClaims!;
 
       if (user) {
         const userFriends = await getUserFriends(user.sub);
 
-        await redisClient.del(`user:${user.verification_token}:socket_id`)
+        await redisClient.del(`user:${user.member_id}:socket_id`)
 
         const promises: Promise<void>[] = [];
         for (const friend of userFriends.list.values()) {
@@ -313,21 +314,21 @@ export default class SocketAuthService {
   ) {
     try {
       const handleActivity = async (friend: UserDoc) => {
-        const friendToken = friend.verification_token,
-          userToken = user.verification_token;
+        const friendId = friend.member_id,
+          userId = user.member_id;
 
-        const friendSocketId = await getSocketId(friendToken);
+        const friendSocketId = await getSocketId(friendId);
         // If there is a socketId, it means they're connected, so they're online or away.
-        if (friendSocketId) // FIXME: Wait, is this supposed to be this.io?
+        if (friendSocketId)
           this.io
             .to(friendSocketId)
-            .emit(AuthEvent.FRIEND_ACTIVITY, { verification_token: userToken, status });
+            .emit(AuthEvent.FRIEND_ACTIVITY, { member_id: userId, status });
       }
 
       await this.cacheUserActivityStatus(status, user);
 
       if ((typeof friend as any)[Symbol.iterator] === "function") {
-        for await (const fri of friend as Iterable<UserDoc>) handleActivity(fri);
+        for (const fri of friend as Iterable<UserDoc>) await handleActivity(fri);
       } else {
         await handleActivity(friend as UserDoc);
       }
@@ -354,14 +355,14 @@ export default class SocketAuthService {
         {
           $push: {
             ...(type === "friend_request"
-              ? { friend_requests: this.socket.decodedClaims!.sub }
+              ? { friend_requests: this.socket.userDecodedClaims!.sub }
               : { [`notifications.${type}`]: notification }),
           }
         },
         queryOptions
       );
 
-      const socketId = await getSocketId(to.verification_token!);
+      const socketId = await getSocketId(to.member_id!);
       if (socketId) this.io.to(socketId).emit(AuthEvent.NEW_NOTIFICATION, { notification });
     } catch (error: any) {
       logger.error("emitNotification service error:\n", error.message);

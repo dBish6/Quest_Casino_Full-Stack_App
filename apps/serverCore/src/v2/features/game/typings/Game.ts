@@ -1,29 +1,21 @@
 import type { Document, ObjectId } from "mongoose";
 import type DefaultDocFields from "@typings/DefaultDocFields";
-import type { GameStatus, GameCategory } from "@qc/constants";
+import type { Quest as ClientQuest } from "@qc/typescript/dtos/GetQuestsDto";
+import type { Game as ClientGame } from "@qc/typescript/dtos/GetGamesDto";
+import type { GameQuestStatus } from "@qc/constants";
 
-export interface Game extends DefaultDocFields {
+export interface Game extends ClientGame, DefaultDocFields {
   _id: ObjectId;
-  title: string;
-  description: string;
-  category: GameCategory;
-  image: { src: string; alt: string };
-  odds: string;
-  origin: string;
-  status: GameStatus;
 }
 
 export interface GameDoc extends Document, Game {
   _id: ObjectId;
 }
 
-export interface Quest extends DefaultDocFields {
+export interface Quest extends Omit<ClientQuest, "status">, DefaultDocFields {
   _id: ObjectId;
-  title: string;
-  description: string;
-  reward: number;
-  for: string;
-  cap: number;
+  /** Active or inactive for the current period. */
+  status: GameQuestStatus;
 }
 
 export interface GameQuestDoc extends Document, Quest {
@@ -36,6 +28,8 @@ export interface Bonus extends DefaultDocFields {
   multiplier: number;
   cap: number;
   expiry: number;
+  /** Active or inactive for the current period. */
+  status: "active" | "inactive";
 }
 
 export interface GameBonusDoc extends Document, Bonus {

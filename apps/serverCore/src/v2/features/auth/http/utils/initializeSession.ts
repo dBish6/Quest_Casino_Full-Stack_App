@@ -23,7 +23,7 @@ import { deleteCsrfToken, generateCsrfToken } from "@authFeatHttp/services/csrfS
  */
 export default async function initializeSession(
   res: Response,
-  identifier: Identifier<GetUserBy>,
+  identifier: Partial<Identifier<GetUserBy>>,
   csrfToken: string | UserDoc | undefined,
   maxAge?: { access: number; refresh: number; }
 ) {
@@ -33,36 +33,37 @@ export default async function initializeSession(
 
   try {
     if (!isOnlyCookiesUpdate) {
-      const userQuery = User.findOne({ [identifier.by]: identifier.value });
+      const userQuery = User.findOne({ [identifier.by!]: identifier.value });
       user = await userQuery.exec() as UserDoc;
       if (!user) return "Couldn't find the user while session initialization.";
 
       clientUser = await populateUserDoc(userQuery.clone()).client().populate("friends");
       clientUser!.friends = ({ pending: {}, list: {} }) as UserFields["friends"];
+      console.log("clientUser", clientUser)
     }
 
     const userToClaims = formatUserToClaims(user),
-      generateUserJWT = new GenerateUserJWT(userToClaims);
+      generateJWT = new GenerateUserJWT();
 
-    const accessToken = generateUserJWT.accessToken(),
-      refreshToken = await generateUserJWT.refreshToken();
+    const accessToken = generateJWT.accessToken(userToClaims),
+      refreshToken = await generateJWT.refreshToken(userToClaims);
 
     res
       .cookie("session", accessToken, {
         path: "/",
-        maxAge: maxAge?.access || generateUserJWT.expiry.access * 1000,
+        maxAge: maxAge?.access || generateJWT.expiry.access * 1000,
         httpOnly: true,
         secure: true,
         sameSite: "none"
       })
       .cookie("refresh", refreshToken, {
         path: "/",
-        maxAge: maxAge?.refresh || generateUserJWT.expiry.refresh * 1000,
+        maxAge: maxAge?.refresh || generateJWT.expiry.refresh * 1000,
         httpOnly: true,
         secure: true,
         sameSite: "none"
       })
-    if (!isOnlyCookiesUpdate) {
+    if (typeof csrfToken === "undefined") {
       const [newCsrfToken] = await Promise.all([
         generateCsrfToken(user.id),
         ...(csrfToken ? [deleteCsrfToken(user.id, csrfToken)] : [])

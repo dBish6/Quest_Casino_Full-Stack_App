@@ -1,15 +1,19 @@
+import type { ObjectId } from "mongoose";
+
 import { randomUUID } from "crypto";
 
 import { handleHttpError } from "@utils/handleError";
 import { redisClient } from "@cache";
 
+export const KEY = (userId: ObjectId | string) => `user:${userId.toString()}:csrf_tokens`;
+
 /**
  * Generates a CSRF token for the specified user and stores it in the cache.
  */
-export async function generateCsrfToken(userId: string) {
+export async function generateCsrfToken(userId: ObjectId | string) {
   try {
     const csrfToken = randomUUID();
-    await redisClient.sAdd(`user:${userId}:csrf_tokens`, csrfToken);
+    await redisClient.sAdd(KEY(userId), csrfToken);
 
     return csrfToken;
   } catch (error: any) {
@@ -20,9 +24,9 @@ export async function generateCsrfToken(userId: string) {
 /**
  * Deletes a specific CSRF token for the specified user from the cache.
  */
-export async function deleteCsrfToken(userId: string, csrfToken: string) {
+export async function deleteCsrfToken(userId: ObjectId | string, csrfToken: string) {
   try {
-    await redisClient.sRem(`user:${userId}:csrf_tokens`, csrfToken);
+    await redisClient.sRem(KEY(userId), csrfToken);
   } catch (error: any) {
     throw handleHttpError(error, "deleteCsrfToken service error.", 500);
   }
@@ -31,9 +35,9 @@ export async function deleteCsrfToken(userId: string, csrfToken: string) {
 /**
  * Deletes all CSRF tokens in the cache from the given user.
  */
-export async function deleteAllCsrfTokens(userId: string) {
+export async function deleteAllCsrfTokens(userId: ObjectId | string) {
   try {
-    await redisClient.del(`user:${userId}:csrf_tokens`);
+    await redisClient.del(KEY(userId));
   } catch (error: any) {
     throw handleHttpError(error, "deleteAllCsrfTokens service error.", 500);
   }

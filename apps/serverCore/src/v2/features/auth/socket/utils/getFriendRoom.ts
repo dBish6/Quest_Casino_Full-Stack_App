@@ -1,7 +1,7 @@
 /**
  * The room for communication between two friends.
  */
-const getFriendRoom = (userVerToken: string, friendVerToken: string) =>
-    [userVerToken, friendVerToken].sort().join("_");
+const getFriendRoom = (userMemberId: string, friendMemberId: string) =>
+    [userMemberId, friendMemberId].sort().join("_");
 
 export default getFriendRoom;

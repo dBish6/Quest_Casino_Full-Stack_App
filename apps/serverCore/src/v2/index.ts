@@ -4,7 +4,7 @@
  *
  * Author: David Bishop
  * Creation Date: April 16, 2024
- * Last Updated: Oct 15, 2024
+ * Last Updated: Jan 7, 2024
  *
  * Description:
  * ...
@@ -38,8 +38,7 @@ export async function setupServer() {
       credentials: true,
     };
 
-  const db = new Db();
-  await db.connectBaseCluster();
+  await new Db().connectBaseCluster();
 
   await establishRedisConnection();
 

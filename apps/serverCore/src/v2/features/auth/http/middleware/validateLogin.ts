@@ -4,14 +4,16 @@ import type { LoginRequestDto } from "@authFeatHttp/dtos/LoginRequestDto";
 import { compare } from "bcrypt";
 
 import { logger, validateEmail } from "@qc/utils";
-import { handleApiError } from "@utils/handleError";
+import { handleHttpError } from "@utils/handleError";
 
 import { getUser } from "@authFeat/services/authService";
+
+const ERROR = "Email or password is incorrect.";
 
 /**
  * Validates the standard login form fields.
  * @middleware
- * @response `bad request`, or `ApiError`.
+ * @response `bad request`, or `HttpError`.
  */
 export default async function validateLogin(
   req: LoginRequestDto,
@@ -19,29 +21,23 @@ export default async function validateLogin(
   next: NextFunction
 ) {
   try {
-    const error = validateEmail(req.body.email_username),
-      loginMethod = !error ? "email" : "username";
+    const error = validateEmail(req.body.email);
+    if (error) return res.status(400).json({ ERROR });
 
-    const user = await getUser(loginMethod, req.body.email_username);
-    if (!user)
-      return res.status(400).json({
-        ERROR: "Email or username is incorrect.",
-      });
+    const user = await getUser("email", req.body.email, { projection: "-_id email password", lean: true });
+    if (!user) return res.status(400).json({ ERROR });
 
     if (user.password === "google provided")
       return res.status(400).json({
-        ERROR: `This profile is linked with Google. Please use the "Google" button below to log in.`,
+        ERROR: `This profile is linked with Google. Please use the "Google" button below to log in.`
       });
 
     if (!(await compare(req.body.password, user.password)))
-      return res.status(400).json({
-        ERROR: "Incorrect password.",
-      });
+      return res.status(400).json({ ERROR });
 
-    req.loginMethod = loginMethod;
     logger.debug(`Login ${user.id} successfully validated.`);
     next();
   } catch (error: any) {
-    next(handleApiError(error, "validateLogin middleware error."));
+    next(handleHttpError(error, "validateLogin middleware error."));
   }
 }

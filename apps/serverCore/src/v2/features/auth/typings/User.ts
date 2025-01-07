@@ -2,18 +2,17 @@ import type { Document, ObjectId } from "mongoose";
 import type { JwtPayload } from "jsonwebtoken";
 import type DefaultDocFields from "@typings/DefaultDocFields";
 import type RegisterBodyDto from "@qc/typescript/dtos/RegisterBodyDto";
-import type { ActivityStatuses } from "@qc/typescript/typings/UserCredentials";
 import type { NotificationTypes, Notification } from "@qc/typescript/dtos/NotificationsDto";
 import type { GameQuestDoc, GameBonusDoc } from "@gameFeat/typings/Game";
+import type { PaymentHistoryEntry } from "@qc/typescript/dtos/PaymentHistoryDto";
 
 export type RegistrationTypes = "standard" | "google";
-export type GetUserBy = "_id" | "email" | "username" | "verification_token";
+export type GetUserBy = "_id" | "email" | "username" | "member_id";
 
 /**
  * Type for creating a initial user in the database.
  */
-export interface InitializeUser
-  extends Omit<RegisterBodyDto, "con_password" | "calling_code"> {
+export interface InitializeUser extends Omit<RegisterBodyDto, "calling_code"> {
   type: RegistrationTypes;
   avatar_url?: string;
   first_name: string;
@@ -23,27 +22,27 @@ export interface InitializeUser
 
 export interface UserToClaims {
   _id: ObjectId;
+  member_id: string;
   type: RegistrationTypes;
   legal_name: { first: string; last: string };
   email: string;
-  verification_token: string;
+  email_verified: boolean;
   username: string;
   country: string;
   region?: string;
   phone_number?: string;
 }
 
-export interface UserClaims extends JwtPayload {
+export interface UserClaims extends Omit<UserToClaims, "_id">, JwtPayload {
   /** The user's `_id` as a string. */
   sub: string;
-  type: RegistrationTypes;
-  legal_name: { first: string; last: string };
+}
+
+/** Email verification or password reset claims. */
+export interface VerificationClaims extends JwtPayload {
+  /** The user's `_id` as a string. */
+  sub: string;
   email: string;
-  username: string;
-  verification_token: string;
-  country: string;
-  region?: string;
-  phone_number?: string;
 }
 
 /**
@@ -51,6 +50,7 @@ export interface UserClaims extends JwtPayload {
  */
 export interface User extends DefaultDocFields {
   _id: ObjectId;
+  member_id: string;
   type: string;
   avatar_url?: string;
   legal_name: {
@@ -60,15 +60,24 @@ export interface User extends DefaultDocFields {
   email: string;
   email_verified: boolean;
   username: string;
-  /** Used as a verification token for generating a unique verification link and used with friend rooms. */
-  verification_token: string;
   password: string;
   country: string;
   region?: string;
   phone_number?: string;
   bio?: string;
-  balance: number;
+  balance: Number;
   favourites: Map<string, boolean>;
+  limit_changes?: { country: number };
+  locked?: "suspicious" | "banned" | "attempts";
+  settings: {
+    /** Enable or disable the sound effect on new notifications and indicator. */
+    notifications: boolean;
+    /** Maps `member_id` to boolean. */
+    blocked_list: Map<string, UserDoc>;
+    /** Hides game activity and statistics if false. */
+    visibility: boolean;
+    block_cookies: boolean;
+  };
   friends: UserDocFriends;
   statistics: UserDocStatistics;
   activity: UserDocActivity;
@@ -82,11 +91,11 @@ export interface UserDoc extends Document, User {
 export interface UserDocFriends extends Document, DefaultDocFields {
   _id: ObjectId;
   /**
-   * Maps `verification_token` to user ObjectIds for friends that are pending.
+   * Maps `member_id` to user ObjectIds for friends that are pending.
    */
   pending: Map<string, UserDoc>;
   /**
-   * Maps `verification_token` to user ObjectIds for friends that are added.
+   * Maps `member_id` to user ObjectIds for friends that are added.
    */
   list: Map<string, UserDoc>;
 }
@@ -105,7 +114,6 @@ export interface UserDocStatistics extends Document, DefaultDocFields {
     slots: number;
     dice: number;
     streak: number;
-    win_rate: number;
   };
   progress: {
     quest: Map<
@@ -113,7 +121,6 @@ export interface UserDocStatistics extends Document, DefaultDocFields {
       {
         quest: GameQuestDoc;
         current: number;
-        completed: boolean;
       }
     >;
     bonus: Map<
@@ -121,26 +128,25 @@ export interface UserDocStatistics extends Document, DefaultDocFields {
       {
         bonus: GameBonusDoc;
         current: number;
-        activated: boolean;
-        completed: boolean;
       }
     >;
   };
 }
 
+export interface PaymentHistoryField extends Omit<PaymentHistoryEntry, "timestamp"> {
+  timestamp: Date;
+}
 export interface UserDocActivity extends Document, DefaultDocFields {
   _id: ObjectId;
-  status: ActivityStatuses;
-  history: {
+  game_history: {
     game_name: string;
     result: {
       outcome: "win" | "loss";
-      earnings: number;
+      earnings: string;
     };
     timestamp: Date;
   }[];
-  recently_played?: string;
-  activity_timestamp: Date;
+  payment_history: PaymentHistoryField[];
 }
 
 export interface UserNotification extends Omit<Notification, "_id" | "created_at"> {

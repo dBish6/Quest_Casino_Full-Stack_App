@@ -1,10 +1,10 @@
 import type { Request } from "express";
-import type { UserClaims } from "@authFeat/typings/User";
+import type { UserClaims, VerificationClaims } from "@authFeat/typings/User";
 
 declare module "express-serve-static-core" {
   interface Request {
-    loginMethod?: "email" | "username";
-    decodedClaims?: UserClaims;
+    userDecodedClaims?: UserClaims;
+    verDecodedClaims?: VerificationClaims;
   }
 }
 
@@ -17,6 +17,6 @@ declare module "http" {
 
 declare module "socket.io" {
   interface Socket {
-    decodedClaims?: UserClaims;
+    userDecodedClaims?: UserClaims;
   }
 }

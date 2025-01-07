@@ -30,7 +30,7 @@ export default async function updateUserSession(
 
     await initializeSession(
       res,
-      { by: "_id", value: updatedUser._id },
+      {},
       updatedUser,
       {
         access: Math.max(0, accessClaims.exp! * 1000 - Date.now()),
@@ -39,7 +39,7 @@ export default async function updateUserSession(
     );
 
     const { _id, ...newClaims } = formatUserToClaims(updatedUser);
-    req.decodedClaims = { ...req.decodedClaims!, ...newClaims };
+    req.userDecodedClaims = { ...req.userDecodedClaims!, ...newClaims };
   } catch (error: any) {
     if (isJwtError(error)) // Should never happen since the verifyUserToken middleware is used before this and we have to extract the exps here because in verifyUserToken it can either be the access or refresh token.
       throw new HttpError("Unexpectedly one or two of the user tokens are invalid after initial validation.", 403);

@@ -3,5 +3,5 @@ import gameSchema, { gameBonusSchema, gameQuestSchema } from "./schemas/gameSche
 import "./middleware";
 
 export const Game = model("game", gameSchema),
-  GameQuest = model("quest", gameBonusSchema),
-  GameBonus = model("bonus", gameQuestSchema);
+  GameQuest = model("quest", gameQuestSchema),
+  GameBonus = model("bonus", gameBonusSchema);

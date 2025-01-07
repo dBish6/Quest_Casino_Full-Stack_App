@@ -5,10 +5,11 @@
  * Handles functionalities related to user authentication and management that can be for HTTP or Sockets.
  */
 
-import type { ObjectId, PopulateOptions, Query, UpdateQuery, QueryOptions } from "mongoose";
+import type { ObjectId, PopulateOptions, Query, UpdateQuery, QueryOptions, MongooseUpdateQueryOptions } from "mongoose";
 import type { GetUserBy, UserDoc, UserDocFriends, UserDocStatistics, UserDocActivity, UserDocNotifications } from "@authFeat/typings/User";
 
 import CLIENT_COMMON_EXCLUDE from "@constants/CLIENT_COMMON_EXCLUDE";
+import USER_NOT_FOUND_MESSAGE from "@authFeat/constants/USER_NOT_FOUND_MESSAGE";
 
 import { handleApiError, ApiError } from "@utils/handleError";
 
@@ -22,17 +23,19 @@ export interface Identifier<TBy> {
 /**
  * Type `UserCredentials` (minus the friends because they get initialized elsewhere).
  */
-export const CLIENT_USER_FIELDS = `${CLIENT_COMMON_EXCLUDE} -email -password -friends -activity -notifications`;
+export const CLIENT_USER_FIELDS = `${CLIENT_COMMON_EXCLUDE} -email -password -limit_changes -friends -activity -notifications`;
 
 /**
  * Type `MinUserCredentials`.
  */
-export const MINIMUM_USER_FIELDS = "-_id avatar_url legal_name username verification_token";
+export const MINIMUM_USER_FIELDS = "-_id member_id avatar_url legal_name username";
 
 /**
  * Type `FriendCredentials`.
  */
 export const FRIEND_FIELDS = `${MINIMUM_USER_FIELDS} country bio`
+
+export const EXCLUDE_SUB_FIELDS = "-friends -statistics -activity -notifications"
 
 export const USER_FRIENDS_POPULATE: PopulateOptions[] = [
   { 
@@ -45,32 +48,60 @@ export const USER_FRIENDS_POPULATE: PopulateOptions[] = [
   }
 ];
 
+const USER_SUB_DOCS_POPULATE = [
+    {
+      path: "friends",
+      populate: USER_FRIENDS_POPULATE
+    },
+    { path: "statistics" },
+    { path: "activity" },
+    {
+      path: "notifications",
+      populate: {
+        path: "friend_requests",
+        select: MINIMUM_USER_FIELDS
+      }
+    }
+  ],
+  USER_SUB_DOCS_POPULATE_MAP = Object.fromEntries(
+    USER_SUB_DOCS_POPULATE.map((obj) => [obj.path, obj])
+  );
 /**
  * Populates specific fields on the `UserDoc` for the client or internal use.
  */
 export function populateUserDoc<TUserDoc = UserDoc>(query: Query<any, UserDoc>) {
   return {
-    full: (): Query<TUserDoc | null, UserDoc> =>
-      query.populate([
-        {
-          path: "friends",
-          populate: USER_FRIENDS_POPULATE
-        },
-        { path: "statistics" },
-        { path: "activity" },
-        {
-          path: "notifications",
-          populate: {
-            path: "friend_requests",
-            select: MINIMUM_USER_FIELDS,
-          },
-        },
-      ]),
+    full: (projection: string = ""): Query<TUserDoc | null, UserDoc> => {
+      return query.populate(
+        projection.split(" ").reduce((acc, fieldName) => {
+          const subDoc = USER_SUB_DOCS_POPULATE_MAP[fieldName as keyof typeof USER_SUB_DOCS_POPULATE_MAP];
+          if (subDoc) acc.push(subDoc);
+          return acc;
+        }, [] as any[])
+      );
+    },
     client: (): Query<TUserDoc | null, UserDoc> =>
       query.select(CLIENT_USER_FIELDS).populate([
         {
+          path: "settings",
+          populate: {
+            path: "blocked_list.$*",
+            select: `${MINIMUM_USER_FIELDS} bio`
+          }
+        },
+        {
           path: "statistics",
-          select: CLIENT_COMMON_EXCLUDE
+          select: CLIENT_COMMON_EXCLUDE,
+          populate: [
+            {
+              path: "progress.quest.$*.quest",
+              select: "-_id cap"
+            },
+            {
+              path: "progress.bonus.$*.bonus",
+              select: "-_id cap"
+            }
+          ]
         }
       ]),
     min: (): Query<TUserDoc | null, UserDoc> => query.select(MINIMUM_USER_FIELDS) as any
@@ -107,16 +138,38 @@ export async function getUsers(forClient?: boolean, randomize?: number) {
 
 /**
  * Gets a user from the database optionally for the client or internal use.
+
+ * Projection:
+ * - You can only get sub-document fields via `projection`.
+ * - The `projection` option must only be a string, space-separated field names.
+ * 
+ * @throws (Optional) `ApiError 404` if the document is not found.
  */
-export async function getUser(
+export async function getUser<
+  TOptions extends QueryOptions<UserDoc> & {
+    projection?: string;
+    forClient?: boolean;
+    throwDefault404?: boolean;
+  }
+>(
   by: GetUserBy,
   value: ObjectId | string,
-  forClient?: boolean
-) {
+  options: TOptions = {} as TOptions
+): Promise<TOptions["throwDefault404"] extends true ? UserDoc : UserDoc | null> {
+  const { forClient, throwDefault404, projection: project, populate, ...restOpts } = options;
+
   try {
-    return await populateUserDoc(User.findOne({ [by]: value }))[
-      forClient ? "client" : "full"
-    ]();
+    let projection = project;
+    if (!project) projection = EXCLUDE_SUB_FIELDS;
+
+    let userQuery = User.findOne({ [by]: value }, projection, restOpts);
+    if (populate) userQuery.populate(populate as string);
+    else populateUserDoc(userQuery)[forClient ? "client" : "full"](projection);
+
+    const user = await userQuery.exec();
+    if (throwDefault404 && !user) throw new ApiError(USER_NOT_FOUND_MESSAGE, 404, "not found");
+
+    return user as UserDoc;
   } catch (error: any) {
     throw handleApiError(error, "getUser service error.");
   }
@@ -139,23 +192,41 @@ export async function getUserFriends(userId: ObjectId | string, options?: QueryO
 
 /**
  * Updates any field in the user's `UserDoc` (base document).
- * @throws `ApiError` if the document is not found.
+ * 
+ * When the `new` option is provided `findOneAndUpdate` is used with the follow constraints:
+ * - You can only get sub-document fields via `projection`.
+ * - The `projection` option must only be a string, space-separated field names.
+ * 
+ * Else `updateOne` is used.
+ * @throws `ApiError 404` if the document is not found for `findOneAndUpdate`.
  */
-export async function updateUserCredentials(
+export async function updateUserCredentials<
+  TOptions extends { new?: boolean; forClient?: boolean }
+>(
   identifier: Identifier<GetUserBy>,
   update: UpdateQuery<UserDoc>,
-  options?: QueryOptions<UserDoc> & { forClient?: boolean }
-) {
+  options: TOptions & (TOptions["new"] extends true ? QueryOptions<UserDoc> : MongooseUpdateQueryOptions) = {} as any
+): Promise<TOptions["new"] extends true ? UserDoc : undefined> {
   const { by, value } = identifier,
-    { forClient, ...restOpts } = options || {};
+    { forClient, populate, ...restOpts } = options;
   
   try {
-    const user = await populateUserDoc(User.findOneAndUpdate({ [by]: value }, update, restOpts))[
-      forClient ? "client" : "full"
-    ]();
-    if (!user) throw new ApiError("Unexpectedly the user was not found.", 404, "not found");
+    if (options.new) {
+      if (!restOpts.projection) 
+        (restOpts as QueryOptions<UserDoc>).projection = EXCLUDE_SUB_FIELDS;
 
-    return user;
+      const userQuery = User.findOneAndUpdate({ [by]: value }, update, restOpts);
+      if (populate) userQuery.populate(populate as string);
+      else populateUserDoc(userQuery)[forClient ? "client" : "full"](restOpts.projection);
+
+      const user = await userQuery.exec();
+      if (!user) throw new ApiError("Unexpectedly the user was not found.", 404, "not found");
+
+      return user as any;
+    } else {
+      await User.updateOne({ [by]: value }, update, restOpts);
+      return undefined as any;
+    }
   } catch (error: any) {
     throw handleApiError(error, "updateUserCredentials service error.");
   }
@@ -163,88 +234,124 @@ export async function updateUserCredentials(
 
 /**
  * Updates any field in the user's friends document.
- * @throws `ApiError` if the document is not found.
+ * 
+ * When the `new` option is provided `findOneAndUpdate` is used else `updateOne` is used.
+ * @throws `ApiError 404` if the document is not found.
  */
-export async function updateUserFriends(
+export async function updateUserFriends<
+  TOptions extends { new?: boolean; forClient?: boolean }
+>(
   identifier: Identifier<"_id">,
   update: UpdateQuery<UserDocFriends>,
-  options?: QueryOptions<UserDocFriends>
-) {
+  options?: TOptions & (TOptions["new"] extends true ? QueryOptions<UserDocFriends> : MongooseUpdateQueryOptions)
+): Promise<TOptions["new"] extends true ? UserDocFriends : undefined> {
   const { by, value } = identifier;
 
   try {
-    const userFriends = await populateUserFriendsDoc(
-      UserFriends.findOneAndUpdate({ [by]: value }, update, options)
-    );
-    if (!userFriends) throw new ApiError("Unexpectedly user friends was not found.", 404, "not found");
+    if (options?.new) {
+      const userFriends = await populateUserFriendsDoc(
+        UserFriends.findOneAndUpdate({ [by]: value }, update, options)
+      );
+      if (!userFriends) throw new ApiError("Unexpectedly user friends was not found.", 404, "not found");
 
-    return userFriends;
+      return userFriends as any;
+    } else {
+      await UserFriends.updateOne({ [by]: value }, update, options as MongooseUpdateQueryOptions);
+      return undefined as any;
+    }
   } catch (error: any) {
-    throw handleApiError(error, "updateActivityTimestamp service error.");
+    throw handleApiError(error, "updateUserFriends service error.");
   }
 }
 
 /**
  * Updates any field in the user's statistics document.
- * @throws `ApiError` if the document is not found.
+ * 
+ * When the `new` option is provided `findOneAndUpdate` is used else `updateOne` is used.
+ * @throws `ApiError 404` if the document is not found.
  */
-export async function updateUserStatistics(
+export async function updateUserStatistics<
+  TOptions extends { new?: boolean }
+>(
   identifier: Identifier<"_id">,
   update: UpdateQuery<UserDocStatistics>,
-  options?: QueryOptions<UserDocStatistics>
-) {
+  options?: TOptions & (TOptions["new"] extends true ? QueryOptions<UserDocStatistics> : MongooseUpdateQueryOptions)
+): Promise<TOptions["new"] extends true ? UserDocStatistics : undefined> {
   const { by, value } = identifier;
 
   try {
-    const userStatistics = await UserStatistics.findOneAndUpdate({ [by]: value }, update, options);
-    if (!userStatistics) throw new ApiError("Unexpectedly user statistics was not found.", 404, "not found");
+    if (options?.new) {
+      const userStatistics = await UserStatistics.findOneAndUpdate({ [by]: value }, update, options);
+      if (!userStatistics) throw new ApiError("Unexpectedly user statistics was not found.", 404, "not found");
 
-    return userStatistics;
+      return userStatistics as any;
+    } else {
+      await UserStatistics.updateOne({ [by]: value }, update, options as MongooseUpdateQueryOptions);
+      return undefined as any;
+    }
   } catch (error: any) {
-    throw handleApiError(error, "updateActivityTimestamp service error.");
+    throw handleApiError(error, "updateUserStatistics service error.");
   }
 }
 
 /**
  * Updates any field in the user's activity document.
- * @throws `ApiError` if the document is not found.
+ * 
+ * When the `new` option is provided `findOneAndUpdate` is used else `updateOne` is used.
+ * @throws `ApiError 404` if the document is not found.
  */
-export async function updateUserActivity(
+export async function updateUserActivity<
+  TOptions extends { new?: boolean }
+>(
   identifier: Identifier<"_id">,
   update?: UpdateQuery<UserDocActivity>,
-  options?: QueryOptions<UserDocActivity>
-) {
+  options?: TOptions & (TOptions["new"] extends true ? QueryOptions<UserDocActivity> : MongooseUpdateQueryOptions)
+): Promise<TOptions["new"] extends true ? UserDocActivity : undefined> {
   const { by, value } = identifier;
   
   try {
-    const userActivity = await UserActivity.findOneAndUpdate({ [by]: value }, update, options);
-    if (!userActivity) throw new ApiError("Unexpectedly user activity was not found.", 404, "not found");
+    if (options?.new) {
+      const userActivity = await UserActivity.findOneAndUpdate({ [by]: value }, update, options);
+      if (!userActivity) throw new ApiError("Unexpectedly user activity was not found.", 404, "not found");
 
-    return userActivity;
+      return userActivity as any;
+    } else {
+      await UserActivity.updateOne({ [by]: value }, update, options as MongooseUpdateQueryOptions);
+      return undefined as any;
+    }
   } catch (error: any) {
-    throw handleApiError(error, "updateActivityTimestamp service error.");
+    throw handleApiError(error, "updateUserActivity service error.");
   }
 }
 
 /**
  * Updates any field in the user's notifications document.
- * @throws `ApiError` if the document is not found.
+ * 
+ * When the `new` option is provided `findOneAndUpdate` is used else `updateOne` is used.
+ * @throws `ApiError 404` if the document is not found.
  */
-export async function updateUserNotifications(
+export async function updateUserNotifications<
+  TOptions extends { new?: boolean }
+>(
   identifier: Identifier<"_id">,
   update: UpdateQuery<UserDocNotifications>,
-  options?: QueryOptions<UserDocNotifications>
-) {
+  options?: TOptions & (TOptions["new"] extends true ? QueryOptions<UserDocNotifications> : MongooseUpdateQueryOptions)
+): Promise<TOptions["new"] extends true ? UserDocNotifications : undefined> {
   const { by, value } = identifier;
 
   try {
-    const userNotifications =
-      await UserNotifications.findOneAndUpdate({ [by]: value }, update, options);
-    if (!userNotifications) 
-      throw new ApiError("Unexpectedly user notifications was not found.", 404, "not found");
+    if (options?.new) {
+      const userNotifications =
+        await UserNotifications.findOneAndUpdate({ [by]: value }, update, options);
+      if (!userNotifications) 
+        throw new ApiError("Unexpectedly user notifications was not found.", 404, "not found");
 
-    return userNotifications;
+      return userNotifications as any;
+    } else {
+      await UserNotifications.updateOne({ [by]: value }, update, options as MongooseUpdateQueryOptions);
+      return undefined as any;
+    }
   } catch (error: any) {
-    throw handleApiError(error, "updateActivityTimestamp service error.");
+    throw handleApiError(error, "updateUserNotifications service error.");
   }
 }
