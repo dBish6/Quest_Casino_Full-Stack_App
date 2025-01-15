@@ -18,13 +18,13 @@ import s from "./viewPaymentHistoryModal.module.css";
 
 export default function ViewPaymentHistoryModal() {
   const [searchParams] = useSearchParams(),
-    username = searchParams.get(ModalQueryKey.PROFILE_PAYMENT_HISTORY_MODAL);
+    modalParam = searchParams.get(ModalQueryKey.PROFILE_PAYMENT_HISTORY_MODAL);
 
   const [getPaymentHistory, { data: historyData, isFetching: historyLoading }] = useLazyGetPaymentHistoryQuery(),
     [history, setHistory] = useState<PaymentHistoryEntry[]>([]);
 
   useResourcesLoadedEffect(() => {
-    if (username) {
+    if (modalParam) {
       const query = getPaymentHistory();
       query.then((res) => {
         if (res.isSuccess && res.data?.user.payment_history) {
@@ -34,7 +34,7 @@ export default function ViewPaymentHistoryModal() {
 
       return () => query.abort();
     }
-  }, [username]);
+  }, [modalParam]);
 
   const handleSort = (e: React.ChangeEvent<HTMLSelectElement>) => {
     if (history) {
@@ -47,7 +47,7 @@ export default function ViewPaymentHistoryModal() {
 
   return (
     <ModalTemplate
-      aria-description={`Payment history for ${username}`}
+      aria-description={`Payment history for ${modalParam}`}
       queryKey="phist"
       width="455px"
       className={s.modal}

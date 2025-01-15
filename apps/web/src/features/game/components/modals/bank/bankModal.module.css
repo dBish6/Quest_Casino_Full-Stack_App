@@ -32,7 +32,6 @@
           &:active,
           &[data-key-press="true"],
           &[aria-pressed="true"] {
-            background: #201735;
             z-index: 1;
           }
         }

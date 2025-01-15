@@ -47,8 +47,7 @@
         backdrop-filter: blur(40px);
       }
       & section.personal,
-      & section.billing,
-      & section.statistics {
+      & section.billing {
         & hgroup.title {
           margin-bottom: 1rem;
           & h2 {

@@ -40,7 +40,7 @@ export function Header() {;
   const { viewport, title } = useBreakpoint();
 
   const user = useUser(),
-    formattedBalance = user?.balance ? formatCurrency(user.balance, true) : "MISSING";
+    formattedBalance = user?.balance != undefined ? formatCurrency(user.balance, true) : "MISSING";
 
   return (
     <header id="dashHeader" className={s.header}>

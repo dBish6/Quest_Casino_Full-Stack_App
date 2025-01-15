@@ -1,75 +1,79 @@
-.modal > :global(.viewport) {
-  padding: 1.5rem 1rem 0 !important;
-  max-height: 739px;
+.modal {
+  overflow: hidden;
 
-  & > div {
-    & > h2 {
-      font-size: var(--h1-clamp) !important;
-      margin-bottom: 4px;
-    }
-    & > p {
-      margin-bottom: 2rem;
-    }
-
-    & > span[role="status"] {
-      margin: 0 auto;
-    }
+  & > :global(.viewport) {
+    padding: 1.5rem 1rem 0 !important;
+    max-height: 739px;
 
     & > div {
-      display: flex;
-      justify-content: flex-end;
-      align-items: center;
-      gap: 1.5rem;
-      margin-bottom: 0.5rem;
-      & :global(.control) {
-        & :global(.selectInner) {
-          width: 93px !important;
+      & > h2 {
+        font-size: var(--h1-clamp) !important;
+        margin-bottom: 4px;
+      }
+      & > p {
+        margin-bottom: 2rem;
+      }
+
+      & > span[role="status"] {
+        margin: 0 auto;
+      }
+
+      & > div {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 1.5rem;
+        margin-bottom: 0.5rem;
+        & :global(.control) {
+          & :global(.selectInner) {
+            width: 93px !important;
+          }
+        }
+        & small {
+          font: var(--h4-it);
+          color: var(--c-heading-2);
+          font-size: 13px;
         }
       }
-      & small {
-        font: var(--h4-it);
-        color: var(--c-heading-2);
-        font-size: 13px;
-      }
-    }
-    & ul {
-      & li {
-        width: calc(100% + 2rem);
-        transform: translateX(-1rem);
-        &:nth-child(1n) {
-          background-color: var(--c-lvl-2);
-        }
-        &:nth-child(2n) {
-          background-color: var(--c-lvl-3);
-        }
-        & article {
-          padding: 0.5rem 1rem;
-          & > div:first-child {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-            flex-wrap: wrap;
-            column-gap: 0.75rem;
-            margin-bottom: 3px;
-            & h4 {
-              font: var(--para-small);
-              color: var(--c-heading-2);
+      & ul {
+        & li {
+          width: calc(100% + 2rem);
+          transform: translateX(-1rem);
+          &:nth-child(1n) {
+            background-color: var(--c-lvl-2);
+          }
+          &:nth-child(2n) {
+            background-color: var(--c-lvl-3);
+          }
+          & article {
+            padding: 0.5rem 1rem;
+            & > div:first-child {
+              display: flex;
+              justify-content: space-between;
+              align-items: flex-end;
+              flex-wrap: wrap;
+              column-gap: 0.75rem;
+              margin-bottom: 3px;
+              & h4 {
+                font: var(--para-small);
+                color: var(--c-heading-2);
+              }
+              & time {
+                font: var(--para-x-small);
+                color: var(--c-para-faded);
+                height: fit-content;
+                margin-bottom: 2px;
+              }
             }
-            & time {
+            &[data-type="deposit"] p {
+              color: var(--c-status-red);
+            }
+            &[data-type="withdraw"] p {
+              color: var(--c-status-green);
+            }
+            & p {
               font: var(--para-x-small);
-              color: var(--c-para-faded);
-              height: fit-content;
-              margin-bottom: 2px;
             }
-          }
-          &[data-type="deposit"] p {
-            color: var(--c-status-red);
-          }
-          &[data-type="withdraw"] p {
-            color: var(--c-status-green);
-          }
-          & p {
-            font: var(--para-x-small);
           }
         }
       }

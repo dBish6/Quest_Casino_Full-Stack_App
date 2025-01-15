@@ -6,7 +6,6 @@ import { capitalize } from "@qc/utils";
 
 import { Icon } from "@components/common";
 import { Button } from "@components/common/controls";
-import { ModalTrigger } from "@components/modals";
 
 import s from "./userGameHistory.module.css";
 
@@ -48,79 +47,79 @@ export default function UserGameHistory({ gameHistory, username, ...props }: Use
 
   return (
     <div role="presentation" className={s.history} {...props}>
-      <header>
-        <hgroup className={s.title} data-scale-text={!!username}>
-          <Icon aria-hidden="true" id={username ? "notepad-24" : "notepad-32"} scaleWithText />
-          <h2 id="hUsrHistory">Activity</h2>
-        </hgroup>
-        {username && (
-          // TODO: Could just show this at all times.
-          <ModalTrigger
-            query={{ param: "ghist", value: username }}
-            className={s.viewFull}
-          >
-            View Full List
-          </ModalTrigger>
-        )}
-      </header>
-      <div
-        role="table"
-        aria-labelledby="hUsrHistory"
-        aria-describedby="cUsrHistory"
-        aria-live="polite"
-        className={s.history}
-      >
-        <div role="caption" id="cUsrHistory" style={{ position: "absolute", opacity: 0 }}>
-          Your game history.
-        </div>
-        <div role="rowgroup">
-          <div role="row">
-            <div role="columnheader">Game</div>
-            <div role="columnheader" aria-label="Result">
-              <span>Result</span>
-              <Button
-                aria-label="Sort Result by Descending"
-                aria-controls="histRowGroup"
-                aria-pressed={order.result}
-                intent="ghost"
-                size="xsm"
-                type="submit"
-                iconBtn
-                onClick={handleSort}
-              >
-                <Icon aria-hidden="true" id="expand-10" />
-              </Button>
-            </div>
-            <div role="columnheader" aria-label="TimeStamp">
-              <span>Timestamp</span>
-              <Button
-                aria-label="Sort Timestamp by Ascending"
-                aria-controls="histRowGroup"
-                aria-pressed={order.timestamp}
-                intent="ghost"
-                size="xsm"
-                type="submit"
-                iconBtn
-                onClick={handleSort}
-              >
-                <Icon aria-hidden="true" id="expand-10" />
-              </Button>
+      <hgroup data-scale-text={!!username}>
+        <Icon
+          aria-hidden="true"
+          id={username ? "notepad-24" : "notepad-32"}
+          scaleWithText
+        />
+        <h2 id="hUsrHistory" {...(username && { className: "hUnderline" })}>
+          Activity
+        </h2>
+      </hgroup>
+
+      {order.history.length ? (
+        <div
+          role="table"
+          aria-labelledby="hUsrHistory"
+          aria-describedby="cUsrHistory"
+          aria-live="polite"
+          className={s.history}
+        >
+          <div role="caption" id="cUsrHistory" style={{ position: "absolute", opacity: 0 }}>
+            Your game history.
+          </div>
+          <div role="rowgroup">
+            <div role="row">
+              <div role="columnheader">Game</div>
+              <div role="columnheader" aria-label="Result">
+                <span>Result</span>
+                <Button
+                  aria-label="Sort Result by Descending"
+                  aria-controls="histRowGroup"
+                  aria-pressed={order.result}
+                  intent="ghost"
+                  size="xsm"
+                  type="submit"
+                  iconBtn
+                  onClick={handleSort}
+                >
+                  <Icon aria-hidden="true" id="expand-10" />
+                </Button>
+              </div>
+              <div role="columnheader" aria-label="TimeStamp">
+                <span>Timestamp</span>
+                <Button
+                  aria-label="Sort Timestamp by Ascending"
+                  aria-controls="histRowGroup"
+                  aria-pressed={order.timestamp}
+                  intent="ghost"
+                  size="xsm"
+                  type="submit"
+                  iconBtn
+                  onClick={handleSort}
+                >
+                  <Icon aria-hidden="true" id="expand-10" />
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
-        <div role="rowgroup" id="histRowGroup">
-          {order.history.map((game) => (
-            <div key={game.timestamp} role="row">
-              <div role="cell" title={game.game_name}>{game.game_name}</div>
-              <div role="cell" data-outcome={game.result.outcome}>
-                <span>{capitalize(game.result.outcome)}</span>
-                {["win", "draw"].includes(game.result.outcome) ? "+" : "-"}{game.result.earnings}
+          <div role="rowgroup" id="histRowGroup">
+            {order.history.map((game) => (
+              <div key={game.timestamp} role="row">
+                <div role="cell" title={game.game_name}>{game.game_name}</div>
+                <div role="cell" data-outcome={game.result.outcome}>
+                  <span>{capitalize(game.result.outcome)}</span>
+                  {["win", "draw"].includes(game.result.outcome) ? "+" : "-"}{game.result.earnings}
+                </div>
+                <div role="cell" title={game.timestamp}>{game.timestamp}</div>
               </div>
-              <div role="cell">{game.timestamp}</div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
+      ) : (
+        <p>No Results</p>
+      )}
     </div>
   );
 }

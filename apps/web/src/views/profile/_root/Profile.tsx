@@ -63,10 +63,9 @@ export default function Profile() {
   // NOTE: A private profile page doesn't need to be seo friendly.
   useEffect(() => {
     getUserProfile().then((res) => {
-      console.log("profile data", res.data);
       if (res.isSuccess && res.data?.user) {
         // Adds the extra user data needed for the profile.
-        setUser({ ...storedUser, ...res.data.user });
+        setUser({ ...storedUser, ...res.data.user as UserProfileCredentials });
 
         if (!storedUser.email_verified)
           dispatch(

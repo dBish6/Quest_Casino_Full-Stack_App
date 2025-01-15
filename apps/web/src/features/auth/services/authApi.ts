@@ -1,6 +1,6 @@
 import type { ThunkDispatch, UnknownAction } from "@reduxjs/toolkit";
 import type { RootState } from "@redux/store";
-import type { UserCredentials, MinUserCredentials, UserProfileCredentials, ActivityStatuses } from "@qc/typescript/typings/UserCredentials";
+import type { UserCredentials, MinUserCredentials, UserProfileCredentials, ViewUserProfileCredentials, ActivityStatuses } from "@qc/typescript/typings/UserCredentials";
 
 import type { HttpResponse, SocketResponse } from "@typings/ApiResponse";
 import type RegisterBodyDto from "@qc/typescript/dtos/RegisterBodyDto";
@@ -10,6 +10,7 @@ import type { UpdateProfileBodyDto, UpdateProfileResponseDto, UpdateUserFavourit
 import type LogoutBodyDto from "@qc/typescript/dtos/LogoutBodyDto";
 import type { ManageFriendRequestEventDto } from "@qc/typescript/dtos/ManageFriendEventDto";
 import type FriendActivityEventDto from "@authFeat/dtos/FriendActivityEventDto";
+import type FriendsUpdateEventDto from "@authFeat/dtos/FriendsUpdateEventDto";
 
 import { AuthEvent } from "@qc/constants";
 import TOKEN_EXPIRED_MESSAGE from "@authFeat/constants/TOKEN_EXPIRED_MESSAGE";
@@ -26,7 +27,7 @@ import allow500ErrorsTransform from "@services/allow500ErrorsTransform";
 import handleLogout from "./handleLogout";
 import handleSendVerifyEmail from "./handleSendVerifyEmail";
 
-import { UPDATE_USER_CREDENTIALS, SET_USER_FAVOURITES, UPDATE_USER_FRIENDS, UPDATE_USER_FRIEND_IN_LIST, INITIALIZE_SESSION, SET_USER_SETTINGS } from "@authFeat/redux/authSlice";
+import { UPDATE_USER_CREDENTIALS, SET_USER_FAVOURITES, UPDATE_USER_FRIENDS, REMOVE_USER_FRIEND, UPDATE_USER_FRIEND_IN_LIST, INITIALIZE_SESSION, SET_USER_SETTINGS } from "@authFeat/redux/authSlice";
 import { ADD_TOAST, unexpectedErrorToast } from "@redux/toast/toastSlice";
 
 const socket = getSocketInstance("auth");
@@ -217,10 +218,10 @@ const authApi = injectEndpoints({
      */
     getUserProfile: builder.query<
       HttpResponse<{
-        // It's all of UserProfileCredentials when it's not requesting the current user (we get a profile by username).
+        // ViewUserProfileCredentials when it's not requesting the current user (we get a profile by username).
         user:
-          | { email: string; activity: UserProfileCredentials["activity"] }
-          | UserProfileCredentials;
+          | UserProfileCredentials
+          | ViewUserProfileCredentials;
       }>,
       { username: string } | void
     >({
@@ -237,13 +238,18 @@ const authApi = injectEndpoints({
      */
     updateProfile: builder.mutation<
       HttpResponse<UpdateProfileResponseDto>,
-      UpdateProfileBodyDto
+      UpdateProfileBodyDto & { keepalive?: boolean; allow500?: boolean }
     >({
-      queryFn: async (query, { getState, dispatch, signal }, _, baseQuery) => {
-        if (query.settings) {
+      queryFn: async (
+        { keepalive, allow500 = true, ...body },
+        { getState, dispatch, signal },
+        _,
+        baseQuery
+      ) => {
+        if (keepalive) {
           const res = await fetch("api/v2/auth/user", {
               method: "PATCH",
-              body: JSON.stringify(query),
+              body: JSON.stringify(body),
               ...prepareHeadersAndOptions({ state: getState() as RootState }),
               keepalive: true,
               signal
@@ -266,23 +272,58 @@ const authApi = injectEndpoints({
           const res = (await baseQuery({
             url: "/auth/user",
             method: "PATCH",
-            body: query
+            body
           })) as any;
   
           return res.error
-            ? { error: allow500ErrorsTransform(res.error!, res.meta) }
+            ? { error: allow500 ? allow500ErrorsTransform(res.error!, res.meta) : res.error }
             : res;
         }
       },
-      onQueryStarted: async ({ settings }, { dispatch, queryFulfilled }) => {
+      onQueryStarted: async ({ allow500 = true, settings }, { dispatch, queryFulfilled }) => {
         try {
           const { data, meta } = await queryFulfilled;
 
           if (meta?.response?.ok) {
-            const { email, ...rest } = data.user;
+            const { email, ...rest } = data.user,
+              isViewProfileUpdate = allow500 === false && settings?.blocked_list.length === 1; // Update happened when viewing a user's profile.
 
-            if (settings) dispatch(SET_USER_SETTINGS(rest.settings as UserCredentials["settings"]));
-            else dispatch(UPDATE_USER_CREDENTIALS(rest));
+            if (settings) {
+              dispatch(SET_USER_SETTINGS(rest.settings as UserCredentials["settings"]));
+
+              if (isViewProfileUpdate) {
+                if (settings.blocked_list[0].op === "add") {
+                  dispatch(
+                    ADD_TOAST({
+                      title: "Blocked",
+                      message: "Successfully blocked.",
+                      intent: "success",
+                      duration: 6500
+                    })
+                  );
+                  if (data.unfriended) {
+                    dispatch(
+                      ADD_TOAST({
+                        title: "Blocked",
+                        message: "This friend was also removed from your friend list due to blocking.",
+                        intent: "info"
+                      })
+                    );
+                  }
+                } else {
+                  dispatch(
+                    ADD_TOAST({
+                      title: "Unblocked",
+                      message: "Successfully unblocked.",
+                      intent: "success",
+                      duration: 6500
+                    })
+                  );
+                }
+              }
+            } else {
+              dispatch(UPDATE_USER_CREDENTIALS(rest));
+            }
 
             // Updated their email.
             if (data.refreshed)
@@ -301,6 +342,14 @@ const authApi = injectEndpoints({
               dispatch(
                 ADD_TOAST({
                   title: "Can't Block",
+                  message: resError.data.ERROR,
+                  intent: "error"
+                })
+              );
+            } else if (resError.status === 449) {
+              dispatch(
+                ADD_TOAST({
+                  title: "Too Many Update Attempts",
                   message: resError.data.ERROR,
                   intent: "error"
                 })
@@ -512,6 +561,7 @@ const authApi = injectEndpoints({
         body
       }),
       onQueryStarted: async (_, { dispatch, queryFulfilled }) => {
+        // FIXME: OState token? Need to refresh or something?
         const { meta } = await queryFulfilled;
 
         if (meta?.response?.ok) handleLogout(dispatch, socket);
@@ -526,8 +576,7 @@ const authApi = injectEndpoints({
       SocketResponse<{ friends: UserCredentials["friends"] }>,
       { member_id: string }
     >({
-      queryFn: async (data) =>
-        emitAsPromise(socket)(AuthEvent.INITIALIZE_FRIENDS, data),
+      queryFn: async (data) => emitAsPromise(socket)(AuthEvent.INITIALIZE_FRIENDS, data)
     }),
 
     /**
@@ -537,28 +586,31 @@ const authApi = injectEndpoints({
      */
     manageFriendRequest: builder.mutation<
       SocketResponse<{ pending_friends: UserCredentials["friends"]["pending"] }>,
-      ManageFriendRequestEventDto
+      ManageFriendRequestEventDto & {
+        /** When true, toasts are used and 500 errors are allowed. */
+        toasts?: boolean; 
+      }
     >({
-      queryFn: async (data, { getState }) => {
+      queryFn: async ({ toasts, ...data }, { getState, dispatch }) => {
         const user = (getState() as RootState).auth.user.credentials;
 
-        // NOTE: I may need the toasts later on, so they're left here.
         if (!user?.email_verified) {
           const errorMsg = "You must be verified to add friends.";
 
-          // dispatch(
-          //   ADD_TOAST({
-          //     title: "Unauthorized",
-          //     message: `${errorMsg} Send verification email.`,
-          //     intent: "error",
-          //     options: {
-          //       button: {
-          //         sequence: "Send verification email.",
-          //         onClick: () => handleSendVerifyEmail(dispatch),
-          //       },
-          //     },
-          //   })
-          // );
+          if (toasts)
+            dispatch(
+              ADD_TOAST({
+                title: "Unauthorized",
+                message: `${errorMsg} Send verification email.`,
+                intent: "error",
+                options: {
+                  button: {
+                    sequence: "Send verification email.",
+                    onClick: () => handleSendVerifyEmail(dispatch)
+                  }
+                }
+              })
+            );
           return {
             error: {
               allow: true,
@@ -573,15 +625,34 @@ const authApi = injectEndpoints({
         ) {
           const errorMsg = "You already requested or added this friend.";
 
-          // dispatch(
-          //   ADD_TOAST({
-          //     title: "Already Sent/Friended",
-          //     message: errorMsg,
-          //     intent: "error",
-          //   })
-          // );
+          if (toasts)
+            dispatch(
+              ADD_TOAST({
+                title: "Already Sent/Friended",
+                message: errorMsg,
+                intent: "error",
+                duration: 6500
+              })
+            );
           return {
-            error: { data: { ERROR: errorMsg }, status: "bad request" },
+            error: { data: { ERROR: errorMsg }, status: "bad request" }
+          };
+        } else if (
+          user.settings.blocked_list[data.friend.member_id]?.username === data.friend.username 
+        ) {
+          const errorMsg = "You cannot add a user you have blocked as a friend.";
+
+          if (toasts)
+            dispatch(
+              ADD_TOAST({
+                title: "Blocked User",
+                message: errorMsg,
+                intent: "error",
+                duration: 6500
+              })
+            );
+          return {
+            error: { data: { ERROR: errorMsg }, status: "bad request" }
           };
         }
 
@@ -592,10 +663,10 @@ const authApi = injectEndpoints({
               error: {
                 ...res.error,
                 data: {
-                  ...(allow500ErrorsTransform(res.error!, res.meta).data as any),
+                  ...(!toasts && allow500ErrorsTransform(res.error!, res.meta).data),
                   ERROR:
                     res.error.data?.ERROR.endsWith("in our system.") ||
-                    res.error.status === "unauthorized"
+                    res.error.status === "conflict"
                       ? res.error.data.ERROR
                       : "An unexpected error occurred."
                 }
@@ -603,7 +674,7 @@ const authApi = injectEndpoints({
             }
           : res;
       },
-      onQueryStarted: async ({ action_type }, { dispatch, queryFulfilled }) => {
+      onQueryStarted: async ({ toasts, action_type, friend }, { dispatch, queryFulfilled }) => {
         try {
           const { data } = await queryFulfilled;
 
@@ -615,28 +686,65 @@ const authApi = injectEndpoints({
             data.pending_friends
           ) {
             dispatch(UPDATE_USER_FRIENDS({ pending: data.pending_friends }));
-            // dispatch(
-            //   ADD_TOAST({
-            //     title: action_type === "request" ? "Friend Request Sent" : "Friend Added",
-            //     message: data.message,
-            //     intent: "success",
-            //   })
-            // );
+            if (toasts)
+              dispatch(
+                ADD_TOAST({
+                  message: `Friend request successfully sent to ${friend.username}.`,
+                  intent: "success",
+                  duration: 6500
+                })
+              );
           }
         } catch (error: any) {
-          if (isFetchBaseQueryError(error.error)) {
-            // const resError = error.error
-            // if (resError.status === "not found")
-            //   dispatch(unexpectedErrorToast(resError.data.ERROR));
-            // else if ((resError.status === "unauthorized" && resError.ERROR.includes("isn't verified.")))
-            //   dispatch(ADD_TOAST({ title: "Cannot Send", message: resError.data.ERROR, intent: "error" }));
-            // else if (resError.status === "bad request")
-            //   dispatch(ADD_TOAST({ title: "Already Sent/Friended", message: resError.data.ERROR, intent: "error" }));
+          const resError = error.error;
+          if (isFetchBaseQueryError(resError) && resError.data?.ERROR && toasts) {
+            if (resError.status !== "internal error") {
+              if (resError.status === "not found") {
+                dispatch(
+                  ADD_TOAST({
+                    title: "Not Found",
+                    message: resError.data.ERROR,
+                    intent: "error"
+                  })
+                );
+              } else if (resError.data.ERROR.startsWith("This user isn't verified")) {
+                dispatch(
+                  ADD_TOAST({
+                    title: "Cannot Send",
+                    message: resError.data.ERROR,
+                    intent: "error"
+                  })
+                );
+              }
+            }
           } else {
             logger.error("authApi manageFriendRequest error:\n", error.message);
           }
         }
-      },
+      }
+    }),
+
+    /**
+     * Deletes a friend from the user's friend list.
+     * @emitter
+     */
+    unfriend: builder.mutation<
+      SocketResponse,
+      { username: string, member_id: string }
+    >({
+      queryFn: async ({ username: _, ...data }) => emitAsPromise(socket)(AuthEvent.UNFRIEND, data),
+      onQueryStarted: ({ username }, { dispatch, queryFulfilled }) => {
+        queryFulfilled.then(({ data }) => {
+          if (data.status === "ok")
+            dispatch(
+              ADD_TOAST({
+                message: `Successfully removed ${username} from your friends list.`,
+                intent: "success",
+                duration: 6500
+              })
+            );
+        });
+      }
     }),
 
     /**
@@ -647,8 +755,7 @@ const authApi = injectEndpoints({
       SocketResponse,
       { status: ActivityStatuses }
     >({
-      queryFn: async (data) =>
-        emitAsPromise(socket)(AuthEvent.USER_ACTIVITY, data)
+      queryFn: async (data) => emitAsPromise(socket)(AuthEvent.USER_ACTIVITY, data)
     }),
 
     /**
@@ -666,12 +773,17 @@ const authApi = injectEndpoints({
         if (data.resourcesLoaded) {
           logger.debug("friendsUpdate listener initialized.");
 
-          socket.on(AuthEvent.FRIENDS_UPDATE, ({ friends }: { friends: UserCredentials["friends"] }) => {
+          socket.on(AuthEvent.FRIENDS_UPDATE, (friends: FriendsUpdateEventDto) => {
               try {
-                logger.debug("FRIEND UPDATE", { friends });
+                logger.debug("FRIEND UPDATE", friends);
 
-                if ("list" in friends && "pending" in friends) {
-                  dispatch(UPDATE_USER_FRIENDS(friends));
+                if ("remove" in friends) dispatch(REMOVE_USER_FRIEND(friends.remove));
+                
+                if (
+                  "update" in friends &&
+                  ("list" in friends.update || "pending" in friends.update)
+                ) {
+                  dispatch(UPDATE_USER_FRIENDS(friends.update));
                 } else {
                   logger.error("authApi friendsUpdate error:\n", "Received incorrect friends object.");
                 }
@@ -743,20 +855,10 @@ const authApi = injectEndpoints({
                 const { type, title, message, link } = data.notification;
 
                 dispatch(
-                  ADD_TOAST({title, message, intent: "info", options: { link } })
-                );
-                patchResult = dispatch(
-                  authApi.util.updateQueryData("getUser", undefined, (cache) => {
-                      // FIXME: I never see this log.
-                      console.log("CACHE", cache);
-                      const notifications = (cache.user as GetNotificationsResponseDto)?.notifications;
-                      if (notifications) notifications[type].push(data.notification);
-                    }
-                  )
+                  ADD_TOAST({ title, message, intent: "info", options: { link } })
                 );
                 dispatch(authApi.util.invalidateTags(["Notification"]));
               } catch (error: any) {
-                if (patchResult) patchResult.undo();
                 history.push("/error-500");
                 logger.error("authApi newNotification error:\n", error.message);
               }
@@ -843,6 +945,7 @@ export const {
   useLogoutMutation,
   useInitializeFriendsMutation,
   useManageFriendRequestMutation,
+  useUnfriendMutation,
   useUserActivityMutation
 } = authApi;
 

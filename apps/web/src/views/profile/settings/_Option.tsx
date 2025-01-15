@@ -1,4 +1,4 @@
-import type { UserCredentials, BlockedUserCredentials } from "@qc/typescript/typings/UserCredentials";
+import type { UserCredentials, MinUserWithBioCredentials } from "@qc/typescript/typings/UserCredentials";
 
 import { useState } from "react";
 
@@ -24,7 +24,7 @@ export interface SettingsOptionEntry {
 
 interface SettingsOptionProps extends SettingsOptionEntry {
   user: UserCredentials;
-  blkUser?: BlockedUserCredentials,
+  blkUser?: MinUserWithBioCredentials,
   selectedOptions: React.MutableRefObject<SelectedOptions>;
   blockListOpened?: boolean;
   setBlockListOpened?: React.Dispatch<React.SetStateAction<boolean>>;

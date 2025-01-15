@@ -27,14 +27,10 @@ export enum ModalQueryKey {
   // TODO: Certain slides.
   MENU_MODAL = "menu",
   NOTIFICATIONS_MODAL = "notif",
-  // TODO: has to have a specific username.
-  PROFILE_GAME_HISTORY_MODAL = "ghist",
   PROFILE_PAYMENT_HISTORY_MODAL = "phist",
   PROFILE_QUESTS_HISTORY_MODAL = "qhist",
-  
   REGISTER_MODAL = "register",
   RESET_PASSWORD_MODAL = "reset",
-  // TODO: has to have a specific username.
   VIEW_PROFILE_MODAL = "prof"
 }
 export type ModalQueryKeyValues = `${ModalQueryKey}`;

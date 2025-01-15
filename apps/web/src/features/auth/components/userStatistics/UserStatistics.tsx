@@ -6,6 +6,7 @@ import { cva } from "class-variance-authority";
 
 import { capitalize } from "@qc/utils";
 
+import { Icon } from "@components/common";
 import { Select } from "@components/common/controls";
 import { ScrollArea } from "@components/scrollArea";
 import { ModalTrigger } from "@components/modals";
@@ -57,6 +58,7 @@ function initializeRecord(stats: UserStatisticsProps["stats"]): UserRecord {
 };
 
 function calcWinRate(wins: number, losses: number) {
+  if (!wins && !losses) return 0;
   return Math.round((wins / (wins + losses)) * 1000) / 10;
 };
 
@@ -84,6 +86,17 @@ export default function UserStatistics({ stats, username, className, intent, sca
 
   return (
     <div className={statistics({ className, intent })} data-scale-text={scaleText} {...props}>
+      <hgroup>
+        <Icon
+          aria-hidden="true"
+          id={scaleText ? "bar-chart-38" : "bar-chart-28"}
+          scaleWithText
+        />
+        <h2 id="hStatistics" {...(!scaleText && { className: "hUnderline" })}>
+          Statistics
+        </h2>
+      </hgroup>
+      
       {intent === "table" && (
         <>
           <div className={s.winLoss}>
@@ -178,11 +191,15 @@ export default function UserStatistics({ stats, username, className, intent, sca
               Quests
             </h3>
             <ScrollArea orientation="horizontal">
-              <ul aria-label="Completed Quests" aria-describedby="questCount">
-                {record.current.conqueredQuests.map((quest) => (
-                  <li key={quest} title={quest}>{quest}</li>
-                ))}
-              </ul>
+              {record.current.conqueredQuests.length > 0 && (
+                <ul aria-label="Completed Quests" aria-describedby="questCount">
+                  {record.current.conqueredQuests.map((quest) => (
+                    <li key={quest} title={quest}>
+                      {quest}
+                    </li>
+                  ))}
+                </ul>
+              )}
             </ScrollArea>
           </>
         )}
@@ -195,7 +212,7 @@ export default function UserStatistics({ stats, username, className, intent, sca
           <ModalTrigger
             aria-label={`View All ${username}'s Completed Quests`}
             intent="primary"
-            query={{ param: "qhist", value: username }}
+            query={{ param: "qhist", value: encodeURIComponent(username) }}
             className={s.viewBtn}
           >
             View Quests

@@ -12,11 +12,6 @@ interface ProfileActivityProps {
 export default function Statistics({ user }: ProfileActivityProps) {
   return (
     <section aria-labelledby="hStatistics" className={s.statistics}>
-      <hgroup className={s.title}>
-        <Icon aria-hidden="true" id="bar-chart-38" scaleWithText />
-        <h2 id="hPersonal">Statistics</h2>
-      </hgroup>
-
       <UserStatistics
         intent="table"
         stats={user.statistics}

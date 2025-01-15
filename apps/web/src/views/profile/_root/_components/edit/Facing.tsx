@@ -355,8 +355,7 @@ export default function Facing({ user }: ProfileFacingProps) {
               </div>
               {(!Object.values(editing).length || editing.bio) && (
                 <ModalTrigger
-                  query={{ param: "prof", value: user.username }}
-                  // intent="primary"
+                  query={{ param: "prof", value: encodeURIComponent(user.username) }}
                   buttonProps={{
                     intent: "primary",
                     size: "md"

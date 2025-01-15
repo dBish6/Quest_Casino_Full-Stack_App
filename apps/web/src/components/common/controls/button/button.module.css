@@ -94,7 +94,7 @@
     &:active,
     &[data-key-press="true"],
     &[aria-pressed="true"] {
-      background: #201735;
+      background: #201735 !important;
       border-color: var(--c-purple-600);
     }
   }
@@ -140,7 +140,6 @@
 
   &.switch {
     position: relative;
-    /* min-width: 72px; */
     border: 2px solid var(--c-purple-800);
     border-radius: 6rem;
     background-color: var(--c-lvl-2);

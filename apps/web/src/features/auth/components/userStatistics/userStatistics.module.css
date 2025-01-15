@@ -1,6 +1,27 @@
 .stats {
   &.table,
   &.block {
+    & hgroup {
+      margin-bottom: 1rem;
+    }
+    &[data-scale-text="true"] {
+      & hgroup {
+        gap: 0.75rem;
+        & h2 {
+          font: var(--h2);
+          font-size: var(--h2-clamp);
+        }
+      }
+    }
+    &[data-scale-text="false"] {
+      & hgroup {
+        gap: 0.5rem;
+        & h2 {
+          font: var(--h3);
+        }
+      }
+    }
+
     &[data-scale-text="false"] .quests p {
       font: var(--para-medium);
     }
@@ -40,7 +61,7 @@
 
     & div[role="table"] {
       width: 100%;
-      padding: 1rem;
+      padding: 14px 1rem 13px;
       border: 2px solid var(--c-purple-border);
       border-radius: 6px;
       background-color: var(--c-lvl-2);
@@ -160,7 +181,7 @@
   }
 
   &.block {
-    /* TODO: For modal. */
+    /* TODO: For leaderboard modal. */
     & .quests {
       & > div {
         padding-inline: 1rem;

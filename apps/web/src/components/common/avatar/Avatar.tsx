@@ -21,7 +21,8 @@ const avatar = cva(s.avatar, {
       md: s.md,
       lrg: s.lrg,
       xl: s.xl,
-      xxl: s.xxl
+      xxl: s.xxl,
+      xxxl: s.xxxl
     }
   },
   defaultVariants: {
@@ -55,7 +56,7 @@ const Avatar = forwardRef<HTMLDivElement, AvatarProps>(
         {/* @ts-ignore */}
         <ProfileLink
           {...(ProfileLink !== "a" 
-            ? { query: { param: "prof", value: user!.username } }
+            ? { query: { param: "prof", value: encodeURIComponent(user!.username!) } }
             : {
                 role: "presentation",
                 tabIndex: -1,

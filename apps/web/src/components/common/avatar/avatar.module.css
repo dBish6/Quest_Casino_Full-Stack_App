@@ -79,6 +79,16 @@
         height: 22px;
       }
     }
+    &.xxxl {
+      width: 169px;
+      height: 169px;
+      & .activityIndie {
+        right: 16px;
+        bottom: 5px;
+        width: 26px;
+        height: 26px;
+      }
+    }
   }
 }
 

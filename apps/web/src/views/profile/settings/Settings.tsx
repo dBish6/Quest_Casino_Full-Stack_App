@@ -75,13 +75,15 @@ export default function Settings() {
     if (user) {
       const key = getStorageKey(user.member_id, "settings"),
         pendingSettings: SelectedOptions = JSON.parse(localStorage.getItem(key) || "{}");
-        console.log("pendingSettings", pendingSettings);
 
       const blockedDeleteArr = Object.entries(pendingSettings.blocked_list || {}).map(([member_id, op]) => ({ op, member_id }));
-      console.log("{ ...pendingSettings, blocked_list: blockedDeleteArr }", { ...pendingSettings, blocked_list: blockedDeleteArr })
       if (Object.values(pendingSettings).length || blockedDeleteArr.length) {
         patchUpdateProfile({
-          settings: { ...pendingSettings, blocked_list: blockedDeleteArr } as UpdateUserSettingsDto
+          keepalive: true,
+          settings: {
+            ...pendingSettings,
+            blocked_list: blockedDeleteArr
+          } as UpdateUserSettingsDto
         }).finally(() => localStorage.removeItem(key));
       }
     }

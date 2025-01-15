@@ -76,7 +76,8 @@ export const apiErrorHandler: Middleware =
 
           case 404:
           case "not found":
-            if (/\bunexpectedly\b|\buser(?:'s)?\b/.test(payload.data?.ERROR?.toLowerCase() || "")) history.push("/error-404-user");
+            if (/(?=.*\bunexpectedly\b)(?=.*\buser(?:'s)?\b)/i.test(payload.data?.ERROR || ""))
+              history.push("/error-404-user");
             break;
 
           case 429:

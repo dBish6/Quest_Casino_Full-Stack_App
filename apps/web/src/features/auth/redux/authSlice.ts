@@ -25,7 +25,7 @@ const initialState: AuthState = {
   user: {
     credentials: null,
     token: { csrf: null }
-  },
+  }
 };
 
 const authSlice = createSlice({
@@ -81,10 +81,22 @@ const authSlice = createSlice({
 
       state.user.credentials!.friends.list[key] = deepMerge([friendState, action.payload.update]);
     },
+    /**
+     * Removes a friend from the pending or friends list.
+     */
+    REMOVE_USER_FRIEND: (
+      state,
+      action: PayloadAction<{ pending?: string; list?: string }>
+    ) => {
+      for (const [key, memberId] of Object.entries(action.payload)) {
+        if (key in state.user.credentials!.friends)
+          delete (state.user.credentials!.friends as any)[key][memberId];
+      }
+    },
     CLEAR_USER: (state) => {
       state.user = initialState.user;
-    },
-  },
+    }
+  }
 });
 
 export const { name: authName, reducer: authReducer } = authSlice,
@@ -95,6 +107,7 @@ export const { name: authName, reducer: authReducer } = authSlice,
     SET_USER_SETTINGS,
     UPDATE_USER_FRIENDS,
     UPDATE_USER_FRIEND_IN_LIST,
+    REMOVE_USER_FRIEND,
     CLEAR_USER
   } = authSlice.actions;
 

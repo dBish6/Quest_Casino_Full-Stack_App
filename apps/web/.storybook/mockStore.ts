@@ -28,8 +28,8 @@ const authState: AuthState = {
         block_cookies: false
       },
       friends: {
-        pending: [],
-        list: []
+        pending: [] as any,
+        list: [] as any,
       },
       statistics: {
         losses: {
@@ -50,7 +50,7 @@ const authState: AuthState = {
           bonus: {}
         }
       },
-      ...({ status: "online" } as any) // Testing purposes; so we can see a "friend" status indicator.
+      ...({ activity: { status: "online" } } as any) // Testing purposes; so we can see a "friend" status indicator.
     },
     token: { csrf: null }
   }
