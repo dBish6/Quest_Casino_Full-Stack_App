@@ -1,6 +1,6 @@
 import { UserCredentials } from "../typings/UserCredentials";
 
-export interface UpdateUserSettingsDto extends Omit<UserCredentials["settings"], "blocked_list"> {
+export interface UpdateUserSettingsDto extends Omit<Partial<UserCredentials["settings"]>, "blocked_list"> {
   blocked_list: { op: "delete" | "add"; member_id: string }[];
 };
 export interface UpdateProfileBodyDto {
@@ -19,6 +19,8 @@ export interface UpdateProfileBodyDto {
 export interface UpdateProfileResponseDto {
   user: Partial<UserCredentials & { email: string }>;
   refreshed?: string;
+  /** When they block a user that in their friends list. */
+  unfriended?: boolean;
 }
 
 export type FavouriteOperations = "delete" | "add";

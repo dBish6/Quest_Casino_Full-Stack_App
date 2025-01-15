@@ -9,6 +9,9 @@ export interface MinUserCredentials {
   legal_name: { first: string; last: string };
   username: string;
 }
+export interface MinUserWithBioCredentials extends MinUserCredentials {
+  bio?: string;
+}
 
 /**
  * All credentials on the client of a friend of a user.
@@ -21,14 +24,12 @@ export interface FriendCredentials extends MinUserCredentials {
   activity: { status: ActivityStatuses; inactivity_timestamp?: string };
 }
 
-export interface BlockedUserCredentials extends MinUserCredentials {
-  bio?: string;
-}
-
 /**
  * The user credentials on the client of the current user.
  */
-export interface UserCredentials extends Omit<FriendCredentials, "activity" | "last_chat_message"> {
+export interface UserCredentials
+  extends Omit<FriendCredentials, "activity" | "last_chat_message">,
+    StatisticsCredential {
   type: "standard" | "google";
   email_verified: boolean;
   region?: string;
@@ -39,7 +40,7 @@ export interface UserCredentials extends Omit<FriendCredentials, "activity" | "l
   settings: {
     /** Enable or disable the sound effect on new notifications and indicator. */
     notifications: boolean;
-    blocked_list: { [member_id: string]: BlockedUserCredentials };
+    blocked_list: { [member_id: string]: MinUserWithBioCredentials };
     /** Hides game activity and statistics if false. */
     visibility: boolean;
     block_cookies: boolean;
@@ -48,6 +49,11 @@ export interface UserCredentials extends Omit<FriendCredentials, "activity" | "l
     pending: { [member_id: string]: MinUserCredentials };
     list: { [member_id: string]: FriendCredentials };
   };
+}
+/**
+ * The statistics field on the client.
+ */
+interface StatisticsCredential {
   statistics: {
     losses: {
       total: number;
@@ -63,30 +69,26 @@ export interface UserCredentials extends Omit<FriendCredentials, "activity" | "l
       streak: number;
     };
     progress: {
-      quest: { [title: string]: QuestCredential },
-      bonus: { [title: string]: BonusCredential }
+      quest: {
+        [title: string]: {
+          current: number;
+          quest: { cap: number };
+        };
+      };
+      bonus: {
+        [title: string]: {
+          current: number;
+          bonus: { cap: number };
+        };
+      };
     };
   };
-}
-/**
- * The quest on the client in the user's statistics field.
- */
-interface QuestCredential {
-  current: number;
-  quest: { cap: number };
-}
-/**
- * The bonus on the client in the user's statistics field.
- */
-interface BonusCredential {
-  current: number;
-  bonus: { cap: number };
 }
 
 /**
  * The user's credentials shown on their private profile page.
  */
-export interface UserProfileCredentials extends Omit<UserCredentials, "friends"> {
+export interface UserProfileCredentials extends UserCredentials {
   email: string;
   activity: {
     game_history: UserGameHistoryEntry[];
@@ -96,12 +98,14 @@ export interface UserProfileCredentials extends Omit<UserCredentials, "friends">
 // /**
 //  * The credentials shown on a user's public profile.
 //  */
-// export interface ViewUserProfileCredentials extends Omit<UserCredentials, "friends"> {
-//   activity: {
-//     history: UserGameHistoryEntry[];
-//     recently_played: string;
-//   };
-// }
+export interface ViewUserProfileCredentials
+  extends MinUserWithBioCredentials,
+    StatisticsCredential {
+  activity: {
+    game_history: UserGameHistoryEntry[];
+    status: ActivityStatuses;
+  };
+}
 
 export default interface UserGameHistoryEntry {
   game_name: string;
