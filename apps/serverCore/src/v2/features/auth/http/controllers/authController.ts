@@ -237,7 +237,6 @@ export async function getUser(req: Request, res: Response, next: NextFunction) {
  * @response `success` with the current user formatted for the client, `not found`, `forbidden`, `HttpError` or `ApiError`.
  */
 export async function getUserProfile(req: Request, res: Response, next: NextFunction) {
-  // TODO: For the view profile page.
   const username = req.query.username as string;
 
   try {
@@ -271,7 +270,7 @@ export async function updateProfile(
     if (!Object.values(req.body).length) return res.status(400).json({ ERROR: "There was no data provided." });
     const user = req.userDecodedClaims!;
 
-    const { updatedUser, updatedFields } = await authService.updateProfile(user, body);
+    const { updatedUser, updatedFields, unfriended } = await authService.updateProfile(user, body);
     
     // Updates the access and refresh tokens and cookies if the email was updated.
     if (updatedUser) {
@@ -287,7 +286,8 @@ export async function updateProfile(
     return res.status(200).json({
       message: "Profile successfully updated.",
       user: updatedFields,
-      ...(updatedUser && { refreshed: VERIFICATION_EMAIL_SUCCESS_MESSAGE })
+      ...(updatedUser && { refreshed: VERIFICATION_EMAIL_SUCCESS_MESSAGE }),
+      ...(unfriended && { unfriended })
     });
   } catch (error: any) {
     next(handleHttpError(error, "updateProfile controller error."));
@@ -436,7 +436,6 @@ export async function refresh(
   try {
     const user = await authService.getUser("username", req.body.username, {
       lean: true,
-      forClient: true,
       throwDefault404: true
     });
 

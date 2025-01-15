@@ -5,7 +5,7 @@
  * Handles functionalities related to user authentication and management that can be for HTTP or Sockets.
  */
 
-import type { ObjectId, PopulateOptions, Query, UpdateQuery, QueryOptions, MongooseUpdateQueryOptions } from "mongoose";
+import type { ObjectId, PopulateOptions, Query, UpdateQuery, QueryOptions, MongooseUpdateQueryOptions, UpdateWriteOpResult } from "mongoose";
 import type { GetUserBy, UserDoc, UserDocFriends, UserDocStatistics, UserDocActivity, UserDocNotifications } from "@authFeat/typings/User";
 
 import CLIENT_COMMON_EXCLUDE from "@constants/CLIENT_COMMON_EXCLUDE";
@@ -19,6 +19,9 @@ export interface Identifier<TBy> {
   by: TBy;
   value: ObjectId | string;
 }
+
+type FriendsProjectionOpt = "pending" | "list";
+type FriendsForClientOpt = boolean | FriendsProjectionOpt ;
 
 /**
  * Type `UserCredentials` (minus the friends because they get initialized elsewhere).
@@ -37,35 +40,39 @@ export const FRIEND_FIELDS = `${MINIMUM_USER_FIELDS} country bio`
 
 export const EXCLUDE_SUB_FIELDS = "-friends -statistics -activity -notifications"
 
-export const USER_FRIENDS_POPULATE: PopulateOptions[] = [
-  { 
-    path: "pending.$*",
-    select: MINIMUM_USER_FIELDS
-  },
-  { 
-    path: "list.$*",
-    select: FRIEND_FIELDS
-  }
-];
+export const USER_FRIENDS_POPULATE = (
+  projection?: string,
+  forClient?: FriendsForClientOpt
+) =>
+  ["pending", "list"].reduce((acc, type) => {
+    const fields = type === "pending" ? MINIMUM_USER_FIELDS : FRIEND_FIELDS;
 
-const USER_SUB_DOCS_POPULATE = [
-    {
-      path: "friends",
-      populate: USER_FRIENDS_POPULATE
-    },
-    { path: "statistics" },
-    { path: "activity" },
-    {
-      path: "notifications",
-      populate: {
-        path: "friend_requests",
-        select: MINIMUM_USER_FIELDS
-      }
+    if (projection === type || !projection)
+      acc.push({
+        path: `${type}.$*`,
+        select:
+          forClient === type || forClient === true
+            ? fields
+            : fields.replace("-_id ", "")
+      });
+    return acc;
+  }, [] as PopulateOptions[]);
+
+const USER_SUB_DOCS_POPULATE_MAP = {
+  friends: {
+    path: "friends",
+    populate: USER_FRIENDS_POPULATE()
+  },
+  statistics: { path: "statistics" },
+  activity: { path: "activity" },
+  notifications: {
+    path: "notifications",
+    populate: {
+      path: "friend_requests",
+      select: MINIMUM_USER_FIELDS
     }
-  ],
-  USER_SUB_DOCS_POPULATE_MAP = Object.fromEntries(
-    USER_SUB_DOCS_POPULATE.map((obj) => [obj.path, obj])
-  );
+  }
+};
 /**
  * Populates specific fields on the `UserDoc` for the client or internal use.
  */
@@ -111,13 +118,19 @@ export function populateUserDoc<TUserDoc = UserDoc>(query: Query<any, UserDoc>) 
 /**
  * Populates specific fields on the `UserDocFriends`.
  */
-function populateUserFriendsDoc(query: Query<UserDocFriends | null, UserDocFriends>) {
-  return query.select(CLIENT_COMMON_EXCLUDE).populate(USER_FRIENDS_POPULATE);
+function populateUserFriendsDoc(
+  query: Query<UserDocFriends | null, UserDocFriends>,
+  forClient?: FriendsForClientOpt,
+  projection?: FriendsProjectionOpt
+) {
+  return query
+    .select(CLIENT_COMMON_EXCLUDE)
+    .populate(USER_FRIENDS_POPULATE(projection, forClient));
 }
 
 /**
  * Gets all users or a random set of users from the database.
- * @param randomize Serves as a flag and limit of users taken.
+ * @param randomize (Optional) Serves as a flag and limit of users taken.
  */
 export async function getUsers(forClient?: boolean, randomize?: number) {
   try {
@@ -136,13 +149,12 @@ export async function getUsers(forClient?: boolean, randomize?: number) {
   }
 }
 
+// NOTE: If I try to do Omit<QueryOptions<UserDoc>, "projection"> like I wanted, the options type then breaks and it has no of the mongoose options, I'm living with it.
 /**
  * Gets a user from the database optionally for the client or internal use.
-
- * Projection:
- * - You can only get sub-document fields via `projection`.
- * - The `projection` option must only be a string, space-separated field names.
- * 
+ * @param options.new (Optional) When `true` `findOneAndUpdate` is used else `updateOne` is used.
+ * @param options.projection (Optional) Only for `findOneAndUpdate`; must only be a `string`, space-separated field names. 
+ * You can also only get sub-document fields via `projection`.
  * @throws (Optional) `ApiError 404` if the document is not found.
  */
 export async function getUser<
@@ -177,27 +189,38 @@ export async function getUser<
 
 /**
  * Gets a friend document for a specific user from the database.
+ * @param options.projection (Optional) A string of either `pending | list`.
+ * @param options.forClient (Optional)
+ *  Defaults to `true`. When set to `false`, the `_id` field is included.
+ *  You can also provide `pending` or `list` to limit the selection to only the specified field, excluding `_id`.
+ * @throws `ApiError 404` if the document is not found.
  */
-export async function getUserFriends(userId: ObjectId | string, options?: QueryOptions<UserDocFriends>) {
+export async function getUserFriends(
+  userId: ObjectId | string,
+  options: QueryOptions<UserDocFriends> & { projection?: FriendsProjectionOpt; forClient?: FriendsForClientOpt } = {}
+) {
+  const { forClient = true, ...restOpts } = options;
+
   try {
-    const userFriends = await populateUserFriendsDoc(UserFriends.findById(userId, {}, options));
+    const userFriends = await populateUserFriendsDoc(
+      UserFriends.findById(userId, {}, restOpts),
+      forClient,
+      options.projection
+    );
     if (!userFriends) 
       throw new ApiError("Unexpectedly couldn't find the user's friends after validation.", 404, "not found");
 
     return userFriends;
   } catch (error: any) {
-    throw handleApiError(error, "getUser service error.");
+    throw handleApiError(error, "getUserFriends service error.");
   }
 }
 
 /**
  * Updates any field in the user's `UserDoc` (base document).
- * 
- * When the `new` option is provided `findOneAndUpdate` is used with the follow constraints:
- * - You can only get sub-document fields via `projection`.
- * - The `projection` option must only be a string, space-separated field names.
- * 
- * Else `updateOne` is used.
+ * @param options.new (Optional) When `true` `findOneAndUpdate` is used else `updateOne` is used.
+ * @param options.projection (Optional) Only for `findOneAndUpdate`; must only be a `string`, space-separated field names. 
+ * You can also only get sub-document fields via `projection`.
  * @throws `ApiError 404` if the document is not found for `findOneAndUpdate`.
  */
 export async function updateUserCredentials<
@@ -206,7 +229,7 @@ export async function updateUserCredentials<
   identifier: Identifier<GetUserBy>,
   update: UpdateQuery<UserDoc>,
   options: TOptions & (TOptions["new"] extends true ? QueryOptions<UserDoc> : MongooseUpdateQueryOptions) = {} as any
-): Promise<TOptions["new"] extends true ? UserDoc : undefined> {
+): Promise<TOptions["new"] extends true ? UserDoc : UpdateWriteOpResult> {
   const { by, value } = identifier,
     { forClient, populate, ...restOpts } = options;
   
@@ -224,8 +247,7 @@ export async function updateUserCredentials<
 
       return user as any;
     } else {
-      await User.updateOne({ [by]: value }, update, restOpts);
-      return undefined as any;
+      return await User.updateOne({ [by]: value }, update, restOpts) as any;
     }
   } catch (error: any) {
     throw handleApiError(error, "updateUserCredentials service error.");
@@ -234,30 +256,39 @@ export async function updateUserCredentials<
 
 /**
  * Updates any field in the user's friends document.
- * 
- * When the `new` option is provided `findOneAndUpdate` is used else `updateOne` is used.
+ * @param options.projection (Optional) A string of either `pending | list`.
+ * @param options.forClient (Optional)
+ *  Defaults to `true`. When set to `false`, the `_id` field is included.
+ *  You can also provide `pending` or `list` to limit the selection to only the specified field, excluding `_id`.
+ * @param options.new (Optional) When `true` `findOneAndUpdate` is used else `updateOne` is used.
  * @throws `ApiError 404` if the document is not found.
  */
 export async function updateUserFriends<
-  TOptions extends { new?: boolean; forClient?: boolean }
+  TOptions extends {
+    projection?: FriendsProjectionOpt;
+    forClient?: FriendsForClientOpt;
+    new?: boolean;
+  }
 >(
   identifier: Identifier<"_id">,
   update: UpdateQuery<UserDocFriends>,
-  options?: TOptions & (TOptions["new"] extends true ? QueryOptions<UserDocFriends> : MongooseUpdateQueryOptions)
-): Promise<TOptions["new"] extends true ? UserDocFriends : undefined> {
-  const { by, value } = identifier;
+  options: TOptions & (TOptions["new"] extends true ? QueryOptions<UserDocFriends> : MongooseUpdateQueryOptions) = {} as any
+): Promise<TOptions["new"] extends true ? UserDocFriends : UpdateWriteOpResult> {
+  const { by, value } = identifier,
+    { forClient = true, ...restOpts } = options;
 
   try {
     if (options?.new) {
-      const userFriends = await populateUserFriendsDoc(
-        UserFriends.findOneAndUpdate({ [by]: value }, update, options)
+      let userFriends = await populateUserFriendsDoc(
+        UserFriends.findOneAndUpdate({ [by]: value }, update, restOpts),
+        forClient,
+        restOpts.projection
       );
       if (!userFriends) throw new ApiError("Unexpectedly user friends was not found.", 404, "not found");
 
       return userFriends as any;
     } else {
-      await UserFriends.updateOne({ [by]: value }, update, options as MongooseUpdateQueryOptions);
-      return undefined as any;
+      return await UserFriends.updateOne({ [by]: value }, update, restOpts as MongooseUpdateQueryOptions) as any;
     }
   } catch (error: any) {
     throw handleApiError(error, "updateUserFriends service error.");
@@ -266,8 +297,7 @@ export async function updateUserFriends<
 
 /**
  * Updates any field in the user's statistics document.
- * 
- * When the `new` option is provided `findOneAndUpdate` is used else `updateOne` is used.
+ * @param options.new (Optional) When `true` `findOneAndUpdate` is used else `updateOne` is used.
  * @throws `ApiError 404` if the document is not found.
  */
 export async function updateUserStatistics<
@@ -276,7 +306,7 @@ export async function updateUserStatistics<
   identifier: Identifier<"_id">,
   update: UpdateQuery<UserDocStatistics>,
   options?: TOptions & (TOptions["new"] extends true ? QueryOptions<UserDocStatistics> : MongooseUpdateQueryOptions)
-): Promise<TOptions["new"] extends true ? UserDocStatistics : undefined> {
+): Promise<TOptions["new"] extends true ? UserDocStatistics : UpdateWriteOpResult> {
   const { by, value } = identifier;
 
   try {
@@ -286,8 +316,7 @@ export async function updateUserStatistics<
 
       return userStatistics as any;
     } else {
-      await UserStatistics.updateOne({ [by]: value }, update, options as MongooseUpdateQueryOptions);
-      return undefined as any;
+      return await UserStatistics.updateOne({ [by]: value }, update, options as MongooseUpdateQueryOptions) as any;
     }
   } catch (error: any) {
     throw handleApiError(error, "updateUserStatistics service error.");
@@ -296,8 +325,7 @@ export async function updateUserStatistics<
 
 /**
  * Updates any field in the user's activity document.
- * 
- * When the `new` option is provided `findOneAndUpdate` is used else `updateOne` is used.
+ * @param options.new (Optional) When `true` `findOneAndUpdate` is used else `updateOne` is used.
  * @throws `ApiError 404` if the document is not found.
  */
 export async function updateUserActivity<
@@ -306,7 +334,7 @@ export async function updateUserActivity<
   identifier: Identifier<"_id">,
   update?: UpdateQuery<UserDocActivity>,
   options?: TOptions & (TOptions["new"] extends true ? QueryOptions<UserDocActivity> : MongooseUpdateQueryOptions)
-): Promise<TOptions["new"] extends true ? UserDocActivity : undefined> {
+): Promise<TOptions["new"] extends true ? UserDocActivity : UpdateWriteOpResult> {
   const { by, value } = identifier;
   
   try {
@@ -316,8 +344,7 @@ export async function updateUserActivity<
 
       return userActivity as any;
     } else {
-      await UserActivity.updateOne({ [by]: value }, update, options as MongooseUpdateQueryOptions);
-      return undefined as any;
+      return await UserActivity.updateOne({ [by]: value }, update, options as MongooseUpdateQueryOptions) as any;
     }
   } catch (error: any) {
     throw handleApiError(error, "updateUserActivity service error.");
@@ -326,8 +353,7 @@ export async function updateUserActivity<
 
 /**
  * Updates any field in the user's notifications document.
- * 
- * When the `new` option is provided `findOneAndUpdate` is used else `updateOne` is used.
+ * @param options.new (Optional) When `true` `findOneAndUpdate` is used else `updateOne` is used.
  * @throws `ApiError 404` if the document is not found.
  */
 export async function updateUserNotifications<
@@ -336,7 +362,7 @@ export async function updateUserNotifications<
   identifier: Identifier<"_id">,
   update: UpdateQuery<UserDocNotifications>,
   options?: TOptions & (TOptions["new"] extends true ? QueryOptions<UserDocNotifications> : MongooseUpdateQueryOptions)
-): Promise<TOptions["new"] extends true ? UserDocNotifications : undefined> {
+): Promise<TOptions["new"] extends true ? UserDocNotifications : UpdateWriteOpResult> {
   const { by, value } = identifier;
 
   try {
@@ -348,8 +374,7 @@ export async function updateUserNotifications<
 
       return userNotifications as any;
     } else {
-      await UserNotifications.updateOne({ [by]: value }, update, options as MongooseUpdateQueryOptions);
-      return undefined as any;
+      return await UserNotifications.updateOne({ [by]: value }, update, options as MongooseUpdateQueryOptions) as any;
     }
   } catch (error: any) {
     throw handleApiError(error, "updateUserNotifications service error.");

@@ -5,7 +5,7 @@
  * Handles HTTP-related functionalities related to user authentication and management.
  */
 
-import type { ObjectId } from "mongoose";
+import type { ObjectId, ClientSession, UpdateWriteOpResult } from "mongoose";
 import type { InitializeUser, UserNotification, UserNotificationField, UserClaims, UserDoc, User as UserFields } from "@authFeat/typings/User";
 
 import type { Notification } from "@qc/typescript/dtos/NotificationsDto";
@@ -17,22 +17,25 @@ import { hash, compare } from "bcrypt";
 
 import { AVATAR_FILE_EXTENSIONS } from "@qc/constants";
 import GENERAL_BAD_REQUEST_MESSAGE from "@constants/GENERAL_BAD_REQUEST_MESSAGE";
-import USER_NOT_FOUND_MESSAGE from "@authFeat/constants/USER_NOT_FOUND_MESSAGE";
+import USER_NOT_FOUND_MESSAGE, { USER_NOT_FOUND_IN_SYSTEM_MESSAGE } from "@authFeat/constants/USER_NOT_FOUND_MESSAGE";
 
 import { logger, delay } from "@qc/utils";
 import { handleHttpError, HttpError } from "@utils/handleError";
 import trackAttempts from "@authFeatHttp/utils/trackAttempts";
 import isUuidV4 from "@utils/isUuidV4";
+import { getSocketAuthService } from "@authFeat/socket/namespaces/authNamespace";
+import getSocketId from "@authFeat/socket/utils/getSocketId";
 
 import { User, UserFriends, UserStatistics, UserActivity, UserNotifications } from "@authFeat/models";
 import { PrivateChatMessage } from "@chatFeat/models";
 import { redisClient } from "@cache";
 import { s3 } from "@aws";
 
-import { MINIMUM_USER_FIELDS, updateUserCredentials, getUser } from "@authFeat/services/authService";
+import { MINIMUM_USER_FIELDS, updateUserCredentials, updateUserFriends, getUser, getUserFriends } from "@authFeat/services/authService";
 import { formatEmailTemplate, sendEmail } from "@authFeatHttp/services/emailService";
 import { GenerateUserJWT, revokeVerificationToken, clearAllSessions, JWTVerification  } from "@authFeat/services/jwtService";
 import { deleteCsrfToken, deleteAllCsrfTokens } from "@authFeatHttp/services/csrfService";
+import { KEY } from "@authFeat/socket/services/SocketAuthService";
 
 const { AWS_REGION, AWS_S3_BUCKET } = process.env;
 const ALLOWED_PROFILE_UPDATE_FIELDS: ReadonlySet<string> = new Set(["avatar_url", "first_name", "last_name", "username", "bio", "email", "country", "region", "phone_number", "settings"]),
@@ -235,44 +238,175 @@ export async function deleteUserNotifications(
  */
 export async function getUserProfile(idOrUsername: ObjectId | string) {
   try {
-    if (isValidObjectId(idOrUsername)) {
-      const profileData = await User.aggregate([
-        { $match: { _id: new Types.ObjectId(idOrUsername as string) } },
-        {
-          $lookup: {
-            from: "user_activity",
-            localField: "activity",
-            foreignField: "_id",
-            as: "activityData"
-          }
-        },
-        { $unwind: "$activityData" },
-        { $unwind: "$activityData.game_history" },
-        { $sort: { "activityData.game_history.timestamp": -1 } },
-        {
-          $group: {
-            _id: 0,
-            email: { $first: "$email" },
-            game_history: { $push: "$activityData.game_history" }
-          }
-        },
-        {
-          $project: {
-            _id: 0,
-            email: 1,
-            activity: { game_history: "$game_history" }
+    const privateProfile = isValidObjectId(idOrUsername),
+      publicProfile = !privateProfile && typeof idOrUsername === "string";
+
+    if (!privateProfile && !publicProfile) throw new HttpError("Access Denied", 403);
+
+    const profileData = await User.aggregate([
+      {
+        $match: privateProfile
+          ? { _id: new Types.ObjectId(idOrUsername as string) }
+          : { username: idOrUsername }
+      },
+      {
+        $lookup: {
+          from: "user_activity",
+          localField: "activity",
+          foreignField: "_id",
+          as: "activityData"
+        }
+      },
+      { $unwind: "$activityData" },
+      {
+        $set: {
+          "activityData.game_history": {
+            $sortArray: {
+              input: "$activityData.game_history",
+              sortBy: { timestamp: -1 }
+            }
           }
         }
-      ]);
-      if (!profileData?.length) throw new HttpError(USER_NOT_FOUND_MESSAGE, 404);
+      },
 
-      return profileData[0];
-    } else if (typeof idOrUsername === "string") {
-      // TODO:
-      const user = await getUser("username", idOrUsername, { lean: true });
+      ...(publicProfile
+        ? [
+            {
+              $lookup: {
+                from: "user_statistics",
+                localField: "statistics",
+                foreignField: "_id",
+                as: "statisticsData"
+              }
+            },
+            { $unwind: "$statisticsData" },
+
+            {
+              $set: {
+                progressQuestArray: {
+                  $objectToArray: "$statisticsData.progress.quest"
+                }
+              }
+            },
+            {
+              $lookup: {
+                from: "game_quest",
+                let: { quests: "$progressQuestArray" },
+                pipeline: [
+                  {
+                    $match: {
+                      $expr: {
+                        $in: ["$_id", { $map: { input: "$$quests", as: "quest", in: "$$quest.v.quest" } }]
+                      }
+                    }
+                  },
+                  { $project: { _id: 1, cap: 1 } }
+                ],
+                as: "questDetails"
+              }
+            },
+            {
+              $set: {
+                progress: {
+                  quest: {
+                    $arrayToObject: {
+                      $map: {
+                        input: "$progressQuestArray",
+                        as: "questEntry",
+                        in: {
+                          k: "$$questEntry.k",
+                          v: {
+                            $mergeObjects: [
+                              "$$questEntry.v",
+                              {
+                                quest: {
+                                  $let: {
+                                    vars: {
+                                      matchedQuest: {
+                                        $arrayElemAt: [
+                                          {
+                                            $filter: {
+                                              input: "$questDetails",
+                                              as: "quest",
+                                              cond: { $eq: ["$$quest._id", "$$questEntry.v.quest"] }
+                                            }
+                                          },
+                                          0
+                                        ]
+                                      }
+                                    },
+                                    in: {
+                                      cap: "$$matchedQuest.cap"
+                                    }
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              $project: {
+                "statisticsData._id": 0,
+                "statisticsData.created_at": 0,
+                "statisticsData.updated_at": 0
+              }
+            },
+            {
+              $set: {
+                statisticsData: {
+                  progress: "$progress"
+                }
+              }
+            },
+          ]
+        : []),
+
+      {
+        $group: {
+          _id: "$_id",
+          email: { $first: "$email" },
+          game_history: { $first: "$activityData.game_history" },
+          ...(publicProfile && {
+            member_id: { $first: "$member_id" },
+            username: { $first: "$username" },
+            legal_name: { $first: "$legal_name" },
+            avatar_url: { $first: "$avatar_url" },
+            bio: { $first: "$bio" },
+            statistics: { $first: "$statisticsData" }
+          })
+        }
+      },
+      {
+        $project: {
+          _id: 1,
+          email: 1,
+          activity: { game_history: "$game_history" },
+          ...(publicProfile && {
+            member_id: 1,
+            username: 1,
+            legal_name: 1,
+            avatar_url: 1,
+            bio: 1,
+            statistics: 1
+          })
+        }
+      }
+    ]);
+    if (!profileData?.length) throw new HttpError(USER_NOT_FOUND_IN_SYSTEM_MESSAGE, 404);
+
+    let user = profileData[0];
+    if (publicProfile) {
+      const activityStatus = (await redisClient.get(KEY(profileData[0]._id).status)) || "offline";
+      user.activity.status = activityStatus;
     }
 
-    throw new HttpError("Access Denied", 403);
+    return user;
   } catch (error: any) {
     throw handleHttpError(error, "getUserProfile service error.");
   }
@@ -287,8 +421,10 @@ export async function getUserProfile(idOrUsername: ObjectId | string) {
  * @throws `HttpError 429` too many update attempts.
  */
 export async function updateProfile(user: UserClaims, body: UpdateProfileBodyDto) {
+  let session: ClientSession | undefined;
+
   try {
-    return await trackAttempts<{ updatedUser: UserDoc; updatedFields: UpdateProfileBodyDto }>(
+    return await trackAttempts<{ updatedUser: UserDoc; updatedFields: UpdateProfileBodyDto; unfriended?: true }>(
       user.sub,
       "update_profile_attempts",
       "Profile update limit reached. You can only attempt to update your profile up to 6 times within a 24-hour period. Please try again later.",
@@ -318,6 +454,8 @@ export async function updateProfile(user: UserClaims, body: UpdateProfileBodyDto
           $set: { [key in keyof UserFields]?: any };
           $unset: { [key in keyof UserFields]?: any };
         } = { $set: {}, $unset: {} };
+        let updatedFriends: UpdateWriteOpResult | undefined;
+
         // Single updates for the avatar.
         if (body.avatar_url) {
           if (bodyKeys.length > 1) throw new HttpError("Access Denied", 403);
@@ -352,25 +490,54 @@ export async function updateProfile(user: UserClaims, body: UpdateProfileBodyDto
           if (bodyKeys.length > 1) throw new HttpError("Access Denied", 403);
 
           if (body.settings.blocked_list) {
-            for (const user of body.settings.blocked_list) {
-              if (!["delete", "add"].includes(user.op) || !isUuidV4(user.member_id))
+            for (const blkUser of body.settings.blocked_list) {
+              if (!["delete", "add"].includes(blkUser.op) || !isUuidV4(blkUser.member_id))
                 throw new HttpError(GENERAL_BAD_REQUEST_MESSAGE, 400);
 
-              if (user.op === "add") {
+              if (blkUser.op === "add") {
                 if (body.settings!.blocked_list.length > 1) throw new HttpError("Access Denied", 403); // Should never be multiple users being blocked (you can only block when viewing a single user profile).
 
-                const userDoc = await getUser("member_id", user.member_id, {
+                const blkUserDoc = await getUser("member_id", blkUser.member_id, {
                   projection: "_id",
                   lean: true
                 });
-                if (!userDoc)
+                if (!blkUserDoc)
                   throw new HttpError(
                     "Unexpectedly, this user was not found to block, this profile doesn't exist.", 404
                   );
 
-                query.$set = { [`settings.blocked_list.${user.member_id}`]: userDoc._id };
+                const userFriendsDoc = await getUserFriends(user.sub, { lean: true });
+                // Removes the newly blocked user from the current user's friends list and blocked user's if in friends list.
+                if (userFriendsDoc.list.has(blkUser.member_id)) {
+                  session = await startSession();
+                  session.startTransaction();
+
+                  updatedFriends = await updateUserFriends(
+                    { by: "_id", value: user.sub },
+                    { $unset: { [`list.${blkUser.member_id}`]: "" } },
+                    { session }
+                  );
+                  await updateUserFriends(
+                    { by: "_id", value: blkUserDoc._id },
+                    { $unset: { [`list.${user.member_id}`]: "" } },
+                    { session }
+                  );
+                  const socketAuthService = getSocketAuthService();
+
+                  const friendSocketId = await getSocketId(blkUser.member_id);
+                  if (friendSocketId) socketAuthService.emitFriendUpdate({ remove: { list: user.member_id } }, friendSocketId);
+                  socketAuthService.emitFriendUpdate({ remove: { list: blkUser.member_id } });
+
+                  await socketAuthService.emitNotification(
+                    { _id: blkUserDoc._id, member_id: blkUser.member_id },
+                    { type: "general", title: "Unfriended", message: `${user.username} just unfriended you.` },
+                    { silent: true }
+                  )
+                }
+
+                query.$set = { [`settings.blocked_list.${blkUser.member_id}`]: blkUserDoc._id };
               } else {
-                (query.$unset as any)[`settings.blocked_list.${user.member_id}`] = "";
+                (query.$unset as any)[`settings.blocked_list.${blkUser.member_id}`] = "";
               }
             }
           }
@@ -398,7 +565,7 @@ export async function updateProfile(user: UserClaims, body: UpdateProfileBodyDto
               ...(!query.$set.region && { $unset: { region: "" } })
             })
           },
-          { new: true }
+          { session, new: true }
         )
         .select(
           `-_id ${bodyKeys} ${(query.$set as any)["legal_name.first"] || (query.$set as any)["legal_name.first"] ? "legal_name" : ""}`
@@ -412,6 +579,9 @@ export async function updateProfile(user: UserClaims, body: UpdateProfileBodyDto
           throw new HttpError("Country update limit reached. You can only update your country 2 times.", 400);
         }
 
+        // updatedFriends should be defined when there is a session.
+        await session?.commitTransaction();
+
         return {
           ...(query.$set.email && {
             updatedUser: {
@@ -421,12 +591,16 @@ export async function updateProfile(user: UserClaims, body: UpdateProfileBodyDto
               }))
             }
           }),
-          updatedFields: updatedUser
+          updatedFields: updatedUser,
+          ...(updatedFriends && { unfriended: true })
         };
       }
     );
   } catch (error: any) {
+    await session?.abortTransaction();
     throw handleHttpError(error, "updateProfile service error.", 500);
+  } finally {
+    session?.endSession();
   }
 }
 

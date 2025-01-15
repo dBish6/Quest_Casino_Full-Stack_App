@@ -177,7 +177,7 @@ export default class SocketChatService {
 
     try {
       const user = this.socket.userDecodedClaims!,
-        userFriends = await getUserFriends(user.sub);
+        userFriends = await getUserFriends(user.sub, { lean: true });
 
       const promises: Promise<void>[] = [];
       for (const friend of userFriends.list.values()) {

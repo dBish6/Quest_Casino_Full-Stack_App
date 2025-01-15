@@ -4,7 +4,7 @@
  *
  * Author: David Bishop
  * Creation Date: April 16, 2024
- * Last Updated: Jan 7, 2024
+ * Last Updated: Jan 14, 2024
  *
  * Description:
  * ...
@@ -35,7 +35,7 @@ export async function setupServer() {
     PORT = Number(ENV_PORT) || 4000,
     corsOptions = {
       origin: ["http://localhost:3000"],
-      credentials: true,
+      credentials: true
     };
 
   await new Db().connectBaseCluster();
@@ -57,4 +57,3 @@ export async function setupServer() {
     }
   });
 };
-setupServer();

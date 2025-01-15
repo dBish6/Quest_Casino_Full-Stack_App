@@ -16,8 +16,9 @@ import { ObjectId } from "mongoose";
 
 const { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET, VERIFICATION_TOKEN_SECRET } = process.env;
 
-const CACHE = (userId: ObjectId | string) => ({
-  refreshKey: `user:${userId.toString()}:refresh_tokens`,
+/** Cache keys. */
+export const KEY = (userId: ObjectId | string) => ({
+  refresh: `user:${userId.toString()}:refresh_tokens`,
   verification: `user:${userId.toString()}:verification_token`
 });
 
@@ -61,7 +62,7 @@ export class GenerateUserJWT {
         { ...options, expiresIn: this.expiry.refresh }
       );
       // For verification afterwards.
-      await redisClient.sAdd(CACHE(_id).refreshKey, refreshToken);
+      await redisClient.sAdd(KEY(_id).refresh, refreshToken);
 
       return refreshToken;
     } catch (error: any) {
@@ -81,7 +82,7 @@ export class GenerateUserJWT {
         { sub: userId, email: user.email },
         { expiresIn: this.expiry.verification, ...options }
       );
-      await redisClient.set(CACHE(userId).verification, verificationToken);
+      await redisClient.set(KEY(userId).verification, verificationToken);
 
       return verificationToken;
     } catch (error: any) {
@@ -200,7 +201,7 @@ export class JWTVerification {
       if (decodedClaims.exp! * 1000 <= Date.now())
         throw new ApiError("Verification token is expired.", 403, "forbidden");
 
-      const cachedToken = await redisClient.get(CACHE(decodedClaims.sub).verification);
+      const cachedToken = await redisClient.get(KEY(decodedClaims.sub).verification);
       if (cachedToken !== verificationToken) 
         throw new ApiError("Verification token disparity.", 401, "unauthorized");
 
@@ -221,7 +222,6 @@ export class JWTVerification {
     try {
       for (const [key, token] of Object.entries({ access, refresh })) {
         try {
-          console.log("[key, token]", [key, token])
           const claims = this.verifyJwt<UserClaims>(
             token,
             key === "access" ? ACCESS_TOKEN_SECRET! : REFRESH_TOKEN_SECRET!
@@ -257,7 +257,7 @@ export class JWTVerification {
    * Checks if the provided refresh token matches the cache for the given user.
    */
   private async isRefreshTokenMatching(userId: ObjectId | string, token: string) {
-    return await redisClient.sIsMember(CACHE(userId).refreshKey, token);
+    return await redisClient.sIsMember(KEY(userId).refresh, token);
   }
 }
 
@@ -266,7 +266,7 @@ export class JWTVerification {
  */
 export async function clearSession(userId: ObjectId | string, refreshToken: string) {
   try {
-    await redisClient.sRem(CACHE(userId).refreshKey, refreshToken);
+    await redisClient.sRem(KEY(userId).refresh, refreshToken);
   } catch (error: any) {
     throw handleApiError(error, "clearSession service error.");
   }
@@ -277,7 +277,7 @@ export async function clearSession(userId: ObjectId | string, refreshToken: stri
  */
 export async function clearAllSessions(userId: ObjectId | string) {
   try {
-    await redisClient.del(CACHE(userId).refreshKey);
+    await redisClient.del(KEY(userId).refresh);
   } catch (error: any) {
     throw handleApiError(error, "clearAllSessions service error.");
   }
@@ -288,7 +288,7 @@ export async function clearAllSessions(userId: ObjectId | string) {
  */
 export async function revokeVerificationToken(userId: ObjectId | string) {
   try {
-    await redisClient.del(CACHE(userId).verification);
+    await redisClient.del(KEY(userId).verification);
   } catch (error: any) {
     throw handleApiError(error, "revokeVerificationToken service error.");
   }
