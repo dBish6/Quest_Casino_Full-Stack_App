@@ -20,6 +20,7 @@ export declare const COUNTRIES_MAP: Map<string, {
 export declare enum AuthEvent {
     INITIALIZE_FRIENDS = "initialize_friends",
     MANAGE_FRIEND_REQUEST = "manage_friend_request",
+    UNFRIEND = "unfriend",
     FRIENDS_UPDATE = "friends_update",
     FRIEND_ACTIVITY = "friend_activity",
     USER_ACTIVITY = "user_activity",
