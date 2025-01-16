@@ -297,6 +297,7 @@
                   max-width: 100%;
                   max-height: 100%;
                   object-fit: contain !important;
+                  margin: 0 auto;
                   z-index: 1;
                 }
                 &:not(.imgSkel) {
