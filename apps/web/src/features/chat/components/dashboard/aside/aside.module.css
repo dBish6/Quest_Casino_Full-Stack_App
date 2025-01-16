@@ -177,18 +177,27 @@
             left: 0;
             width: 100%;
             height: inherit;
-            & > div ul li.friend {
-              display: flex;
-              align-items: center;
+            & > div {
+              display: flex !important;
               flex-direction: column;
-              margin-bottom: 1.25rem;
-              & h4 {
-                font: var(--para-medium);
-                line-height: 22px;
-                font-style: italic;
-              }
-              & > button {
-                font: var(--para-x-small);
+
+              & ul li.friend {
+                display: flex;
+                align-items: center;
+                flex-direction: column;
+                margin-bottom: 1.25rem;
+                & h4 {
+                  max-width: 100%;
+                  font: var(--para-medium);
+                  line-height: 22px;
+                  font-style: italic;
+                  white-space: nowrap;
+                  text-overflow: ellipsis;
+                  overflow: hidden;
+                }
+                & > button {
+                  font: var(--para-x-small);
+                }
               }
             }
           }
@@ -373,6 +382,10 @@
                   & ul li.friend {
                     margin-bottom: 0.5rem;
                     &[data-target="true"] {
+                      /* TODO: See about this with more friends. */
+                      /* &:first-of-type {
+                        margin-top: 0.5rem;
+                      } */
                       margin-top: 0.5rem;
                       padding-right: 0.5rem;
                       border-radius: 6px;

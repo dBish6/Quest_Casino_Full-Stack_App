@@ -25,7 +25,7 @@ export const ANIMATION_DURATION = 850;
 /** Drag breakpoints widths. */
 const breakpoints = { shrunk: 9, default: 222, enlarged: 945 };
 
-// FIXME: Dragging from shrunk then back to shrunk again breaks the aside on small viewport.
+// FIXME: Dragging from shrunk goes too quick to default.
 function keyboardTrap(e: KeyboardEvent, focusableElems: HTMLElement[]) {
   if (e.key === "Tab") {
     const firstElem = focusableElems[0];
@@ -84,6 +84,14 @@ export default function Aside() {
     width.set(newWidth);
   };
 
+  const snapToPoint = (point: keyof typeof breakpoints) =>
+    snapControls.start({
+      width: breakpoints[point],
+      transition: {
+        width: { type: "spring", duration: ANIMATION_DURATION / 1000 },
+      },
+    });
+
   const handleSnapPoint = (key?: string, override?: DragPointsKey) => {
     let point = override || asideState;
 
@@ -109,16 +117,13 @@ export default function Aside() {
           break;
       }
     }
+    if (asideState === point) snapToPoint(point);
     
     setSearchParams((params) => {
       point === "default" || (point === "shrunk" && viewport === "small")
         ? params.delete("aside")
         : params.set("aside", point);
       return params;
-    });
-    snapControls.start({
-      width: breakpoints[point],
-      transition: { width: { type: "spring", duration: ANIMATION_DURATION / 1000 } }
     });
   };
   const handleKeySnap = debounce((e: React.KeyboardEvent<HTMLButtonElement>) => {
@@ -143,6 +148,8 @@ export default function Aside() {
   }, []);
 
   useEffect(() => {
+    snapToPoint(asideState);
+
     if (scope.current)
       animate(scope.current,
         { opacity: [0, 1] },
