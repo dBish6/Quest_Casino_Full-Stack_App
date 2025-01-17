@@ -1,19 +1,5 @@
-.error {
-  & hgroup {
-    & h2 {
-      font: var(--h2);
-      font-size: var(--h2-clamp);
-      color: var(--c-status-red);
-      margin-bottom: 4px;
-      & span {
-        font-size: clamp(1.5rem, 1.35rem + 0.3902439024390244vw, 1.75rem);
-        color: var(--c-heading-2);
-      }
-    }
-    & > span {
-        font: var(--para-large);
-        font-size: var(--para-large-clamp);
-        font-weight: 500;
-    }
-  }
+@import "../../mixins.css";
+
+.error > div > :global(.viewport) > div {
+  @mixin ErrorPage;
 }

@@ -1,16 +1,21 @@
 import { Router } from "express";
-import { verifyUserToken, verifyCsrfToken } from "@authFeatHttp/middleware/tokens";
+import verifyUserToken from "@authFeat/middleware/tokens/verifyUserToken";
+import { verifyCsrfToken } from "@authFeatHttp/middleware/tokens";
 import * as gameController from "@gameFeatHttp/controllers/gameController";
 
 const router = Router();
 
+router.post("/games/:type", verifyCsrfToken, gameController.addGame);
+
 router.get("/games", gameController.getGames);
-// router.get("/game/:id", gameController.getGame);
-router.post("/add", verifyCsrfToken, gameController.addGame);
+router.get("/game", gameController.getGame);
 
-// TODO: If you only show quests and bonuses when logged in use verifyUserToken middleware here.
-router.get("/quests", gameController.getQuests);
+router.get("/games/quests", verifyUserToken, gameController.getQuests);
+router.get("/games/quest", gameController.getQuest);
 
-router.get("/bonuses", gameController.getBonuses);
+router.get("/games/bonuses", verifyUserToken, gameController.getBonuses);
+router.get("/games/bonus", gameController.getBonus);
+
+// router.get("games/leaderboard", gameController.getLeaderboard);
 
 export default router;

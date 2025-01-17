@@ -21,12 +21,16 @@ import "./modalTemplate.css";
 
 export enum ModalQueryKey {
   ADD_FRIENDS_MODAL = "add",
-  CASH_IN_MODAL = "cash",
+  BANK_MODAL = "bank",
+  FORGOT_PASSWORD_MODAL = "forgot",
   LOGIN_MODAL = "login",
+  // TODO: Certain slides.
   MENU_MODAL = "menu",
   NOTIFICATIONS_MODAL = "notif",
+  PROFILE_PAYMENT_HISTORY_MODAL = "phist",
+  PROFILE_QUESTS_HISTORY_MODAL = "qhist",
   REGISTER_MODAL = "register",
-  // TODO:
+  RESET_PASSWORD_MODAL = "reset",
   VIEW_PROFILE_MODAL = "prof"
 }
 export type ModalQueryKeyValues = `${ModalQueryKey}`;
@@ -168,11 +172,17 @@ export default ModalTemplate;
 const RESTRICTED_MODALS: ReadonlySet<ModalQueryKeyValues> = new Set([
   ModalQueryKey.NOTIFICATIONS_MODAL,
   ModalQueryKey.ADD_FRIENDS_MODAL,
+  ModalQueryKey.BANK_MODAL,
+  ModalQueryKey.MENU_MODAL
 ]);
 
 export const ModalTrigger = forwardRef<
-  HTMLAnchorElement, Omit<LinkProps, "to"> & { queryKey: ModalQueryKeyValues, buttonProps?: ButtonProps }
->(({ children, queryKey, buttonProps, ...props }, ref) => {
+  HTMLAnchorElement,
+  Omit<LinkProps, "to"> & {
+    query: { param: ModalQueryKeyValues; value?: string };
+    buttonProps?: ButtonProps;
+  }
+>(({ children, query, buttonProps, ...props }, ref) => {
   const [searchParams] = useSearchParams();
 
   const user = useAppSelector(selectUserCredentials),
@@ -182,21 +192,28 @@ export const ModalTrigger = forwardRef<
     <Button asChild {...buttonProps} >
       <Link
         aria-haspopup="dialog"
-        aria-expanded={searchParams.has(queryKey)}
-        aria-controls={queryKey}
+        aria-expanded={searchParams.has(query.param)}
+        aria-controls={query.param}
         ref={ref}
-        to={{ search: `?${queryKey}=true` }}
+        to={{ search: `?${query.param}=${query.value || "true"}` }}
         {...props}
         onClick={(e) => {
-          if (RESTRICTED_MODALS.has(queryKey) && !user)
+          if (RESTRICTED_MODALS.has(query.param) && !user)
             dispatch(
               ADD_TOAST({
-                title: "Login Required",
-                message:
-                  "You must be logged in to have access to this feature.",
+                title: "Login Session Required",
+                message: "You must be logged in to have access to this feature.",
                 intent: "error",
+                duration: 6500
               })
             )
+            // FIXME:
+            // requestAnimationFrame(() =>
+            //   setSearchParams((params) => {
+            //     params.delete(queryKey);
+            //     return params;
+            //   })
+            // );
 
           if (props.onClick) props.onClick(e);
         }}

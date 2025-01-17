@@ -1,9 +1,18 @@
-.container {
-  & :global(.select) {
+.control {
+  & :global(.selectInner) {
     &:global(.primary),
-    &:global(.callingCode) {
-      &[data-focused="true"][data-selected="true"] {
-        & select {
+    &:global(.callingCode),
+    &:global(.ghost) {
+      & select {
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        position: absolute;
+        top: 0;
+        color: transparent;
+        &::-ms-expand {
+          display: none;
+        }
+        & option {
           color: var(--c-heading-2);
         }
       }
@@ -11,14 +20,8 @@
         & select {
           color: var(--c-heading-2);
         }
-        & select {
-          background-color: var(--c-lvl-3);
-        }
         & svg {
           transform: translateY(-50%) rotate(-180deg);
-          & use {
-            fill: var(--c-heading-2);
-          }
         }
       }
       &[data-selected="true"],
@@ -27,24 +30,40 @@
           color: var(--input-fade);
         }
       }
+      & svg {
+        pointer-events: none;
+        transition: 0.22s ease-in-out transform;
+        & use {
+          fill: var(--input-fade);
+          transition: 0.28s ease-in-out fill;
+        }
+      }
+    }
+
+
+    &:global(.primary),
+    &:global(.callingCode) {
+      &[data-selected="true"] {
+        & select {
+          color: var(--c-heading-2);
+        }
+      }
+      &[data-focused="true"] {
+        & select {
+          background-color: var(--c-lvl-3);
+        }
+        & svg use {
+          fill: var(--c-heading-2);
+        }
+      }
 
       & label {
         pointer-events: none;
         z-index: 1;
       }
-      select::-ms-expand {
-        display: none;
-      }
+
       & select {
-        -webkit-appearance: none;
-        -moz-appearance: none;
-        position: absolute;
-        top: 0;
         padding-inline: 16px 38px;
-        color: transparent;
-        & option {
-          color: var(--c-heading-2);
-        }
         &:focus-visible {
           border: 1px solid var(--c-purple-800);
           background-color: var(--c-lvl-3);
@@ -53,12 +72,6 @@
       }
       & svg {
         right: 0.75rem;
-        pointer-events: none;
-        transition: 0.22s ease-in-out transform;
-        & use {
-          fill: var(--input-fade);
-          transition: 0.28s ease-in-out fill;
-        }
       }
 
       & span[role="status"] {
@@ -78,6 +91,36 @@
       & select,
       & label {
         background-color: var(--c-lvl-4);
+      }
+    }
+
+    &:global(.ghost) {
+      width: 63px;
+      height: 26px;
+      & select {
+        padding-inline: 6px;
+        font: var(--para-small);
+        background-color: transparent;
+        transition: 0.28s ease-in-out color;
+        & option {
+          background-color: var(--c-lvl-2);
+        }
+      }
+      &:hover select {
+        background-color: rgba(95, 67, 178, 0.1);
+      }
+      &:hover,
+      &[data-focused="true"] {
+        & select {
+          background-color: rgba(95, 67, 178, 0.25);
+          color: var(--c-purple-50);
+        }
+        & svg use {
+          fill: var(--c-purple-50);
+        }
+      }
+      & svg {
+        right: 6px;
       }
     }
   }

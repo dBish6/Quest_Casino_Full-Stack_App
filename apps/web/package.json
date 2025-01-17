@@ -37,6 +37,7 @@
     "@remix-run/node": "^2.9.2",
     "class-variance-authority": "^0.7.0",
     "css-clamper": "0.2.0",
+    "detect-if-mobile": "^1.1.9",
     "framer-motion": "^10.18.0",
     "isbot": "^5.1.8",
     "react": "^18.3.1",
@@ -68,6 +69,7 @@
     "postcss-custom-media": "^10.0.6",
     "postcss-flexbugs-fixes": "^5.0.2",
     "postcss-import": "^16.1.0",
+    "postcss-mixins": "^11.0.3",
     "postcss-preset-env": "^9.5.14",
     "storybook": "^8.1.5"
   }

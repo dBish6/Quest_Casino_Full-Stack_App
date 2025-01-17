@@ -11,16 +11,16 @@ const meta: Meta<typeof Select> = {
   title: "Components/Controls/Select",
   component: Select,
   parameters: {
-    layout: "centered",
+    layout: "centered"
   },
   tags: ["autodocs"],
   argTypes: {
     intent: {
       control: { type: "radio" },
-      options: ["primary", "callingCode"],
-    },
+      options: ["primary", "callingCode"]
+    }
   },
-  args: { onClick: fn() },
+  args: { onClick: fn() }
 };
 export default meta;
 
@@ -34,7 +34,7 @@ const mockOptions = [
   "Option 5",
   "Option 6",
   "Option 7",
-  "Option 8",
+  "Option 8"
 ];
 
 export const Medium: Story = {
@@ -42,7 +42,7 @@ export const Medium: Story = {
       label: "Medium",
       intent: "primary",
       size: "md",
-      required: true,
+      required: true
     },
     render: (args) => (
       <Select {...args} style={{ width: "182px" }}>
@@ -52,14 +52,14 @@ export const Medium: Story = {
           </option>
         ))}
       </Select>
-    ),
+    )
   },
   Large: Story = {
     args: {
       label: "Large",
       intent: "primary",
       size: "lrg",
-      required: true,
+      required: true
     },
     render: (args) => (
       <Select {...args} style={{ width: "208px" }}>
@@ -69,14 +69,14 @@ export const Medium: Story = {
           </option>
         ))}
       </Select>
-    ),
+    )
   };
 
 export const CallingCode: Story = {
   args: {
     label: "Code",
     intent: "callingCode",
-    size: "lrg",
+    size: "lrg"
   },
   render: (args) => {
     const [data, setData] = useState<Country[] | null>(null);
@@ -105,5 +105,21 @@ export const CallingCode: Story = {
           ))}
       </Select>
     );
+  }
+};
+
+export const Ghost: Story = {
+  argTypes: {
+    intent: { table: { disable: true } }
   },
+  args: { intent: "ghost" },
+  render: (args) => (
+    <Select {...args} style={{ width: "85px" }} defaultValue="Option 4">
+      {mockOptions.map((option) => (
+        <option key={option} value={option}>
+          {option}
+        </option>
+      ))}
+    </Select>
+  ),
 };

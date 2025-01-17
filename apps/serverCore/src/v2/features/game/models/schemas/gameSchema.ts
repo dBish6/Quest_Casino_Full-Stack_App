@@ -3,17 +3,19 @@ import type { GameDoc, GameQuestDoc, GameBonusDoc } from "@gameFeat/typings/Game
 
 import { Schema } from "mongoose";
 
+import { GAME_CATEGORIES, GAME_STATUSES, GAME_QUEST_REWARD_TYPES, GAME_QUEST_FOR } from "@qc/constants";
+
 import defaults from "@utils/schemaDefaults";
 
 const gameSchema = new Schema<GameDoc, Model<GameDoc>>(
   {
     _id: { type: Schema.Types.ObjectId, immutable: true },
-    title: { type: String, required: true },
-    description: { type: String },
+    title: { type: String, immutable: true, unique: true, required: true },
+    description: { type: String, required: true },
     category: {
       type: String,
-      enum: ["table", "slots", "dice"],
-      required: true,
+      enum: GAME_CATEGORIES,
+      required: true
     },
     image: {
       _id: false,
@@ -40,8 +42,7 @@ const gameSchema = new Schema<GameDoc, Model<GameDoc>>(
     },
     status: {
       type: String,
-      enum: ["active", "development", "inactive"],
-      required: true,
+      enum: GAME_STATUSES,
       default: "inactive"
     }
   },
@@ -52,15 +53,38 @@ export default gameSchema;
 export const gameQuestSchema = new Schema<GameQuestDoc, Model<GameQuestDoc>>(
   {
     _id: { type: Schema.Types.ObjectId, immutable: true },
-    title: { type: String, required: true },
-    description: { type: String, required: true },
-    reward: {
-      type: Number,
+    title: { type: String, immutable: true, unique: true, required: true },
+    description: {
+      type: String,
       required: true,
-      set: (reward: number) => reward * 100
+      maxlength: [81, "description field exceeds the max of 81 characters."]
     },
-    for: { type: String, required: true },
+    reward: {
+      type: {
+        type: String,
+        enum: GAME_QUEST_REWARD_TYPES,
+        required: true
+      },
+      value: {
+        type: Number,
+        required: true,
+        validate: {
+          validator: (value: number) => value > 0,
+          message: (props: any) => `${props.value} is not a valid reward value.`
+        },
+        set: function (value: any) {
+          if (this.reward.type === "money") return Math.round(value * 100) / 100;
+          return value;
+        }
+      }
+    },
+    for: {
+      type: String,
+      enum: { values: GAME_QUEST_FOR },
+      required: true
+    },
     cap: { type: Number, required: true }, // Number to reach for completion.
+    status: { type: String, enum: ["active", "inactive"], default: "inactive" }
   },
   { collection: "game_quest", ...defaults.options }
 );
@@ -68,10 +92,12 @@ export const gameQuestSchema = new Schema<GameQuestDoc, Model<GameQuestDoc>>(
 export const gameBonusSchema = new Schema<GameBonusDoc, Model<GameBonusDoc>>(
   {
     _id: { type: Schema.Types.ObjectId, immutable: true },
-    title: { type: String, required: true },
-    multiplier: { type: Number, required: true },
-    cap: { type: Number, required: true },
-    expiry: { type: Number, require: true } // 1 day in milliseconds, etc.
+    title: { type: String, unique: true, required: true },
+    multiplier: { type: Number, required: true }, // Is the reward.
+    cap: { type: Number, required: true }, // Number to reach for completion.
+    // (we could use the expired as of a way to know it is activated).
+    expiry: { type: Number }, // 1 day from current date in milliseconds, etc.
+    status: { type: String, enum: ["active", "inactive"], default: "inactive" } // Active or inactive for current period.
   },
   { collection: "game_bonus", ...defaults.options }
 );

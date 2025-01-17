@@ -25,7 +25,7 @@ const initialState: AuthState = {
   user: {
     credentials: null,
     token: { csrf: null }
-  },
+  }
 };
 
 const authSlice = createSlice({
@@ -52,6 +52,12 @@ const authSlice = createSlice({
       state.user.credentials!.favourites = action.payload;
     },
     /**
+     * Sets or overrides the user's settings object.
+     */
+    SET_USER_SETTINGS: (state, action: PayloadAction<UserCredentials["settings"]>) => {
+      state.user.credentials!.settings = action.payload;
+    },
+    /**
      * Updates the user's friends object.
      */
     UPDATE_USER_FRIENDS: (state, action: PayloadAction<Partial<UserCredentials["friends"]>>) => {
@@ -62,9 +68,9 @@ const authSlice = createSlice({
      */
     UPDATE_USER_FRIEND_IN_LIST: (
       state,
-      action: PayloadAction<{ verToken: string; update: Partial<FriendCredentials> }>
+      action: PayloadAction<{ memberId: string; update: Partial<FriendCredentials> }>
     ) => {
-      const key = action.payload.verToken,
+      const key = action.payload.memberId,
         friendState = state.user.credentials!.friends.list[key];
 
       if (!friendState)
@@ -75,10 +81,22 @@ const authSlice = createSlice({
 
       state.user.credentials!.friends.list[key] = deepMerge([friendState, action.payload.update]);
     },
+    /**
+     * Removes a friend from the pending or friends list.
+     */
+    REMOVE_USER_FRIEND: (
+      state,
+      action: PayloadAction<{ pending?: string; list?: string }>
+    ) => {
+      for (const [key, memberId] of Object.entries(action.payload)) {
+        if (key in state.user.credentials!.friends)
+          delete (state.user.credentials!.friends as any)[key][memberId];
+      }
+    },
     CLEAR_USER: (state) => {
       state.user = initialState.user;
-    },
-  },
+    }
+  }
 });
 
 export const { name: authName, reducer: authReducer } = authSlice,
@@ -86,8 +104,10 @@ export const { name: authName, reducer: authReducer } = authSlice,
     INITIALIZE_SESSION,
     UPDATE_USER_CREDENTIALS,
     SET_USER_FAVOURITES,
+    SET_USER_SETTINGS,
     UPDATE_USER_FRIENDS,
     UPDATE_USER_FRIEND_IN_LIST,
+    REMOVE_USER_FRIEND,
     CLEAR_USER
   } = authSlice.actions;
 

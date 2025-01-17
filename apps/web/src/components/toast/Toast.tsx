@@ -8,7 +8,6 @@ import {
   Root,
   Title,
   Description,
-  Action,
   Close,
   Viewport,
 } from "@radix-ui/react-toast";
@@ -22,18 +21,19 @@ import { Button } from "@components/common/controls";
 import { Icon, Link } from "@components/common";
 
 import s from "./toast.module.css";
+import { Portal } from "@radix-ui/react-portal";
 
 const toast = cva(s.toast, {
   variants: {
     intent: {
       success: s.success,
       error: s.error,
-      info: s.info,
+      info: s.info
     },
     defaultVariants: {
-      intent: "info",
-    },
-  },
+      intent: "info"
+    }
+  }
 });
 
 export interface ToastProps
@@ -46,7 +46,7 @@ export interface ToastProps
 const defaultTitles = {
   success: "Success!",
   error: "Error",
-  info: "Info",
+  info: "Info"
 };
 
 const ANIMATION_DURATION = 490;
@@ -143,25 +143,27 @@ export function ToastsProvider() {
     dispatch = useAppDispatch();
 
   return (
-    <Provider>
-      {toasts.length > 0 &&
-        toasts.map((toast) => {
-          const { id, ...rest } = toast;
+    <Portal>
+      <Provider>
+        {toasts.length > 0 &&
+          toasts.map((toast) => {
+            const { id, ...rest } = toast;
 
-          return (
-            <Toast
-              key={id}
-              close={() => {
-                setTimeout(() => {
-                  dispatch(REMOVE_TOAST({ id: id! }));
-                }, ANIMATION_DURATION);
-              }}
-              duration={toast.duration || Infinity}
-              {...rest}
-            />
-          );
-        })}
-      <Viewport className={s.viewport} />
-    </Provider>
+            return (
+              <Toast
+                key={id}
+                close={() => {
+                  setTimeout(() => {
+                    dispatch(REMOVE_TOAST({ id: id! }));
+                  }, ANIMATION_DURATION);
+                }}
+                duration={toast.duration || Infinity}
+                {...rest}
+              />
+            );
+          })}
+        <Viewport className={s.viewport} />
+      </Provider>
+    </Portal>
   );
 }

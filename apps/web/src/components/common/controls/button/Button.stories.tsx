@@ -4,28 +4,28 @@ import { fn } from "@storybook/test";
 import Button from "./Button";
 import { Icon as CIcon } from "@components/common";
 
-const COMMON_INTENTS = ["primary", "secondary", "ghost"] as const;
+const COMMON_INTENTS = ["primary", "secondary", "ghost", "switch"] as const;
 
 const meta: Meta<typeof Button> = {
   title: "Components/Controls/Button",
   component: Button,
   parameters: {
-    layout: "centered",
+    layout: "centered"
   },
   tags: ["autodocs"],
   argTypes: {
     "aria-pressed": { control: { type: "boolean" } },
     intent: {
       control: { type: "radio" },
-      options: COMMON_INTENTS,
+      options: COMMON_INTENTS
     },
     size: {
       control: { type: "select" },
-      options: ["sm", "md", "lrg", "xl"],
+      options: ["xsm", "sm", "md", "lrg", "xl"]
     },
-    iconBtn: { table: { disable: true } },
+    iconBtn: { table: { disable: true } }
   },
-  args: { onClick: fn() },
+  args: { onClick: fn() }
 };
 export default meta;
 
@@ -34,12 +34,12 @@ type Story = StoryObj<typeof meta>;
 const groupStyle: React.CSSProperties  = {
   display: "flex",
   gap: "1.5rem",
-  flexWrap: "wrap",
+  flexWrap: "wrap"
 };
 
 export const Intents: Story = {
   argTypes: {
-    intent: { table: { disable: true } },
+    intent: { table: { disable: true } }
   },
   args: {
     size: "lrg",
@@ -57,6 +57,9 @@ export const Intents: Story = {
       </Button>
       <Button intent="chip" {...args}>
         Chip
+      </Button>
+      <Button intent="switch" {...args}>
+        Switch
       </Button>
     </div>
   ),
@@ -89,13 +92,13 @@ export const Sizes: Story = {
 };
 
 export const ExtraSmall: Story = {
-  args: {
-    intent: "primary",
-    size: "xsm",
-    children: "Extra Small"
-  }
-},
- Small: Story = {
+    args: {
+      intent: "primary",
+      size: "xsm",
+      children: "Extra Small"
+    }
+  },
+  Small: Story = {
     args: {
       intent: "primary",
       size: "sm",
@@ -156,7 +159,7 @@ export const Icon: Story = {
     argTypes: {
       "aria-pressed": { table: { disable: true } },
       intent: { options: ["exit", "exit ghost"] },
-      size: { options: ["xl", "sm"] }
+      size: { options: ["xl", "md"] }
     },
     args: {
       intent: "exit",

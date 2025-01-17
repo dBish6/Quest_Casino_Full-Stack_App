@@ -76,4 +76,13 @@ export const Small: Story = {
     args: {
       size: "xxl"
     }
+  },
+  ExtraExtraExtraLarge: Story = {
+    argTypes: {
+      linkProfile: { table: { disable: true } },
+    },
+    args: {
+      size: "xxxl",
+      linkProfile: false
+    }
   };

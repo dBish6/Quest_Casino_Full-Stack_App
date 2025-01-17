@@ -4,7 +4,7 @@ import type { FriendCredentials } from "@qc/typescript/typings/UserCredentials";
 import { forwardRef, Fragment } from "react";
 import { cva } from "class-variance-authority";
 
-import { ModalQueryKey, ModalTrigger } from "@components/modals";
+import { ModalTrigger } from "@components/modals";
 import { Image } from "@components/common";
 import { HoverCard } from "@components/hoverCard";
 import { ScrollArea } from "@components/scrollArea";
@@ -14,7 +14,7 @@ import s from "./avatar.module.css";
 const avatar = cva(s.avatar, {
   variants: {
     intent: {
-      primary: s.primary,
+      primary: s.primary
     },
     size: {
       sm: s.sm,
@@ -22,12 +22,13 @@ const avatar = cva(s.avatar, {
       lrg: s.lrg,
       xl: s.xl,
       xxl: s.xxl,
-    },
+      xxxl: s.xxxl
+    }
   },
   defaultVariants: {
     intent: "primary",
-    size: "sm",
-  },
+    size: "sm"
+  }
 });
 
 export interface AvatarProps
@@ -55,10 +56,7 @@ const Avatar = forwardRef<HTMLDivElement, AvatarProps>(
         {/* @ts-ignore */}
         <ProfileLink
           {...(ProfileLink !== "a" 
-            ? {
-                to: { search: `?${ModalQueryKey.VIEW_PROFILE_MODAL}=${user!.username}` },
-                queryKey: ModalQueryKey.VIEW_PROFILE_MODAL,
-              }
+            ? { query: { param: "prof", value: encodeURIComponent(user!.username!) } }
             : {
                 role: "presentation",
                 tabIndex: -1,
@@ -72,7 +70,7 @@ const Avatar = forwardRef<HTMLDivElement, AvatarProps>(
             {...props}
           >
             <Image
-              src={user?.avatar_url ? user.avatar_url : "/images/default.svg"}
+              src={user?.avatar_url || "/images/default.svg"}
               alt="Profile Picture"
               fill
             />
@@ -80,7 +78,7 @@ const Avatar = forwardRef<HTMLDivElement, AvatarProps>(
               aria-label={userStatus}
               {...(!userStatus && {
                 "aria-hidden": "true",
-                style: { display: "none" },
+                style: { display: "none" }
               })}
               className={s.activityIndie}
               data-status={userStatus}

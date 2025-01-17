@@ -4,7 +4,7 @@
  *
  * Author: David Bishop
  * Creation Date: April 16, 2024
- * Last Updated: Oct 15, 2024
+ * Last Updated: Jan 14, 2025
  *
  * Description:
  * .
@@ -16,50 +16,56 @@
  * The log is in the changelog.txt file at the base of this web directory.
  */
 
-import { Navigate, type RouteObject } from "react-router-dom";
+import { type RouteObject, Navigate, json } from "react-router-dom";
 
-import store from "@redux/store";
+import store from "./redux";
 import { apiEndpoints } from "@services/api";
+
+import GENERAL_UNAUTHORIZED_MESSAGE from "@authFeat/constants/GENERAL_UNAUTHORIZED_MESSAGE";
+
+import ErrorBoundary from "@components/ErrorBoundary";
 
 import HistoryProvider from "@utils/History";
 import { ToastsProvider } from "@components/toast";
 
 import { ResourceLoaderProvider } from "@components/loaders";
+import { BreakpointProvider, Dashboard } from "@components/dashboard";
 import SocketListenersProvider from "@components/SetupSocketListeners";
-import { Dashboard } from "@components/dashboard";
 import { ModalsProvider } from "@components/modals";
-import VerificationHandler from "@components/VerificationHandler";
+import VerificationHandler from "@authFeat/components/VerificationHandler";
 import AwayActivityTracker from "@components/AwayActivityTracker";
 
-import { About, Home, Profile, Settings, Support } from "@views/index";
+import { RestrictView, About, Home, Support } from "@views/index";
 import { Error } from "@views/errors";
 
-import registerAction from "@authFeat/actions/validateRegister";
-
-import { json } from "react-router-dom";
-
-import "./index.css";
-
-// TODO: Could just make a prop?
-const restricted = new Set(["/profile"]);
+import validateUserAction from "@authFeat/actions/validateUser";
 
 export const routes: RouteObject[] = [
   {
     path: "/",
     element: (
       <>
-        <HistoryProvider />
-        <ToastsProvider />
+        <ErrorBoundary>
+          <HistoryProvider />
+          <ToastsProvider />
 
-        <ResourceLoaderProvider>
-          <SocketListenersProvider />
+          <ResourceLoaderProvider>
+            <BreakpointProvider>
+              <SocketListenersProvider />
 
-          <Dashboard />
+              <Dashboard />
 
-          <ModalsProvider />
-          <VerificationHandler />
-          <AwayActivityTracker />
-        </ResourceLoaderProvider>
+              <ModalsProvider />
+              <VerificationHandler />
+              <AwayActivityTracker />
+            </BreakpointProvider>
+          </ResourceLoaderProvider>
+        </ErrorBoundary>
+
+        {/* They get redirected on the server, this is just in case for the client. */}
+        {typeof window !== "undefined" && window.location.pathname === "/" && (
+          <Navigate to="/home" replace />
+        )}
       </>
     ),
     children: [
@@ -73,11 +79,10 @@ export const routes: RouteObject[] = [
         element: <Home />,
         shouldRevalidate: () => false,
         loader: async () => {
-          const res = store.dispatch(apiEndpoints.getCarouselContent.initiate());
+          const res = (await store()).dispatch(apiEndpoints.getCarouselContent.initiate());
 
           try {
-            const data = await res.unwrap();
-            return data;
+            return await res.unwrap();
           } catch (error: any) {
             if (error.data) return error;
             else return json(
@@ -91,14 +96,21 @@ export const routes: RouteObject[] = [
       },
       {
         path: "/profile",
+        element: <RestrictView />,
         children: [
           {
             path: "",
-            element: <Profile />
+            lazy: async () => {
+              const { Profile } = await import("@views/index");
+              return { Component: Profile };
+            }
           },
           {
             path: "settings",
-            element: <Settings />
+            lazy: async () => {
+              const { Settings } = await import("@views/index");
+              return { Component: Settings };
+            }
           }
         ]
       },
@@ -112,7 +124,7 @@ export const routes: RouteObject[] = [
           <Error
             status={401}
             title="Unauthorized"
-            description="User authorization is missing or required."
+            description={GENERAL_UNAUTHORIZED_MESSAGE}
           />
         )
       },
@@ -122,9 +134,7 @@ export const routes: RouteObject[] = [
           <Error
             status={403}
             title="Forbidden"
-            // FIXME: Change message.
-            // description="User authorization or CSRF token is not valid."
-            description="Malicious request or User authorization or CSRF token is not valid."
+            description="Malicious request or User authorization is not valid."
           />
         )
       },
@@ -163,7 +173,7 @@ export const routes: RouteObject[] = [
       {
         ...(typeof window !== "undefined" && {
           path: "*",
-          element: <Navigate to="/error-404-page" replace />,
+          element: <Navigate to="/error-404-page" replace />
         })
       }
     ]
@@ -172,9 +182,14 @@ export const routes: RouteObject[] = [
     path: "/action",
     children: [
       {
-        path: "register",
-        action: registerAction,
+        path: "user",
+        children: [
+          {
+            path: "validate",
+            action: validateUserAction
+          }
+        ]
       }
-    ],
-  },
+    ]
+  }
 ];

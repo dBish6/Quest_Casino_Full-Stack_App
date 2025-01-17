@@ -1,3 +1,6 @@
+@import "../../../../../customMedia.css";
+@import "../../../../../mixins.css";
+
 .backdrop {
   position: fixed;
   inset: 0;
@@ -21,8 +24,21 @@
   & .drawer {
     display: flex;
     align-items: center;
-    width: 222px;
     height: 100%;
+    transition: 0.1s ease-in-out width;
+    @media (--large-breakpoint), (--medium-breakpoint) {
+      max-width: calc(100vw - 1rem);
+    }
+    @media (--small-breakpoint) {
+      max-width: calc(100vw - 0.375rem);
+    }
+    
+    @media (--chat-aside-breakpoint) {
+      @mixin chatAsideBreakpoint;
+    }
+    &:global(.chatAsideBreakpointProfile) {
+      @mixin chatAsideBreakpoint;
+    }
 
     & button.dragger {
       width: 8px;
@@ -129,16 +145,21 @@
           text-align: center;
           margin-block: 0.25rem 1rem;
         }
-
         & > p {
           position: absolute;
           top: 50%;
-          left: 0;
-          transform: translateY(-50%);
+          left: 50%;
+          transform: translate(-50%, -50%);
+          width: 100%;
           text-align: center;
-          font: var(--para-regular);
-          & a {
-            font-weight: 400;
+          &.loginToSee {
+            font: var(--para-medium);
+          }
+          &.noFriends {
+            font: var(--para-regular);
+            & a {
+              font-weight: 400;
+            }
           }
         }
 
@@ -156,20 +177,27 @@
             left: 0;
             width: 100%;
             height: inherit;
-            & > div ul li.friend {
-              display: flex;
-              align-items: center;
+            & > div {
+              display: flex !important;
               flex-direction: column;
-              margin-bottom: 1.25rem;
-              & h4 {
-                font: var(--para-medium);
-                line-height: 22px;
-                font-style: italic;
-              }
-              & > a:not(a[aria-controls]) {
-                display: block;
-                font: var(--para-x-small);
-                text-decoration: none;
+
+              & ul li.friend {
+                display: flex;
+                align-items: center;
+                flex-direction: column;
+                margin-bottom: 1.25rem;
+                & h4 {
+                  max-width: 100%;
+                  font: var(--para-medium);
+                  line-height: 22px;
+                  font-style: italic;
+                  white-space: nowrap;
+                  text-overflow: ellipsis;
+                  overflow: hidden;
+                }
+                & > button {
+                  font: var(--para-x-small);
+                }
               }
             }
           }
@@ -354,6 +382,10 @@
                   & ul li.friend {
                     margin-bottom: 0.5rem;
                     &[data-target="true"] {
+                      /* TODO: See about this with more friends. */
+                      /* &:first-of-type {
+                        margin-top: 0.5rem;
+                      } */
                       margin-top: 0.5rem;
                       padding-right: 0.5rem;
                       border-radius: 6px;
@@ -396,7 +428,18 @@
             }
 
             & .friendsListContainer {
-              & > div {
+              & > div:first-child {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 0.5rem;
+                & a {
+                  font: var(--para-small);
+                  font-style: italic;
+                  transform: translateY(-2px);
+                }
+              }
+              & > div:last-child {
                 height: calc(100% - 25.4px - 1rem);
 
                 & :global(.viewport) {

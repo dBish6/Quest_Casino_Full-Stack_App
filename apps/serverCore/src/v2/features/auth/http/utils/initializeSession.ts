@@ -1,9 +1,10 @@
 import type { Response } from "express";
 import type { Identifier } from "@authFeat/services/authService";
 import type { UserCredentials } from "@qc/typescript/typings/UserCredentials";
-import type { GetUserBy, User as UserFields, UserToClaims, RegistrationTypes } from "@authFeat/typings/User";
+import type { GetUserBy, UserDoc, User as UserFields } from "@authFeat/typings/User";
 
 import { handleHttpError } from "@utils/handleError";
+import formatUserToClaims from "./formatUserToClaims";
 
 import { User } from "@authFeat/models";
 
@@ -16,66 +17,62 @@ import { deleteCsrfToken, generateCsrfToken } from "@authFeatHttp/services/csrfS
  * replaces the old CSRF token if it exists with a new one.
  * @param res Express response object.
  * @param identifier Object containing user get by and value.
- * @param csrfToken Replaces the current user's csrf token with a new one.
- * @returns client formatted user.
+ * @param csrfToken Replaces the current user's csrf token with a new one, or if a `UserDoc` is passed here it will only update the session cookies.
+ * @param maxAge (Optional) expires for the access and refresh tokens.
+ * @returns Client formatted user or the `UserDoc` that passed instead of the csrfToken.
  */
 export default async function initializeSession(
   res: Response,
-  identifier: Identifier<GetUserBy>,
-  csrfToken: string | undefined
+  identifier: Partial<Identifier<GetUserBy>>,
+  csrfToken: string | UserDoc | undefined,
+  maxAge?: { access: number; refresh: number; }
 ) {
+  const isOnlyCookiesUpdate = typeof csrfToken === "object" && "member_id" in csrfToken;
+  let user = csrfToken as UserDoc,
+    clientUser = null
+
   try {
-    const userQuery = User.findOne({ [identifier.by]: identifier.value }),
-      user = await userQuery.exec();
-    if (!user) return "Couldn't find the user while session initialization.";
+    if (!isOnlyCookiesUpdate) {
+      const userQuery = User.findOne({ [identifier.by!]: identifier.value });
+      user = await userQuery.exec() as UserDoc;
+      if (!user) return "Couldn't find the user while session initialization.";
+
+      clientUser = await populateUserDoc(userQuery.clone()).client().populate("friends");
+      clientUser!.friends = ({ pending: {}, list: {} }) as UserFields["friends"];
+      console.log("clientUser", clientUser)
+    }
 
     const userToClaims = formatUserToClaims(user),
-      generateUserJWT = new GenerateUserJWT(userToClaims);
+      generateJWT = new GenerateUserJWT();
 
-    const accessToken = generateUserJWT.accessToken(),
-      [refreshToken, newCsrfToken] = await Promise.all([
-        generateUserJWT.refreshToken(),
-        generateCsrfToken(user.id),
-      ]);
+    const accessToken = generateJWT.accessToken(userToClaims),
+      refreshToken = await generateJWT.refreshToken(userToClaims);
 
-    if (csrfToken) deleteCsrfToken(user.id, csrfToken);
-
-    // TODO: Try sameSite strict since it is same origin?
     res
       .cookie("session", accessToken, {
         path: "/",
-        maxAge: 1000 * 60 * 15, // 15 minutes.
+        maxAge: maxAge?.access || generateJWT.expiry.access * 1000,
         httpOnly: true,
         secure: true,
-        sameSite: "none",
+        sameSite: "none"
       })
       .cookie("refresh", refreshToken, {
         path: "/",
-        maxAge: 1000 * 60 * 60 * 24 * 7, // 1 week.
+        maxAge: maxAge?.refresh || generateJWT.expiry.refresh * 1000,
         httpOnly: true,
         secure: true,
-        sameSite: "none",
+        sameSite: "none"
       })
-      .setHeader("x-xsrf-token", newCsrfToken);
+    if (typeof csrfToken === "undefined") {
+      const [newCsrfToken] = await Promise.all([
+        generateCsrfToken(user.id),
+        ...(csrfToken ? [deleteCsrfToken(user.id, csrfToken)] : [])
+      ]);
+      res.setHeader("x-xsrf-token", newCsrfToken);
+    }
 
-    const clientUser = await populateUserDoc(userQuery.clone()).client().populate("friends");
-    clientUser!.friends = ({ pending: {}, list: {} }) as UserFields["friends"];
-    return (clientUser! as unknown) as UserCredentials;
+    return (clientUser! as unknown) as UserCredentials || user;
   } catch (error: any) {
     throw handleHttpError(error, "initializeSession error.");
   }
-}
-
-function formatUserToClaims(user: UserFields): UserToClaims {
-  return {
-    _id: user._id,
-    type: user.type as RegistrationTypes,
-    legal_name: user.legal_name,
-    username: user.username,
-    email: user.email,
-    verification_token: user.verification_token,
-    country: user.country,
-    region: user.region,
-    phone_number: user.phone_number,
-  };
 }

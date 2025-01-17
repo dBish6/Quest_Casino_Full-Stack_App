@@ -1,0 +1,1 @@
+export { type QuestCardProps, default as QuestCard } from "./QuestCard";

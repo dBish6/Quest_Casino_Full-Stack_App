@@ -5,43 +5,51 @@
  * Handles HTTP-related functionalities related to user authentication and management.
  */
 
-import type { ObjectId } from "mongoose";
-import type { InitializeUser, UserNotification, UserNotificationField } from "@authFeat/typings/User";
+import type { ObjectId, ClientSession, UpdateWriteOpResult } from "mongoose";
+import type { InitializeUser, UserNotification, UserNotificationField, UserClaims, UserDoc, User as UserFields } from "@authFeat/typings/User";
+
 import type { Notification } from "@qc/typescript/dtos/NotificationsDto";
-import type { UpdateProfileBodyDto, UpdateUserFavouritesBodyDto, ResetPasswordBodyDto } from "@qc/typescript/dtos/UpdateUserDto";
+import type { UpdateProfileBodyDto, UpdateUserFavouritesBodyDto, SendConfirmPasswordEmailBodyDto } from "@qc/typescript/dtos/UpdateUserDto";
 
-import { Types, startSession  } from "mongoose";
-import { hash } from "bcrypt";
-import { randomUUID } from "crypto";
-import { readFileSync } from "fs";
-import { dirname, resolve } from "path";
-import { fileURLToPath } from "url";
+import { Types, isValidObjectId, startSession  } from "mongoose";
+import { PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
+import { hash, compare } from "bcrypt";
 
+import { AVATAR_FILE_EXTENSIONS } from "@qc/constants";
 import GENERAL_BAD_REQUEST_MESSAGE from "@constants/GENERAL_BAD_REQUEST_MESSAGE";
-import USER_NOT_FOUND_MESSAGE from "@authFeat/constants/USER_NOT_FOUND_MESSAGE";
+import USER_NOT_FOUND_MESSAGE, { USER_NOT_FOUND_IN_SYSTEM_MESSAGE } from "@authFeat/constants/USER_NOT_FOUND_MESSAGE";
 
-import { logger } from "@qc/utils";
+import { logger, delay } from "@qc/utils";
 import { handleHttpError, HttpError } from "@utils/handleError";
-import sendEmail from "@utils/sendEmail";
+import trackAttempts from "@authFeatHttp/utils/trackAttempts";
+import isUuidV4 from "@utils/isUuidV4";
+import { getSocketAuthService } from "@authFeat/socket/namespaces/authNamespace";
+import getSocketId from "@authFeat/socket/utils/getSocketId";
 
 import { User, UserFriends, UserStatistics, UserActivity, UserNotifications } from "@authFeat/models";
 import { PrivateChatMessage } from "@chatFeat/models";
 import { redisClient } from "@cache";
+import { s3 } from "@aws";
 
-import { MINIMUM_USER_FIELDS, updateUserCredentials } from "@authFeat/services/authService";
-import { clearAllSessions } from "@authFeat/services/jwtService";
-import { deleteAllCsrfTokens } from "./csrfService";
+import { MINIMUM_USER_FIELDS, updateUserCredentials, updateUserFriends, getUser, getUserFriends } from "@authFeat/services/authService";
+import { formatEmailTemplate, sendEmail } from "@authFeatHttp/services/emailService";
+import { GenerateUserJWT, revokeVerificationToken, clearAllSessions, JWTVerification  } from "@authFeat/services/jwtService";
+import { deleteCsrfToken, deleteAllCsrfTokens } from "@authFeatHttp/services/csrfService";
+import { KEY } from "@authFeat/socket/services/SocketAuthService";
+
+const { AWS_REGION, AWS_S3_BUCKET } = process.env;
+const ALLOWED_PROFILE_UPDATE_FIELDS: ReadonlySet<string> = new Set(["avatar_url", "first_name", "last_name", "username", "bio", "email", "country", "region", "phone_number", "settings"]),
+  ALLOWED_PROFILE_UPDATE_SETTINGS_FIELDS: ReadonlySet<string> = new Set(["notifications", "blocked_list", "visibility", "block_cookies"]);
+
+const PASSWORD_CACHE_KEY = (userId: ObjectId | string) => `user:${userId.toString()}:pending_password`;
 
 /**
  * Registers a new user in the database.
  */
 export async function registerUser(user: InitializeUser) {
-  const userId = new Types.ObjectId(),
-    verificationToken = randomUUID()
+  const userId = new Types.ObjectId();
 
   try {
-    await redisClient.set(`user:${userId}:verification_token`, verificationToken);
-
     if (user.password && user.type === "standard") user.password = await hash(user.password, 12);
     else user.password = `${user.type} provided`;
 
@@ -52,12 +60,11 @@ export async function registerUser(user: InitializeUser) {
         new User({
           _id: userId,
           legal_name: { first: user.first_name, last: user.last_name },
-          verification_token: verificationToken,
           friends: userId,
           statistics: userId,
           activity: userId,
           notifications: userId,
-          ...user,
+          ...user
         }),
         new UserFriends({ _id: userId }),
         new UserStatistics({ _id: userId }),
@@ -65,7 +72,7 @@ export async function registerUser(user: InitializeUser) {
         new UserNotifications({ _id: userId }),
         new PrivateChatMessage({ _id: userId })
       ];
-      for await (const doc of docs) doc.save({ session });
+      for (const doc of docs) await doc.save({ session });
     }).finally(() => session.endSession());
 
     logger.info(`User ${userId} was successfully registered in the database.`);
@@ -77,28 +84,19 @@ export async function registerUser(user: InitializeUser) {
 /**
  * Verifies the user's verification token that was used to create the unique verification link
  * and returns the verified user.
- * @throws `HttpError 403` verification token disparity.
+ * @throws `HttpError 403` invalid verification token.
  * @throws `HttpError 404` user not found.
  */
-export async function emailVerify(userId: string, verificationToken: string) {
+export async function emailVerify(userId: ObjectId | string) {
   try {
-    const cachedToken = await redisClient.get(`user:${userId}:verification_token`);
-    if (verificationToken !== cachedToken) 
-      throw new HttpError("Verification token disparity.", 403);
-
-    const clientUser = await updateUserCredentials(
-      {
-        by: "verification_token",
-        value: verificationToken
-      },
-      {
-        $set: { email_verified: true },
-      },
-      { new: true, forClient: true }
+    const updatedUser = await updateUserCredentials(
+      { by: "_id", value: userId },
+      { $set: { email_verified: true } },
+      { new: true, lean: true }
     );
-    await redisClient.del(`user:${userId}:verification_token`);
+    await revokeVerificationToken(userId);
     
-    return clientUser;
+    return updatedUser;
   } catch (error: any) {
     throw handleHttpError(error, "emailVerify service error.");
   }
@@ -107,35 +105,12 @@ export async function emailVerify(userId: string, verificationToken: string) {
  * Sends an email with a verification link to the specified email address.
  * @throws `HttpError 541` SMTP rejected.
  */
-export async function sendVerifyEmail(
-  email: string,
-  verificationToken: string
-) {
-  const __dirname = dirname(fileURLToPath(import.meta.url));
+export async function sendVerifyEmail(user: UserClaims) {
+  const generateJWT = new GenerateUserJWT();
 
   try {
-    const template = readFileSync(
-        resolve(__dirname, "../emails/templates/verifyEmail.html"),
-        "utf-8"
-      ),
-      footerPartial = readFileSync(
-        resolve(__dirname, "../../../../emails/partials/footer.html"),
-        "utf-8"
-      );
-
-    const html = template
-      .replace(
-        "<!--link-->",
-        `<a class="verifyLink" aria-describedby="txt" href="http://localhost:3000/about?verify=${verificationToken}">Verify Email</a`
-      )
-      .replace("<!--footer-->", footerPartial);
-
-    const info = await sendEmail(email, "Email Verification", html);
-    if (info.rejected.length)
-      throw new HttpError(
-        "Your email was rejected by our SMTP server during sending. Please consider using a different email address. If the issue persists, feel free to reach out to support.",
-        541
-      );
+    const verificationToken = await generateJWT.verificationToken(user);
+    await sendEmail(user.email, formatEmailTemplate("verify", { token: verificationToken }));
   } catch (error: any) {
     throw handleHttpError(error, "sendVerifyEmail service error.");
   }
@@ -148,7 +123,7 @@ export async function searchUsers(username: string) {
   try {
     return await User.find({
       username: { $regex: username, $options: "i" }
-    }).select(MINIMUM_USER_FIELDS).limit(50);
+    }).select(MINIMUM_USER_FIELDS).limit(50).lean();
   } catch (error: any) {
     throw handleHttpError(error, "searchUsers service error.");
   }
@@ -257,23 +232,375 @@ export async function deleteUserNotifications(
   }
 }
 
-// /**
-//  * Updates the user's profile details based on the client edit
-//  */
-export async function updateProfile(userId: ObjectId | string, body: UpdateProfileBodyDto) {
+/**
+ * Gets specific user profile data from the database needed for the client.
+ * @throws `HttpError 404` user not found.
+ */
+export async function getUserProfile(idOrUsername: ObjectId | string) {
   try {
-    // const updatedUser = await updateUserCredentials(
-    //   {
-    //     by: "_id",
-    //     value: userId
-    //   },
-    //   {
-    //     $set: { },
-    //   },
-    //   { new: true, forClient: true }
-    // )
+    const privateProfile = isValidObjectId(idOrUsername),
+      publicProfile = !privateProfile && typeof idOrUsername === "string";
+
+    if (!privateProfile && !publicProfile) throw new HttpError("Access Denied", 403);
+
+    const profileData = await User.aggregate([
+      {
+        $match: privateProfile
+          ? { _id: new Types.ObjectId(idOrUsername as string) }
+          : { username: idOrUsername }
+      },
+      {
+        $lookup: {
+          from: "user_activity",
+          localField: "activity",
+          foreignField: "_id",
+          as: "activityData"
+        }
+      },
+      { $unwind: "$activityData" },
+      {
+        $set: {
+          "activityData.game_history": {
+            $sortArray: {
+              input: "$activityData.game_history",
+              sortBy: { timestamp: -1 }
+            }
+          }
+        }
+      },
+
+      ...(publicProfile
+        ? [
+            {
+              $lookup: {
+                from: "user_statistics",
+                localField: "statistics",
+                foreignField: "_id",
+                as: "statisticsData"
+              }
+            },
+            { $unwind: "$statisticsData" },
+
+            {
+              $set: {
+                progressQuestArray: {
+                  $objectToArray: "$statisticsData.progress.quest"
+                }
+              }
+            },
+            {
+              $lookup: {
+                from: "game_quest",
+                let: { quests: "$progressQuestArray" },
+                pipeline: [
+                  {
+                    $match: {
+                      $expr: {
+                        $in: ["$_id", { $map: { input: "$$quests", as: "quest", in: "$$quest.v.quest" } }]
+                      }
+                    }
+                  },
+                  { $project: { _id: 1, cap: 1 } }
+                ],
+                as: "questDetails"
+              }
+            },
+            {
+              $set: {
+                progress: {
+                  quest: {
+                    $arrayToObject: {
+                      $map: {
+                        input: "$progressQuestArray",
+                        as: "questEntry",
+                        in: {
+                          k: "$$questEntry.k",
+                          v: {
+                            $mergeObjects: [
+                              "$$questEntry.v",
+                              {
+                                quest: {
+                                  $let: {
+                                    vars: {
+                                      matchedQuest: {
+                                        $arrayElemAt: [
+                                          {
+                                            $filter: {
+                                              input: "$questDetails",
+                                              as: "quest",
+                                              cond: { $eq: ["$$quest._id", "$$questEntry.v.quest"] }
+                                            }
+                                          },
+                                          0
+                                        ]
+                                      }
+                                    },
+                                    in: {
+                                      cap: "$$matchedQuest.cap"
+                                    }
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              $project: {
+                "statisticsData._id": 0,
+                "statisticsData.created_at": 0,
+                "statisticsData.updated_at": 0
+              }
+            },
+            {
+              $set: {
+                statisticsData: {
+                  progress: "$progress"
+                }
+              }
+            },
+          ]
+        : []),
+
+      {
+        $group: {
+          _id: "$_id",
+          email: { $first: "$email" },
+          game_history: { $first: "$activityData.game_history" },
+          ...(publicProfile && {
+            member_id: { $first: "$member_id" },
+            username: { $first: "$username" },
+            legal_name: { $first: "$legal_name" },
+            avatar_url: { $first: "$avatar_url" },
+            bio: { $first: "$bio" },
+            statistics: { $first: "$statisticsData" }
+          })
+        }
+      },
+      {
+        $project: {
+          _id: 1,
+          email: 1,
+          activity: { game_history: "$game_history" },
+          ...(publicProfile && {
+            member_id: 1,
+            username: 1,
+            legal_name: 1,
+            avatar_url: 1,
+            bio: 1,
+            statistics: 1
+          })
+        }
+      }
+    ]);
+    if (!profileData?.length) throw new HttpError(USER_NOT_FOUND_IN_SYSTEM_MESSAGE, 404);
+
+    let user = profileData[0];
+    if (publicProfile) {
+      const activityStatus = (await redisClient.get(KEY(profileData[0]._id).status)) || "offline";
+      user.activity.status = activityStatus;
+    }
+
+    return user;
   } catch (error: any) {
+    throw handleHttpError(error, "getUserProfile service error.");
+  }
+}
+
+/**
+ * Updates the user's profile details based on the client edit.
+ * @throws `HttpError 400` when avatar_url is not a image or the url isn't valid.
+ * @throws `HttpError 403` forbidden if a unusual key is passed in the body or if there is more fields in the body when the avatar_url is requested.
+ * @throws `HttpError 404` user not found.
+ * @throws `HttpError 409` conflict if there is a pending password and they request to change their email. 
+ * @throws `HttpError 429` too many update attempts.
+ */
+export async function updateProfile(user: UserClaims, body: UpdateProfileBodyDto) {
+  let session: ClientSession | undefined;
+
+  try {
+    return await trackAttempts<{ updatedUser: UserDoc; updatedFields: UpdateProfileBodyDto; unfriended?: true }>(
+      user.sub,
+      "update_profile_attempts",
+      "Profile update limit reached. You can only attempt to update your profile up to 6 times within a 24-hour period. Please try again later.",
+      async () => {
+        if ((await redisClient.get(PASSWORD_CACHE_KEY(user.sub))) && body.email)
+          throw new HttpError(
+            "Confirmation is still pending for your password change. Please confirm the change via your current email before attempting to change your email. You can also cancel password reset.",
+            409
+          );
+
+        const bodyKeys = Object.keys(body);
+
+        for (const field of bodyKeys) {
+          if (!ALLOWED_PROFILE_UPDATE_FIELDS.has(field))
+            throw new HttpError("Access Denied; Invalid credentials.", 403);
+          else if (!body[field as keyof UpdateProfileBodyDto]) delete body[field as keyof UpdateProfileBodyDto];
+
+          if (field === "settings") {
+            for (const settingField of Object.keys(body.settings!)) {
+              if (!ALLOWED_PROFILE_UPDATE_SETTINGS_FIELDS.has(settingField)) 
+                throw new HttpError("Access Denied; Invalid credentials.", 403);
+            }
+          }
+        }
+
+        let query: {
+          $set: { [key in keyof UserFields]?: any };
+          $unset: { [key in keyof UserFields]?: any };
+        } = { $set: {}, $unset: {} };
+        let updatedFriends: UpdateWriteOpResult | undefined;
+
+        // Single updates for the avatar.
+        if (body.avatar_url) {
+          if (bodyKeys.length > 1) throw new HttpError("Access Denied", 403);
+ 
+          const match = (body.avatar_url as string).match(/^data:image\/(.*?);base64,(.+)$/);
+          if (!AVATAR_FILE_EXTENSIONS.has((match || [""])[1])) 
+            throw new HttpError("The avatar_url is not a image or the url isn't valid.", 400);
+
+          const fileBuffer = Buffer.from(match![2], "base64");
+          if (fileBuffer.length > 500 * 1024)
+            throw new HttpError("File size exceeds the maximum size of 500 KB.", 400);
+
+          const ext = match![1],
+            path = `avatars/${user.member_id}/avatar.${ext}`;
+
+          // Overrides
+          await s3.send(
+            new DeleteObjectCommand({ Bucket: AWS_S3_BUCKET, Key: path})
+          );
+          await s3.send(new PutObjectCommand({
+            Bucket: AWS_S3_BUCKET,
+            Key: path,
+            Body: Buffer.from(match![2], "base64"),
+            ContentType: `image/${ext}`,
+            ACL: "public-read"
+          }));
+
+          query.$set.avatar_url = `https://${AWS_S3_BUCKET}.s3.${AWS_REGION}.amazonaws.com/${path}`;
+        }
+        // Only should be their settings being updated. 
+        else if (body.settings) {
+          if (bodyKeys.length > 1) throw new HttpError("Access Denied", 403);
+
+          if (body.settings.blocked_list) {
+            for (const blkUser of body.settings.blocked_list) {
+              if (!["delete", "add"].includes(blkUser.op) || !isUuidV4(blkUser.member_id))
+                throw new HttpError(GENERAL_BAD_REQUEST_MESSAGE, 400);
+
+              if (blkUser.op === "add") {
+                if (body.settings!.blocked_list.length > 1) throw new HttpError("Access Denied", 403); // Should never be multiple users being blocked (you can only block when viewing a single user profile).
+
+                const blkUserDoc = await getUser("member_id", blkUser.member_id, {
+                  projection: "_id",
+                  lean: true
+                });
+                if (!blkUserDoc)
+                  throw new HttpError(
+                    "Unexpectedly, this user was not found to block, this profile doesn't exist.", 404
+                  );
+
+                const userFriendsDoc = await getUserFriends(user.sub, { lean: true });
+                // Removes the newly blocked user from the current user's friends list and blocked user's if in friends list.
+                if (userFriendsDoc.list.has(blkUser.member_id)) {
+                  session = await startSession();
+                  session.startTransaction();
+
+                  updatedFriends = await updateUserFriends(
+                    { by: "_id", value: user.sub },
+                    { $unset: { [`list.${blkUser.member_id}`]: "" } },
+                    { session }
+                  );
+                  await updateUserFriends(
+                    { by: "_id", value: blkUserDoc._id },
+                    { $unset: { [`list.${user.member_id}`]: "" } },
+                    { session }
+                  );
+                  const socketAuthService = getSocketAuthService();
+
+                  const friendSocketId = await getSocketId(blkUser.member_id);
+                  if (friendSocketId) socketAuthService.emitFriendUpdate({ remove: { list: user.member_id } }, friendSocketId);
+                  socketAuthService.emitFriendUpdate({ remove: { list: blkUser.member_id } });
+
+                  await socketAuthService.emitNotification(
+                    { _id: blkUserDoc._id, member_id: blkUser.member_id },
+                    { type: "general", title: "Unfriended", message: `${user.username} just unfriended you.` },
+                    { silent: true }
+                  )
+                }
+
+                query.$set = { [`settings.blocked_list.${blkUser.member_id}`]: blkUserDoc._id };
+              } else {
+                (query.$unset as any)[`settings.blocked_list.${blkUser.member_id}`] = "";
+              }
+            }
+          }
+        }
+        // Everything else.
+        else {
+          const { first_name, last_name, ...rest } = body;
+          query.$set = {
+            ...rest,
+            ...(first_name && { "legal_name.first": first_name }),
+            ...(last_name && { "legal_name.last": last_name }),
+            ...(rest.email && { email_verified: false })
+          };
+        }
+
+        const updatedUser = await User.findOneAndUpdate(
+          {
+            _id: user.sub,
+            $expr: { $lte: [{ $ifNull: ["$limit_changes.country", 0] }, 2] } // Only can be 2 changes to their country.
+          },
+          {
+            ...query,
+            ...(query.$set.country && {
+              $inc: { "limit_changes.country": 1 },
+              ...(!query.$set.region && { $unset: { region: "" } })
+            })
+          },
+          { session, new: true }
+        )
+        .select(
+          `-_id ${bodyKeys} ${(query.$set as any)["legal_name.first"] || (query.$set as any)["legal_name.first"] ? "legal_name" : ""}`
+        )
+        .lean();
+        if (!updatedUser) {
+          // Checks if the reason wasn't because of the id.
+          const exists = await User.exists({ _id: user.sub });
+          if (!exists) throw new HttpError(USER_NOT_FOUND_MESSAGE, 404);
+
+          throw new HttpError("Country update limit reached. You can only update your country 2 times.", 400);
+        }
+
+        // updatedFriends should be defined when there is a session.
+        await session?.commitTransaction();
+
+        return {
+          ...(query.$set.email && {
+            updatedUser: {
+              ...(await getUser("_id", user.sub, {
+                lean: true,
+                throwDefault404: true
+              }))
+            }
+          }),
+          updatedFields: updatedUser,
+          ...(updatedFriends && { unfriended: true })
+        };
+      }
+    );
+  } catch (error: any) {
+    await session?.abortTransaction();
     throw handleHttpError(error, "updateProfile service error.", 500);
+  } finally {
+    session?.endSession();
   }
 }
 
@@ -288,7 +615,7 @@ export async function updateUserFavourites(
   try {
     await User.bulkWrite(
       favourites.map((favourite) => {
-        if (!["delete", "add"].includes(favourite.op))
+        if (!["delete", "add"].includes(favourite.op) || !favourite.title)
           throw new HttpError(GENERAL_BAD_REQUEST_MESSAGE, 400);
 
         const isAdd = favourite.op === "add";
@@ -314,29 +641,150 @@ export async function updateUserFavourites(
 }
 
 /**
- * 
+ * Updates the user's password in the database, clears all sessions and sends a success email.
+ * @throws `HttpError 404` no pending password.
  */
-export async function resetPassword(
-  userId: ObjectId | string, 
-  password: ResetPasswordBodyDto
-) {
+export async function resetPassword(userId: string, email: string) {
   try {
+    await trackAttempts(
+      userId,
+      "reset_password_attempts",
+      "Too many reset password attempts, limit has been reached. Try again later after 24 hours.",
+      async () => {
+        const pendingPassword = await redisClient.get(PASSWORD_CACHE_KEY(userId));
+        // This error should pretty much never happen since the token and this cache entry has the same expiry.
+        if (!pendingPassword)
+          throw new HttpError("It looks like your password reset has expired right at this moment of submission. Unlucky, Please request a new one.", 404);
+        
+        await updateUserCredentials(
+          { by: "_id", value: userId },
+          { $set: { password: pendingPassword } }
+        );
+        await Promise.all([
+          wipeUser(userId),
+          revokeVerificationToken(userId)
+        ]);
 
+        await sendEmail(email, formatEmailTemplate("passwordResetSuccess"));
+      },
+      { max: 4 }
+    );
   } catch (error: any) {
     throw handleHttpError(error, "resetPassword service error.");
   }
 }
 
 /**
- * 
+ * Sends a confirmation email with a verification token to confirm their password change.
+ * Handles both forgot password and profile password reset flows.
+ * @throws `HttpError 400` passwords doesn't match if reset.
+ * @throws `HttpError 404` user not found if reset.
  */
-export async function sendResetPasswordEmail(
-  userId: ObjectId | string, email: string
+export async function sendConfirmPasswordEmail(
+  userId: string,
+  email: string, 
+  body: SendConfirmPasswordEmailBodyDto
 ) {
+  const generateJWT = new GenerateUserJWT();
+
   try {
-    
+    await trackAttempts(
+      userId,
+      "reset_password_attempts",
+      "Too many reset password attempts, limit has been reached. Try again later after 24 hours.",
+      async () => {
+        const isForgot = "verification_token" in body; // From forgot reset form else from profile reset form.
+        let newPassword = isForgot ? body.password : body.password.new as string;
+
+        const user = await getUser("_id", userId, {
+          projection: "-_id password",
+          lean: true,
+          throwDefault404: true
+        });
+        if (await compare(newPassword, user.password)) throw new HttpError("Please provide a new password.", 400);
+
+        if (!isForgot && !(await compare(body.password.old as string, user.password)))
+            throw new HttpError("Old password doesn't match your existing password.", 400);
+
+        newPassword = await hash(isForgot ? body.password : body.password.new as string, 12);
+         const [verificationToken] = await Promise.all([
+            generateJWT.verificationToken({ _id: userId, email }, { expiresIn: 15 * 60 }),
+            redisClient.set(PASSWORD_CACHE_KEY(userId), newPassword, { EX: 15 * 60 })
+          ]);
+
+        await sendEmail(email, formatEmailTemplate("confirmPassword", { token: verificationToken }));
+      }
+    );
   } catch (error: any) {
-    throw handleHttpError(error, "sendResetPasswordEmail service error.");
+    throw handleHttpError(error, "sendConfirmPasswordEmail service error.");
+  }
+}
+
+/**
+ * Generates a verification token and sends the forgot password email if the user exists.
+ */
+export async function sendForgotPasswordEmail(email: string) {
+  const generateJWT = new GenerateUserJWT();
+
+  try {
+    const user = await getUser("email", email, { projection: "email", lean: true });
+
+    if (user) {
+      const verificationToken = await generateJWT.verificationToken(user, { expiresIn: 60 * 60 * 24 }); // 24 hours.
+      await sendEmail(user.email, formatEmailTemplate("forgotPassword", { token: verificationToken }));
+    } else {
+      await delay(200);
+    }
+  } catch (error: any) {
+    throw handleHttpError(error, "sendForgotPasswordEmail service error.");
+  }
+}
+
+/**
+ * Deletes the verification token and pending password from the cache.
+ */
+export async function revokePasswordResetConfirmation(userId: ObjectId | string) {
+  try {
+    await Promise.all([
+      revokeVerificationToken(userId),
+      redisClient.del(PASSWORD_CACHE_KEY(userId))
+    ]);
+  } catch (error: any) {
+    throw handleHttpError(error, "revokePasswordResetConfirmation service error.");
+  }
+}
+
+/**
+ * Logs out the user by attempting to find the user through the access and refresh tokens. If that fails,
+ * it falls back to retrieving the user from the database. Lastly, deleting the user's cached CSRF token
+ * if the user is found
+ * @throws `HttpError 404` user not found.
+ */
+export async function logout(
+  { access = "", refresh = "" },
+  username: string,
+  csrfToken = ""
+) {
+  const jwtVerification  = new JWTVerification();
+
+  try {
+    let user;
+
+    user = jwtVerification.getFirstValidUserClaims({ access, refresh });
+    if (!user) {
+      user = await getUser("username", username, {
+        projection: "_id",
+        lean: true
+      });
+      if (!user)
+        throw new HttpError("Unexpectedly couldn't find the user after login.", 404);
+    }
+
+    await deleteCsrfToken((user as UserClaims).sub || user._id, csrfToken);
+
+    return user;
+  } catch (error: any) {
+    throw handleHttpError(error, "logout service error.");
   }
 }
 
@@ -356,6 +804,7 @@ export async function wipeUser(userId: ObjectId | string) {
 
 /**
  * Deletes a user from the database and their refresh tokens.
+ * TODO:
  */
 export async function deleteUser(userId: ObjectId | string) {
   try {

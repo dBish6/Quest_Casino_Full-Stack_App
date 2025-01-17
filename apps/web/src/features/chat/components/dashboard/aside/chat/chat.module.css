@@ -75,8 +75,8 @@
             margin-bottom: 0 !important;
           }
           & .header {
-            display: flex;
-            justify-content: space-between;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
             align-items: center;
             gap: 6px;
             & h4 {
@@ -91,6 +91,14 @@
         }
         & .message {
           & .header {
+            &[data-user] {
+              & :first-child {
+                grid-column: 2;
+              }
+              & :last-child {
+                grid-row: 1;
+              }
+            }
             & h4 {
               font: var(--para-xx-small);
             }
@@ -183,8 +191,7 @@
             & .header {
               margin-bottom: 4px;
               /* A message sent by the current user. */
-              &[data-user],
-              &[data-user] > div {
+              &[data-user] .nameAva {
                 flex-direction: row-reverse;
               }
               & .nameAva h4 {

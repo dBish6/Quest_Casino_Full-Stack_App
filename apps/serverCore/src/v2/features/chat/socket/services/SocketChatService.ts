@@ -49,7 +49,7 @@ export default class SocketChatService {
     logger.debug("socket manageChatRoom:", { access_type, room_id, last_message });
 
     try {
-      const user = this.socket.decodedClaims!;
+      const user = this.socket.userDecodedClaims!;
 
       if (typeof room_id === "object" && ["global", "private"].includes(access_type)) {
         if (Object.values(room_id).length) {
@@ -59,7 +59,7 @@ export default class SocketChatService {
             const globalRoomId = chatRoomsUtils.getGlobalChatRoomId(roomId);
             room_id = { ...room_id, join: globalRoomId };
           } else {
-            room_id = { ...room_id, join: getFriendRoom(user.verification_token, roomId) };
+            room_id = { ...room_id, join: getFriendRoom(user.member_id, roomId) };
           }
         }
       } else {
@@ -113,12 +113,12 @@ export default class SocketChatService {
   /**
    * Notifies the friend when the user starts or stops typing in private chat rooms.
    */
-  public async typing({ friend_ver_token, is_typing }: TypingEventDto, callback: SocketCallback) {
-    logger.debug("socket typing", { friend_ver_token, is_typing });
-
+  public async typing({ friend_member_id, is_typing }: TypingEventDto, callback: SocketCallback) {
+    logger.debug("socket typing", { friend_member_id, is_typing });
+  
     try {
       this.socket
-        .to(getFriendRoom(this.socket.decodedClaims!.verification_token, friend_ver_token))
+        .to(getFriendRoom(this.socket.userDecodedClaims!.member_id, friend_member_id))
         .emit(ChatEvent.FRIEND_TYPING_ACTIVITY, { is_typing });
 
       callback({
@@ -176,13 +176,13 @@ export default class SocketChatService {
     logger.debug(`Chat socket instance disconnected; ${this.socket.id}.`);
 
     try {
-      const user = this.socket.decodedClaims!,
-        userFriends = await getUserFriends(user.sub);
+      const user = this.socket.userDecodedClaims!,
+        userFriends = await getUserFriends(user.sub, { lean: true });
 
       const promises: Promise<void>[] = [];
       for (const friend of userFriends.list.values()) {
         promises.push(
-          archiveChatMessageQueue(getFriendRoom(user.verification_token, friend.verification_token))
+          archiveChatMessageQueue(getFriendRoom(user.member_id, friend.member_id))
         );
       }
       await Promise.all(promises);
@@ -197,10 +197,10 @@ export default class SocketChatService {
   private async cacheChatMessage(chatMessage: Omit<ChatMessage, "_id"> | LastChatMessageDto, isLast?: boolean) {
     try {
       if (isLast) {
-        // TODO: If the last message sent in a private chat was 3 days ago, save it anyways? If there is no message just cache?  (prob should use db for totally inactive users).
+        // TODO: If the last message sent in a private chat was 3 days ago, save it anyways? If there is no message just cache? (prob should use db for totally inactive users (don't save if they're totally inactive...)).
         await redisClient.set(`chat:${chatMessage.room_id}:last_message`, chatMessage.message);
       } else {
-        await archiveChatMessageQueue(chatMessage.room_id, this.socket.decodedClaims!.sub);
+        await archiveChatMessageQueue(chatMessage.room_id, this.socket.userDecodedClaims!.sub);
         // Message cache.
         await redisClient.lPush(`chat:${chatMessage.room_id}:message_queue`, JSON.stringify(chatMessage));
       }

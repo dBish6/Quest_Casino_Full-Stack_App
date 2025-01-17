@@ -1,0 +1,13 @@
+:root {
+  --large-breakpoint: 1415px;
+  --medium-breakpoint: 1414px;
+  --small-breakpoint: 600px;
+
+  --chat-aside-breakpoint-profile: 1200px;
+}
+
+@custom-media --large-breakpoint (width >= 1415px);
+@custom-media --medium-breakpoint (width >= 601px) and (width <= 1414px);
+@custom-media --small-breakpoint (width <= 600px);
+
+@custom-media --chat-aside-breakpoint (width <= 1000px);

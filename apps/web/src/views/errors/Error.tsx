@@ -1,10 +1,15 @@
 import { useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 
-import { useAppSelector } from "@redux/hooks";
+import { history } from "@utils/History";
+
+import { useAppDispatch, useAppSelector } from "@redux/hooks";
 import { selectUserCredentials } from "@authFeat/redux/authSelectors";
-import { useLogoutMutation } from "@authFeat/services/authApi";
+import { attemptLogout } from "@authFeat/services/handleLogout";
 
 import { Main } from "@components/dashboard";
+import { Button } from "@components/common/controls";
+import { Link } from "@components/common";
 
 import s from "./errors.module.css";
 
@@ -17,31 +22,44 @@ export interface ErrorPageProps {
 const LOGOUT_STATUSES = new Set([401, 403]);
 
 export default function Error({ status, title, description }: ErrorPageProps) {
-  const user = useAppSelector(selectUserCredentials);
-  
+  const [_, setSearchParams] = useSearchParams(),
+    user = useAppSelector(selectUserCredentials),
+    dispatch = useAppDispatch();
+
   if (user && LOGOUT_STATUSES.has(status)) {
-    const [postLogout] = useLogoutMutation();
-
     useEffect(() => {
-      const docStyle = document.documentElement.style;
-      docStyle.pointerEvents = "none";
-      docStyle.cursor = "wait";
-
-      postLogout({ username: user!.username }).finally(() => {
-        docStyle.pointerEvents = "";
-        docStyle.cursor = "";
-      });
+      attemptLogout(dispatch, user.username, setSearchParams);
     }, []);
   }
 
   return (
-    <Main className={s.error}>
+    <Main className={s.error} {...(title === "Application Error" && { style: { height: "100vh" } })}>
       <hgroup role="group" aria-roledescription="heading group">
         <h2>
           Error {status}: <span>{title}</span>
         </h2>
         <p aria-roledescription="subtitle">{description}</p>
       </hgroup>
+
+      {[500, 404].includes(status) && (
+        <Button
+          intent="primary"
+          size="xl"
+          {...(title.includes("Page")
+            ? {
+                asChild: true
+              }
+            : {
+                onClick: () => history.replacePath("/home")
+              })}
+        >
+          {title.includes("Page") ? (
+            <Link aria-label="Quest Casino Home" to="/home">Home</Link>
+          ) : (
+            "Refresh"
+          )}
+        </Button>
+      )}
     </Main>
   );
 }

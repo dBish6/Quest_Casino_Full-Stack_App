@@ -5,7 +5,6 @@
     transform: translate(calc(-50% + 8px), -50%) !important;
   }
   & > :global(.viewport) {
-    padding-bottom: 0 !important;
     padding: 1.5rem 1rem 0 1rem !important;
     max-height: 759px;
     overflow: hidden;
@@ -181,14 +180,14 @@
         & .sectionHead {
           display: flex;
           align-items: center;
-          &[data-catagories="true"] {
+          &[data-categories="true"] {
             justify-content: space-between;
             margin-block: 0.75rem 0.5rem;
             & small {
               transform: translateY(4px);
             }
           }
-          &[data-catagories="false"] {
+          &[data-categories="false"] {
             justify-content: flex-end;
             margin-block: 1rem 0.5rem;
           }
@@ -203,7 +202,7 @@
           border-bottom: 2px solid var(--c-purple-border);
         }
         & ul {
-          width: 100%;
+          /* width: 100%; */
           & li {
             width: calc(100% + 2rem);
             transform: translateX(-1rem);

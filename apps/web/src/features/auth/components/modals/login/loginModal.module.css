@@ -1,7 +1,22 @@
 .modal :global(.viewport) {
   padding-bottom: 1rem !important;
-  max-height: 484px;
+  max-height: 491px;
   & > div {
+    & form {
+      & :global(.inputs) :global(.control):last-of-type {
+        margin-bottom: 3px !important;
+      }
+      & .forgot {
+        display: flex;
+        justify-content: flex-end;
+        margin-bottom: 14px;
+        & a {
+          font: var(--para-x-small);
+          color: var(--c-para-faded);
+        }
+      }
+    }
+
     & > button:last-of-type {
       margin-bottom: 1.5rem;
     }

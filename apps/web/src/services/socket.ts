@@ -1,9 +1,17 @@
 import type { Socket } from "socket.io-client";
 import type { SocketResponse } from "@typings/ApiResponse";
+import type { AppDispatch } from "@redux/store";
+import type SocketExtendedError from "@qc/typescript/typings/SocketExtendedError";
 
 import { io } from "socket.io-client";
+import { throttle } from "tiny-throttle";
+
 import { logger } from "@qc/utils";
 import { history } from "@utils/History";
+
+import { authEndpoints } from "@authFeat/services/authApi";
+import { authTokenExpiredToast } from "@redux/toast/toastSlice";
+import { attemptLogout } from "@authFeat/services/handleLogout";
 
 export const namespaces = ["auth", "chat"] as const;
 export type SocketNamespaces = (typeof namespaces)[number];
@@ -17,13 +25,13 @@ const socketInstances: Partial<Record<SocketNamespaces, Socket>> = {};
 /**
  * Creates a socket instance only once for a specific namespace.
  */
-export function getSocketInstance(namespace: SocketNamespaces): Socket {
+export function getSocketInstance(namespace: SocketNamespaces) {
   if (!socketInstances[namespace]) {
     const socket = io(`${baseUrl}/${namespace}`, {
       autoConnect: false,
       reconnection: false,
       transports: ["websocket", "polling"],
-      withCredentials: true,
+      withCredentials: true
     });
 
     socketInstances[namespace] = socket;
@@ -48,11 +56,30 @@ export function emitAsPromise(socket: Socket) {
   };
 }
 
+// So all namespaces waits for the one request (the connections happen concurrently for a quicker resolve).
+const onGoingRequest: {
+  refresh: Promise<any> | null;
+  logout: Promise<any> | null;
+} = { refresh: null, logout: null };
+
+const throttledLogoutFinally = throttle(
+  (dispatch: AppDispatch, socket: Socket, reject: (reason?: any) => void) => {
+    onGoingRequest.logout = null;
+    dispatch(authTokenExpiredToast());
+    socket.removeAllListeners();
+    reject();
+  },
+  1000
+);
 /**
  * Establishes connections to the host for all socket instances and handles retries up to 9 times if the connection fails. Ensures all socket
  * instances are set up appropriately.
  */
-export async function socketInstancesConnectionProvider(timeoutObj: TimeoutObj) {
+export async function socketInstancesConnectionProvider(
+  timeoutObj: TimeoutObj,
+  username: string,
+  dispatch: AppDispatch
+) {
   const connections = namespaces.map(async (namespace) => {
     const socket = getSocketInstance(namespace);
 
@@ -65,44 +92,74 @@ export async function socketInstancesConnectionProvider(timeoutObj: TimeoutObj) 
           socket
             .on("connect", () => {
               logger.info(
-                `${import.meta.env.DEV ? `Connection established for ${namespace} socket; ` : ""}${socket.id}`
+                `Connection established for ${namespace} socket${import.meta.env.DEV ? `; ${socket.id}` : "."}`
               );
 
               socket.removeAllListeners();
               resolve({ socket, namespace });
             })
-            .on("connect_error", (error) => {
-              logger.error(`${namespace} socket instance connection error:\n`, error.message);
+            // @ts-ignore
+            .on("connect_error", async (error: SocketExtendedError) => {
+              const err = error.data;
+              logger.error(`${namespace} socket instance connection error:\n`, err || error.message);
 
-              if (["unauthorized", "verification required", "forbidden"].includes(error.message)) {
-                if (error.message === "forbidden") history.push("/error-403");
-                else history.push("/error-401");
+              // Sockets verify the tokens on the connection attempts.
+              if (["unauthorized", "forbidden"].includes(err?.status)) {
+                if (err.ERROR === "Within refresh threshold.") {
+                  if (!onGoingRequest.refresh)
+                    onGoingRequest.refresh = dispatch(
+                      authEndpoints.refresh.initiate({ username })
+                    ).unwrap();
 
-                socket.removeAllListeners();
-                reject();
+                  await onGoingRequest.refresh
+                    .then(() => retry(true))
+                    .catch(async () => logout())
+                    .finally(() => (onGoingRequest.refresh = null));
+                } else if (
+                  err.ERROR.includes("expired") || err.ERROR.includes("missing")
+                ) {
+                  await logout();
+                } else {
+                  if (err.status === "unauthorized") history.push("/error-401");
+                  else history.push("/error-403");
+                  socket.removeAllListeners();
+                  reject();
+                }
               } else {
-                const timeout = setTimeout(() => attemptConnection(), 5000);
-                timeoutObj[namespace] = timeout;
+                retry();
               }
             });
+          const attemptConnection = (plus1?: boolean) => {
+              if (!plus1) retries--;
 
-          const attemptConnection = () => {
-            retries--;
-            logger.debug(
-              `${namespace} socket instance attempting to establish a connection; ${retries} retries left...`
-            );
-            socket.connect();
-
-            if (retries === 0) {
-              socket.removeAllListeners();
-              reject(
-                new Error(
-                  `Failed to establish a stable connection with ${namespace} socket instance.`
-                )
+              logger.debug(
+                `${namespace} socket instance attempting to establish a connection; ${retries} retries left...`
               );
-            }
+              socket.connect();
+
+              if (retries === 0) {
+                socket.removeAllListeners();
+                reject(
+                  new Error(
+                    `Failed to establish a stable connection with ${namespace} socket instance.`
+                  )
+                );
+              }
+            },
+            retry = (plus1?: boolean) => {
+              const timeout = setTimeout(() => attemptConnection(plus1), 5000);
+              timeoutObj[namespace] = timeout;
+            };
+
+          /** Logs out and prompts to login. */
+          const logout = async () => {
+            if (!onGoingRequest.logout)
+              onGoingRequest.logout = attemptLogout(dispatch, username);
+          
+            await onGoingRequest.logout.finally(() => throttledLogoutFinally(dispatch, socket, reject));
           };
-          attemptConnection();
+
+          attemptConnection(); // Init
         }
       }
     ).then(({ socket, namespace }) => setupDefaultListeners(socket, namespace));
@@ -137,6 +194,6 @@ function setupDefaultListeners(socket: Socket, namespace: SocketNamespaces) {
   );
 
   socket.on("disconnect", () => {
-    console.log("DISCONNECTING");
+    // TODO:
   });
 }

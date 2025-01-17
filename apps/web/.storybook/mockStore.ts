@@ -12,56 +12,65 @@ const authState: AuthState = {
   user: {
     credentials: {
       type: "standard",
+      member_id: "67eee57f-ab1a-4f0a-8e27-3d8f5d510433",
       avatar_url: "/images/jamie-butler.webp",
       legal_name: { first: "Test", last: "Tester" },
       email_verified: false,
       username: "Testest",
-      verification_token: "1234",
       country: "Canada",
       bio: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam tincidunt eget dui ac ornare. Sed congue tellus in lectus imperdiet, ac facilisis lorem suscipit. Nulla scelerisque consectetur ipsum.",
       balance: 0,
+      favourites: {},
+      settings: {
+        notifications: true,
+        blocked_list: {},
+        visibility: true,
+        block_cookies: false
+      },
       friends: {
-        pending: [],
-        list: []
+        pending: [] as any,
+        list: [] as any,
       },
       statistics: {
         losses: {
           total: 0,
           table: 0,
           slots: 0,
-          dice: 0,
+          dice: 0
         },
         wins: {
           total: 0,
           table: 0,
           slots: 0,
           dice: 0,
-          streak: 0,
-          win_rate: 0,
+          streak: 0
         },
-        completed_quests: new Map(),
+        progress: {
+          quest: {},
+          bonus: {}
+        }
       },
-      ...({ status: "online" } as any) // Testing purposes; so we can see a "friend" status indicator.
+      ...({ activity: { status: "online" } } as any) // Testing purposes; so we can see a "friend" status indicator.
     },
-    token: { csrf: null },
-  },
+    token: { csrf: null }
+  }
 };
 
 const toastState: ToastState = {
-  count: [],
+  count: []
 };
 
 const initialState = {
   [authName]: authState,
-  [toastName]: toastState,
+  [toastName]: toastState
 };
 
 const mockStore = configureStore({
   reducer: {
     [authName]: authReducer,
-    [toastName]: toastReducer,
+    [toastName]: toastReducer
   },
-  preloadedState: initialState,
+  preloadedState: initialState
 });
 
 export default mockStore;

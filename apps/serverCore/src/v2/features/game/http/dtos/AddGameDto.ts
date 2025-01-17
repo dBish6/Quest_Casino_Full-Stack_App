@@ -1,15 +1,14 @@
 import type { Request } from "express";
-import type { GameStatus } from "@qc/constants";
+import type { Game, Quest, Bonus } from "@gameFeat/typings/Game";
 
-export interface AddGameBodyDto {
-  title: string;
-  description: string;
-  image: { src: string; alt: string };
-  odds: number;
-  origin: string;
-  status: GameStatus;
+export interface AddGameBodyDto extends Omit<Game, "_id"> {}
+
+export interface AddQuestBodyDto extends Omit<Quest, "_id"> {}
+
+export interface AddBonusBodyDto extends Omit<Bonus, "_id" | "expiry"> {
+  expiry?: number;
 }
 
 export interface AddGameRequestDto extends Request {
-  body: AddGameBodyDto;
+  body: AddGameBodyDto | AddQuestBodyDto | AddBonusBodyDto;
 }

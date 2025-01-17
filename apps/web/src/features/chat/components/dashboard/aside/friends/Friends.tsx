@@ -1,7 +1,6 @@
 import type { UserCredentials, FriendCredentials } from "@qc/typescript/typings/UserCredentials";
 import type { DragPointsKey } from "../Aside";
 
-import { useSearchParams } from "react-router-dom";
 import { useEffect } from "react";
 
 import { useAppSelector, useAppDispatch } from "@redux/hooks";
@@ -19,26 +18,11 @@ export interface FriendsProps {
 }
 
 export default function Friends({ user, asideState, friendsListArr }: FriendsProps) {
-  const [searchParams] = useSearchParams();
-
   const chatRoom = useAppSelector(selectChatRoom),
     dispatch = useAppDispatch();
 
-  /**
-   * On `re-direct`. 
-   */
-  useEffect(() => {
-    if (user) {
-      const verToken = searchParams.get("pm")!;
-      if (verToken)
-        dispatch(UPDATE_TARGET_FRIEND({
-          verTokenSnapshot: user.friends.list[verToken].verification_token,
-          friend: user.friends.list[verToken],
-        }));
-    }
-  }, [searchParams.get("pm")]);
   /** 
-   * Updates target friend on joins or leaves (currentId), the verTokenSnapshot is used with the `RoomSwitcher` buttons.
+   * Updates target friend on joins or leaves (currentId), the memberIdSnapshot is used with the `RoomSwitcher` buttons.
    */
   useEffect(() => {
     if (user && chatRoom.currentId) {
@@ -46,7 +30,8 @@ export default function Friends({ user, asideState, friendsListArr }: FriendsPro
         const friend = user.friends.list[chatRoom.proposedId!];
 
         dispatch(UPDATE_TARGET_FRIEND({
-          verTokenSnapshot: friend.verification_token,
+          // verTokenSnapshot: friend.verification_token,
+          memberIdSnapshot: friend.member_id,
           friend: friend
         }));
       } else {
@@ -64,8 +49,8 @@ export default function Friends({ user, asideState, friendsListArr }: FriendsPro
         if (chatRoom.lastChatMessage)
           dispatch(
             UPDATE_USER_FRIEND_IN_LIST({
-              verToken: chatRoom.targetFriend!.friend!.verification_token,
-              update: { last_chat_message: chatRoom.lastChatMessage.message },
+              memberId: chatRoom.targetFriend!.friend!.member_id!,
+              update: { last_chat_message: chatRoom.lastChatMessage.message }
             })
           );
       }

@@ -11,14 +11,14 @@
     text-decoration: underline;
   }
 
-  &:hover,
-  &:focus-visible,
-  &:active,
-  &[data-key-press="true"] {
+  &.link:hover,
+  &.link:focus-visible,
+  &.link:active,
+  &.link[data-key-press="true"] {
     color: var(--c-heading-1);
   }
-  &:active,
-  &[data-key-press="true"] {
+  &.link:active,
+  &.link[data-key-press="true"] {
     top: 1.7px;
   }
 }

@@ -1,4 +1,4 @@
 export default interface TypingEventDto {
-  friend_ver_token: string;
+  friend_member_id: string;
   is_typing: boolean;
 }

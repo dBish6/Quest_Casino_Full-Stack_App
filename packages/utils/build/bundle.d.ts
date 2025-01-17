@@ -3,6 +3,8 @@
  */
 export declare function capitalize(txt: string): string;
 
+export declare const delay: (ms: number, callback?: () => void) => Promise<void>;
+
 declare class Logger {
     disableAll: boolean;
     constructor(disableAll: boolean);

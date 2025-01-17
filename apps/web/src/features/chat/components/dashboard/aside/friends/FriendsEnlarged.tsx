@@ -12,6 +12,7 @@ import { ScrollArea } from "@components/scrollArea";
 import { Avatar, Blob, Icon } from "@components/common";
 import { Form } from "@components/form";
 import { Input } from "@components/common/controls";
+import { ModalTrigger } from "@components/modals";
 import Timestamp from "../Timestamp";
 
 import s from "../aside.module.css";
@@ -59,17 +60,11 @@ export default function FriendsEnlarged({ user, chatRoom, friendsListArr }: Frie
   return (
     <section className={s.friendsEnlarged}>
       {chatRoom.targetFriend?.friend && (
-        <Blob svgWidth="220.83px" svgHeight="169.179px">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 220.83 169.179"
-            preserveAspectRatio="xMidYMin meet"
-          >
-            <path
-              d="M60.948.044C144.617 2.63 224.816-11.08 217.212 39.866s26.97 89.089-29.53 126.707c-32.606 1.552-36.1-2.081-83.159-4.867s-56.909 25.769-82.672-13.307S-22.721-2.542 60.948.044Z"
-              fill="rgba(178,67,178,0.6)"
-            />
-          </svg>
+        <Blob svgWidth={220.83} svgHeight={169.179}>
+          <path
+            d="M60.948.044C144.617 2.63 224.816-11.08 217.212 39.866s26.97 89.089-29.53 126.707c-32.606 1.552-36.1-2.081-83.159-4.867s-56.909 25.769-82.672-13.307S-22.721-2.542 60.948.044Z"
+            fill="rgba(178,67,178,0.6)"
+          />
         </Blob>
       )}
       <div className={s.inner} role="group" aria-roledescription="chat room management">
@@ -139,7 +134,7 @@ export default function FriendsEnlarged({ user, chatRoom, friendsListArr }: Frie
                       <ul>
                         {search.results.map((friend) => (
                           <FriendsDisplayEnlarged
-                            key={friend.verification_token}
+                            key={friend.member_id}
                             friend={friend}
                             targetFriend={chatRoom.targetFriend}
                           />
@@ -160,7 +155,7 @@ export default function FriendsEnlarged({ user, chatRoom, friendsListArr }: Frie
                         <ul>
                           {friendsWithPrevChatsArr.map((friend) => (
                             <FriendsDisplayEnlarged
-                              key={friend.verification_token}
+                              key={friend.member_id}
                               friend={friend}
                               targetFriend={chatRoom.targetFriend}
                               isPrev={true}
@@ -174,7 +169,12 @@ export default function FriendsEnlarged({ user, chatRoom, friendsListArr }: Frie
                   <hr className={s.divider} />
 
                   <section className={s.friendsListContainer}>
-                    <h4 className="hUnderline">Friends</h4>
+                    <div>
+                      <h4 className="hUnderline">Friends</h4>
+                      <ModalTrigger query={{ param: "add" }} intent="primary">
+                        Add Friends
+                      </ModalTrigger>
+                    </div>
 
                     <ScrollArea
                       orientation="vertical"
@@ -186,7 +186,7 @@ export default function FriendsEnlarged({ user, chatRoom, friendsListArr }: Frie
                         <ul>
                           {friendsListArr.map((friend) => (
                             <FriendsDisplayEnlarged
-                              key={friend.verification_token}
+                              key={friend.member_id}
                               friend={friend}
                               targetFriend={chatRoom.targetFriend}
                             />
@@ -207,7 +207,7 @@ export default function FriendsEnlarged({ user, chatRoom, friendsListArr }: Frie
 
 function FriendsDisplayEnlarged({ friend, isPrev, targetFriend }: FriendsDisplayEnlargedProps) {
   const { status, inactivity_timestamp: timestamp } = friend.activity,
-    isTarget = friend.verification_token === targetFriend?.friend?.verification_token;
+    isTarget = friend.member_id === targetFriend?.friend?.member_id;
 
   const dispatch = useAppDispatch();
 
@@ -222,9 +222,9 @@ function FriendsDisplayEnlarged({ friend, isPrev, targetFriend }: FriendsDisplay
           aria-pressed={isTarget}
           aria-controls="targetFriendDetails"
           aria-expanded={!!targetFriend?.friend}
-          onClick={() => {
-            dispatch!(UPDATE_CHAT_ROOM({ proposedId: friend.verification_token, accessType: "private" }))
-          }}
+          onClick={() => 
+            dispatch!(UPDATE_CHAT_ROOM({ proposedId: friend.member_id, accessType: "private" }))
+          }
           disabled={isTarget}
         >
           <div>
@@ -242,13 +242,12 @@ function FriendsDisplayEnlarged({ friend, isPrev, targetFriend }: FriendsDisplay
           aria-controls="targetFriendDetails"
           aria-expanded={!!targetFriend?.friend}
           onClick={() => {
-            dispatch!(UPDATE_CHAT_ROOM({ proposedId: friend.verification_token, accessType: "private" }))
-            
+            dispatch!(UPDATE_CHAT_ROOM({ proposedId: friend.member_id, accessType: "private" }));
             if (!friend.last_chat_message)
               dispatch!(
                 UPDATE_USER_FRIEND_IN_LIST({
-                  verToken: friend.verification_token,
-                  update: { last_chat_message: "" },
+                  memberId: friend.member_id!,
+                  update: { last_chat_message: "" }
                 })
               );
           }}

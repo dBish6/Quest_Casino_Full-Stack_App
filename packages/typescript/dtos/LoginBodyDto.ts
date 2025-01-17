@@ -1,5 +1,5 @@
 export interface LoginBodyDto {
-  email_username: string;
+  email: string;
   password: string;
 }
 

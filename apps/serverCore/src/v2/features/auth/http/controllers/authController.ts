@@ -6,22 +6,26 @@
  */
 
 import type { Request, Response, NextFunction } from "express";
+
 import type RegisterRequestDto from "@authFeatHttp/dtos/RegisterRequestDto";
 import type { LoginRequestDto, GoogleLoginRequestDto } from "@authFeatHttp/dtos/LoginRequestDto";
-import type { UpdateProfileRequestDto, UpdateUserFavouritesRequestDto, ResetPasswordRequestDto } from "@authFeatHttp/dtos/UpdateUserRequestDto";
+import type { UpdateProfileRequestDto, UpdateUserFavouritesRequestDto, SendConfirmPasswordEmailRequestDto } from "@authFeatHttp/dtos/UpdateUserRequestDto";
 import type { DeleteNotificationsRequestDto } from "@authFeatHttp/dtos/DeleteNotificationsRequestDto";
+import type LogoutRequestDto from "@authFeatHttp/dtos/LogoutRequestDto";
 
-import USER_NOT_FOUND_MESSAGE from "@authFeat/constants/USER_NOT_FOUND_MESSAGE";
 import GENERAL_BAD_REQUEST_MESSAGE from "@constants/GENERAL_BAD_REQUEST_MESSAGE";
 
 import { logger } from "@qc/utils";
 import { handleHttpError } from "@utils/handleError";
 import initializeSession from "@authFeatHttp/utils/initializeSession";
+import updateUserSession from "@authFeatHttp/utils/updateUserSession";
 
+import { User } from "@authFeat/models";
 import { getUsers as getUsersService, getUser as getUserService } from "@authFeat/services/authService";
 import * as httpAuthService from "@authFeatHttp/services/httpAuthService";
 import { loginWithGoogle } from "@authFeatHttp/services/googleService";
-import { deleteCsrfToken } from "@authFeatHttp/services/csrfService";
+
+const VERIFICATION_EMAIL_SUCCESS_MESSAGE = "Verification email successfully sent. The verification link will expire in 20 minutes. If you can't find it in your inbox, please check your spam or junk folder.";
 
 const authService = { getUsers: getUsersService, getUser: getUserService, ...httpAuthService }
 
@@ -38,8 +42,8 @@ export async function register(
   logger.debug("/auth/register body:", req.body);
 
   try {
-    const user = await authService.getUser("email", req.body.email);
-    if (user)
+    const exists = await User.exists({ email: req.body.email });
+    if (exists)
       return res.status(409).json({
         ERROR:
           "A user with this email address already exists. Please try using a different email address."
@@ -56,7 +60,6 @@ export async function register(
   }
 }
 
-// TODO: Might get rid of login with username.
 /**
  * Initializes the current user session.
  * @controller
@@ -70,17 +73,11 @@ export async function login(
   try {
     const clientUser = await initializeSession(
       res,
-      {
-        by: req.loginMethod!,
-        value: req.body.email_username,
-      },
+      { by: "email", value: req.body.email },
       req.headers["x-xsrf-token"] as string
     );
-    delete req.loginMethod;
     if (typeof clientUser === "string")
-      return res.status(404).json({
-        ERROR: `${clientUser} ${USER_NOT_FOUND_MESSAGE}`
-      });
+      return res.status(404).json({ ERROR: clientUser });
 
     return res.status(200).json({
       message: "User session created successfully.",
@@ -120,17 +117,25 @@ export async function loginGoogle(
  * @response `success`, `not found`, `forbidden`, or `HttpError`.
  */
 export async function emailVerify(
-  req: Request,
+  req: Request<{}, {}, { verification_token?: string }>,
   res: Response,
   next: NextFunction
 ) {
   try {
-    const { sub, verification_token } = req.decodedClaims!,
-      result = await authService.emailVerify(sub, verification_token);
+    const updatedUser = await authService.emailVerify(
+      req.userDecodedClaims!.sub
+    );
+    // Updates the access and refresh tokens and cookies.
+    const { session, refresh } = req.cookies;
+    await updateUserSession(req, res, updatedUser, {
+      access: session,
+      refresh
+    });
 
-    return res
-      .status(200)
-      .json({ message: "Email address successfully verified.", user: result });
+    return res.status(200).json({
+      message: "Email address successfully verified. Please close your previous tab.",
+      user: { email_verified: updatedUser.email_verified }
+    });
   } catch (error: any) {
     next(handleHttpError(error, "emailVerify controller error."));
   }
@@ -138,7 +143,7 @@ export async function emailVerify(
 /**
  * Initiates verification email sending.
  * @controller
- * @response `success`, `SMTP rejected` or `HttpError`.
+ * @response `success`, `SMTP rejected`, or `HttpError`.
  */
 export async function sendVerifyEmail(
   req: Request,
@@ -146,13 +151,9 @@ export async function sendVerifyEmail(
   next: NextFunction
 ) {
   try {
-    const { email, verification_token } = req.decodedClaims!;
-    await authService.sendVerifyEmail(email, verification_token);
+    await authService.sendVerifyEmail(req.userDecodedClaims!);
 
-    return res.status(200).json({
-      message:
-        "Verification email successfully sent. If you can't find it in your inbox, please check your spam or junk folder."
-    });
+    return res.status(200).json({ message: VERIFICATION_EMAIL_SUCCESS_MESSAGE });
   } catch (error: any) {
     next(handleHttpError(error, "sendVerifyEmail controller error."));
   }
@@ -173,7 +174,7 @@ export async function getUsers(req: Request, res: Response, next: NextFunction) 
       clientUsers = await authService.searchUsers(username);
     } else if (!count && process.env.NODE_ENV !== "development") {
       // All users is restricted.
-      return res.status(403).json({ ERROR: "Access denied." });
+      return res.status(403).json({ ERROR: "Access Denied" });
     } else {
       // Else a random set of users based on count if provided.
       clientUsers = await authService.getUsers(true, parseInt(count, 10));
@@ -194,21 +195,25 @@ export async function getUsers(req: Request, res: Response, next: NextFunction) 
  * @response `success` with the current user formatted for the client, `not found`, `forbidden`, `HttpError` or `ApiError`.
  */
 export async function getUser(req: Request, res: Response, next: NextFunction) {
-  const query = req.query as Record<string, string>;
+  const { notifications, email } = req.query as Record<string, string>;
 
-  if (query.email && process.env.NODE_ENV !== "development")
-    return res.status(403).json({ ERROR: "Access denied." });
+  if (email && process.env.NODE_ENV !== "development")
+    return res.status(403).json({ ERROR: "Access Denied" });
 
   try {
     let clientUser = await authService.getUser(
-      query.email ? "email" : "_id",
-      query.email || req.decodedClaims!.sub,
-      !query.notifications
+      email ? "email" : "_id",
+      email || req.userDecodedClaims!.sub,
+      {
+        forClient: !notifications,
+        ...(notifications && { projection: "notifications" }),
+        lean: true
+      }
     );
     if (!clientUser)
       return res.status(404).json({ ERROR: "User doesn't exist." });
 
-    if (query.notifications) {
+    if (notifications) {
       const result = await httpAuthService.getSortedUserNotifications(clientUser._id);
       clientUser = {
         friend_requests: clientUser!.notifications.friend_requests,
@@ -218,7 +223,7 @@ export async function getUser(req: Request, res: Response, next: NextFunction) {
 
     return res.status(200).json({
       message: 
-        `Successfully retrieved ${query.notifications ? "the user's notifications" : query.email ? `user ${query.email}` : "the current user"}.`,
+        `Successfully retrieved ${notifications ? "the current user's notifications" : email ? `user ${email}` : "the current user"}.`,
       user: clientUser
     });
   } catch (error: any) {
@@ -226,11 +231,32 @@ export async function getUser(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-// TODO:
 /**
- * Update client profile call.
+ * Sends the current user's profile data to be displayed and or edited on the user's private profile page.
  * @controller
- * @response `success` or `HttpError`.
+ * @response `success` with the current user formatted for the client, `not found`, `forbidden`, `HttpError` or `ApiError`.
+ */
+export async function getUserProfile(req: Request, res: Response, next: NextFunction) {
+  const username = req.query.username as string;
+
+  try {
+    const profileData = await authService.getUserProfile(
+      username ? username : req.userDecodedClaims!.sub
+    );
+
+    return res.status(200).json({
+      message: "Successfully retrieved the user's profile data.",
+      user: profileData
+    });
+  } catch (error: any) {
+    next(handleHttpError(error, "getUserProfile controller error."));
+  }
+}
+
+/**
+ * Initiates the update of the user's client profile and updates the session if needed.
+ * @controller
+ * @response `success` with updated user, `bad request`, `not found`, `forbidden`, `conflict`, `too many requests`, or `HttpError`.
  */
 export async function updateProfile(
   req: UpdateProfileRequestDto, 
@@ -238,16 +264,30 @@ export async function updateProfile(
   next: NextFunction
 ) {
   const body = req.body;
+  logger.debug("/auth/user PATCH body:", body);
   
   try {
-    const clientUser = await authService.updateProfile(
-      req.decodedClaims!.sub, 
-      body
-    );
+    if (!Object.values(req.body).length) return res.status(400).json({ ERROR: "There was no data provided." });
+    const user = req.userDecodedClaims!;
+
+    const { updatedUser, updatedFields, unfriended } = await authService.updateProfile(user, body);
+    
+    // Updates the access and refresh tokens and cookies if the email was updated.
+    if (updatedUser) {
+      const { session, refresh } = req.cookies;
+      await updateUserSession(req, res, updatedUser, {
+        access: session,
+        refresh
+      });
+      // Also, sends the verification email again.
+      authService.sendVerifyEmail(user);
+    }
 
     return res.status(200).json({
-      message: "All refresh and csrf tokens successfully removed.",
-      user: clientUser
+      message: "Profile successfully updated.",
+      user: updatedFields,
+      ...(updatedUser && { refreshed: VERIFICATION_EMAIL_SUCCESS_MESSAGE }),
+      ...(unfriended && { unfriended })
     });
   } catch (error: any) {
     next(handleHttpError(error, "updateProfile controller error."));
@@ -271,7 +311,7 @@ export async function updateUserFavourites(
       return res.status(400).json({ ERROR: GENERAL_BAD_REQUEST_MESSAGE });
 
     const updatedFavourites = await authService.updateUserFavourites(
-      req.decodedClaims!.sub,
+      req.userDecodedClaims!.sub,
       req.body.favourites
     );
 
@@ -285,23 +325,23 @@ export async function updateUserFavourites(
 }
 
 /**
- * ...
+ * Initiates the change of the user's password from the confirmation request.
  * @controller
- * @response `success` or `HttpError`.
+ * @response `success`, `not found`, `too many requests`, or `HttpError`.
  */
 export async function resetPassword(
-  req: ResetPasswordRequestDto, 
+  req: Request<{}, {}, { verification_token?: string }>, 
   res: Response, 
   next: NextFunction
 ) {
-  try {
-    // const clientUser = await authService.updateUserFavourites(
-    //   req.decodedClaims!.sub
-    // );
+  logger.debug("/auth/user/reset-password body:", req.body);
 
-    return res.status(200).json({ 
-      message: "Password was reset successfully.",
-      // user: clientUser
+  try {
+    const { sub, email } = req.verDecodedClaims!;
+    authService.resetPassword(sub, email);
+
+    return res.status(200).clearCookie("session").clearCookie("refresh").json({
+      message: "Your password has been successfully reset. All active sessions have been terminated, you'll need to log in again."
     });
   } catch (error: any) {
     next(handleHttpError(error, "resetPassword controller error."));
@@ -309,25 +349,136 @@ export async function resetPassword(
 }
 
 /**
- * ...
+ * Handles password confirmation requests from the profile or reset form and sends an email on success. 
+ * Accepts either an old/new password combination or a verification token with a new password.
  * @controller
- * @response `success` or `HttpError`.
+ * @response `success`, `bad request`, `forbidden`, `not found`, `too many requests`, `SMTP rejected`, or `HttpError`.
  */
-export async function sendResetPasswordEmail(
-  // req: Request & { body: { email: string }},
-  req: Request, res: Response, next: NextFunction
+export async function sendConfirmPasswordEmail(
+  req: SendConfirmPasswordEmailRequestDto,
+  res: Response,
+  next: NextFunction
 ) {
+  logger.debug("/auth/user/reset-password/confirm body:", req.body);
+  const { password } = req.body;
+
   try {
-    // const clientUser = await authService.updateUserFavourites(
-    //   req.decodedClaims!.sub
-    // );
+    if (typeof password === "object") {
+      if (!password.old && !password.new) return res.status(400).json({ ERROR: GENERAL_BAD_REQUEST_MESSAGE });
+    } else if (typeof password !== "string") {
+      return res.status(403).json({ ERROR: "Access Denied" });
+    }
+ 
+    const { sub, email } = req.verDecodedClaims || req.userDecodedClaims!;
+    await authService.sendConfirmPasswordEmail(sub, email, req.body);
 
     return res.status(200).json({ 
-      message: "",
-      // user: clientUser
+      message: "To complete your password change, you must confirm this password reset by a confirmation link sent to your email. The link will expire in 15 minutes. If you can't find it in your inbox, please check your spam or junk folder."
     });
   } catch (error: any) {
     next(handleHttpError(error, "sendResetPasswordEmail controller error."));
+  }
+}
+
+/**
+ * Initiates forgot password email sending.
+ * @controller
+ * @response `success`, `bad request`, `SMTP rejected`, or `HttpError`.
+ */
+export async function sendForgotPasswordEmail(
+  req: Request<{}, {}, { email: string }>,
+  res: Response,
+  next: NextFunction
+) {
+  const email = req.body.email;
+ 
+  try {
+    if (!email) return res.status(400).json({ ERROR: GENERAL_BAD_REQUEST_MESSAGE });
+
+    await authService.sendForgotPasswordEmail(email);
+
+    return res.status(200).json({ 
+      message: "If a profile with the provided email exists, an email with a password reset link has been sent."
+    });
+  } catch (error: any) {
+    next(handleHttpError(error, "sendResetPasswordEmail controller error."));
+  }
+}
+
+/**
+ * Stops the reset password process at confirmation.
+ * @controller
+ * @response `success` or `HttpError`.
+ */
+export async function revokePasswordReset(req: Request, res: Response, next: NextFunction) {
+  try {
+    await authService.revokePasswordResetConfirmation(req.userDecodedClaims!.sub);
+
+    return res.status(200).json({
+      message: "Password reset successfully canceled."
+    });
+  } catch (error: any) {
+    next(handleHttpError(error, "clear controller error."));
+  }
+}
+
+/**
+ * Reinitializes the user session. Mainly for when the tokens reaches the refresh threshold with a socket
+ * since sockets cannot update cookies directly, etc.
+ * @controller
+ * @response `success`, `not found`, or `HttpError`.
+ */
+export async function refresh(
+  req: Request<{}, {}, { username: string }>,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    const user = await authService.getUser("username", req.body.username, {
+      lean: true,
+      throwDefault404: true
+    });
+
+    const refreshResult = await initializeSession(res, {}, user);
+    if (typeof refreshResult === "string") 
+      return res.status(404).json({ ERROR: refreshResult });
+
+    return res.status(200).json({ message: "Session successfully refreshed." });
+  } catch (error: any) {
+    next(handleHttpError(error, "refresh controller error."));
+  }
+}
+
+/**
+ * Clears the session cookie and deletes the csrf token.
+ * @controller
+ * @response `success`, `internal`, `HttpError` or `ApiError`.
+ */
+export async function logout(
+  req: LogoutRequestDto,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    await authService.logout(
+      {
+        access: req.cookies?.session,
+        refresh: req.cookies?.refresh
+      },
+      req.body.username,
+      req.headers["x-xsrf-token"] as string
+    )
+    .catch((error) => {
+      if (req.body.lax) res.clearCookie("session").clearCookie("refresh");
+      throw error;
+    });
+
+    return res
+      .status(200)
+      .clearCookie("session").clearCookie("refresh")
+      .json({ message: "Session cleared, log out successful." });
+  } catch (error: any) {
+    next(handleHttpError(error, "logout controller error."));
   }
 }
 
@@ -336,9 +487,9 @@ export async function sendResetPasswordEmail(
  * @controller
  * @response `success` or `HttpError`.
  */
-export async function clear(req: Request, res: Response, next: NextFunction) {
+export async function wipeUser(req: Request, res: Response, next: NextFunction) {
   try {
-    await authService.wipeUser(req.decodedClaims!.sub);
+    await authService.wipeUser(req.userDecodedClaims!.sub);
 
     return res.status(200).clearCookie("session").clearCookie("refresh").json({
       message: "All refresh and csrf tokens successfully removed."
@@ -359,7 +510,7 @@ export async function deleteUser(
   next: NextFunction
 ) {
   try {
-    const userId = req.decodedClaims!.sub;
+    const userId = req.userDecodedClaims!.sub;
 
     await authService.deleteUser(userId);
 
@@ -383,7 +534,7 @@ export async function deleteUserNotifications(
 
   try {
     const result = await httpAuthService.deleteUserNotifications(
-      req.decodedClaims!.sub,
+      req.userDecodedClaims!.sub,
       toDelete,
       req.body.categorize
     );
@@ -394,33 +545,5 @@ export async function deleteUserNotifications(
     });
   } catch (error: any) {
     next(handleHttpError(error, "deleteUserNotifications controller error."));
-  }
-}
-
-/**
- * Clears the session cookie and deletes the csrf token.
- * @controller
- * @response `success`, `internal`, `HttpError` or `ApiError`.
- */
-export async function logout(
-  req: Request,
-  res: Response,
-  next: NextFunction
-) {
-  try {
-    const user = await authService.getUser("username", req.body.username);
-    if (!user)
-      return res.status(500).json({
-        ERROR: "Unexpectedly couldn't find the user after login."
-      });
-
-    await deleteCsrfToken(user.id, req.headers["x-xsrf-token"] as string);
-
-    return res
-      .status(200)
-      .clearCookie("session").clearCookie("refresh")
-      .json({ message: "Session cleared, log out successful." });
-  } catch (error: any) {
-    next(handleHttpError(error, "logout controller error."));
   }
 }

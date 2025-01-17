@@ -8,7 +8,7 @@ import { Title } from "@radix-ui/react-dialog";
 
 import { capitalize } from "@qc/utils";
 import { fadeInOut } from "@utils/animations";
-import displayNotificationMessage from "@authFeat/utils/displayNotificationMessage";
+import parseMessageWithLink from "@authFeat/utils/parseMessageWithLink";
 import { isFetchBaseQueryError } from "@utils/isFetchBaseQueryError";
 
 import useResourcesLoadedEffect from "@hooks/useResourcesLoadedEffect";
@@ -312,7 +312,7 @@ function NotificationCard({ notif, selectNotifs, setSelectNotifs }: Notification
       </div>
 
       <div>
-        <p>{displayNotificationMessage(message, link)}</p>
+        <p>{parseMessageWithLink(message, link)}</p>
       
         {selectNotifs && (
           <Button

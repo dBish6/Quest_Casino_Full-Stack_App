@@ -43,15 +43,15 @@ function useAddToasts(
       ...(options?.link && {
         link: {
           sequence: "Link",
-          to: "",
-        },
+          to: ""
+        }
       }),
       ...(options?.button && {
         button: {
           sequence: "Button",
-          onClick: () => console.log("clicked"),
-        },
-      }),
+          onClick: () => console.log("clicked")
+        }
+      })
     },
   };
 

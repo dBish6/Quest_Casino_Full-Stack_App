@@ -1,3 +1,6 @@
+@import "./customMedia.css";
+@import "./mixins.css";
+
 /* Paragraph Font */
 @font-face {
   font-family: "Myriad Pro";
@@ -270,11 +273,7 @@
   --para-letter-spaceing: 0.18px;
 
   --para-large-clamp: clamp(1.0625rem, 0.95rem + 0.2926829268292683vw, 1.25rem);
-  --para-medium-clamp: clamp(
-    0.9375rem,
-    0.825rem + 0.2926829268292683vw,
-    1.125rem
-  );
+  --para-medium-clamp: clamp(0.9375rem, 0.825rem + 0.2926829268292683vw, 1.125rem);
   /* --para-regular-clamp: clamp(0.8125rem, 0.7rem + 0.2926829268292683vw, 1rem); */
   --para-small-clamp: clamp(0.75rem, 0.675rem + 0.1951219512195122vw, 0.875rem);
 
@@ -285,13 +284,28 @@
   --z-toast: 15;
   --z-overlay: 99;
 
+  --padding-main-vert: 2rem;
+  --padding-main-horz: 1.5rem;
   --dashboard-margin-vert: 2rem;
-  --dashboard-height: calc(
-    100vh - var(--dashboard-margin-vert) - var(--dashboard-margin-vert)
-  );
+  @media (width >= 400px) and (height <= 860px) {
+    --dashboard-margin-vert: 0.5rem;
+  }
+  @media (--large-breakpoint), (--medium-breakpoint) {
+    --header-height: 80px;
+  }
+  @media (--small-breakpoint) {
+    --padding-main-horz: 1rem;
+    --header-height: 72px;
+  }
 
   background: var(--c-bg);
   color-scheme: dark;
+}
+
+#root {
+  display: flex;
+  justify-content: center;
+  height: 100vh
 }
 
 /* html,
@@ -314,22 +328,58 @@ select {
 }
 
 main {
-  grid-column: 2;
-  & > div > .viewport {
-    --padding-main-vert: 2rem;
-    --padding-main-horz: 1.5rem;
+  height: 100%;
+  grid-row: 2;
+  @media (--large-breakpoint) {
+    grid-column: 2;
+  }
+  @media (--medium-breakpoint), (--small-breakpoint) {
+    grid-column: 1 / span 2;
+  }
 
-    width: calc(100% + 0.5rem);
-    height: calc(
-      var(--dashboard-height) - var(--padding-main-vert) - var(--padding-main-vert) -
-        1rem
-    );
-    padding: var(--padding-main-vert) calc(var(--padding-main-horz) + 0.5rem)
-      var(--padding-main-vert) var(--padding-main-horz);
-    border-bottom: 2px solid var(--c-purple-border);
+  & .scrollMain {
+    height: inherit;
+    & > .scrollbar {
+      z-index: 1;
+    }
+    & > .viewport {
+      width: calc(100% + 0.5rem);
+      height: inherit;
+      padding: var(--padding-main-vert) calc(var(--padding-main-horz) + 0.5rem)
+        var(--padding-main-vert) var(--padding-main-horz);
 
-    & section:last-of-type {
-      margin-bottom: 0;
+      & section:last-of-type {
+        margin-bottom: 0;
+      }
+    }
+    &[data-horz="true"] > .viewport > div {
+      height: calc(100% + var(--padding-main-vert));
+    }
+
+    @media (--chat-aside-breakpoint) {
+      @mixin chatAsideBreakpointScrollMain;
+    }
+    .chatAsideBreakpointProfile {
+      @mixin chatAsideBreakpointScrollMain;
+    }
+  }
+
+  & .border {
+    position: absolute;
+    z-index: var(--z-partial);
+    &.left {
+      top: -80px;
+      bottom: 2px;
+      left: 0;
+      width: 2px;
+      height: calc(100% + 80px - 2px);
+      border-right: 2px solid var(--c-purple-border);
+    }
+    &.bottom {
+      bottom: 0;
+      width: 100%;
+      height: 2px;
+      border-bottom: 2px solid var(--c-purple-border);
     }
   }
 }
@@ -383,22 +433,8 @@ button {
   }
 }
 
-/* @media (--medium-viewport) {
-  main {
-    padding-inline: 2rem;
-  }
-}
-
-@media (--small-viewport) {
-  main {
-    padding-inline: 1rem;
-  }
-}
-
-@media (--aside-breakpoint) {
-
-}
-
+/* TODO: */
+/*
 @media (prefers-reduced-motion: reduce) {
   * {
     animation: none !important;

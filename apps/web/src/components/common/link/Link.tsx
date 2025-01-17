@@ -6,6 +6,7 @@ import { useLocation, Link as RouterLink, NavLink as RouterNavLink } from "react
 import { Slot } from "@radix-ui/react-slot";
 import { cva } from "class-variance-authority";
 
+import preserveUrl from "@utils/preserveUrl";
 import keyPress from "@utils/keyPress";
 
 import s from "./link.module.css";
@@ -13,8 +14,8 @@ import s from "./link.module.css";
 const link = cva(s.link, {
   variants: {
     intent: {
-      primary: s.primary,
-    },
+      primary: s.primary
+    }
   },
 });
 
@@ -26,31 +27,19 @@ export interface LinkProps extends RouterLinkProps, VariantProps<typeof link> {
 
 // prettier-ignore
 const Link = forwardRef<HTMLAnchorElement, LinkProps>(
-  ({ children, to, className, intent, asChild, external, nav, ...props }, ref) => {
-    const location = useLocation(),
-      path = typeof to === "string" ? to : to.pathname && to.pathname
+  ({ children, to = "", className, intent, asChild, external, nav, ...props }, ref) => {
+    const location = useLocation();
 
     const Element = asChild ? Slot : external ? "a" : nav ? RouterNavLink : RouterLink;
 
     const handleTo = () => {
-      const search = location.search;
-      let newSearch: string | undefined;
-      let hash: string | undefined;
-
-      if (typeof to !== "string") {
-        newSearch = search && to.search ? `${search}${to.search.replace("?", "&")}` : to.search && to.search;
-        hash = to.hash
-      }
+      const { pathname, search, hash } = preserveUrl(to, location);
 
       const ignore =
-      (Element === RouterLink || Element === RouterNavLink) &&
-      ({
-        to: {
-          ...(path && { pathname: path }),
-          ...((newSearch || search) && { search: newSearch || search }),
-          ...(hash && { hash: hash }),
-        },
-      } as unknown);
+        (Element === RouterLink || Element === RouterNavLink) &&
+        ({
+          to: { pathname, search, ...(hash && { hash: hash }) },
+        } as unknown);
 
       return ignore as { to: string };
     };

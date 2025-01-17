@@ -1,12 +1,12 @@
 & .scrollArea {
   &.three {
-    --scrollbar-size: 3px;
+    --_scrollbar-size: 3px;
     & :global(.scrollbar) {
       margin-inline: 4px;
     }
   }
   &.five {
-    --scrollbar-size: 5px;
+    --_scrollbar-size: 5px;
     & :global(.scrollbar) {
       margin-inline: 6px;
     }
@@ -21,11 +21,11 @@
       background-color: rgba(193, 193, 193, 0.2);
       transition: background-color 0.22s ease-in-out;
       &[data-orientation="vertical"] {
-        width: var(--scrollbar-size);
+        width: var(--_scrollbar-size);
       }
       &[data-orientation="horizontal"] {
         --radix-scroll-area-thumb-height: 100%;
-        height: var(--scrollbar-size);
+        height: var(--_scrollbar-size);
       }
       & div {
         position: relative;

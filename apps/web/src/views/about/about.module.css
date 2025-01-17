@@ -1,4 +1,4 @@
-.about :global(.viewport) > div {
+.about > div > :global(.viewport) > div {
   & section {
     margin-bottom: 2rem;
     &:last-of-type {

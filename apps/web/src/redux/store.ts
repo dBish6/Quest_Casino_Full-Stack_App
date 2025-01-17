@@ -51,12 +51,13 @@ store.subscribe(
       auth: { user: targetPersistAuth },
       chat: targetPersistChat
     };
-    if (typeof localStorage !== "undefined") saveState(persisted);
+    saveState(persisted);
   }, 1000)
 );
 
 setupListeners(store.dispatch);
 
 export default store;
+export type RootStore = typeof store;
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;

@@ -44,7 +44,7 @@ const chatApi = injectEndpoints({
           if (isFetchBaseQueryError(error.error)) {
             if (["bad request", "internal error"].includes(error.error.status as string))
               dispatch(
-                unexpectedErrorToast("Unable to connect to the chat room due to an unexpected error.")
+                unexpectedErrorToast("Unable to connect to the chat room due to an unexpected server error.")
               );
           }
         })
@@ -101,7 +101,7 @@ const chatApi = injectEndpoints({
                 ADD_TOAST({
                   title: "Too Many Duplicate Messages",
                   message: "You have been temporarily restricted due to sending too many duplicate messages. Wait for the spam cooldown to expire.",
-                  intent: "error",
+                  intent: "error"
                 })
               );
               seenRestrictionMessage = true;

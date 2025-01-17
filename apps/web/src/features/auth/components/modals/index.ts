@@ -1,4 +1,9 @@
 export { default as AddFriendsModal } from "./addFriends/AddFriendsModal";
 export { default as LoginModal } from "./login/LoginModal";
 export { default as NotificationsModal } from "./notifications/NotificationsModal";
+export { default as ForgotPasswordModal } from "./password/ForgotPasswordModal";
+export { default as ResetPasswordModal } from "./password/ResetPasswordModal";
 export { default as RegisterModal } from "./register/RegisterModal";
+export { default as ViewProfileModal } from "./viewProfile/ViewProfileModal";
+export { default as ViewPaymentHistoryModal } from "./viewProfile/payments/ViewPaymentHistoryModal";
+export { default as ViewCompletedQuestsModal } from "./viewProfile/quests/ViewCompletedQuestsModal";
