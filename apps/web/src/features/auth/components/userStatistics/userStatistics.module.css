@@ -26,7 +26,7 @@
       font: var(--para-medium);
     }
     & .quests {
-      & > div:last-child p {
+      & .conquered p:global(#questCount) {
         color: var(--c-para-faded);
         font-style: italic;
         line-height: normal;
@@ -85,7 +85,6 @@
               min-width: 0;
               font-size: 21px;
               font-weight: 600;
-              text-align: center;
               line-height: normal;
               white-space: nowrap;
               text-overflow: ellipsis;
@@ -101,10 +100,6 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        /* margin-bottom: 6px; */
-        & h3 {
-          /* margin-bottom: 0; */
-        }
       }
 
       & div[role="table"] {
@@ -181,13 +176,47 @@
   }
 
   &.block {
-    /* TODO: For leaderboard modal. */
     & .quests {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+
       & > div {
-        padding-inline: 1rem;
-        border: 1px solid var(--c-purple-border);
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
+        width: fit-content;
+        height: 64px;
+        padding-inline: 10px;
+        border: 2px solid var(--c-purple-border);
         border-radius: 6px;
-        background-color: var(--c-lvl-2);
+        background-color: var(--c-lvl-3);
+        & h4 {
+          font: var(--para-small);
+          font-style: italic;
+          color: var(--c-para-faded);
+          line-height: normal;
+        }
+        & p:not(:global(#questCount)) {
+          font-size: 21px;
+          font-weight: 600;
+          line-height: normal;
+          white-space: nowrap;
+          text-overflow: ellipsis;
+          overflow: hidden;
+        }
+        &.conquered {
+          & a {
+            font: var(--para-x-small);
+          }
+        }
+        &.wins p {
+          color: var(--c-status-green);
+        }
+        &.losses p {
+          color: var(--c-status-red);
+        }
       }
     }
   }

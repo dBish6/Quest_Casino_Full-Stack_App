@@ -45,10 +45,13 @@ export default function NotificationsModal() {
 
   const [notifications, setNotifications] = useState<GetNotificationsResponseDto["notifications"] | Notification[]>([]),
     categorizedNotificationsArr = useMemo(() => Object.entries(notifications), [notifications]);
+  
+  const categorize = useRef(true),
+    unCategorizedNotifications = useRef<Notification[]>([]),
+    categorizedNotifications = useRef<GetNotificationsResponseDto["notifications"]>({ general: [], news: [], system: [] });
 
-  const [selectNotifs, setSelectNotifs] = useState<Map<string, Notification> | null>(null);
-
-  const [postDeleteNotifications, { isLoading: deletionLoading }] = useDeleteUserNotificationsMutation();
+  const [selectNotifs, setSelectNotifs] = useState<Map<string, Notification> | null>(null),
+    [postDeleteNotifications, { isLoading: deletionLoading }] = useDeleteUserNotificationsMutation();
 
   useResourcesLoadedEffect(() => {
     if (modalParam) {
@@ -59,30 +62,31 @@ export default function NotificationsModal() {
     }
   }, [modalParam]);
   useEffect(() => {
-    if (userNotifData) setNotifications(userNotifData.notifications);
+    if (userNotifData) {
+      setNotifications(userNotifData.notifications);
+      categorizedNotifications.current = { ...userNotifData.notifications }; // Shallow-copy to make it not read-only.
+    }
   }, [userNotifData]);
 
-  const categorize = useRef(true),
-    unCategorizedNotifications = useRef<Notification[]>([]);
   const toggleCategorization = () => {
     if (selectNotifs !== null) setSelectNotifs(new Map());
 
     if (userNotifData) {
       if (categorize.current) {
         if (!unCategorizedNotifications.current.length) {
-          for (const type in userNotifData.notifications) {
+          for (const type in notifications) {
             unCategorizedNotifications.current = [
               ...unCategorizedNotifications.current,
-              ...userNotifData.notifications[type as NotificationTypes]
+              ...(notifications as GetNotificationsResponseDto["notifications"])[type as NotificationTypes]
             ];
           }
-          unCategorizedNotifications.current = 
+          unCategorizedNotifications.current =
             unCategorizedNotifications.current.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-        } 
+        }
 
         setNotifications(unCategorizedNotifications.current);
       } else {
-        setNotifications(userNotifData.notifications);
+        setNotifications(categorizedNotifications.current);
       }
 
       categorize.current = !categorize.current;
@@ -107,8 +111,20 @@ export default function NotificationsModal() {
       .then((res) => {
         if (res.data?.message?.startsWith("Successfully")) {
           const newNotifications = res.data.user.notifications;
-          if (Array.isArray(newNotifications)) unCategorizedNotifications.current = newNotifications;
-          
+          if (Array.isArray(newNotifications)) {
+            unCategorizedNotifications.current = newNotifications;
+
+            for (const deletedNotif of selectNotifs!.values()) {
+              categorizedNotifications.current[deletedNotif.type] =
+                categorizedNotifications.current[deletedNotif.type].filter(
+                  (notif) => notif.notification_id === deletedNotif.notification_id
+                );
+            }
+          } else {
+            unCategorizedNotifications.current = [];
+            categorizedNotifications.current = newNotifications
+          }
+
           setNotifications(newNotifications);
           setSelectNotifs(new Map()); // Closes the confirm delete button.
         }
@@ -252,13 +268,13 @@ function NotificationSection({ type, notifs, selectNotifs, setSelectNotifs }: No
 
   return (
     <Element {...(type && { "aria-labelledby": type })}>
-      <div className={s.sectionHead} data-catagories={!!type}>
+      <div className={s.sectionHead} data-categories={!!type}>
         {type && <h3 id={type}>{capitalize(type)}</h3>}
         <small>{notifs.length} Results</small>
       </div>
 
       <ul aria-label={`${type} notifications`}>
-        {notifs.map((notif, i) => (
+        {notifs.map((notif) => (
           <li key={notif.notification_id}>
             <NotificationCard
               notif={{ ...notif, type: type ?? notif.type }}
@@ -306,7 +322,7 @@ function NotificationCard({ notif, selectNotifs, setSelectNotifs }: Notification
             day: "2-digit",
             hour: "2-digit",
             minute: "2-digit",
-            hour12: false,
+            hour12: false
           }).replace(",", "")}
         </time>
       </div>

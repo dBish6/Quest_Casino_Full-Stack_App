@@ -1,1 +1,1 @@
-export { type UserGameHistoryProps, default as UserGameHistory } from "./gameHistory/UserGameHistory";
+export { type UserGameHistoryProps, ResentGame, default as UserGameHistory } from "./gameHistory/UserGameHistory";

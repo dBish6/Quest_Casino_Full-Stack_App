@@ -52,13 +52,13 @@ const Image = forwardRef<HTMLImageElement, ImageProps>(
               Object.keys(size).length && {
                 ...(size.width && {
                   width: "100%",
-                  maxWidth: size.width ?? "",
+                  maxWidth: size.width ?? ""
                 }),
                 ...(size.height && {
                   height: "100%",
-                  maxHeight: size.height ?? "",
-                }),
-              }),
+                  maxHeight: size.height ?? ""
+                })
+              })
         }}
       >
         <img

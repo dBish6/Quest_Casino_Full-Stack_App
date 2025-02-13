@@ -1,6 +1,6 @@
 import { mergeConfig, defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
-import { defaults } from "../../packages/vite-config";
+import { defaults } from "@qc/vite-config";
 
 export default defineConfig(({ mode }) => {
   // const env = loadEnv(mode, process.cwd(), "");
@@ -14,9 +14,9 @@ export default defineConfig(({ mode }) => {
           "/api": {
             target: mode === "production" ? "" : "http://localhost:4000",
             changeOrigin: true,
-            secure: false,
-            ws: true,
-          },
+            secure: mode === "production",
+            // ws: true
+          }
         },
       },
       // define: {
@@ -28,13 +28,13 @@ export default defineConfig(({ mode }) => {
           generateScopedName:
             mode === "production"
               ? "[hash:base64:8]"
-              : "[local]_[hash:base64:5]",
-        },
+              : "[local]_[hash:base64:5]"
+        }
       },
       plugins: [react()],
       build: {
-        outDir: "build/client",
-      },
+        outDir: "build/client"
+      }
     })
   );
 });

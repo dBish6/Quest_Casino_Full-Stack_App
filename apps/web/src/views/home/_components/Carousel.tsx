@@ -49,7 +49,7 @@ interface IndicatorsProps {
 
 const HERO_SLIDES = ["News", "Events", "Players"] as const;
 
-function handleTransition (setCurrentSlide: React.Dispatch<React.SetStateAction<HeroCarouselSlides>>, direction?: Direction) {
+function handleTransition(setCurrentSlide: React.Dispatch<React.SetStateAction<HeroCarouselSlides>>, direction?: Direction) {
   setCurrentSlide((prev) => {
     if (prev === (direction === "left" ? "Players" : "News")) {
       return "Events";
@@ -59,7 +59,7 @@ function handleTransition (setCurrentSlide: React.Dispatch<React.SetStateAction<
       return "News";
     }
   });
-};
+}
 
 function formatContent(content: SlideEntryDto) {
   const { title_emp, link } = content.sequence || {};
@@ -158,8 +158,9 @@ export default function Carousel({ content, breakpoint }: { content?: CarouselCo
       </div>
 
       <m.div
+        role="group"
         aria-roledescription="carousel"
-        aria-label="Welcome Carousel"
+        aria-label="Welcome"
         className={s.carousel}
         onClick={() => setInteraction(true)}
         onPan={(e, info) => {
@@ -186,7 +187,7 @@ export default function Carousel({ content, breakpoint }: { content?: CarouselCo
             <div
               role="group"
               aria-roledescription="slide"
-              aria-label={`${currentSlide} Slide`}
+              aria-label={currentSlide}
               id="heroSlide"
               className={s.slide}
               data-slide={currentSlide}
@@ -420,7 +421,7 @@ function Indicators({ heroSlides, currentSlide, setSearchParams, interaction }: 
             aria-label={`${slideName} Slide ${currSlide ? "Active" : "Inactive"}`}
             aria-pressed={currSlide}
             disabled={interaction && currSlide}
-            onClick={() => 
+            onClick={() =>
               setSearchParams((params) => {
                 params.set("hs", slideName);
                 return params;

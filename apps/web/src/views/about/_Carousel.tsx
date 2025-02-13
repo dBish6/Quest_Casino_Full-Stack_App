@@ -132,7 +132,7 @@ export default function Carousel() {
       className={s.carContainer}
       role="group"
       aria-roledescription="carousel"
-      aria-label="Testimonials Carousel"
+      aria-label="Testimonials"
     >
       <div className={s.carousel}>
         <Button
@@ -214,7 +214,7 @@ function Testimonial({
 
   return (
     <m.article
-      aria-label={`Slide ${index + 1}`}
+      aria-label={`${index + 1}`}
       aria-roledescription="slide"
       {...(!currentSlide && { "aria-hidden": "true" })}
       className={s.testimonial}

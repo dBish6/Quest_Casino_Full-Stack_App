@@ -1,22 +1,27 @@
-import type { GameStatus, TransactionType } from "@qc/constants";
+import type { GameStatus, LeaderboardType, TransactionType } from "@qc/constants";
+import type { ViewUserProfileCredentials } from "@qc/typescript/typings/UserCredentials";
 
-import type { HttpResponse } from "@typings/ApiResponse";
+import type { HttpResponse, SocketResponse } from "@typings/ApiResponse";
 import type { GetGamesResponseDto } from "@qc/typescript/dtos/GetGamesDto";
 import type { GetQuestsResponseDto, GetUserQuestsProgressResponseDto } from "@qc/typescript/dtos/GetQuestsDto";
+import type { GetBonusesResponseDto } from "@qc/typescript/dtos/GetBonusesDto";
 import type DepositResponseDto from "@gameFeat/dtos/DepositResponseDto";
 import type { PaymentHistoryResponseDto } from "@qc/typescript/dtos/PaymentHistoryDto";
+import type { ManageProgressEventDto, ManageProgressResponseDto } from "@qc/typescript/dtos/ManageProgressEventDto";
 
-// import { logger } from "@qc/utils";
-// import { history } from "@utils/History";
+import { GameEvent } from "@qc/constants";
+
+import { logger } from "@qc/utils";
 import { isFetchBaseQueryError } from "@utils/isFetchBaseQueryError";
 
 import { injectEndpoints } from "@services/api";
+import { getSocketInstance, emitAsPromise } from "@services/socket";
 import allow500ErrorsTransform from "@services/allow500ErrorsTransform";
 
-import { UPDATE_USER_CREDENTIALS } from "@authFeat/redux/authSlice";
+import { UPDATE_USER_CREDENTIALS, UPDATE_USER_STATISTICS_PROGRESS } from "@authFeat/redux/authSlice";
 import { ADD_TOAST, unexpectedErrorToast } from "@redux/toast/toastSlice";
 
-// const socket = getSocketInstance("");
+const socket = getSocketInstance("game");
 
 const gameApi = injectEndpoints({
   overrideExisting: true,
@@ -43,17 +48,32 @@ const gameApi = injectEndpoints({
     }),
 
     /**
-     * 
+     * Gets the leaderboard content of the top 10 users by win rate or win total.
+     * @request
+     */
+    getLeaderboard: builder.query<
+      HttpResponse<{ users: ViewUserProfileCredentials[] }>,
+      { type: LeaderboardType }
+    >({
+      query: (type) => ({
+        url: "/games/leaderboard",
+        method: "GET",
+        params: type
+      })
+    }),
+
+    /**
+     * Gets all active quests if no params is provided. Can also get completed quests of a user by username.
      * @request
      */
     getQuests: builder.query<
       HttpResponse<GetQuestsResponseDto | GetUserQuestsProgressResponseDto>,
-      { username: string } | void
+      { username?: string } | void
     >({
-      query: (param) => ({
+      query: (params) => ({
         url: "/games/quests",
         method: "GET",
-        ...(param?.username && { params: { username: param.username } })
+        ...(params && { params })
       }),
       onQueryStarted: (_, { dispatch, queryFulfilled }) => {
         queryFulfilled.catch((error) => {
@@ -71,13 +91,12 @@ const gameApi = injectEndpoints({
     }),
 
     /**
-     * 
+     * Gets all active bonuses.
      * @request
-     * // TODO: DTO if needed.
      */
-    getBonuses: builder.query<HttpResponse, void>({
-      query: (user) => ({
-        url: "/games/quests",
+    getBonuses: builder.query<HttpResponse<GetBonusesResponseDto>, void>({
+      query: () => ({
+        url: "/games/bonuses",
         method: "GET"
       })
     }),
@@ -99,9 +118,7 @@ const gameApi = injectEndpoints({
       onQueryStarted: async (_, { dispatch, queryFulfilled }) => {
         const { data, meta } = await queryFulfilled;
 
-        if (meta?.response?.ok) {
-          dispatch(UPDATE_USER_CREDENTIALS(data.user));
-        }
+        if (meta?.response?.ok) dispatch(UPDATE_USER_CREDENTIALS(data.user));
       },
       transformErrorResponse: (res, meta) => allow500ErrorsTransform(res, meta)
     }),
@@ -116,6 +133,54 @@ const gameApi = injectEndpoints({
         method: "GET"
       }),
       transformErrorResponse: (res, meta) => allow500ErrorsTransform(res, meta)
+    }),
+
+    /**
+     * Manages user statistics progress for quests and bonuses.
+     * @emitter
+     */
+    manageProgress: builder.mutation<SocketResponse<ManageProgressResponseDto>, ManageProgressEventDto>({
+      queryFn: async (data) => emitAsPromise(socket)(GameEvent.MANAGE_PROGRESS, data),
+      onQueryStarted: async ({ type, action }, { dispatch, queryFulfilled }) => {
+        try {
+          const { data } = await queryFulfilled;
+
+          if (data.status === "ok") {
+            if (type === "bonus" && action === "activate")
+              dispatch(
+                ADD_TOAST({
+                  title: "Bonus Activated",
+                  message: `${data.message} All bonuses last 24 hours.`,
+                  intent: "success",
+                  duration: 6500
+                })
+              );
+
+            dispatch(UPDATE_USER_STATISTICS_PROGRESS(data.progress));
+          }
+        } catch (error: any) {
+          const resError = error.error
+          if (isFetchBaseQueryError(resError) && resError.data?.ERROR) {
+            if (["bad request", "conflict"].includes(resError.status as string)) {
+              dispatch(
+                ADD_TOAST({
+                  title:
+                  resError.data.ERROR.startsWith("The bonus is already activated") ||
+                  resError.data.ERROR.startsWith("You can only have one bonus active")
+                    ? "Currently Active"
+                    : resError.data.ERROR.startsWith("You can only have one bonus active")
+                      ? "Already Used"
+                      : undefined,
+                  message: resError.data.ERROR,
+                  intent: "error"
+                })
+              );
+            }
+          } else {
+            logger.error("gameApi manageProgress error:\n", error.message);
+          }
+        }
+      },
     })
   })
 });
@@ -123,10 +188,12 @@ const gameApi = injectEndpoints({
 export const {
   endpoints: gameEndpoints,
   useLazyGetGamesQuery,
+  useLazyGetLeaderboardQuery,
   useLazyGetQuestsQuery,
   useLazyGetBonusesQuery,
   useTransactionMutation,
-  useLazyGetPaymentHistoryQuery
+  useLazyGetPaymentHistoryQuery,
+  useManageProgressMutation
 } = gameApi;
 
 export default gameApi;

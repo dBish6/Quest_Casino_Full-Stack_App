@@ -139,6 +139,17 @@
   }
 }
 
-/* .resentGame {
-
-} */
+.resentGame {
+  & p span {
+    font: var(--para-regular);
+    &[data-outcome="win"] {
+      color: var(--c-status-green);
+    }
+    &[data-outcome="draw"] {
+      color: var(--c-status-yellow);
+    }
+    &[data-outcome="loss"] {
+      color: var(--c-status-red);
+    }
+  }
+}

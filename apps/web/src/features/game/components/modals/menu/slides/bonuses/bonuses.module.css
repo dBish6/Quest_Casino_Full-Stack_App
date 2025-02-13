@@ -1,0 +1,89 @@
+.bonuses {
+  & > span[role="status"] {
+    margin: 0 auto;
+  }
+
+  & > p {
+    color: var(--c-heading-2);
+  }
+
+  & ul {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, 328px);
+    gap: 1.5rem;
+
+    & li {
+      & .bonus {
+        display: flex;
+        justify-content: space-between;
+        flex-direction: column;
+        height: 130.2px;
+        border: 2px solid var(--c-purple-border);
+        border-radius: 6px;
+        background-color: var(--c-lvl-2);
+        &[data-completed="true"],
+        &[data-loading="true"] {
+          opacity: 0.65;
+        }
+        &[data-completed="true"] {
+          & button.claim {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 4px;
+            & svg {
+              margin-right: -10px;
+            }
+          }
+        }
+
+        & hgroup {
+          padding: 0.75rem 1rem 0.5rem;
+          & h3 {
+            font: var(--h3);
+            color: var(--c-heading-1);
+            margin-bottom: 3px;
+          }
+          & p {
+            font: var(--para-medium);
+            line-height: normal;
+            font-style: italic;
+          }
+        }
+
+        & .progress {
+          position: relative;
+          & > div[role="meter"] {
+            height: 2.5rem;
+            border-top: 2px solid var(--c-purple-border);
+            border-radius: 0 0 4px 4px;
+            background-color: #201735;
+            & .fill {
+              height: 100%;
+              border-radius: 0 0 4px 4px;
+              background: linear-gradient(180deg, var(--c-purple-500), #201735);
+            }
+          }
+          & .completion {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            & > span {
+              display: block;
+              font: var(--para-medium);
+              line-height: normal;
+              font-style: italic;
+              font-weight: 600;
+              color: var(--c-heading-1);
+            }
+          }
+        }
+
+        & button.claim {
+          margin: 0 1rem 0.5rem 1rem;
+        }
+      }
+    }
+  }
+}
