@@ -1,5 +1,6 @@
 import { ChatRoomId } from "../typings/ChatRoomIds";
 
+/** New chat message coming in. */
 export default interface ChatMessageEventDto {
   room_id: ChatRoomId;
   avatar_url?: string;
