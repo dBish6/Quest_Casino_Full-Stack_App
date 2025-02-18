@@ -20,9 +20,10 @@ import userVerificationRequired from "@authFeat/middleware/userVerificationRequi
 
 import authNamespace from "@authFeatSocket/namespaces/authNamespace";
 import chatNamespace from "@chatFeatSocket/namespaces/chatNamespace";
+import gameNamespace from "@gameFeatSocket/namespaces/gameNamespace";
 
 const baseUrl = "/api/v2/socket",
-  namespaces = [`${baseUrl}/auth`, `${baseUrl}/chat`];
+  namespaces = [`${baseUrl}/auth`, `${baseUrl}/chat`, `${baseUrl}/game`];
 
 export default function initializeSocketIo(
   httpServer: HttpServer,
@@ -54,5 +55,11 @@ export default function initializeSocketIo(
     logger.debug(`Client connected to chat namespace; ${socket.id}.`);
 
     chatNamespace(socket, io.of(`${baseUrl}/chat`));
+  });
+
+  io.of(`${baseUrl}/game`).on("connection", (socket) => {
+    logger.debug(`Client connected to game namespace; ${socket.id}.`);
+
+    gameNamespace(socket, io.of(`${baseUrl}/game`));
   });
 }

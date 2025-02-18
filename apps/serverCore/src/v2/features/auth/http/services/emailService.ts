@@ -38,7 +38,7 @@ const TITLE_PREFIX = "Quest Casino |",
         title: `${TITLE_PREFIX} Password Reset Successfully`,
         path: "/features/auth/http/emails/templates/passwordResetSuccess"
       }
-    },
+    }
   };
 
 export function formatEmailTemplate(
@@ -81,7 +81,8 @@ export async function sendEmail(to: string, html: string) {
         user: SMTP_USER,
         pass: SMTP_PASSWORD
       },
-      ...(NODE_ENV === "development" && { debug: true })
+      ...(NODE_ENV === "development" && { debug: true }),
+      logger: true
     });
 
     transporter.verify((error: any) => {

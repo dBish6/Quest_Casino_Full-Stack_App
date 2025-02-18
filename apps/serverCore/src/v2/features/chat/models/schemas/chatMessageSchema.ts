@@ -2,13 +2,13 @@ import type { Model } from "mongoose";
 import type { GlobalChatMessageDoc, PrivateChatMessageDoc } from "@chatFeat/typings/ChatMessage";
 
 import { Schema } from "mongoose";
-import defaults from "@utils/schemaDefaults";
 
-const { timestamps, ...options } = defaults.options;
+import MAX_MESSAGES_COUNT from "@chatFeat/constants/MAX_MESSAGES_COUNT";
+
+import defaults from "@utils/schemaDefaults";
 
 export const globalChatMessageSchema = new Schema<GlobalChatMessageDoc, Model<GlobalChatMessageDoc>>(
   {
-    _id: { type: Schema.ObjectId, immutable: true },
     avatar_url: {
       type: String,
       validate: {
@@ -23,19 +23,19 @@ export const globalChatMessageSchema = new Schema<GlobalChatMessageDoc, Model<Gl
     message: { type: String, required: true }
   },
   {
-    capped: { size: 102400, max: 40 },
-    timestamps: { createdAt: "created_at" }, 
-    ...options 
+    capped: { size: 102400, max: MAX_MESSAGES_COUNT.global.stored },
+    ...defaults.options,
+    timestamps: { createdAt: "created_at", updatedAt: false }
   }
-).index({ created_at: -1 });
+).index({ created_at: 1 });
 
-// For very active users, consider archiving old messages to maintain performance. - for private.
 export const privateChatMessageSchema = new Schema<PrivateChatMessageDoc, Model<PrivateChatMessageDoc>>(
   {
-    _id: { type: Schema.ObjectId, immutable: true }, // User Id
+    room_id: { type: String, unique: true, required: true },
     chats: {
       type: [
         {
+          _id: false,
           room_id: { type: String, immutable: true, required: true },
           avatar_url: {
             type: String,
@@ -55,7 +55,6 @@ export const privateChatMessageSchema = new Schema<PrivateChatMessageDoc, Model<
   },
   {
     collection: "chat_message_private",
-    // capped: { size: 102400, max: 40 },
     ...defaults.options
   }
-).index({ "chats.room_id": 1, "chats.created_at": -1 }, { sparse: true });
+).index({ "chats.created_at": -1 });

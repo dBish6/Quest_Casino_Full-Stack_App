@@ -24,7 +24,10 @@ export default async function validateLogin(
     const error = validateEmail(req.body.email);
     if (error) return res.status(400).json({ ERROR });
 
-    const user = await getUser("email", req.body.email, { projection: "-_id email password", lean: true });
+    const user = await getUser(
+      { by: "email", value: req.body.email },
+      { projection: "-_id email password", lean: true }
+    );
     if (!user) return res.status(400).json({ ERROR });
 
     if (user.password === "google provided")

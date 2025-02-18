@@ -39,7 +39,6 @@ export default async function initializeSession(
 
       clientUser = await populateUserDoc(userQuery.clone()).client().populate("friends");
       clientUser!.friends = ({ pending: {}, list: {} }) as UserFields["friends"];
-      console.log("clientUser", clientUser)
     }
 
     const userToClaims = formatUserToClaims(user),

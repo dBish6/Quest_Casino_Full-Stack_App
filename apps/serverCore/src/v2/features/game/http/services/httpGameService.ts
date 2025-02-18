@@ -2,21 +2,19 @@
  * HTTP Game Service
  *
  * Description:
- * Handles HTTP-related functionalities related to games; quests, bonuses, leaderboard and game lists.
+ * Handles HTTP-related functionalities related to games; quests, bonuses, and leaderboard.
  */
 
-import type { ObjectId } from "mongoose";
-import type { GameStatus, GameQuestStatus } from "@qc/constants";
+import type { LeaderboardType } from "@qc/constants";
 import type { AddGameBodyDto, AddQuestBodyDto, AddBonusBodyDto } from "@gameFeatHttp/dtos/AddGameDto";
 
 import { Types } from "mongoose";
 
-import CLIENT_COMMON_EXCLUDE from "@constants/CLIENT_COMMON_EXCLUDE";
+import { handleHttpError } from "@utils/handleError";
+import userProfileAggregation from "@authFeatHttp/utils/userProfileAggregation";
 
-import { handleHttpError, HttpError } from "@utils/handleError";
-
-import { getUser } from "@authFeat/services/authService";
 import { Game, GameQuest, GameBonus } from "@gameFeat/models";
+import { User } from "@authFeat/models";
 
 export type AddGameType = "Game" | "Quest" | "Bonus";
 
@@ -41,104 +39,46 @@ export async function addGame(type: AddGameType, body: AddGameBodyDto | AddQuest
 }
 
 /**
- * Gets all games from the database optionally for the client or internal use.
+ * Gets all the top 10 users from the database in `ViewUserProfileCredentials` format.
  */
-export async function getGames(status?: GameStatus, forClient?: boolean) {
+export async function getLeaderboard(type: LeaderboardType) {
   try {
-    return await Game.find({
-      ...(forClient ? { status: { $ne: "inactive" } } : status && { status }),
-    }).select(
-      forClient
-        ? `${CLIENT_COMMON_EXCLUDE} ${status !== undefined ? `-status ${status !== "active" ? " -odds" : ""}` : ""}`
-        : ""
-    );
-  } catch (error: any) {
-    throw handleHttpError(error, "getGames service error.");
-  }
-}
-/**
- * Gets a specific game from the database.
- * @throws `HttpError 404` if the document is not found.
- */
-export async function getGame(by: "_id" | "title", value: ObjectId | string) {
-  try {
-    const game = await Game.findOne({ [by]: value });
-    if (!game) throw new HttpError("Game doesn't exist.", 404);
-    
-    return game;
-  } catch (error: any) {
-    throw handleHttpError(error, "getGame service error.");
-  }
-}
-
-/**
- * Gets all quests from the database optionally for the client or internal use.
- * @throws `HttpError 404` user not found if a username is passed.
- */
-export async function getQuests(username?: string, status?: GameQuestStatus, forClient?: boolean) {
-  try {
-    if (username) {
-      const user = await getUser("username", username, {
-        projection: "-_id statistics",
-        populate: {
-          path: "statistics",
-          select: "-_id progress.quest",
-          populate: [
-            {
-              path: "progress.quest.$*.quest",
-              select: CLIENT_COMMON_EXCLUDE
-            }
-          ]
+    const topUsers = await User.aggregate([
+      {
+        $lookup: {
+          from: "user_statistics",
+          localField: "statistics",
+          foreignField: "_id",
+          as: "statisticsData"
         }
-      });
-      if (!user) throw new HttpError(`Unable to find profile with the username ${username}.`, 404);
+      },
+      { $unwind: "$statisticsData" },
+      {
+        $match: { [`statisticsData.wins.${type}`]: { $gt: 0 } }
+      },
 
-      return user;
-    } else {
-      return await GameQuest.find({
-        ...(forClient ? { status: { $ne: "inactive" } } : status && { status })
-      }).select(forClient ? `${CLIENT_COMMON_EXCLUDE} -status` : "");
-    }
-  } catch (error: any) {
-    throw handleHttpError(error, "getQuests service error.");
-  }
-}
-/**
- * Gets a specific quest from the database.
- * @throws `HttpError 404` if the document is not found.
- */
-export async function getQuest(by: "_id" | "title", value: ObjectId | string) {
-  try {
-    const quest = await GameQuest.findOne({ [by]: value });
-    if (!quest) throw new HttpError("Quest doesn't exist.", 404);
+      { $sort: { [`statisticsData.wins.${type}`]: -1 } },
+      { $limit: 10 },
 
-    return quest;
-  } catch (error: any) {
-    throw handleHttpError(error, "getQuest service error.");
-  }
-}
+      ...userProfileAggregation(true, "$statisticsData"),
 
-/**
- * Gets all bonuses from the database optionally for the client or internal use.
- */
-export async function getBonuses(forClient?: boolean) {
-  try {
-    return await GameBonus.find().select(forClient ? CLIENT_COMMON_EXCLUDE : "");
-  } catch (error: any) {
-    throw handleHttpError(error, "getBonuses service error.");
-  }
-}
-/**
- * Gets a specific bonus from the database.
- * @throws `HttpError 404` if the document is not found.
- */
-export async function getBonus(by: "_id" | "title", value: ObjectId | string) {
-  try {
-    const bonus = await GameBonus.findOne({ [by]: value });
-    if (!bonus) throw new HttpError("Bonus doesn't exist.", 404);
+      {
+        $project: {
+          _id: 0,
+          member_id: 1,
+          email: 1,
+          username: 1,
+          legal_name: 1,
+          avatar_url: 1,
+          bio: 1,
+          activity: { game_history: "$activityData.game_history" },
+          statistics: "$statisticsData"
+        }
+      }
+    ]);
 
-    return bonus;
+    return topUsers;
   } catch (error: any) {
-    throw handleHttpError(error, "getBonus service error.");
+    throw handleHttpError(error, "addGame service error.");
   }
 }

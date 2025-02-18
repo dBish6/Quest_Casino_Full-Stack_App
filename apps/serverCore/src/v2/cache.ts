@@ -35,11 +35,9 @@ export default async function establishRedisConnection() {
       logger.error(error);
 
       retries -= 1;
-      if (retries === 0)
-        throw new Error("Redis failed to connect, shutting down server...");
-      logger.debug(
-        `Redis connection failed. Retrying connection; ${retries} retries left.`
-      );
+      if (retries === 0) throw new Error("Redis failed to connect, shutting down server...");
+      
+      logger.debug(`Redis connection failed. Retrying connection; ${retries} retries left.`);
       await new Promise((resolve) => setTimeout(resolve, 5000));
     }
   }

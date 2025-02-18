@@ -202,8 +202,10 @@ export async function getUser(req: Request, res: Response, next: NextFunction) {
 
   try {
     let clientUser = await authService.getUser(
-      email ? "email" : "_id",
-      email || req.userDecodedClaims!.sub,
+      {
+        by: email ? "email" : "_id",
+        value: email || req.userDecodedClaims!.sub
+      },
       {
         forClient: !notifications,
         ...(notifications && { projection: "notifications" }),
@@ -238,7 +240,6 @@ export async function getUser(req: Request, res: Response, next: NextFunction) {
  */
 export async function getUserProfile(req: Request, res: Response, next: NextFunction) {
   const username = req.query.username as string;
-
   try {
     const profileData = await authService.getUserProfile(
       username ? username : req.userDecodedClaims!.sub
@@ -434,10 +435,13 @@ export async function refresh(
   next: NextFunction
 ) {
   try {
-    const user = await authService.getUser("username", req.body.username, {
-      lean: true,
-      throwDefault404: true
-    });
+    const user = await authService.getUser(
+      { by: "username", value: req.body.username },
+      {
+        lean: true,
+        throwDefault404: true
+      }
+    );
 
     const refreshResult = await initializeSession(res, {}, user);
     if (typeof refreshResult === "string") 

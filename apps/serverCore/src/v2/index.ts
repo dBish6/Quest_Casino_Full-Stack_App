@@ -4,7 +4,7 @@
  *
  * Author: David Bishop
  * Creation Date: April 16, 2024
- * Last Updated: Jan 14, 2024
+ * Last Updated: Feb 17, 2025
  *
  * Description:
  * ...
@@ -27,6 +27,7 @@ import Db from "@model/Db";
 import establishRedisConnection from "./cache";
 import initializeHttp from "./http";
 import initializeSocketIo from "./socket";
+import bree from "./jobs";
 
 import { logger } from "@qc/utils";
 
@@ -57,4 +58,8 @@ export async function setupServer() {
     }
   });
 };
-setupServer();
+setupServer().then(async () => {
+  // Starts predefined jobs.
+  await bree.start();
+  logger.info("Bree jobs started.");
+});
