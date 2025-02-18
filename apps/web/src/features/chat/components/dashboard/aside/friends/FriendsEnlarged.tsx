@@ -75,7 +75,7 @@ export default function FriendsEnlarged({ user, chatRoom, friendsListArr }: Frie
                 <>
                   <Avatar
                     size="xxl"
-                    {...(user && { user: { avatar_url: user.avatar_url } })}
+                    {...(chatRoom.targetFriend?.friend && { user: { avatar_url: chatRoom.targetFriend.friend.avatar_url } })}
                   />
 
                   <hgroup
