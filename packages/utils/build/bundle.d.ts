@@ -1,5 +1,7 @@
+export declare function calcWinRate(wins: number, losses: number): number;
+
 /**
- * Capitalizes each word in a string that is in snake case.
+ * Capitalizes each word in a string that could also be in snake case.
  */
 export declare function capitalize(txt: string): string;
 
