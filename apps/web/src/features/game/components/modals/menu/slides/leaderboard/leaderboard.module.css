@@ -1,0 +1,185 @@
+.leaderboard {
+  display: grid;
+  grid-template-columns: minmax(0, 252px) minmax(0, 416px);
+  gap: 2rem;
+  @media (width <= 751px) {
+    gap: 1rem;
+  }
+  @media (width <= 645px) {
+    grid-template-columns: minmax(0, 416px);
+    & section.board {
+      max-width: 252px;
+    }
+    & section.selected {
+      grid-row: 2;
+    }
+  }
+
+  & section {
+    min-height: 438.4px;
+    border: 2px solid var(--c-purple-border);
+    border-radius: 6px;
+    background-color: var(--c-lvl-2);
+  }
+
+  & section.board {
+    display: flex;
+    flex-direction: column;
+    & .filter {
+      padding: 1rem;
+      & :global(.control) {
+        & > div {
+          & select {
+            background-color: var(--c-lvl-3);
+          }
+          &[data-focused="true"] select {
+            background-color: var(--c-lvl-4);
+          }
+        }
+      }
+    }
+
+    & .topUsers {
+      height: 100%;
+      & > :global(.viewport) {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: inherit;
+        padding-inline: 0.5rem;
+
+        & > div {
+          & > span[role="status"] {
+            margin: 0 auto;
+          }
+
+          & > p {
+            position: absolute;
+            top: 40%;
+            left: 0;
+            transform: translateY(-50%);
+            width: 100%;
+            font: var(--para-regular);
+            color: var(--c-heading-2);
+            text-align: center;
+          }
+
+          & ul li.topUser {
+            position: relative;
+            padding-block: 0.5rem;
+            &:not(:last-child)::after {
+              content: "";
+              position: absolute;
+              bottom: 0;
+              left: 0;
+              display: block;
+              width: 100%;
+              border-top: 1px solid var(--c-purple-border);
+            }
+            
+            & button {
+              display: grid;
+              grid-template-columns: auto minmax(0, 1fr) auto;
+              width: 100%;
+              padding: 0.5rem;
+              text-align: left;
+
+              & > span {
+                font-weight: 600;
+                color: var(--c-heading-2);
+                transform: translateY(2px);
+                &[data-rank="1"] {
+                  color: #d4ae17;
+                }
+                &[data-rank="2"] {
+                  color: #9f9f9f;
+                }
+                &[data-rank="3"] {
+                  color: #74551e;
+                }
+              }
+              & .content {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                margin-inline: 0.75rem 0.5rem;
+                & hgroup {
+                  overflow: hidden;
+                  & * {
+                    white-space: nowrap;
+                    text-overflow: ellipsis;
+                    overflow: hidden;
+                  }
+                  & h2 {
+                    font: var(--para-small);
+                    font-weight: 600;
+                    line-height: 100%;
+                  }
+                  & p {
+                    font: var(--para-xx-small);
+                  }
+                }
+              }
+              & .wins {
+                margin-block: auto;
+                & p {
+                  font-weight: 600 !important;
+                  &:first-child {
+                    font: var(--para-xx-small);
+                    font-style: italic;
+                    line-height: 120%;
+                    color: var(--c-para-faded);
+                  }
+                  &:last-child {
+                    font: var(--para-small);
+                    line-height: 100%;
+                    color: var(--c-status-green);
+                  }
+                }
+              }
+
+              &[aria-pressed="true"] {
+                border: 2px solid var(--c-purple-800);
+                border-radius: 6px;
+                background: linear-gradient(109deg, var(--c-magenta-700), var(--c-purple-700));
+                & > span {
+                  text-shadow: 1px 1px 0 #242424;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  & section.selected {
+    position: relative;
+
+    & > p {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      transform: translateY(-50%);
+      width: 100%;
+      color: var(--c-heading-2);
+      text-align: center;
+    }
+
+    & > div:first-child {
+      height: 100%;
+      & > :global(.viewport) {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: inherit;
+        padding: 1rem;
+        & > div {
+          display: block !important;
+        }
+      }
+    }
+  }
+}

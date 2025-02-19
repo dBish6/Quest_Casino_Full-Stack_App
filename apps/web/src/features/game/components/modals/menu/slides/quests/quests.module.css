@@ -1,0 +1,15 @@
+.quests {
+  & > span[role="status"] {
+    margin: 0 auto;
+  }
+
+  & > p {
+    color: var(--c-heading-2);
+  }
+
+  & ul {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, 219px);
+    gap: 1.5rem;
+  }
+}

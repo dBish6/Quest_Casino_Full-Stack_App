@@ -13,7 +13,7 @@ import { authEndpoints } from "@authFeat/services/authApi";
 import { authTokenExpiredToast } from "@redux/toast/toastSlice";
 import { attemptLogout } from "@authFeat/services/handleLogout";
 
-export const namespaces = ["auth", "chat"] as const;
+export const namespaces = ["auth", "chat", "game"] as const;
 export type SocketNamespaces = (typeof namespaces)[number];
 export type TimeoutObj = Partial<Record<SocketNamespaces, NodeJS.Timeout>>;
 
@@ -171,7 +171,7 @@ export async function socketInstancesConnectionProvider(
 
 function setupDebugger() {
   if (import.meta.env.MODE !== "production") {
-    const socket = getSocketInstance("auth"), // They both use the same engine.
+    const socket = getSocketInstance("auth"), // They all use the same engine.
       engineLogs = false;
 
     if (engineLogs) {
@@ -194,6 +194,5 @@ function setupDefaultListeners(socket: Socket, namespace: SocketNamespaces) {
   );
 
   socket.on("disconnect", () => {
-    // TODO:
   });
 }

@@ -5,7 +5,7 @@
  * Handles functionalities related to user authentication and management that can be for HTTP or Sockets.
  */
 
-import type { ObjectId, PopulateOptions, Query, UpdateQuery, QueryOptions, MongooseUpdateQueryOptions, UpdateWriteOpResult } from "mongoose";
+import type { ObjectId, PopulateOptions, Query, FilterQuery, UpdateQuery, QueryOptions, MongooseUpdateQueryOptions, UpdateWriteOpResult } from "mongoose";
 import type { GetUserBy, UserDoc, UserDocFriends, UserDocStatistics, UserDocActivity, UserDocNotifications } from "@authFeat/typings/User";
 
 import CLIENT_COMMON_EXCLUDE from "@constants/CLIENT_COMMON_EXCLUDE";
@@ -18,6 +18,7 @@ import { User, UserFriends, UserStatistics, UserActivity, UserNotifications } fr
 export interface Identifier<TBy> {
   by: TBy;
   value: ObjectId | string;
+  [key: string]: any;
 }
 
 type FriendsProjectionOpt = "pending" | "list";
@@ -57,6 +58,17 @@ export const USER_FRIENDS_POPULATE = (
       });
     return acc;
   }, [] as PopulateOptions[]);
+
+const USER_STATISTICS_PROGRESS_POPULATE = [
+  {
+    path: "progress.quest.$*.quest",
+    select: "-_id cap"
+  },
+  {
+    path: "progress.bonus.$*.bonus",
+    select: "-_id cap"
+  }
+];
 
 const USER_SUB_DOCS_POPULATE_MAP = {
   friends: {
@@ -99,16 +111,7 @@ export function populateUserDoc<TUserDoc = UserDoc>(query: Query<any, UserDoc>) 
         {
           path: "statistics",
           select: CLIENT_COMMON_EXCLUDE,
-          populate: [
-            {
-              path: "progress.quest.$*.quest",
-              select: "-_id cap"
-            },
-            {
-              path: "progress.bonus.$*.bonus",
-              select: "-_id cap"
-            }
-          ]
+          populate: USER_STATISTICS_PROGRESS_POPULATE
         }
       ]),
     min: (): Query<TUserDoc | null, UserDoc> => query.select(MINIMUM_USER_FIELDS) as any
@@ -164,17 +167,17 @@ export async function getUser<
     throwDefault404?: boolean;
   }
 >(
-  by: GetUserBy,
-  value: ObjectId | string,
+  identifier: Identifier<GetUserBy> & FilterQuery<UserDoc>,
   options: TOptions = {} as TOptions
 ): Promise<TOptions["throwDefault404"] extends true ? UserDoc : UserDoc | null> {
-  const { forClient, throwDefault404, projection: project, populate, ...restOpts } = options;
+  const { by, value, ...filters } = identifier,
+    { forClient, throwDefault404, projection: project, populate, ...restOpts } = options;
 
   try {
     let projection = project;
     if (!project) projection = EXCLUDE_SUB_FIELDS;
 
-    let userQuery = User.findOne({ [by]: value }, projection, restOpts);
+    let userQuery = User.findOne({ [by]: value, ...filters }, projection, restOpts);
     if (populate) userQuery.populate(populate as string);
     else populateUserDoc(userQuery)[forClient ? "client" : "full"](projection);
 
@@ -219,7 +222,7 @@ export async function getUserFriends(
 /**
  * Updates any field in the user's `UserDoc` (base document).
  * @param options.new (Optional) When `true` `findOneAndUpdate` is used else `updateOne` is used.
- * @param options.projection (Optional) Only for `findOneAndUpdate`; must only be a `string`, space-separated field names. 
+ * @param options.projection (Optional) Only for `findOneAndUpdate`; must only be a `string`, space-separated field names.
  * You can also only get sub-document fields via `projection`.
  * @throws `ApiError 404` if the document is not found for `findOneAndUpdate`.
  */
@@ -298,20 +301,27 @@ export async function updateUserFriends<
 /**
  * Updates any field in the user's statistics document.
  * @param options.new (Optional) When `true` `findOneAndUpdate` is used else `updateOne` is used.
+ * @param options.projection (Optional) Only for `findOneAndUpdate`; must only be a `string`, space-separated field names.
  * @throws `ApiError 404` if the document is not found.
  */
 export async function updateUserStatistics<
-  TOptions extends { new?: boolean }
+  TOptions extends { new?: boolean; forClient?: boolean; }
 >(
   identifier: Identifier<"_id">,
   update: UpdateQuery<UserDocStatistics>,
-  options?: TOptions & (TOptions["new"] extends true ? QueryOptions<UserDocStatistics> : MongooseUpdateQueryOptions)
+  options: TOptions & (TOptions["new"] extends true ? QueryOptions<UserDocStatistics> : MongooseUpdateQueryOptions) = {} as any
 ): Promise<TOptions["new"] extends true ? UserDocStatistics : UpdateWriteOpResult> {
-  const { by, value } = identifier;
+  const { by, value } = identifier,
+    { forClient, populate, ...restOpts } = options;
 
   try {
     if (options?.new) {
-      const userStatistics = await UserStatistics.findOneAndUpdate({ [by]: value }, update, options);
+      const userStatisticsQuery = UserStatistics.findOneAndUpdate({ [by]: value }, update, options);
+      if (populate) userStatisticsQuery.populate(populate as string);
+      else if (forClient && (restOpts.projection.includes("progress") || !restOpts.projection))
+        userStatisticsQuery.populate(USER_STATISTICS_PROGRESS_POPULATE);
+
+      const userStatistics = await userStatisticsQuery.exec();
       if (!userStatistics) throw new ApiError("Unexpectedly user statistics was not found.", 404, "not found");
 
       return userStatistics as any;

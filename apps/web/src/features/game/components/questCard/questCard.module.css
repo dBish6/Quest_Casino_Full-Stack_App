@@ -26,7 +26,7 @@
         margin-bottom: 0.75rem;
       }
       & p {
-        line-height: 20px !important;
+        line-height: 128% !important;
       }
     }
     & > p {

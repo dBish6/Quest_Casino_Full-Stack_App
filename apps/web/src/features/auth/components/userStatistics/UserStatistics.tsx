@@ -1,15 +1,16 @@
 import type { VariantProps } from "class-variance-authority";
-import type { UserCredentials } from "@qc/typescript/typings/UserCredentials";
+import type { UserCredentials, UserProfileCredentials } from "@qc/typescript/typings/UserCredentials";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useMemo, useState } from "react";
 import { cva } from "class-variance-authority";
 
-import { capitalize } from "@qc/utils";
+import { calcWinRate, capitalize } from "@qc/utils";
 
 import { Icon } from "@components/common";
 import { Select } from "@components/common/controls";
 import { ScrollArea } from "@components/scrollArea";
 import { ModalTrigger } from "@components/modals";
+import { ResentGame } from "@authFeat/components/userActivity";
 
 import s from "./userStatistics.module.css";
 
@@ -17,7 +18,7 @@ const statistics = cva(s.stats, {
   variants: {
     intent: {
       table: s.table,
-      blocks: s.blocks
+      block: s.block
     }
   }
 });
@@ -38,11 +39,12 @@ export interface UserStatisticsProps extends React.ComponentProps<"div">,
   VariantProps<typeof statistics> {
   stats: UserCredentials["statistics"];
   username: string;
+  gameHistory?: UserProfileCredentials["activity"]["game_history"];
   scaleText?: boolean;
 }
 
 function initializeRecord(stats: UserStatisticsProps["stats"]): UserRecord {
-  const wins = Object.entries(stats.wins).filter(([key]) => key !== "streak"),
+  const wins = Object.entries(stats.wins).filter(([key]) => key !== "streak" && key !== "rate"),
     losses = Object.entries(stats.losses);
 
   const gamesPlayed: any = {};
@@ -57,16 +59,19 @@ function initializeRecord(stats: UserStatisticsProps["stats"]): UserRecord {
   return { wins, losses, gamesPlayed, conqueredQuests };
 };
 
-function calcWinRate(wins: number, losses: number) {
-  if (!wins && !losses) return 0;
-  return Math.round((wins / (wins + losses)) * 1000) / 10;
-};
-
-export default function UserStatistics({ stats, username, className, intent, scaleText = false, ...props }: UserStatisticsProps) {
+export default function UserStatistics({
+  stats,
+  username,
+  gameHistory,
+  className,
+  intent,
+  scaleText = false,
+  ...props
+}: UserStatisticsProps) {
   const questsContainerRef = useRef<HTMLDivElement>(null);
 
-  const record = useRef<UserRecord>(initializeRecord(stats)),
-    [category, setCategory] = useState({ index: 0, winRate: calcWinRate(stats.wins.total, stats.losses.total) });
+  const record = useMemo(() => initializeRecord(stats), [stats]),
+    [category, setCategory] = useState({ index: 0, winRate: stats.wins.rate });
 
   useEffect(() => {
     let retries = 2
@@ -80,7 +85,7 @@ export default function UserStatistics({ stats, username, className, intent, sca
       }
       retries--;
     }, 100);
-  
+
     return () => clearInterval(interval);
   }, []);
 
@@ -109,17 +114,22 @@ export default function UserStatistics({ stats, username, className, intent, sca
                 id="WinLossSelect"
                 defaultValue="total"
                 onInput={(e) => {
-                  const index = e.currentTarget.selectedIndex - 1;
+                  const target = e.currentTarget,
+                    index = target.selectedIndex - 1;
+
                   setCategory({
                     index,
-                    winRate: calcWinRate(
-                      record.current.wins[index][1],
-                      record.current.losses[index][1]
-                    )
+                    winRate:
+                      target.value === "total"
+                        ? stats.wins.rate
+                        : calcWinRate(
+                            record.wins[index][1],
+                            record.losses[index][1]
+                          )
                   });
                 }}
               >
-                {record.current.wins.map(([title]) => (
+                {record.wins.map(([title]) => (
                   <option key={title} value={title}>{capitalize(title)}</option>
                 ))}
               </Select>
@@ -135,13 +145,13 @@ export default function UserStatistics({ stats, username, className, intent, sca
                 Your win and loss record for the selected category.
               </div>
               <div role="rowgroup">
-                <div role="row" title={record.current.wins[category.index][1] + " Wins"}>
+                <div role="row" title={record.wins[category.index][1] + " Wins"}>
                   <span role="rowheader">Wins</span>
-                  <span role="cell">{record.current.wins[category.index][1]}</span>
+                  <span role="cell">{record.wins[category.index][1]}</span>
                 </div>
-                <div role="row" title={record.current.wins[category.index][1] + " Losses"}>
+                <div role="row" title={record.wins[category.index][1] + " Losses"}>
                   <span role="rowheader">Losses</span>
-                  <span role="cell">{record.current.losses[category.index][1]}</span>
+                  <span role="cell">{record.losses[category.index][1]}</span>
                 </div>
                 <div role="row" title={category.winRate + "%" + " Win Rate"}>
                   <span role="rowheader">Win Rate</span>
@@ -162,21 +172,21 @@ export default function UserStatistics({ stats, username, className, intent, sca
                 {username + "'s" || "Your"} total games played for all categories.
               </div>
               <div role="rowgroup">
-                <div role="row" title={record.current.gamesPlayed.table + " Table Games Played"}>
+                <div role="row" title={record.gamesPlayed.table + " Table Games Played"}>
                   <span role="rowheader">Table</span>
-                  <span role="cell">{record.current.gamesPlayed.table}</span>
+                  <span role="cell">{record.gamesPlayed.table}</span>
                 </div>
-                <div role="row" title={record.current.gamesPlayed.slots + " Slots Games Played"}>
+                <div role="row" title={record.gamesPlayed.slots + " Slots Games Played"}>
                   <span role="rowheader">Slots</span>
-                  <span role="cell">{record.current.gamesPlayed.slots}</span>
+                  <span role="cell">{record.gamesPlayed.slots}</span>
                 </div>
-                <div role="row" title={record.current.gamesPlayed.dice + " Dice Games Played"}>
+                <div role="row" title={record.gamesPlayed.dice + " Dice Games Played"}>
                   <span role="rowheader">Dice</span>
-                  <span role="cell">{record.current.gamesPlayed.dice}</span>
+                  <span role="cell">{record.gamesPlayed.dice}</span>
                 </div>
-                <div role="row" title={record.current.gamesPlayed.total + " Total Games Played"}>
+                <div role="row" title={record.gamesPlayed.total + " Total Games Played"}>
                   <span role="rowheader">Total</span>
-                  <span role="cell">{record.current.gamesPlayed.total}</span>
+                  <span role="cell">{record.gamesPlayed.total}</span>
                 </div>
               </div>
             </div>
@@ -191,9 +201,9 @@ export default function UserStatistics({ stats, username, className, intent, sca
               Quests
             </h3>
             <ScrollArea orientation="horizontal">
-              {record.current.conqueredQuests.length > 0 && (
+              {record.conqueredQuests.length > 0 && (
                 <ul aria-label="Completed Quests" aria-describedby="questCount">
-                  {record.current.conqueredQuests.map((quest) => (
+                  {record.conqueredQuests.map((quest) => (
                     <li key={quest} title={quest}>
                       {quest}
                     </li>
@@ -204,10 +214,33 @@ export default function UserStatistics({ stats, username, className, intent, sca
           </>
         )}
 
-        <div>
+        {intent === "block" &&
+          <>
+            <div className={s.wins}>
+              <h4>Total Wins</h4>
+              <p>{record.wins[0][1]}</p>
+            </div>
+
+            <div className={s.losses}>
+              <h4>Total Losses</h4>
+              <p>{record.losses[0][1]}</p>
+            </div>
+
+            <div className={s.played}>
+              <h4>Total Games</h4>
+              <p>{record.gamesPlayed.total}</p>
+            </div>
+
+            <div className={s.rate}>
+              <h4>Win Rate</h4>
+              <p>{record.wins[4][1] + "%"}</p>
+            </div>
+          </>
+        }
+        <div className={s.conquered}>
           <p id="questCount">
-            <span>{record.current.conqueredQuests.length}</span> Quest
-            {record.current.conqueredQuests.length === 1 ? "" : "s"} Completed
+            <span>{record.conqueredQuests.length}</span> Quest
+            {record.conqueredQuests.length === 1 ? "" : "s"} Completed
           </p>
           <ModalTrigger
             aria-label={`View All ${username}'s Completed Quests`}
@@ -218,6 +251,9 @@ export default function UserStatistics({ stats, username, className, intent, sca
             View Quests
           </ModalTrigger>
         </div>
+        {intent === "block" && gameHistory && (
+          <ResentGame gameHistory={gameHistory} />
+        )}
       </div>
     </div>
   );

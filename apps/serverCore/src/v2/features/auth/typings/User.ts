@@ -100,6 +100,19 @@ export interface UserDocFriends extends Document, DefaultDocFields {
   list: Map<string, UserDoc>;
 }
 
+export interface UserQuest {
+  quest: GameQuestDoc;
+  current: number;
+}
+export interface UserBonus {
+  bonus: GameBonusDoc;
+  current: number;
+  /**
+   * Activated also acts as a expiry timestamp. When activated, this would be 1 day from
+   * when it was set (in milliseconds).
+   */
+  activated: number;
+}
 export interface UserDocStatistics extends Document, DefaultDocFields {
   _id: ObjectId;
   losses: {
@@ -114,22 +127,12 @@ export interface UserDocStatistics extends Document, DefaultDocFields {
     slots: number;
     dice: number;
     streak: number;
+    /** Total win rate. */
+    rate: number;
   };
   progress: {
-    quest: Map<
-      string,
-      {
-        quest: GameQuestDoc;
-        current: number;
-      }
-    >;
-    bonus: Map<
-      string,
-      {
-        bonus: GameBonusDoc;
-        current: number;
-      }
-    >;
+    quest: Map<string, UserBonus>;
+    bonus: Map<string, UserBonus>;
   };
 }
 

@@ -1,7 +1,7 @@
 import { type ConnectOptions, connect } from "mongoose";
 import { logger } from "@qc/utils";
 
-const { DATABASE_URI_BASE, DATABASE_URI_GAME, NODE_ENV } = process.env;
+const { DATABASE_URI_BASE = "", DATABASE_URI_GAME: _, NODE_ENV } = process.env;
 
 export default class Db {
   public options: ConnectOptions;
@@ -16,14 +16,17 @@ export default class Db {
         version: "1",
         strict: true,
         deprecationErrors: true,
-        ...((ops?.serverApi as object) ?? {}),
-      },
+        ...((ops?.serverApi as object) ?? {})
+      }
     };
   }
 
   public async connectBaseCluster() {
     try {
-      await connect(DATABASE_URI_BASE || "", this.options);
+      await connect(DATABASE_URI_BASE, {
+        maxPoolSize: 100,
+        ...this.options
+      });
       logger.info("MongoDB connection established via baseDB!");
     } catch (error: any) {
       logger.error("baseDB connection error:\n", error.message);

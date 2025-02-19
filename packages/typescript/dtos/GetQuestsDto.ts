@@ -16,6 +16,7 @@ export interface Quest {
 
 export interface GetQuestsResponseDto {
   quests: Quest[];
+  renew: string;
 }
 
 export interface GetUserQuestsProgressResponseDto {

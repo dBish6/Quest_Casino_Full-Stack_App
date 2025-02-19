@@ -67,6 +67,7 @@ interface StatisticsCredential {
       slots: number;
       dice: number;
       streak: number;
+      rate: number;
     };
     progress: {
       quest: {
@@ -78,6 +79,7 @@ interface StatisticsCredential {
       bonus: {
         [title: string]: {
           current: number;
+          activated: number;
           bonus: { cap: number };
         };
       };

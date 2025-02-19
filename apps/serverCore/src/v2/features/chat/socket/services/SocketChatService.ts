@@ -93,8 +93,8 @@ export default class SocketChatService {
             message: `${user.username} has ${status} the chat.`,
           });
 
-        if (status === "joined") 
-          chat_messages = await getChatMessages(room_id.join!, user.sub);
+        if (status === "joined")
+          chat_messages = await getChatMessages(room_id.join!);
       }
 
       return callback({
@@ -197,10 +197,9 @@ export default class SocketChatService {
   private async cacheChatMessage(chatMessage: Omit<ChatMessage, "_id"> | LastChatMessageDto, isLast?: boolean) {
     try {
       if (isLast) {
-        // TODO: If the last message sent in a private chat was 3 days ago, save it anyways? If there is no message just cache? (prob should use db for totally inactive users (don't save if they're totally inactive...)).
         await redisClient.set(`chat:${chatMessage.room_id}:last_message`, chatMessage.message);
       } else {
-        await archiveChatMessageQueue(chatMessage.room_id, this.socket.userDecodedClaims!.sub);
+        await archiveChatMessageQueue(chatMessage.room_id);
         // Message cache.
         await redisClient.lPush(`chat:${chatMessage.room_id}:message_queue`, JSON.stringify(chatMessage));
       }

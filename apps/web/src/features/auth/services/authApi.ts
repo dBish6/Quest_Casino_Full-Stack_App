@@ -848,11 +848,9 @@ const authApi = injectEndpoints({
           logger.debug("newNotification listener initialized.");
 
           socket.on(AuthEvent.NEW_NOTIFICATION, (data: { notification: Notification }) => {
-              let patchResult: any | undefined;
-
               try {
                 logger.debug("NEW NOTIFICATION", data);
-                const { type, title, message, link } = data.notification;
+                const { type: _, title, message, link } = data.notification;
 
                 dispatch(
                   ADD_TOAST({ title, message, intent: "info", options: { link } })

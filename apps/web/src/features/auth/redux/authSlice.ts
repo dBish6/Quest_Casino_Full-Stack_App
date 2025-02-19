@@ -93,6 +93,18 @@ const authSlice = createSlice({
           delete (state.user.credentials!.friends as any)[key][memberId];
       }
     },
+    /**
+     * Updates the user's statistics progress object.
+     */
+    UPDATE_USER_STATISTICS_PROGRESS: (
+      state,
+      action: PayloadAction<Partial<UserCredentials["statistics"]["progress"]>>
+    ) => {
+      state.user.credentials!.statistics.progress = deepMerge([
+        state.user.credentials!.statistics.progress,
+        action.payload
+      ]);
+    },
     CLEAR_USER: (state) => {
       state.user = initialState.user;
     }
@@ -108,6 +120,7 @@ export const { name: authName, reducer: authReducer } = authSlice,
     UPDATE_USER_FRIENDS,
     UPDATE_USER_FRIEND_IN_LIST,
     REMOVE_USER_FRIEND,
+    UPDATE_USER_STATISTICS_PROGRESS,
     CLEAR_USER
   } = authSlice.actions;
 

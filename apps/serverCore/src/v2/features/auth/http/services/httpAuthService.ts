@@ -23,11 +23,11 @@ import { logger, delay } from "@qc/utils";
 import { handleHttpError, HttpError } from "@utils/handleError";
 import trackAttempts from "@authFeatHttp/utils/trackAttempts";
 import isUuidV4 from "@utils/isUuidV4";
+import userProfileAggregation from "@authFeatHttp/utils/userProfileAggregation";
 import { getSocketAuthService } from "@authFeat/socket/namespaces/authNamespace";
 import getSocketId from "@authFeat/socket/utils/getSocketId";
 
 import { User, UserFriends, UserStatistics, UserActivity, UserNotifications } from "@authFeat/models";
-import { PrivateChatMessage } from "@chatFeat/models";
 import { redisClient } from "@cache";
 import { s3 } from "@aws";
 
@@ -69,8 +69,7 @@ export async function registerUser(user: InitializeUser) {
         new UserFriends({ _id: userId }),
         new UserStatistics({ _id: userId }),
         new UserActivity({ _id: userId }),
-        new UserNotifications({ _id: userId }),
-        new PrivateChatMessage({ _id: userId })
+        new UserNotifications({ _id: userId })
       ];
       for (const doc of docs) await doc.save({ session });
     }).finally(() => session.endSession());
@@ -187,7 +186,8 @@ export async function getSortedUserNotifications(
         },
         { $unwind: "$notifications" },
         { $sort: { "notifications.created_at": -1 } },
-        { $group: { _id: 0, notifications: { $push: "$notifications" } } }
+        { $group: { _id: 0, notifications: { $push: "$notifications" } } },
+        { $project: { _id: 0, notifications: 1 } }
       ])
     }
 
@@ -249,151 +249,21 @@ export async function getUserProfile(idOrUsername: ObjectId | string) {
           ? { _id: new Types.ObjectId(idOrUsername as string) }
           : { username: idOrUsername }
       },
-      {
-        $lookup: {
-          from: "user_activity",
-          localField: "activity",
-          foreignField: "_id",
-          as: "activityData"
-        }
-      },
-      { $unwind: "$activityData" },
-      {
-        $set: {
-          "activityData.game_history": {
-            $sortArray: {
-              input: "$activityData.game_history",
-              sortBy: { timestamp: -1 }
-            }
-          }
-        }
-      },
+      
+      ...userProfileAggregation(publicProfile),
 
-      ...(publicProfile
-        ? [
-            {
-              $lookup: {
-                from: "user_statistics",
-                localField: "statistics",
-                foreignField: "_id",
-                as: "statisticsData"
-              }
-            },
-            { $unwind: "$statisticsData" },
-
-            {
-              $set: {
-                progressQuestArray: {
-                  $objectToArray: "$statisticsData.progress.quest"
-                }
-              }
-            },
-            {
-              $lookup: {
-                from: "game_quest",
-                let: { quests: "$progressQuestArray" },
-                pipeline: [
-                  {
-                    $match: {
-                      $expr: {
-                        $in: ["$_id", { $map: { input: "$$quests", as: "quest", in: "$$quest.v.quest" } }]
-                      }
-                    }
-                  },
-                  { $project: { _id: 1, cap: 1 } }
-                ],
-                as: "questDetails"
-              }
-            },
-            {
-              $set: {
-                progress: {
-                  quest: {
-                    $arrayToObject: {
-                      $map: {
-                        input: "$progressQuestArray",
-                        as: "questEntry",
-                        in: {
-                          k: "$$questEntry.k",
-                          v: {
-                            $mergeObjects: [
-                              "$$questEntry.v",
-                              {
-                                quest: {
-                                  $let: {
-                                    vars: {
-                                      matchedQuest: {
-                                        $arrayElemAt: [
-                                          {
-                                            $filter: {
-                                              input: "$questDetails",
-                                              as: "quest",
-                                              cond: { $eq: ["$$quest._id", "$$questEntry.v.quest"] }
-                                            }
-                                          },
-                                          0
-                                        ]
-                                      }
-                                    },
-                                    in: {
-                                      cap: "$$matchedQuest.cap"
-                                    }
-                                  }
-                                }
-                              }
-                            ]
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            },
-            {
-              $project: {
-                "statisticsData._id": 0,
-                "statisticsData.created_at": 0,
-                "statisticsData.updated_at": 0
-              }
-            },
-            {
-              $set: {
-                statisticsData: {
-                  progress: "$progress"
-                }
-              }
-            },
-          ]
-        : []),
-
-      {
-        $group: {
-          _id: "$_id",
-          email: { $first: "$email" },
-          game_history: { $first: "$activityData.game_history" },
-          ...(publicProfile && {
-            member_id: { $first: "$member_id" },
-            username: { $first: "$username" },
-            legal_name: { $first: "$legal_name" },
-            avatar_url: { $first: "$avatar_url" },
-            bio: { $first: "$bio" },
-            statistics: { $first: "$statisticsData" }
-          })
-        }
-      },
       {
         $project: {
           _id: 1,
           email: 1,
-          activity: { game_history: "$game_history" },
+          activity: { game_history: "$activityData.game_history" },
           ...(publicProfile && {
             member_id: 1,
             username: 1,
             legal_name: 1,
             avatar_url: 1,
             bio: 1,
-            statistics: 1
+            statistics: "$statisticsData"
           })
         }
       }
@@ -404,6 +274,7 @@ export async function getUserProfile(idOrUsername: ObjectId | string) {
     if (publicProfile) {
       const activityStatus = (await redisClient.get(KEY(profileData[0]._id).status)) || "offline";
       user.activity.status = activityStatus;
+      delete user._id;
     }
 
     return user;
@@ -420,6 +291,7 @@ export async function getUserProfile(idOrUsername: ObjectId | string) {
  * @throws `HttpError 409` conflict if there is a pending password and they request to change their email. 
  * @throws `HttpError 429` too many update attempts.
  */
+// FIXME: Should send the the friend again in the friendUpdate event for legal_name and username so friends of that friend can have the update (not important). 
 export async function updateProfile(user: UserClaims, body: UpdateProfileBodyDto) {
   let session: ClientSession | undefined;
 
@@ -497,10 +369,13 @@ export async function updateProfile(user: UserClaims, body: UpdateProfileBodyDto
               if (blkUser.op === "add") {
                 if (body.settings!.blocked_list.length > 1) throw new HttpError("Access Denied", 403); // Should never be multiple users being blocked (you can only block when viewing a single user profile).
 
-                const blkUserDoc = await getUser("member_id", blkUser.member_id, {
-                  projection: "_id",
-                  lean: true
-                });
+                const blkUserDoc = await getUser(
+                  { by: "member_id", value: blkUser.member_id },
+                  {
+                    projection: "_id",
+                    lean: true
+                  }
+                );
                 if (!blkUserDoc)
                   throw new HttpError(
                     "Unexpectedly, this user was not found to block, this profile doesn't exist.", 404
@@ -565,7 +440,7 @@ export async function updateProfile(user: UserClaims, body: UpdateProfileBodyDto
               ...(!query.$set.region && { $unset: { region: "" } })
             })
           },
-          { session, new: true }
+          { session, runValidators: true, new: true }
         )
         .select(
           `-_id ${bodyKeys} ${(query.$set as any)["legal_name.first"] || (query.$set as any)["legal_name.first"] ? "legal_name" : ""}`
@@ -585,7 +460,7 @@ export async function updateProfile(user: UserClaims, body: UpdateProfileBodyDto
         return {
           ...(query.$set.email && {
             updatedUser: {
-              ...(await getUser("_id", user.sub, {
+              ...(await getUser({ by: "_id", value: user.sub }, {
                 lean: true,
                 throwDefault404: true
               }))
@@ -696,7 +571,7 @@ export async function sendConfirmPasswordEmail(
         const isForgot = "verification_token" in body; // From forgot reset form else from profile reset form.
         let newPassword = isForgot ? body.password : body.password.new as string;
 
-        const user = await getUser("_id", userId, {
+        const user = await getUser({ by: "_id", value: userId }, {
           projection: "-_id password",
           lean: true,
           throwDefault404: true
@@ -727,7 +602,7 @@ export async function sendForgotPasswordEmail(email: string) {
   const generateJWT = new GenerateUserJWT();
 
   try {
-    const user = await getUser("email", email, { projection: "email", lean: true });
+    const user = await getUser({ by: "email", value: email }, { projection: "email", lean: true });
 
     if (user) {
       const verificationToken = await generateJWT.verificationToken(user, { expiresIn: 60 * 60 * 24 }); // 24 hours.
@@ -772,7 +647,7 @@ export async function logout(
 
     user = jwtVerification.getFirstValidUserClaims({ access, refresh });
     if (!user) {
-      user = await getUser("username", username, {
+      user = await getUser({ by: "username", value: username }, {
         projection: "_id",
         lean: true
       });

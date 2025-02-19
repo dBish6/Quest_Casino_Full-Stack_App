@@ -40,6 +40,10 @@ export declare enum GameEvent {
 export declare const GAME_STATUSES: readonly ["active", "development", "inactive"], GAME_CATEGORIES: readonly ["table", "slots", "dice"];
 export type GameStatus = (typeof GAME_STATUSES)[number];
 export type GameCategory = (typeof GAME_CATEGORIES)[number];
+export declare const LEADERBOARD_TYPES: readonly ["rate", "total"];
+export type LeaderboardType = (typeof LEADERBOARD_TYPES)[number];
+export declare const GAME_BONUS_STATUSES: readonly ["active", "inactive"];
+export type GameBonusStatus = (typeof GAME_BONUS_STATUSES)[number];
 export declare const GAME_QUEST_REWARD_TYPES: readonly ["money", "spins"], GAME_QUEST_FOR: readonly ["all", "blackjack", "slots", "dice"], GAME_QUEST_STATUSES: readonly ["active", "inactive"];
 export type GameQuestRewardType = (typeof GAME_QUEST_REWARD_TYPES)[number];
 export type GameQuestFor = (typeof GAME_QUEST_FOR)[number];

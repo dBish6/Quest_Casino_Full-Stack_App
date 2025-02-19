@@ -1,0 +1,123 @@
+.generalInfo {
+  &.full,
+  &.compact {
+    & .content {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      @media (width <= 488px) {
+        flex-wrap: wrap;
+      }
+
+      & > div:last-child {
+        min-width: 0;
+        max-height: 170px;
+        & hgroup {
+          & h2,
+          & > div p {
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+          }
+          & h2 {
+            line-height: 100% !important;
+          }
+          & > div {
+            display: flex;
+            align-items: center;
+            & > div {
+              margin-left: 0.5rem;
+            }
+          }
+        }
+      }
+    }
+
+    & .actions {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      & button {
+        &.block {
+          background: var(--c-lvl-2);
+        }
+        &[disabled] {
+          opacity: 0.68;
+        }
+      }
+    }
+  }
+
+  &.full {
+    & .content {
+      margin-bottom: 1.25rem;
+      & > div:last-child {
+        & hgroup {
+          margin-bottom: 0.75rem;
+          & h2 {
+            font: var(--h1);
+            font-size: var(--h1-clamp);
+          }
+          & > div {
+            & p {
+              font: var(--para-large);
+              font-size: var(--h3-clamp);
+            }
+            & > div {
+              & img.flag {
+                width: 28px;
+                height: 20.46px;
+              }
+            }
+          }
+        }
+        & .bio {
+          min-height: 0;
+          & > :global(.viewport) {
+            max-height: 88.4667px;
+            & > div p {
+              font: var(--para-small);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  &.compact {
+    & .content {
+      margin-bottom: 0.75rem;
+      & > div:last-child {
+        & hgroup {
+          margin-bottom: 0.5rem;
+          & h2 {
+            font-size: 24px;
+          }
+          & > div {
+            & p {
+              font: var(--para-medium);
+            }
+            & > div {
+              & img.flag {
+                width: 24px;
+                height: 17.45px;
+              }
+            }
+          }
+        }
+        & .bio {
+          & > :global(.viewport) {
+            max-height: 56.9px;
+            & > div p {
+              font: var(--para-x-small);
+            }
+          }
+        }
+      }
+    }
+
+    & .actions {
+      margin-bottom: 1.25rem;
+    }
+  }
+}

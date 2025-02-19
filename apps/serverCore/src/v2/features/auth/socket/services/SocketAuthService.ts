@@ -26,8 +26,8 @@ import getFriendRoom from "@authFeatSocket/utils/getFriendRoom";
 import getSocketId from "@authFeatSocket/utils/getSocketId";
 import getUserSessionActivity from "@authFeat/utils/getUserSessionActivity";
 
-import { getUserFriends, getUser, updateUserFriends, updateUserNotifications } from "@authFeat/services/authService";
 import { redisClient } from "@cache";
+import { getUserFriends, getUser, updateUserFriends, updateUserNotifications } from "@authFeat/services/authService";
 
 export const KEY = (userId: ObjectId | string) => ({
   status: `user:${userId.toString()}:activity:status`,
@@ -106,7 +106,7 @@ export default class SocketAuthService {
 
     try {
       const user = this.socket.userDecodedClaims!,
-        recipient = await getUser("username", friend.username, { lean: true });
+        recipient = await getUser({ by: "username", value: friend.username }, { lean: true });
       if (!recipient)
         throw new SocketError(USER_NOT_FOUND_IN_SYSTEM_MESSAGE, "not found");
 
@@ -278,11 +278,14 @@ export default class SocketAuthService {
     try {
       const user = this.socket.userDecodedClaims!;
 
-      const { _id: friendId } = await getUser("member_id", member_id, {
-        projection: "_id",
-        lean: true,
-        throwDefault404: true
-      });
+      const { _id: friendId } = await getUser(
+        { by: "member_id", value: member_id },
+        {
+          projection: "_id",
+          lean: true,
+          throwDefault404: true
+        }
+      );
 
       const session = await startSession();
 

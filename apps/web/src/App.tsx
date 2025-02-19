@@ -4,7 +4,7 @@
  *
  * Author: David Bishop
  * Creation Date: April 16, 2024
- * Last Updated: Jan 14, 2025
+ * Last Updated: Feb 12, 2025
  *
  * Description:
  * .
@@ -30,6 +30,7 @@ import { ToastsProvider } from "@components/toast";
 
 import { ResourceLoaderProvider } from "@components/loaders";
 import { BreakpointProvider, Dashboard } from "@components/dashboard";
+import { LeaderboardProvider } from "@gameFeat/components/modals/menu/slides";
 import SocketListenersProvider from "@components/SetupSocketListeners";
 import { ModalsProvider } from "@components/modals";
 import VerificationHandler from "@authFeat/components/VerificationHandler";
@@ -51,13 +52,15 @@ export const routes: RouteObject[] = [
 
           <ResourceLoaderProvider>
             <BreakpointProvider>
-              <SocketListenersProvider />
+              <LeaderboardProvider>
+                <SocketListenersProvider />
 
-              <Dashboard />
+                <Dashboard />
 
-              <ModalsProvider />
-              <VerificationHandler />
-              <AwayActivityTracker />
+                <ModalsProvider />
+                <VerificationHandler />
+                <AwayActivityTracker />
+              </LeaderboardProvider>
             </BreakpointProvider>
           </ResourceLoaderProvider>
         </ErrorBoundary>

@@ -95,8 +95,6 @@ export const gameBonusSchema = new Schema<GameBonusDoc, Model<GameBonusDoc>>(
     title: { type: String, unique: true, required: true },
     multiplier: { type: Number, required: true }, // Is the reward.
     cap: { type: Number, required: true }, // Number to reach for completion.
-    // (we could use the expired as of a way to know it is activated).
-    expiry: { type: Number }, // 1 day from current date in milliseconds, etc.
     status: { type: String, enum: ["active", "inactive"], default: "inactive" } // Active or inactive for current period.
   },
   { collection: "game_bonus", ...defaults.options }

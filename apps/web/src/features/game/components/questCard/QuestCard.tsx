@@ -22,10 +22,10 @@ export interface QuestCardProps extends React.ComponentProps<"div">,
     VariantProps<typeof questCard> {
   quest: Quest;
   /** The user's current progress for quest completion. */
-  current: number;
+  current?: number;
 }
 
-export default function QuestCard({ className, size, quest, current }: QuestCardProps) {
+export default function QuestCard({ className, size, quest, current = 0 }: QuestCardProps) {
   const label = useRef({
     title: "title-" + quest.title.toLowerCase().replaceAll(" ", "-"),
     description: "title-" + quest.title.toLowerCase().replaceAll(" ", "-"),
@@ -57,32 +57,30 @@ export default function QuestCard({ className, size, quest, current }: QuestCard
             </span>
           </p>
         </div>
-        
-        {current !== undefined && (
-          <div className={s.progress}>
-            <div
-              role="meter"
-              aria-label="Quest Progress"
-              aria-describedby={label.current.progress}
-              aria-valuemin={0}
-              aria-valuemax={quest.cap}
-              aria-valuenow={current}
-              className={s.meter}
-            >
-              <div className={s.fill} style={{ width: `${(current / quest.cap) * 100}%` }} />
-            </div>
-            <div className={s.completion}>
-              <span id={label.current.progress}>{current}/{quest.cap}</span>
-              {completed && (
-                <Icon
-                  aria-label="Completed"
-                  id={`check-mark-${size === "lrg" ? "16" : "14"}`}
-                  fill="var(--c-status-green)"
-                />
-              )}
-            </div>
+
+        <div className={s.progress}>
+          <div
+            role="meter"
+            aria-label="Quest Progress"
+            aria-describedby={label.current.progress}
+            aria-valuemin={0}
+            aria-valuemax={quest.cap}
+            aria-valuenow={current}
+            className={s.meter}
+          >
+            <div className={s.fill} style={{ width: `${(current / quest.cap) * 100}%` }} />
           </div>
-        )}
+          <div className={s.completion}>
+            <span id={label.current.progress}>{current}/{quest.cap}</span>
+            {completed && (
+              <Icon
+                aria-label="Completed"
+                id={`check-mark-${size === "lrg" ? "16" : "14"}`}
+                fill="var(--c-status-green)"
+              />
+            )}
+          </div>
+        </div>
       </article>
     </li>
   );

@@ -16,6 +16,8 @@ import path from "path";
 import sirv from "sirv";
 import { installGlobals } from "@remix-run/node";
 import { hashSync } from "bcrypt";
+
+import { meta } from "@meta";
 import { logger } from "@qc/utils";
 
 import { configureStore, nanoid } from "@reduxjs/toolkit";
@@ -52,6 +54,7 @@ async function setupServer() {
 
     try {
       let template, render;
+      const pageMeta = meta[req.path as keyof typeof meta] || { title: "Quest Casino", tags: [] };
 
       if (process.env.NODE_ENV === "development") {
         template = fs.readFileSync(path.resolve("./index.html"), "utf-8");
@@ -74,7 +77,9 @@ async function setupServer() {
         const appHtml = await render(req, res, store),
           html = template
             .replace("<!--ssr-outlet-->", appHtml)
-            .replace("<!--init-state-->", preloadedStateScript);
+            .replace("<!--init-state-->", preloadedStateScript)
+            .replace("<!--title-->", pageMeta.title)
+            .replace("<!--meta-->", pageMeta.tags.join("\n\t"));
 
         return res.status(200).setHeader("Content-Type", "text/html").end(html);
       } catch (error: any) {

@@ -1,5 +1,7 @@
 import { Outlet, useSearchParams, useLocation } from "react-router-dom";
-import { Fragment } from "react";
+import { Fragment, useLayoutEffect } from "react";
+
+import { meta, titlePrefix } from "@meta";
 
 import formatCurrency from "@authFeat/utils/formatCurrency";
 
@@ -41,6 +43,11 @@ export function Header() {;
 
   const user = useUser(),
     formattedBalance = user?.balance != undefined ? formatCurrency(user.balance, true) : "MISSING";
+
+  useLayoutEffect(() => {
+    console.log("location.pathname", location.pathname);
+    document.title = meta[location.pathname as keyof typeof meta]?.title || meta["/error-404-page"].title;
+  }, [location.pathname]);
 
   return (
     <header id="dashHeader" className={s.header}>
@@ -85,10 +92,8 @@ export function Header() {;
             />
           </Link>
           {viewport === "large" && <span />}
-          {/* TODO: */}
           <h1>
-            About
-            {/* Title Outlet */}
+            {meta[location.pathname as keyof typeof meta]?.title.replace(` ${titlePrefix}`, "") || "Error 404"}
           </h1>
         </div>
         

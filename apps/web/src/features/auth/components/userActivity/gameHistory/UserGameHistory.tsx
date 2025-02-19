@@ -1,6 +1,6 @@
 import type { UserProfileCredentials } from "@qc/typescript/typings/UserCredentials";
 
-import { useRef, useState } from "react";
+import { useState } from "react";
 
 import { capitalize } from "@qc/utils";
 
@@ -125,12 +125,21 @@ export default function UserGameHistory({ gameHistory, username, ...props }: Use
 }
 
 export function ResentGame({ gameHistory }: UserGameHistoryProps) {
-  const resentGame  = useRef(gameHistory[0]);
-
   return (
     <div className={s.resentGame}>
       <h4>Resent Game</h4>
-      <p>{resentGame.current.game_name} <span>{resentGame.current.result.outcome}</span></p>
+      <p>
+        {gameHistory.length > 0 ? (
+          <>
+            {gameHistory[0].game_name}{" "}
+            <span data-outcome={gameHistory[0].result.outcome}>
+              {capitalize(gameHistory[0].result.outcome)}
+            </span>
+          </>
+        ) : (
+          "No Game"
+        )}
+      </p>
     </div>
   );
 }

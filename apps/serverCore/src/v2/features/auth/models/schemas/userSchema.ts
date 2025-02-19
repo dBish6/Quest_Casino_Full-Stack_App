@@ -16,20 +16,12 @@ export const userFriendsSchema = new Schema<
     pending: {
       type: Map,
       of: { type: Schema.Types.ObjectId, ref: "user" },
-      default: new Map(),
-      validate: {
-        validator: (friends: Map<any, any>) => friends.size <= 50,
-        message: "Pending friends exceeded the maximum of 50 friends."
-      }
+      default: new Map()
     },
     list: {
       type: Map,
       of: { type: Schema.Types.ObjectId, ref: "user" },
-      default: new Map(),
-      validate: {
-        validator: (friends: Map<any, any>) => friends.size <= 50,
-        message: "Friends list exceeded the maximum of 50 friends."
-      }
+      default: new Map()
     }
   },
   {
@@ -61,14 +53,16 @@ export const userStatisticsSchema = new Schema<
         table: { type: Number },
         slots: { type: Number },
         dice: { type: Number },
-        streak: { type: Number }
+        streak: { type: Number },
+        rate: { type: Number }
       },
       default: {
         total: 0,
         table: 0,
         slots: 0,
         dice: 0,
-        streak: 0
+        streak: 0,
+        rate: 0
       }
     },
     progress: {
@@ -87,7 +81,8 @@ export const userStatisticsSchema = new Schema<
         of: {
           _id: false,
           bonus: { type: Schema.Types.ObjectId, ref: "bonus" },
-          current: { type: Number, default: 0 }
+          current: { type: Number, default: 0 },
+          activated: { type: Number }
         },
         default: new Map()
       }
@@ -150,7 +145,7 @@ export const userActivitySchema = new Schema<
     collection: "user_activity",
     ...defaults.options
   }
-).index({ "game_history.timestamp": -1 });
+).index({ "game_history.timestamp": -1, "payment_history.timestamp": -1 });
 
 const notification = new Schema({
   _id: { type: Schema.Types.ObjectId, immutable: true },
@@ -171,6 +166,7 @@ export const userNotificationsSchema = new Schema<
   {
     _id: { type: Schema.Types.ObjectId, immutable: true },
     friend_requests: [{ type: Schema.Types.ObjectId, ref: "user" }],
+    // TODO: Limit
     notifications: {
       news: {
         _id: false,
@@ -272,6 +268,7 @@ const userSchema = new Schema<UserDoc, Model<UserDoc>>(
     settings: {
       _id: false,
       notifications: { type: Boolean, default: true },
+      // TODO: Limit to something.
       blocked_list: {
         type: Map,
         of: { type: Schema.Types.ObjectId, ref: "user" },

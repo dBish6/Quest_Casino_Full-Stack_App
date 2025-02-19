@@ -7,7 +7,6 @@ import type DefaultDocFields from "@typings/DefaultDocFields";
  * All fields within a message document.
  */
 export interface ChatMessage extends ChatMessageEventDto {
-  _id: ObjectId;
   created_at: Date;
 }
 
@@ -18,7 +17,9 @@ export interface GlobalChatMessageDoc extends Document, ChatMessage {
 
 export interface PrivateChatMessageDoc extends Document, DefaultDocFields {
   _id: ObjectId;
-  chats: Omit<ChatMessage, "_id" | "updated_at">[] & { room_id: PrivateChatRoomId };
+  room_id: string;
+  chats: (ChatMessage & { room_id: PrivateChatRoomId })[];
+  updated_at: Date;
 }
 
 export type ChatMessageDoc = GlobalChatMessageDoc | PrivateChatMessageDoc;

@@ -13,6 +13,8 @@
 
       "@constants/*": ["./src/v2/constants/*"],
 
+      "@jobs/*": ["./src/v2/jobs/*"],
+
       "@middleware/*": ["./src/v2/middleware/*"],
 
       "@model/*": ["./src/v2/model/*"],

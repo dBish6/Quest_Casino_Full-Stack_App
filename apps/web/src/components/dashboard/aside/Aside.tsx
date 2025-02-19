@@ -3,6 +3,7 @@ import type { Variants } from "framer-motion";
 import { useSearchParams } from "react-router-dom";
 import { useEffect } from "react";
 import { useAnimate, AnimatePresence, m } from "framer-motion";
+import { throttle } from "tiny-throttle";
 
 import CURRENT_YEAR from "@constants/CURRENT_YEAR";
 
@@ -129,7 +130,7 @@ export default function Aside() {
                       {user ? (
                         <Link asChild intent="primary" to="">
                           <Button
-                            onClick={() => postLogout({ username: user!.username })}
+                            onClick={() => throttle(() => postLogout({ username: user!.username }), 300)()}
                           >
                             Logout
                           </Button>

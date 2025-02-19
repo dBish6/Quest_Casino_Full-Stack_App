@@ -53,4 +53,4 @@ export function BreakpointProvider({ children }: React.PropsWithChildren<{}>) {
       {children}
     </BreakpointContext.Provider>
   );
-};
+}
