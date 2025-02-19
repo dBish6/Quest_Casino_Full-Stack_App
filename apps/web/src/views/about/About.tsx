@@ -4,11 +4,6 @@ import { Link } from "@components/common";
 
 import s from "./about.module.css";
 
-export const meta = {
-  title: "About | Quest Casino",
-  description: "Learn more about Quest Casino...",
-};
-
 export default function About() {
   return (
     <Main className={s.about}>

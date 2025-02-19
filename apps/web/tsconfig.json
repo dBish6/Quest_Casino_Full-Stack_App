@@ -9,6 +9,8 @@
     "jsx": "react-jsx",
     // "allowImportingTsExtensions": true,
     "paths": {
+      "@meta": ["./src/meta.ts"],
+
       "@storybook/*": ["./.storybook/*"],
 
       "@authFeat/*": ["./src/features/auth/*"],
