@@ -342,7 +342,7 @@ export async function updateUserActivity<
   TOptions extends { new?: boolean }
 >(
   identifier: Identifier<"_id">,
-  update?: UpdateQuery<UserDocActivity>,
+  update: UpdateQuery<UserDocActivity>,
   options?: TOptions & (TOptions["new"] extends true ? QueryOptions<UserDocActivity> : MongooseUpdateQueryOptions)
 ): Promise<TOptions["new"] extends true ? UserDocActivity : UpdateWriteOpResult> {
   const { by, value } = identifier;

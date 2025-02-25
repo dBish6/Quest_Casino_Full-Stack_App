@@ -13,7 +13,7 @@ import type { UpdateProfileBodyDto, UpdateUserFavouritesBodyDto, SendConfirmPass
 
 import { Types, isValidObjectId, startSession  } from "mongoose";
 import { PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
-import { hash, compare } from "bcrypt";
+import { hash, compare } from "bcryptjs";
 
 import { AVATAR_FILE_EXTENSIONS } from "@qc/constants";
 import GENERAL_BAD_REQUEST_MESSAGE from "@constants/GENERAL_BAD_REQUEST_MESSAGE";
@@ -26,6 +26,7 @@ import isUuidV4 from "@utils/isUuidV4";
 import userProfileAggregation from "@authFeatHttp/utils/userProfileAggregation";
 import { getSocketAuthService } from "@authFeat/socket/namespaces/authNamespace";
 import getSocketId from "@authFeat/socket/utils/getSocketId";
+import { KEY } from "@authFeat/utils/activityRedisKey";
 
 import { User, UserFriends, UserStatistics, UserActivity, UserNotifications } from "@authFeat/models";
 import { redisClient } from "@cache";
@@ -35,7 +36,6 @@ import { MINIMUM_USER_FIELDS, updateUserCredentials, updateUserFriends, getUser,
 import { formatEmailTemplate, sendEmail } from "@authFeatHttp/services/emailService";
 import { GenerateUserJWT, revokeVerificationToken, clearAllSessions, JWTVerification  } from "@authFeat/services/jwtService";
 import { deleteCsrfToken, deleteAllCsrfTokens } from "@authFeatHttp/services/csrfService";
-import { KEY } from "@authFeat/socket/services/SocketAuthService";
 
 const { AWS_REGION, AWS_S3_BUCKET } = process.env;
 const ALLOWED_PROFILE_UPDATE_FIELDS: ReadonlySet<string> = new Set(["avatar_url", "first_name", "last_name", "username", "bio", "email", "country", "region", "phone_number", "settings"]),

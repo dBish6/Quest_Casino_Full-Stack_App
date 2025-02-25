@@ -4,7 +4,7 @@
  *
  * Author: David Bishop
  * Creation Date: April 16, 2024
- * Last Updated: Feb 17, 2025
+ * Last Updated: Feb 24, 2025
  *
  * Description:
  * ...
@@ -30,6 +30,10 @@ import initializeSocketIo from "./socket";
 import bree from "./jobs";
 
 import { logger } from "@qc/utils";
+
+import "@authFeat/models/middleware";
+import "@chatFeat/models/middleware";
+import "@gameFeat/models/middleware";
 
 export async function setupServer() {
   const { PROTOCOL, HOST, PORT: ENV_PORT } = process.env,

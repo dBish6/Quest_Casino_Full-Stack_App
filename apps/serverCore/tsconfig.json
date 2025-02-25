@@ -2,9 +2,7 @@
   "extends": "../../packages/typescript/tsconfig.base.json",
   "include": ["./**/*.ts*"],
   "compilerOptions": {
-    "target": "ES6",
-    "lib": ["ES2020"],
-    // "outDir": "build",
+    "target": "ESNext",
     "noImplicitThis": false,
     "paths": {
       "@aws": ["./src/v2/aws.ts"],

@@ -1,7 +1,7 @@
 import type { Response, NextFunction } from "express";
 import type { LoginRequestDto } from "@authFeatHttp/dtos/LoginRequestDto";
 
-import { compare } from "bcrypt";
+import { compare } from "bcryptjs";
 
 import { logger, validateEmail } from "@qc/utils";
 import { handleHttpError } from "@utils/handleError";
