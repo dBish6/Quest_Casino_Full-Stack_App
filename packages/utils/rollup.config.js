@@ -7,14 +7,12 @@ export default {
   input: "src/**/*.ts",
   output: {
     file: "build/bundle.js",
-    format: "es",
+    format: "es"
   },
   plugins: [
     multi(),
     resolve(),
-    typescript({
-      declaration: true,
-    }),
-    terser(),
-  ],
+    typescript({ declaration: true }),
+    terser()
+  ]
 };
