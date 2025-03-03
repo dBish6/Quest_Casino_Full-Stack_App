@@ -3,10 +3,8 @@ import type { RootState } from "./store";
 
 export function saveState(state: DeepPartial<RootState>) {
   try {
-    if (typeof localStorage !== "undefined") {
-      const serializedState = JSON.stringify(state);
-      localStorage.setItem("qc:state", serializedState);
-    }
+    const serializedState = JSON.stringify(state);
+    localStorage.setItem("qc:state", serializedState);
   } catch (error: any) {
     console.error("saveState error:\n", error.message);
   }

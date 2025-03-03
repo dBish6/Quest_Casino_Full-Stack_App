@@ -1,7 +1,7 @@
 import type { ObjectId } from "mongoose";
 import type { ActivityStatuses } from "@qc/typescript/typings/UserCredentials";
 
-import { KEY } from "@authFeat/socket/services/SocketAuthService";
+import { KEY } from "./activityRedisKey";
 import { redisClient } from "@cache";
 
 export default async function getUserSessionActivity(userId: ObjectId | string) {

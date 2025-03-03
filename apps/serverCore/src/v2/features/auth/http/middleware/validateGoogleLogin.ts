@@ -2,7 +2,7 @@ import type { Response, NextFunction } from "express";
 import type { GoogleLoginRequestDto } from "@authFeatHttp/dtos/LoginRequestDto";
 
 import { randomUUID } from "crypto";
-import { compare } from "bcrypt";
+import { compare } from "bcryptjs";
 
 import { logger } from "@qc/utils";
 import { handleHttpError } from "@utils/handleError";

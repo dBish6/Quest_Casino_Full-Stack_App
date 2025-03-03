@@ -75,7 +75,7 @@ export default function Home() {
     <Main className={s.home}>
       <section aria-label="Latest News, Upcoming Events, or Meet Players" className={s.hero}>
         <Carousel
-          {...(!(carouselContent as any)?.data?.ERROR && { content: carouselContent })}
+          {...(!(carouselContent as any)?.ERROR && { content: carouselContent })}
           breakpoint={welCarousel}
         />
       </section>

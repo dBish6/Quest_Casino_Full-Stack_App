@@ -6,8 +6,7 @@ class Logger {
   }
 
   public info(message: any, ...optionalParams: any[]) {
-    if (!this.disableAll && process.env.NODE_ENV !== "production")
-      console.info(message, ...optionalParams);
+    if (!this.disableAll) console.info(message, ...optionalParams);
   }
 
   public debug(message: any, ...optionalParams: any[]) {

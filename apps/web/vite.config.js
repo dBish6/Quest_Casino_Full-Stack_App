@@ -1,27 +1,23 @@
 import { mergeConfig, defineConfig } from "vite";
+import { defaults } from "../../packages/vite-config";
 import react from "@vitejs/plugin-react";
-import { defaults } from "@qc/vite-config";
+import typescript from "@rollup/plugin-typescript";
 
-export default defineConfig(({ mode }) => {
-  // const env = loadEnv(mode, process.cwd(), "");
-
+export default defineConfig(({ mode, isSsrBuild }) => {
   return mergeConfig(
     defaults,
     defineConfig({
       server: {
         port: 3000,
-        proxy: {
-          "/api": {
-            target: mode === "production" ? "" : "http://localhost:4000",
-            changeOrigin: true,
-            secure: mode === "production",
-            // ws: true
+        ...(mode === "development" && {
+          proxy: {
+            "/api": {
+              target:"http://localhost:4000",
+              changeOrigin: true
+            }
           }
-        },
+        })
       },
-      // define: {
-      //   __APP_ENV__: JSON.stringify(env.APP_ENV),
-      // },
       css: {
         modules: {
           localsConvention: "camelCaseOnly",
@@ -32,8 +28,27 @@ export default defineConfig(({ mode }) => {
         }
       },
       plugins: [react()],
+      ssr: {
+        noExternal: ["react-router-dom"]
+      },
       build: {
-        outDir: "build/client"
+        outDir: isSsrBuild ? "build" : "build/public",
+        copyPublicDir: !isSsrBuild,
+        ...(isSsrBuild && { emptyOutDir: false }),
+        rollupOptions: {
+          ...(isSsrBuild && {
+            output: {
+              format: "es",
+              entryFileNames: "server.mjs"
+            }
+          }),
+          plugins: [
+            typescript({
+              outDir: isSsrBuild ? "build" : "build/public",
+              exclude: ["**/*.old*", "**/*copy*"]
+            })
+          ]
+        }
       }
     })
   );

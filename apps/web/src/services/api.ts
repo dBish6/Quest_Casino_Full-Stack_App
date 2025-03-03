@@ -1,7 +1,7 @@
 import type { RootState } from "@redux/store";
-import type { CarouselContentResponseDto } from "@views/home/_components/Carousel";
+// import type { CarouselContentResponseDto } from "@views/home/_components/Carousel";
 
-import type { HttpResponse } from "@typings/ApiResponse";
+// import type { HttpResponse } from "@typings/ApiResponse";
 
 import { buildCreateApi, coreModule, reactHooksModule, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
@@ -37,39 +37,40 @@ export function prepareHeadersAndOptions(custom?: { state: RootState }): Record<
 
 const api = createApi({
   baseQuery: fetchBaseQuery({
-    baseUrl: "/api/v2",
+    baseUrl: !import.meta.env || import.meta.env.DEV ? "/api/v2" : import.meta.env.VITE_API_URL,
     ...prepareHeadersAndOptions(),
     timeout: 15000
   }),
   tagTypes: ["Notification"],
 
   endpoints: (builder) => ({
-    /**
-     * Gets the carousel content by a cdn.
-     * @request
-     */
-    getCarouselContent: builder.query<HttpResponse<CarouselContentResponseDto>, void>({
-      queryFn: async () => {        
-        const res = await fetch(
-            `https://cdn.jsdelivr.net/gh/dBish6/Quest_Casino_Full-Stack_App@${import.meta.env.DEV ? "dev" : "master"}/static/carousel/carousel.json`,
-            { method: "GET" }
-          ),
-          data: CarouselContentResponseDto = await res.json();
+    // /**
+    //  * Gets the carousel content by a cdn.
+    //  * @request
+    //  */
+    // getCarouselContent: builder.query<HttpResponse<CarouselContentResponseDto>, void>({
+    //   queryFn: async () => {        
+    //     const res = await fetch(
+    //         `https://cdn.jsdelivr.net/gh/dBish6/Quest_Casino_Full-Stack_App@${import.meta.env.DEV ? "dev" : "master"}/static/carousel/carousel.json`,
+    //         { method: "GET" }
+    //       ),
+    //       data: CarouselContentResponseDto = await res.json();
 
-        if (!res.ok)
-          return {
-            error: {
-              data: { 
-                ERROR: (data as any).message || "Unexpectedly failed to fetch carousel content.", 
-                allow: true
-              },
-              status: res.status
-            }
-          };
+    //     // FIXME: On error it's fucked.
+    //     if (!res.ok)
+    //       return {
+    //         error: {
+    //           data: { 
+    //             ERROR: (data as any).message || "Unexpectedly failed to fetch carousel content.", 
+    //             allow: true
+    //           },
+    //           status: res.status
+    //         }
+    //       };
 
-        return { data: { message: "Successfully retrieved carousel content", ...data } };
-      }
-    })
+    //     return { data: { message: "Successfully retrieved carousel content", ...data } };
+    //   }
+    // })
   })
 });
 

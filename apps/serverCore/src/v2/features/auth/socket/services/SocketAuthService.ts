@@ -21,6 +21,7 @@ import { USER_NOT_FOUND_IN_SYSTEM_MESSAGE } from "@authFeat/constants/USER_NOT_F
 
 import { logger } from "@qc/utils";
 import { handleSocketError, SocketError } from "@utils/handleError";
+import { KEY } from "@authFeat/utils/activityRedisKey";
 import handleMultipleTransactionPromises from "@utils/handleMultipleTransactionPromises";
 import getFriendRoom from "@authFeatSocket/utils/getFriendRoom";
 import getSocketId from "@authFeatSocket/utils/getSocketId";
@@ -29,10 +30,6 @@ import getUserSessionActivity from "@authFeat/utils/getUserSessionActivity";
 import { redisClient } from "@cache";
 import { getUserFriends, getUser, updateUserFriends, updateUserNotifications } from "@authFeat/services/authService";
 
-export const KEY = (userId: ObjectId | string) => ({
-  status: `user:${userId.toString()}:activity:status`,
-  inactivityTimestamp: `user:${userId.toString()}:activity:inactivity_timestamp`
-});
 
 export default class SocketAuthService {
   private socket: Socket;
@@ -468,6 +465,7 @@ export default class SocketAuthService {
     try {
       if (status === "offline") await redisClient.del(KEY(user.sub).status);
       else await redisClient.set(KEY(user.sub).status, status, { EX: 60 * 60 * 36 }); // 1.5 days.
+      await redisClient.set(KEY(user.sub).inactivityTimestamp, new Date().toISOString(), { EX: 60 * 60 * 24 * 7 });
     } catch (error: any) {
       logger.error("cacheUserActivityStatus service error:\n", error.message);
       throw error;

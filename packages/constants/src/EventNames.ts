@@ -20,7 +20,6 @@ export enum ChatEvent {
   CHAT_MESSAGE_SENT = "chat_message_sent"
 }
 
-// TODO:
 export enum GameEvent {
   MANAGE_RECORD = "manage_record",
   MANAGE_PROGRESS = "manage_progress"

@@ -24,7 +24,6 @@ export enum ModalQueryKey {
   BANK_MODAL = "bank",
   FORGOT_PASSWORD_MODAL = "forgot",
   LOGIN_MODAL = "login",
-  // TODO: Certain slides.
   MENU_MODAL = "menu",
   NOTIFICATIONS_MODAL = "notif",
   PROFILE_PAYMENT_HISTORY_MODAL = "phist",

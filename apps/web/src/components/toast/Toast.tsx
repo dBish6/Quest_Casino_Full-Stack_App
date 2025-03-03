@@ -3,14 +3,7 @@ import type { VariantProps } from "class-variance-authority";
 import type { ToastPayload } from "@redux/toast/toastSlice";
 
 import { useRef, Fragment } from "react";
-import {
-  Provider,
-  Root,
-  Title,
-  Description,
-  Close,
-  Viewport,
-} from "@radix-ui/react-toast";
+import { Provider, Root, Title, Description, Close, Viewport } from "@radix-ui/react-toast";
 import { cva } from "class-variance-authority";
 
 import { useAppSelector, useAppDispatch } from "@redux/hooks";
@@ -67,7 +60,6 @@ export default function Toast({
   if (link || button)
     messageParts = message.split(link?.sequence || button?.sequence || "");
 
-  // FIXME: Set open when there is toasts length.
   return (
     <Root
       ref={toastRef}
@@ -143,10 +135,10 @@ export function ToastsProvider() {
     dispatch = useAppDispatch();
 
   return (
-    <Portal>
-      <Provider>
-        {toasts.length > 0 &&
-          toasts.map((toast) => {
+    toasts.length > 0 && (
+      <Portal>
+        <Provider>
+          {toasts.map((toast) => {
             const { id, ...rest } = toast;
 
             return (
@@ -162,8 +154,9 @@ export function ToastsProvider() {
               />
             );
           })}
-        <Viewport className={s.viewport} />
-      </Provider>
-    </Portal>
+          <Viewport className={s.viewport} />
+        </Provider>
+      </Portal>
+    )
   );
 }

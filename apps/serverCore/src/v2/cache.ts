@@ -6,10 +6,7 @@ import { createClient } from "redis";
 import { logger } from "@qc/utils";
 
 export const redisClient = createClient({
-  url:
-    process.env.NODE_ENV === "production"
-      ? `redis://default:${process.env.REDIS_PASSWORD}@${process.env.REDIS_HOST}:6379`
-      : `redis://${process.env.REDIS_HOST}:6379`,
+  url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`
 });
 
 redisClient.on("connect", () => {
