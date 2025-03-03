@@ -21,7 +21,6 @@ import { meta } from "@meta";
 import { logger } from "@qc/utils";
 
 import { configureStore, nanoid } from "@reduxjs/toolkit";
-// TODO: shared/redux/index.ts OR Lazy import it? (no just split the logic, lazy imports bundle anyways?).
 import { rootReducer } from "@redux/reducers";
 
 const { PROTOCOL, HOST, PORT: ENV_PORT } = process.env,
