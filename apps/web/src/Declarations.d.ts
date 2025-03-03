@@ -6,9 +6,11 @@ declare global {
   }
 }
 
+// FIXME: FetchBaseQueryError is a bastard.
 declare module "@reduxjs/toolkit/query" {
-  interface FetchBaseQueryError {
+  type FetchBaseQueryError = {
     status: number | string;
     data?: ErrorResponse;
-  }
+    error?: string;
+  };
 }

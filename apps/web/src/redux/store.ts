@@ -25,9 +25,9 @@ const store = configureStore({
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: {
-        ignoredActionPaths: ["meta.baseQueryMeta.request", "meta.baseQueryMeta.response", "meta.arg.originalArgs.callback", "payload.callback", "payload.options.button.onClick"],
-      },
-    }).concat(apiErrorHandler, apiMiddleware),
+        ignoredActionPaths: ["meta.baseQueryMeta.request", "meta.baseQueryMeta.response", "meta.arg.originalArgs.callback", "payload.callback", "payload.options.button.onClick"]
+      }
+    }).concat(apiErrorHandler, apiMiddleware)
 });
 
 store.subscribe(
@@ -39,8 +39,8 @@ store.subscribe(
       ...user,
       token: {
         csrf: user.token.csrf,
-        ...(user.token.oState ? { oState: user.token.oState } : {}),
-      },
+        ...(user.token.oState ? { oState: user.token.oState } : {})
+      }
     };
 
     const targetPersistChat: Partial<ChatState> = {

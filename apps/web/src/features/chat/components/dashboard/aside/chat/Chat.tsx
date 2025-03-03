@@ -247,12 +247,13 @@ function RoomSwitcher({ user, chatState, friendsListArr, dispatch }: RoomSwitche
       >
         {user?.email_verified && <option value={user.country}>Global</option>}
         {friendsListArr.map((friend) => {
-          const status = friend.activity.status,
-            memberId = friend.member_id;
+          // TODO:
+          // const status = friend.activity.status,
+          const memberId = friend.member_id;
 
           return (
             <option key={memberId} value={memberId}>
-              <span aria-label={status} className={s.activityIndie} data-status={status} />
+              {/* <span aria-label={status} className={s.activityIndie} data-status={status} /> */}
               {friend.username}
             </option>
           );

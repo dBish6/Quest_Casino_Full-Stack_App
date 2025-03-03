@@ -1,5 +1,5 @@
 {
-  "extends": "../../packages/typescript/tsconfig.base.json",
+  "extends": ["../../packages/typescript/tsconfig.base.json", "./tsconfig.paths.json"],
   "include": ["./**/*.ts*"],
   "compilerOptions": {
     // "baseUrl": ".",
@@ -8,30 +8,5 @@
     "target": "ES2020",
     "jsx": "react-jsx",
     // "allowImportingTsExtensions": true,
-    "paths": {
-      "@meta": ["./src/meta.ts"],
-
-      "@storybook/*": ["./.storybook/*"],
-
-      "@authFeat/*": ["./src/features/auth/*"],
-      "@chatFeat/*": ["./src/features/chat/*"],
-      "@gameFeat/*": ["./src/features/game/*"],
-
-      "@components/*": ["./src/components/*"],
-
-      "@constants/*": ["./src/constants/*"],
-
-      "@hooks/*": ["./src/hooks/*"],
-
-      "@redux/*": ["./src/redux/*"],
-
-      "@services/*": ["./src/services/*"],
-
-      "@typings/*": ["./src/typings/*"],
-
-      "@utils/*": ["./src/utils/*"],
-
-      "@views/*": ["./src/views/*"]
-    }
   }
 }

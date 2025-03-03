@@ -2,14 +2,11 @@ import type { Request as ERequest, Response as EResponse } from "express";
 import type { Store } from "@reduxjs/toolkit";
 
 import { renderToString } from "react-dom/server";
-import {
-  createStaticHandler,
-  createStaticRouter,
-  StaticRouterProvider,
-} from "react-router-dom/server";
+import { createStaticHandler, createStaticRouter, StaticRouterProvider } from "react-router-dom/server";
+
 import { Provider as ReduxProvider } from "react-redux";
 
-import { routes } from "./App";
+import { routes } from "./routes";
 
 export async function render(req: ERequest, res: EResponse, store: Store) {
   const { query, dataRoutes } = createStaticHandler(routes),
@@ -36,7 +33,7 @@ export async function render(req: ERequest, res: EResponse, store: Store) {
   );
 }
 
-export function createFetchRequest(req: ERequest, res: EResponse) {
+function createFetchRequest(req: ERequest, res: EResponse) {
   const origin = `${req.protocol}://${req.get("host")}`,
     url = new URL(req.originalUrl || req.url, origin),
     controller = new AbortController();
@@ -60,6 +57,6 @@ export function createFetchRequest(req: ERequest, res: EResponse) {
     method: req.method,
     headers,
     ...(req.method !== "GET" && req.method !== "HEAD" && { body: req.body }),
-    signal: controller.signal,
+    signal: controller.signal
   });
 }

@@ -18,7 +18,7 @@ export type SocketNamespaces = (typeof namespaces)[number];
 export type TimeoutObj = Partial<Record<SocketNamespaces, NodeJS.Timeout>>;
 
 // const baseUrl = "/socket/v2/socket",
-const baseUrl = "http://localhost:4000/api/v2/socket";
+const baseUrl = `${import.meta.env.VITE_API_URL}/socket`;
 
 const socketInstances: Partial<Record<SocketNamespaces, Socket>> = {};
 
@@ -194,5 +194,7 @@ function setupDefaultListeners(socket: Socket, namespace: SocketNamespaces) {
   );
 
   socket.on("disconnect", () => {
+    // TODO:
+    logger.info("DISCONNECTING")
   });
 }

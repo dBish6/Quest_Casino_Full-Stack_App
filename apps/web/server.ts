@@ -9,24 +9,25 @@ import type { Request, Response as EResponse, NextFunction } from "express";
 import type { ViteDevServer } from "vite";
 import type { AuthState } from "@authFeat/redux/authSlice";
 
+import { readFileSync } from "fs";
+import { join, dirname } from "path";
+import { fileURLToPath } from "url";
 import express from "express";
 import morgan from "morgan";
-import fs from "fs";
-import path from "path";
 import sirv from "sirv";
-import { installGlobals } from "@remix-run/node";
-import { hashSync } from "bcrypt";
+import { hashSync } from "bcryptjs";
 
 import { meta } from "@meta";
 import { logger } from "@qc/utils";
 
 import { configureStore, nanoid } from "@reduxjs/toolkit";
+// TODO: shared/redux/index.ts OR Lazy import it? (no just split the logic, lazy imports bundle anyways?).
 import { rootReducer } from "@redux/reducers";
-
-installGlobals();
 
 const { PROTOCOL, HOST, PORT: ENV_PORT } = process.env,
   PORT = Number(ENV_PORT) || 3000;
+
+const _dirname = dirname(fileURLToPath(import.meta.url));
 
 async function setupServer() {
   const app = express();
@@ -42,11 +43,8 @@ async function setupServer() {
     app.use(vite.middlewares);
     app.use(morgan("dev"));
   } else {
-    app.use(
-      sirv("build/client", {
-        gzip: true
-      })
-    );
+    app.use(sirv(join(_dirname, "public"), { gzip: true }));
+    app.use(morgan("combined"));
   }
 
   app.get("/*", async (req: Request, res: EResponse, next: NextFunction) => {
@@ -57,19 +55,19 @@ async function setupServer() {
       const pageMeta = meta[req.path as keyof typeof meta] || { title: "Quest Casino", tags: [] };
 
       if (process.env.NODE_ENV === "development") {
-        template = fs.readFileSync(path.resolve("./index.html"), "utf-8");
-        // console.log("template", template);
+        template = readFileSync("index.html", "utf-8");
 
         template = await vite!.transformIndexHtml(url, template);
-        render = (await vite!.ssrLoadModule("./src/entry-server.tsx")).render;
+        render = (await vite!.ssrLoadModule("./src/entry-server.tsx")).render; // Makes it compatible with vite ssr in dev and hmr, etc.
       } else {
-        template = fs.readFileSync(
-          path.resolve("./build/client/index.html"),
+        template = readFileSync(
+          join(_dirname, "./public/index.html"),
           "utf-8"
         );
-        // @ts-ignore
-        render = (await import("./build/ssr/entry-server")).render;
+        render = (await import("./src/entry-server")).render; // Bundles entry-server.tsx with the server. No need to import from the build like in the examples, they are just bundled together for my use case.
       }
+      // console.log("template", template);
+      // console.log("render", render);
 
       try {
         const { preloadedStateScript, store } = getInitialReduxState();
