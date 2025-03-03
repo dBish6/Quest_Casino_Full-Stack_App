@@ -54,13 +54,7 @@ export default function initializeHttp(corsOptions: CorsOptions) {
   );
 
   // *Logger Middleware*
-  // morgan.token("all-headers", (req) => {
-  //   return JSON.stringify(req.headers, null, 2);
-  // });
-  // app.use(
-  //   morgan(":method :url :status :response-time ms \n headers: :all-headers")
-  // );
-  app.use(morgan("dev"));
+  app.use(morgan(process.env.NODE_ENV === "development" ? "dev" : "combined"));
 
   // *Routers*
   app.use(`${baseUrl}/auth`, authRouter);

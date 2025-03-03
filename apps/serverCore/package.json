@@ -15,8 +15,8 @@
     "dev": "dotenv -e .env -e .env.development tsx watch src/v2",
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "rollup -c",
-    "start": "dotenv -e .env -e .env.production node bundle.mjs",
-    "start:debug": "dotenv -e .env -e .env.production node build/bundle.mjs",
+    "start": "dotenv -e .env -e .env.production node build/bundle.mjs",
+    "start:debug": "dotenv -e .env -e .env.production tsx src/index.ts",
     "clean": "rm -rf node_modules"
   },
   "dependencies": {
