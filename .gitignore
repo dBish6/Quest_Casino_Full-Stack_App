@@ -28,9 +28,6 @@ target/
 credentials.json
 credentials.json.dev
 
-# Docker
-# /back-end/docker-compose.yml
-
 # NetBeans
 /nbproject/private/
 /nbbuild/
