@@ -29,7 +29,7 @@ credentials.json
 credentials.json.dev
 
 # Docker
-/back-end/docker-compose.yml
+# /back-end/docker-compose.yml
 
 # NetBeans
 /nbproject/private/
@@ -190,3 +190,4 @@ notes.txt
 *storybook.log
 stories
 *copy*
+stats.html
