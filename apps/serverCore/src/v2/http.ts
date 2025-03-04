@@ -30,6 +30,7 @@ export default function initializeHttp(corsOptions: CorsOptions) {
     baseUrl = "/api/v2";
 
   app.disable("x-powered-by"); // Can reduce the ability of attackers to determine the software that a server uses.
+  app.set("trust proxy", 1);
 
   // *Parser Middleware*
   app.use(bodyParser.urlencoded({ extended: true }));
