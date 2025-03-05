@@ -29,7 +29,7 @@ export default class Db {
       });
       logger.info("MongoDB connection established via baseDB!");
     } catch (error: any) {
-      logger.error("baseDB connection error:\n", error.message);
+      throw new Error("MongoDB baseDB connection error:\n" + error.message);
     }
   }
 

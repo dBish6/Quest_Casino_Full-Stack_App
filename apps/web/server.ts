@@ -5,7 +5,7 @@
  * Dynamic Site Generation for pages, loads initial redux state, redirects, etc.
  */
 
-import type { Request, Response as EResponse, NextFunction } from "express";
+import type { Request as ERequest, Response as EResponse } from "express";
 import type { ViteDevServer } from "vite";
 import type { AuthState } from "@authFeat/redux/authSlice";
 
@@ -15,6 +15,7 @@ import { fileURLToPath } from "url";
 import express from "express";
 import morgan from "morgan";
 import sirv from "sirv";
+import rateLimit from "express-rate-limit";
 import { hashSync } from "bcryptjs";
 
 import { meta } from "@meta";
@@ -30,7 +31,9 @@ const _dirname = dirname(fileURLToPath(import.meta.url));
 
 async function setupServer() {
   const app = express();
-  let vite: ViteDevServer | undefined, ip: string | undefined;
+  let vite: ViteDevServer | undefined;
+
+  app.set("trust proxy", 1);
 
   if (process.env.NODE_ENV === "development") {
     const { createServer } = await import("vite");
@@ -46,7 +49,31 @@ async function setupServer() {
     app.use(morgan("combined"));
   }
 
-  app.get("/*", async (req: Request, res: EResponse, next: NextFunction) => {
+  // limits repeated requests (spam bots).
+  app.use(
+    rateLimit({
+      windowMs: 10 * 1000, // 10 seconds
+      max: 5, // limits each IP to 5 requests per windowMs.
+      handler: (_: ERequest, res: EResponse) => 
+        res.status(429).send(
+          "Too many requests made from this IP, please try again later."
+        )
+    })
+  );
+
+  app.use((req, res, next) => {
+    if (req.method !== "GET") {
+      // Must be a get request.
+      return res.status(403).send("Access Denied");
+    } else if (!req.accepts("html")) {
+      // Must accept html.
+      return res.status(406).send("Not Acceptable");
+    }
+
+    next();
+  });
+
+  app.get("/*", async (req, res, next) => {
     const url = req.originalUrl;
 
     try {
@@ -54,15 +81,10 @@ async function setupServer() {
       const pageMeta = meta[req.path as keyof typeof meta] || { title: "Quest Casino", tags: [] };
 
       if (process.env.NODE_ENV === "development") {
-        template = readFileSync("index.html", "utf-8");
-
-        template = await vite!.transformIndexHtml(url, template);
+        template = await vite!.transformIndexHtml(url, readFileSync("index.html", "utf-8"));
         render = (await vite!.ssrLoadModule("./src/entry-server.tsx")).render; // Makes it compatible with vite ssr in dev and hmr, etc.
       } else {
-        template = readFileSync(
-          join(_dirname, "./public/index.html"),
-          "utf-8"
-        );
+        template = readFileSync(join(_dirname, "./public/index.html"), "utf-8");
         render = (await import("./src/entry-server")).render; // Bundles entry-server.tsx with the server. No need to import from the build like in the examples, they are just bundled together for my use case.
       }
       // console.log("template", template);
@@ -78,35 +100,9 @@ async function setupServer() {
             .replace("<!--title-->", pageMeta.title)
             .replace("<!--meta-->", pageMeta.tags.join("\n\t"));
 
-        return res.status(200).setHeader("Content-Type", "text/html").end(html);
+        return res.status(200).send(html);
       } catch (error: any) {
-        if ("statusCode" in error && "location" in error) {
-          if (error.statusCode === 404) {
-            return res.redirect("/error-404-page");
-          } else if (error.location.pathname === "/") {
-            const incomingIp =
-              (req.headers["x-forwarded-for"] as string)?.split(",")[0] ||
-              req.socket.remoteAddress ||
-              req.ip;
-            if (ip !== incomingIp) {
-              ip = incomingIp;
-              return res.redirect(url.replace(req.path, "/about"));
-            }
-
-            return res.redirect(url.replace(req.path, "/home"));
-          }
-        } else if (
-          error instanceof Response &&
-          error.status >= 300 &&
-          error.status <= 399
-        ) {
-          return res.redirect(
-            error.status,
-            error.headers.get("Location") || ""
-          );
-        }
-
-        throw error;
+        if (redirect(req, res, error) === false) throw error;
       }
     } catch (error: any) {
       process.env.NODE_ENV === "development" && vite!.ssrFixStacktrace(error);
@@ -116,6 +112,27 @@ async function setupServer() {
 
   return app;
 }
+
+function redirect(req: ERequest, res: EResponse, error: any) {
+  if ("statusCode" in error && "location" in error) {
+    if (error.statusCode === 404) return res.redirect("/error-404-page");
+    else if (error.location.pathname === "/") {
+      return res.redirect(req.originalUrl.replace(req.path, "/about"));
+    }
+  } else if (
+    error instanceof Response &&
+    error.status >= 300 &&
+    error.status <= 399
+  ) {
+    return res.redirect(
+      error.status,
+      error.headers.get("Location") || ""
+    );
+  }
+
+  return false;
+}
+
 
 /**
  * Preloads the initial redux state for the client and also generates the initial oState token for the google login.
