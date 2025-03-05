@@ -1,9 +1,11 @@
-import { mergeConfig, defineConfig } from "vite";
+import { defineConfig, mergeConfig, loadEnv } from "vite";
 import { defaults } from "../../packages/vite-config";
 import react from "@vitejs/plugin-react";
 import typescript from "@rollup/plugin-typescript";
 
 export default defineConfig(({ mode, isSsrBuild }) => {
+  const env = loadEnv(mode, process.cwd());
+
   return mergeConfig(
     defaults,
     defineConfig({
@@ -17,6 +19,9 @@ export default defineConfig(({ mode, isSsrBuild }) => {
             }
           }
         })
+      },
+      define: {
+        "import.meta.env.VITE_API_URL": JSON.stringify(env.VITE_API_URL)
       },
       css: {
         modules: {
