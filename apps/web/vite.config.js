@@ -21,7 +21,8 @@ export default defineConfig(({ mode, isSsrBuild }) => {
         })
       },
       define: {
-        "import.meta.env.VITE_API_URL": JSON.stringify(env.VITE_API_URL)
+        // Temporary
+        "import.meta.env": JSON.stringify(env)
       },
       css: {
         modules: {
