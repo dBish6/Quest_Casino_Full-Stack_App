@@ -34,7 +34,7 @@ export function prepareHeadersAndOptions(custom?: { state: RootState }): Record<
 
 const api = createApi({
   baseQuery: fetchBaseQuery({
-    baseUrl: import.meta.env?.VITE_API_URL,
+    baseUrl: import.meta.env?.VITE_USER_NODE_ENV === "production" ? import.meta.env.VITE_API_URL : "api/v2",
     ...prepareHeadersAndOptions(),
     timeout: 15000
   }),
