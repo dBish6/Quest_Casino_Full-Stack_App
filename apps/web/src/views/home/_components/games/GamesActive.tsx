@@ -226,6 +226,8 @@ function GameCardActive({ game, user, selectedFavGames, ...props }: GameCardActi
               if (!e.currentTarget.href) {
                 e.preventDefault();
                 alert("Somehow this game has no game link, we're working to resolve this issue as soon as possible.");
+              } else {
+                alert("The foundation for games is currently under construction as we migrate from Quest Casino v1 to v2. The games will have their own separate dedicated server, this is no small task! Right now, the games shown are just demos since there is no way to sync user data from this app to the games. So, hold tight, exciting things are coming!");
               }
             }}
           >
