@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import type { Country } from "@qc/constants";
+import type Country from "@qc/typescript/typings/Country";
 
 import { fn } from "@storybook/test";
 import { useState } from "react";

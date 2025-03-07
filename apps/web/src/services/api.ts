@@ -1,6 +1,11 @@
 import type { RootState } from "@redux/store";
+import type Country from "@qc/typescript/typings/Country";
+import type { Regions } from "@authFeat/typings/Region";
+
+import type { HttpResponse } from "@typings/ApiResponse";
 
 import { buildCreateApi, coreModule, reactHooksModule, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import allow500ErrorsTransform from "./allow500ErrorsTransform";
 
 export const createApi = buildCreateApi(
   coreModule(),
@@ -40,7 +45,59 @@ const api = createApi({
   }),
   tagTypes: ["Notification"],
 
-  endpoints: () => ({})
+  endpoints: (builder) => ({
+    /**
+     * Gets the countries data by cdn.
+     * @request
+     */
+    getCountries: builder.query<HttpResponse<{ countries: Country[] }>, void>({
+      queryFn: async (_, {}, __, baseQuery) => {
+        const res = (await baseQuery({
+          url: `${import.meta.env.VITE_CDN_URL}/world/countries/countries.json`,
+          method: "GET"
+        }));
+
+        if (res.error)
+          return { error: allow500ErrorsTransform(res.error, res.meta) };
+
+        console.log({
+          data: {
+            message: "Successfully retrieved countries data.",
+            countries: res.data as Country[]
+          }
+        })
+
+        return {
+          data: {
+            message: "Successfully retrieved countries data.",
+            countries: res.data as Country[]
+          }
+        };
+      }
+    }),
+    /**
+     * Gets the regions data by cdn.
+     * @request
+     */
+    getRegions: builder.query<HttpResponse<{ regions: Regions[] }>, void>({
+      queryFn: async (_, {}, __, baseQuery) => {
+        const res = (await baseQuery({
+          url: `${import.meta.env.VITE_CDN_URL}/world/regions/regions.json`,
+          method: "GET"
+        }));
+
+        if (res.error)
+          return { error: allow500ErrorsTransform(res.error, res.meta) };
+
+        return {
+          data: {
+            message: "Successfully retrieved regions data.",
+            regions: res.data as Regions[]
+          }
+        };
+      }
+    })
+  })
 });
 
 export const {
@@ -49,7 +106,9 @@ export const {
   reducer: apiReducer,
   middleware: apiMiddleware,
   // enhanceEndpoints,
-  injectEndpoints
+  injectEndpoints,
+  useLazyGetCountriesQuery,
+  useLazyGetRegionsQuery
 } = api;
 
 export default api;

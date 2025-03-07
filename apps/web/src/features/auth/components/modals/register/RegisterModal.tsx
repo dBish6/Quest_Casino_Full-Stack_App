@@ -199,7 +199,12 @@ export default function RegisterModal() {
                   id="country"
                   name="country"
                   required="show"
-                  error={form.error.country}
+                  error={
+                    form.error.country ||
+                    (typeof worldData.countries === "string"
+                      ? worldData.countries
+                      : undefined)
+                  }
                   Loader={<Spinner intent="primary" size="sm" />}
                   loaderTrigger={loading.countries}
                   disabled={processing}
@@ -215,7 +220,8 @@ export default function RegisterModal() {
                     }));
                   }}
                 >
-                  {worldData.countries?.length &&
+                  {typeof worldData.countries !== "string" &&
+                    worldData.countries?.length &&
                     worldData.countries.map((country) => (
                       <option key={country.name} value={country.name}>
                         {country.name}
@@ -262,7 +268,8 @@ export default function RegisterModal() {
                   onFocus={getCountries}
                   onInput={() => setError("calling_code", "")}
                 >
-                  {worldData.countries?.length &&
+                  {typeof worldData.countries !== "string" &&
+                    worldData.countries?.length &&
                     worldData.countries.map((country) => (
                       <option key={country.name} value={country.callingCode}>
                         {country.abbr} {country.callingCode}

@@ -44,10 +44,11 @@ export function Header() {;
   const user = useUser(),
     formattedBalance = user?.balance != undefined ? formatCurrency(user.balance, true) : "MISSING";
 
-  useLayoutEffect(() => {
-    console.log("location.pathname", location.pathname);
-    document.title = meta[location.pathname as keyof typeof meta]?.title || meta["/error-404-page"].title;
-  }, [location.pathname]);
+  if (typeof window !== "undefined") {
+    useLayoutEffect(() => {
+      document.title = meta[location.pathname as keyof typeof meta]?.title || meta["/error-404-page"].title;
+    }, [location.pathname]);
+  }
 
   return (
     <header id="dashHeader" className={s.header}>

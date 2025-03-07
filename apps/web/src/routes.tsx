@@ -16,7 +16,7 @@ import { Error } from "@views/errors";
 export const getCarouselContentLoader = async () => {
   try {
     const res = await fetch(
-        `https://cdn.questcasino.org/carousel/carousel.json`,
+        `${import.meta.env.VITE_CDN_URL}/carousel/carousel.json`,
         {
           method: "GET",
           headers: {
