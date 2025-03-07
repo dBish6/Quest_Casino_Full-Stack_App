@@ -1,6 +1,6 @@
 import type { CarouselContentResponseDto } from "@views/home/_components/Carousel";
 
-import { type RouteObject, Navigate, json } from "react-router-dom";
+import { type RouteObject, Navigate } from "react-router-dom";
 
 import GENERAL_UNAUTHORIZED_MESSAGE from "@authFeat/constants/GENERAL_UNAUTHORIZED_MESSAGE";
 
@@ -13,34 +13,29 @@ import { ModalsProvider } from "@components/modals";
 import { RestrictView, About, Home, Support } from "@views/index";
 import { Error } from "@views/errors";
 
-// NOTE: Temporary solution for a cache. Since if I use redux's rtk query here for their caching like I was before, then the entire store will be bundled with
-// the ssr build unnecessarily. Cache-Control also doesn't work for jsdelivr or githubusercontent, so this is what it has to be for now.
-let cache: any = null;
 export const getCarouselContentLoader = async () => {
   try {
-    if (cache && typeof window !== "undefined") return json(cache, { status: 200 })
-
     const res = await fetch(
-        `https://cdn.jsdelivr.net/gh/dBish6/Quest_Casino_Full-Stack_App@${import.meta.env.DEV ? "dev" : "master"}/static/carousel/carousel.json`,
-        { method: "GET" }
+        `https://cdn.questcasino.org/carousel/carousel.json`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            ...(typeof window === "undefined" && { Referer: process.env.VITE_APP_URL })
+          }
+        }
       ),
       data: CarouselContentResponseDto = await res.json();
 
     if (!res.ok)
-      return json(
+      return Response.json(
         { ERROR: (data as any).message || "Unexpectedly failed to fetch carousel content." },
         { status: res.status }
       );
 
-    if (typeof window !== "undefined") {
-      cache = { message: "Successfully retrieved carousel content", ...data };
-    } else {
-      return json({ message: "Successfully retrieved carousel content", ...data }, { status: res.status })
-    }
-
-    return json(cache, { status: res.status });
+    return Response.json({ message: "Successfully retrieved carousel content", ...data }, { status: res.status });
   } catch (error) {
-    return json(
+    return Response.json(
       { ERROR: "Unexpectedly failed to initiate carousel content request." },
       { status: 500 }
     );
