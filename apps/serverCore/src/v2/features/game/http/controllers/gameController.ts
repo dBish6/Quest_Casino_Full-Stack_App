@@ -184,8 +184,6 @@ export async function getBonuses(req: Request, res: Response, next: NextFunction
     const bonuses = await gameService.getBonuses({ status, forClient: true }),
       renew = await getRotateQuestsOrBonusesExpiry("bonuses");
 
-    console.log("bonuses renew", renew);
-
     return res
       .status(200)
       .json({ message: "Successfully retrieved all bonuses.", bonuses, renew });

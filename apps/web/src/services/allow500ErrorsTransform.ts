@@ -18,7 +18,7 @@ export default function allow500ErrorsTransform(
   if (isFetchBaseQueryError(res)) {
     if (meta?.response?.status >= 500 || (res.data as any)?.status !== "internal error")
       res.data = {
-        ...res.data!,
+        ...(typeof res.data === "string" ? { ERROR: res.data } : res.data!),
         allow: true
       };
   } else if (meta instanceof Response) {

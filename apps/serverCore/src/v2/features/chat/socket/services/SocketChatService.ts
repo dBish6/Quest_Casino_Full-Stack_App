@@ -56,7 +56,7 @@ export default class SocketChatService {
           const roomId = room_id.join || "";
 
           if (access_type === "global") {
-            const globalRoomId = chatRoomsUtils.getGlobalChatRoomId(roomId);
+            const globalRoomId = await chatRoomsUtils.getGlobalChatRoomId(roomId);
             room_id = { ...room_id, join: globalRoomId };
           } else {
             room_id = { ...room_id, join: getFriendRoom(user.member_id, roomId) };

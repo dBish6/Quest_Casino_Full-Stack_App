@@ -5,10 +5,9 @@ import type { InitializeUser } from "@authFeat/typings/User";
 
 import querystring from "querystring";
 
-import { COUNTRIES } from "@qc/constants";
-
 import { logger } from "@qc/utils";
 import { handleHttpError, HttpError } from "@utils/handleError";
+import getCountriesMap from "@utils/getCountriesMap";
 import { registerUser } from "./httpAuthService";
 import initializeSession from "@authFeatHttp/utils/initializeSession";
 
@@ -46,6 +45,8 @@ export async function loginWithGoogle(
       userInfo = await fetchUserInfo(token),
       { email, email_verified } = userInfo;
 
+    const COUNTRIES = Array.from((await getCountriesMap().catch(() => new Map())));
+
     const clientUser = await initializeSession(
       res,
       { by: "email", value: email },
@@ -61,7 +62,7 @@ export async function loginWithGoogle(
         email,
         email_verified,
         password: "",
-        country: COUNTRIES[Math.floor(Math.random() * COUNTRIES.length)].name || "Canada" // The country has to be defaulted. Since we don't have access to their country with Google, they would be prompted to change this.
+        country: COUNTRIES.length ? COUNTRIES[Math.floor(Math.random() * COUNTRIES.length)][0] : "Canada" // The country has to be defaulted. Since we don't have access to their country with Google, they would be prompted to change this.
       };
       await registerUser(regUser);
 

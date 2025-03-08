@@ -1,7 +1,9 @@
-import type { Country } from "@qc/constants";
+import type Country from "@qc/typescript/typings/Country";
 import type { Region, Regions } from "@authFeat/typings/Region";
 
 import { useEffect, useState } from "react";
+
+import { useLazyGetCountriesQuery, useLazyGetRegionsQuery } from "@services/api";
 
 function getSelectedRegion(
   regions: Regions[],
@@ -26,39 +28,46 @@ export default function useWorldData(
   defaultSelected?: { country?: string; }
 ) {
   const [worldData, setWorldData] = useState<{
-    countries: Country[] | null;
-    regions: Regions[];
-  }>({ countries: null, regions: [] }),
-  [selected, setSelected] = useState<{
-    country: string;
-    regions: Region[] | string;
-  }>({ country: defaultSelected?.country || "", regions: [] });
+      countries: Country[] | string | null;
+      regions: Regions[];
+    }>({ countries: null, regions: [] }),
+    [selected, setSelected] = useState<{
+      country: string;
+      regions: Region[] | string;
+    }>({ country: defaultSelected?.country || "", regions: [] });
+
+  const [fetchRegions] = useLazyGetRegionsQuery(),
+    [fetchCountries] = useLazyGetCountriesQuery();
 
   const getCountries = async () => {
     if (!worldData.countries?.length) {
-      setWorldData((prev) => ({
-        ...prev,
-        countries: []
-      }));
-      const { COUNTRIES } = await import("@qc/constants");
-      setWorldData((prev) => ({
-        ...prev,
-        countries: COUNTRIES
-      }));
+      setWorldData((prev) => ({ ...prev, countries: [] }));
+
+      try {
+        const countries = (await fetchCountries(undefined, true).unwrap())?.countries;
+        setWorldData((prev) => ({ ...prev, countries }));
+      } catch (error) {
+        setWorldData((prev) => ({
+          ...prev,
+          countries: "Unexpected error occurred, couldn't find any countries."
+        }));
+      }
     }
   };
 
   const getRegions = async () => {
     if (!worldData.regions?.length) {
-      setWorldData((prev) => ({
-        ...prev,
-        regions: []
-      }));
-      const regionsData = (await import("@authFeat/constants/REGIONS")).default;
-      setWorldData((prev) => ({
-        ...prev,
-        regions: regionsData
-      }));
+      setWorldData((prev) => ({ ...prev, regions: [] }));
+
+      try {
+        const regions = (await fetchRegions(undefined, true).unwrap())?.regions;
+        setWorldData((prev) => ({ ...prev, regions }));
+      } catch (error) {
+        setSelected((prev) => ({
+          ...prev,
+          regions: "Unexpected error occurred, couldn't find any regions."
+        }));
+      }
     }
   };
 
@@ -67,8 +76,6 @@ export default function useWorldData(
   }, [defaultSelected?.country]);
 
   useEffect(() => {
-    console.log("worldData.regions", worldData.regions)
-
     if (selected.country && worldData.regions?.length) {
       setSelected((prev) => ({
         ...prev,

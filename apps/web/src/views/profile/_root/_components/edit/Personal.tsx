@@ -165,7 +165,8 @@ export default function Personal({ user }: ProfilePersonalProps) {
                 {parsedPhone.callingCode}
               </option>
             )}
-            {worldData.countries?.length &&
+            {typeof worldData.countries !== "string" &&
+              worldData.countries?.length &&
               worldData.countries.map((country) => (
                 <option key={country.name} value={country.callingCode}>
                   {country.abbr} {country.callingCode}
@@ -225,7 +226,12 @@ export default function Personal({ user }: ProfilePersonalProps) {
           id="country"
           name="country"
           defaultValue={user.country}
-          error={form.error.country}
+          error={
+            form.error.country ||
+            (typeof worldData.countries === "string"
+              ? worldData.countries
+              : undefined)
+          }
           Loader={<Spinner intent="primary" size="sm" />}
           loaderTrigger={loading.countries}
           disabled={processing}
@@ -242,7 +248,8 @@ export default function Personal({ user }: ProfilePersonalProps) {
           }}
         >
           {user.country && <option value={user.country}>{user.country}</option>}
-          {worldData.countries?.length &&
+          {typeof worldData.countries !== "string" &&
+            worldData.countries?.length &&
             worldData.countries.map((country) => (
               <option key={country.name} value={country.name}>
                 {country.name}

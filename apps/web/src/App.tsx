@@ -4,7 +4,7 @@
  *
  * Author: David Bishop
  * Creation Date: April 16, 2024
- * Last Updated: March 4, 2025
+ * Last Updated: March 7, 2025
  *
  * Description:
  * .
@@ -59,7 +59,7 @@ export const routes: RouteObject[] = initialRoutes.map((route) => {
         {/* </ErrorBoundary> */}
 
         {/* They get redirected on the server, this is just in case for the client. */}
-        {typeof window !== "undefined" && window.location.pathname === "/" && (
+        {window.location.pathname === "/" && (
           <Navigate to="/home" replace />
         )}
       </>

@@ -1,7 +1,7 @@
 import type ChatRoomAccessType from "@qc/typescript/typings/ChatRoomAccessType";
 
-import { COUNTRIES_MAP } from "@qc/constants";
 import isUuidV4 from "@utils/isUuidV4";
+import getCountriesMap from "@utils/getCountriesMap";
 import { SocketError } from "@utils/handleError";
 
 class ChatRoomUtils {
@@ -33,8 +33,8 @@ class ChatRoomUtils {
    * Gets the corresponding global chat room by country.
    * @throws `SocketError forbidden` when not a valid country.
    */
-  getGlobalChatRoomId(country: string) {
-    let continent = COUNTRIES_MAP.get(country)?.continent as keyof typeof this.AVAILABLE_GLOBAL_CHAT_ROOM | undefined;
+  async getGlobalChatRoomId(country: string) {
+    let continent = (await getCountriesMap()).get(country)?.continent as keyof typeof this.AVAILABLE_GLOBAL_CHAT_ROOM | undefined;
     if (!continent) {
       throw new SocketError("Access Denied; Invalid credentials.", "forbidden");
     } else {

@@ -4,7 +4,7 @@
  *
  * Author: David Bishop
  * Creation Date: April 16, 2024
- * Last Updated: March 4, 2025
+ * Last Updated: March 7, 2025
  *
  * Description:
  * ...
@@ -30,6 +30,7 @@ import initializeSocketIo from "./socket";
 import bree from "./jobs";
 
 import { logger } from "@qc/utils";
+import getCountriesMap from "@utils/getCountriesMap";
 
 import "@authFeat/models/middleware";
 import "@chatFeat/models/middleware";
@@ -66,4 +67,7 @@ setupServer().then(async () => {
   // Starts predefined jobs.
   await bree.start();
   logger.info("Bree jobs started.");
+
+  // Just so countries can be initialized.
+  await getCountriesMap();
 });
