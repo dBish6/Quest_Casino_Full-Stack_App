@@ -1,12 +1,13 @@
 import type DeepPartial from "@qc/typescript/typings/DeepPartial";
 import type { RootState } from "./store";
+import { logger } from "@qc/utils";
 
 export function saveState(state: DeepPartial<RootState>) {
   try {
     const serializedState = JSON.stringify(state);
     localStorage.setItem("qc:state", serializedState);
   } catch (error: any) {
-    console.error("saveState error:\n", error.message);
+    logger.error("saveState error:\n", error.message);
   }
 }
 
@@ -17,7 +18,7 @@ export function loadState() {
     
     return JSON.parse(serializedState);
   } catch (error: any) {
-    console.error("loadState error:\n", error.message);
+    logger.error("loadState error:\n", error.message);
     return undefined;
   }
 }

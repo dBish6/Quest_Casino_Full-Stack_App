@@ -60,13 +60,6 @@ const api = createApi({
         if (res.error)
           return { error: allow500ErrorsTransform(res.error, res.meta) };
 
-        console.log({
-          data: {
-            message: "Successfully retrieved countries data.",
-            countries: res.data as Country[]
-          }
-        })
-
         return {
           data: {
             message: "Successfully retrieved countries data.",
