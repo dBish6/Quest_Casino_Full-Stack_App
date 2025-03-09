@@ -178,7 +178,7 @@ const RESTRICTED_MODALS: ReadonlySet<ModalQueryKeyValues> = new Set([
 export const ModalTrigger = forwardRef<
   HTMLAnchorElement,
   Omit<LinkProps, "to"> & {
-    query: { param: ModalQueryKeyValues; value?: string };
+    query: { pathname?: string, param: ModalQueryKeyValues; value?: string };
     buttonProps?: ButtonProps;
   }
 >(({ children, query, buttonProps, ...props }, ref) => {
@@ -194,7 +194,7 @@ export const ModalTrigger = forwardRef<
         aria-expanded={searchParams.has(query.param)}
         aria-controls={query.param}
         ref={ref}
-        to={{ search: `?${query.param}=${query.value || "true"}` }}
+        to={{ pathname: query.pathname, search: `?${query.param}=${query.value || "true"}` }}
         {...props}
         onClick={(e) => {
           if (RESTRICTED_MODALS.has(query.param) && !user)

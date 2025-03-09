@@ -4,7 +4,7 @@
  *
  * Author: David Bishop
  * Creation Date: April 16, 2024
- * Last Updated: March 7, 2025
+ * Last Updated: March 8, 2025
  *
  * Description:
  * ...
@@ -31,10 +31,6 @@ import bree from "./jobs";
 
 import { logger } from "@qc/utils";
 import getCountriesMap from "@utils/getCountriesMap";
-
-import "@authFeat/models/middleware";
-import "@chatFeat/models/middleware";
-import "@gameFeat/models/middleware";
 
 export async function setupServer() {
   const { PROTOCOL, HOST, PORT: ENV_PORT } = process.env,

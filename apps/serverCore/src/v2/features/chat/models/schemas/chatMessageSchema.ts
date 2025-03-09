@@ -1,7 +1,8 @@
 import type { Model } from "mongoose";
 import type { GlobalChatMessageDoc, PrivateChatMessageDoc } from "@chatFeat/typings/ChatMessage";
+import type { GlobalChatRoomId } from "@qc/typescript/typings/ChatRoomIds";
 
-import { Schema } from "mongoose";
+import { Schema, model } from "mongoose";
 
 import MAX_MESSAGES_COUNT from "@chatFeat/constants/MAX_MESSAGES_COUNT";
 
@@ -58,3 +59,10 @@ export const privateChatMessageSchema = new Schema<PrivateChatMessageDoc, Model<
     ...defaults.options
   }
 ).index({ "chats.created_at": -1 });
+
+export const GlobalChatMessage = (continent: GlobalChatRoomId) =>
+  model(
+    "chat_message_global",
+    globalChatMessageSchema,
+    `chat_message_global_${continent.replace(" ", "_").toLowerCase()}`
+  );

@@ -15,9 +15,7 @@ import { Error } from "@views/errors";
 
 export const getCarouselContentLoader = async () => {
   try {
-    const res = await fetch(
-        `${import.meta.env.VITE_CDN_URL}/carousel/carousel.json`,
-        {
+    const res = await fetch(`${import.meta.env.VITE_CDN_URL}/carousel/carousel.json`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",

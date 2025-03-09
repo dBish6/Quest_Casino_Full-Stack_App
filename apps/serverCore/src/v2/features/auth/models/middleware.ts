@@ -25,8 +25,8 @@ function handleUniqueUsername(
   if (error.code === 11000 && error.keyPattern?.username)
     throw new ApiError(
       "Username is already taken. Please try a different username.",
-      400,
-      "bad request"
+      409,
+      "conflict"
     );
 
   next();

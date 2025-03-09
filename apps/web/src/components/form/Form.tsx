@@ -41,16 +41,16 @@ const Form = forwardRef<HTMLFormElement, React.PropsWithChildren<FormProps>>(
               isFetchBaseQueryError(resError) ? (
                 (resError.status as number) >= 400 && (resError.status as number) < 599 && (
                   <span role="alert" id="globalFormError" className={s.errorMsg}>
-                    {[400, 401, 403].includes(resError.status as number) ? (
+                    {[400, 401, 403, 409].includes(resError.status as number) ? (
                       <>
-                        {resError.status === 400 && resError.data!.ERROR}
+                        {[400, 409].includes(resError.status as number) && resError.data!.ERROR}
                         {resError.status === 401 && `${GENERAL_UNAUTHORIZED_MESSAGE} `}
                         {resError.status === 403 && `${GENERAL_FORBIDDEN_MESSAGE} `}
                       </>
                     ) : (
                       <>
                         {(resError.status as number) >= 400 && (resError.status as number) < 500 && resError.data?.ERROR // if within 400s.
-                          ? resError.data.ERROR
+                          ? resError.data.ERROR + " "
                           : "An unexpected server error occurred. Please try refreshing the page. "}
                         If the error persists, feel free to reach out to{" "}
                         <Link intent="primary" to="/support">
