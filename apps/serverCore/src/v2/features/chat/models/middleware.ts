@@ -6,8 +6,7 @@ import MAX_MESSAGES_COUNT from "@chatFeat/constants/MAX_MESSAGES_COUNT";
 import { handleApiError } from "@utils/handleError";
 import { logger } from "@qc/utils";
 
-import { globalChatMessageSchema, privateChatMessageSchema } from "./schemas/chatMessageSchema";
-import { GlobalChatMessage } from ".";
+import { globalChatMessageSchema, privateChatMessageSchema, GlobalChatMessage } from "./schemas/chatMessageSchema";
 
 /**
  * Deletes the oldest global chats messages from the database to maintain the max limit.

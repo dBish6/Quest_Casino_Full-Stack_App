@@ -1,5 +1,6 @@
 import { model } from "mongoose";
 import userSchema, { userFriendsSchema, userStatisticsSchema, userActivitySchema, userNotificationsSchema } from "./schemas/userSchema";
+import "./middleware";
 
 export const User = model("user", userSchema),
   UserFriends = model("friends", userFriendsSchema),

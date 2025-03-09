@@ -23,9 +23,10 @@ export default function parseMessageWithLink(
         <>
           {parts[0]}
           <Element
-            {...(link.options?.button
-              ? { asChild: true, to: "" }
-              : { to: link.to || "" })}
+            {...(Element !== ModalTrigger &&
+              (link.options?.button
+                ? { asChild: true, to: "" }
+                : { to: link.to || "" }))}
             intent="primary"
             {...(link.queryKey && { query: { param: link.queryKey } })}
             {...link.options}
