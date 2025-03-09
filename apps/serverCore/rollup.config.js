@@ -28,16 +28,17 @@ export default {
         {
           src: "src/v2/features/auth/http/emails/templates/**/*",
           dest: "build/features/auth/http/emails/templates",
-          rename: (_, _, fullPath) =>
+          rename: (_, __, fullPath) =>
             fullPath.replace(/^src\/v2\/features\/auth\/http\/emails\/templates\//, "")
         },
         {
-          src: "src/v2/emails/partials/**/*",
-          dest: "build/emails/partials"
+          src: "src/v2/emails/**/*",
+          dest: "build/emails",
+          rename: (_, __, fullPath) => fullPath.replace(/^src\/v2\/emails\//, "")
         }
       ],
       copyOnce: true
-    }),    
+    }),
     visualizer()
   ]
 };

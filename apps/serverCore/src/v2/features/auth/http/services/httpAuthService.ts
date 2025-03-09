@@ -291,7 +291,6 @@ export async function getUserProfile(idOrUsername: ObjectId | string) {
  * @throws `HttpError 409` conflict if there is a pending password and they request to change their email. 
  * @throws `HttpError 429` too many update attempts.
  */
-// FIXME: Should send the the friend again in the friendUpdate event for legal_name and username so friends of that friend can have the update (not important). 
 export async function updateProfile(user: UserClaims, body: UpdateProfileBodyDto) {
   let session: ClientSession | undefined;
 
@@ -354,8 +353,7 @@ export async function updateProfile(user: UserClaims, body: UpdateProfileBodyDto
             ContentType: `image/${ext}`,
             ACL: "public-read"
           }));
-
-          query.$set.avatar_url = `https://${AWS_S3_BUCKET}.s3.${AWS_REGION}.amazonaws.com/${path}`;
+          query.$set.avatar_url = `https://cdn.questcasino.com/${path}`;
         }
         // Only should be their settings being updated. 
         else if (body.settings) {
