@@ -30,7 +30,6 @@ export interface FriendCredentials extends MinUserCredentials {
 export interface UserCredentials
   extends Omit<FriendCredentials, "activity" | "last_chat_message">,
     StatisticsCredential {
-  type: "standard" | "google";
   email_verified: boolean;
   region?: string;
   phone_number?: string;
