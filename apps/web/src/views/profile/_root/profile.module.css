@@ -129,6 +129,9 @@
                       border-radius: 50%;
                       border: 2px solid rgba(95, 67, 178, 0.7);
                       background-color: var(--c-lvl-2);
+                      & > div img {
+                        border-radius: 50%;
+                      }
                     }
                     & label {
                       font: var(--para-xx-small);

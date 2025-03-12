@@ -17,6 +17,7 @@ import GENERAL_BAD_REQUEST_MESSAGE from "@constants/GENERAL_BAD_REQUEST_MESSAGE"
 
 import { logger } from "@qc/utils";
 import { handleHttpError } from "@utils/handleError";
+import { generateOStateToken } from "@qc/server";
 import initializeSession from "@authFeatHttp/utils/initializeSession";
 import updateUserSession from "@authFeatHttp/utils/updateUserSession";
 
@@ -49,11 +50,10 @@ export async function register(
           "A user with this email address already exists. Please try using a different email address."
       });
 
-    await authService.registerUser({ ...req.body, type: "standard" });
+    await authService.registerUser({ ...req.body });
 
     return res.status(200).json({
-      message:
-        "Successfully registered! You can now log in with your newly created profile."
+      message: "Successfully registered! You can now log in with your newly created profile."
     });
   } catch (error: any) {
     next(handleHttpError(error, "register controller error."));
@@ -100,11 +100,12 @@ export async function loginGoogle(
   logger.debug("/auth/login/google body:", req.body);
 
   try {
-    const clientUser = await loginWithGoogle(req, res);
+    const { isNew, clientUser } = await loginWithGoogle(req, res);
 
     return res.status(200).json({
       message: "User session created successfully.",
-      user: clientUser
+      user: clientUser,
+      new: isNew
     });
   } catch (error: any) {
     next(handleHttpError(error, "loginGoogle controller error."));
@@ -342,7 +343,8 @@ export async function resetPassword(
     authService.resetPassword(sub, email);
 
     return res.status(200).clearCookie("session").clearCookie("refresh").json({
-      message: "Your password has been successfully reset. All active sessions have been terminated, you'll need to log in again."
+      message: "Your password has been successfully reset. All active sessions have been terminated, you'll need to log in again.",
+      oState: generateOStateToken()
     });
   } catch (error: any) {
     next(handleHttpError(error, "resetPassword controller error."));
@@ -477,10 +479,10 @@ export async function logout(
       throw error;
     });
 
-    return res
-      .status(200)
-      .clearCookie("session").clearCookie("refresh")
-      .json({ message: "Session cleared, log out successful." });
+    return res.status(200).clearCookie("session").clearCookie("refresh").json({
+      message: "Session cleared, log out successful.",
+      oState: generateOStateToken()
+    });
   } catch (error: any) {
     next(handleHttpError(error, "logout controller error."));
   }

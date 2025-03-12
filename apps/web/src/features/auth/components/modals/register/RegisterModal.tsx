@@ -104,14 +104,12 @@ export default function RegisterModal() {
             }}
             formLoading={processing}
             resSuccessMsg={
-              (registerSuccess &&
-                parseMessageWithLink(registerData.message, {
-                  sequence: "log in",
-                  queryKey: "login",
-                  options: { onClick: (e) => handleSwitch(e) }
-                })) ||
-              (loginGoogleSuccess &&
-                `Welcome ${loginGoogleData.user.username}! You're all set, continue to use Google to log in to use your profile. Best of luck and have fun!`)
+              registerSuccess &&
+              parseMessageWithLink(registerData.message, {
+                sequence: "log in",
+                queryKey: "login",
+                options: { onClick: (e) => handleSwitch(e) },
+              })
             }
             resError={fetcher.data?.ERROR || registerError || loginGoogleError}
             clearErrors={() => setErrors({})}

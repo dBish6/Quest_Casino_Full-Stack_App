@@ -6,14 +6,13 @@ import type { NotificationTypes, Notification } from "@qc/typescript/dtos/Notifi
 import type { GameQuestDoc, GameBonusDoc } from "@gameFeat/typings/Game";
 import type { PaymentHistoryEntry } from "@qc/typescript/dtos/PaymentHistoryDto";
 
-export type RegistrationTypes = "standard" | "google";
-export type GetUserBy = "_id" | "email" | "username" | "member_id";
+export type GetUserBy = "_id" | "email" | "username" | "member_id" | "google_id";
 
 /**
  * Type for creating a initial user in the database.
  */
 export interface InitializeUser extends Omit<RegisterBodyDto, "calling_code"> {
-  type: RegistrationTypes;
+  google_id?: string;
   avatar_url?: string;
   first_name: string;
   last_name: string;
@@ -23,7 +22,6 @@ export interface InitializeUser extends Omit<RegisterBodyDto, "calling_code"> {
 export interface UserToClaims {
   _id: ObjectId;
   member_id: string;
-  type: RegistrationTypes;
   legal_name: { first: string; last: string };
   email: string;
   email_verified: boolean;
@@ -51,7 +49,7 @@ export interface VerificationClaims extends JwtPayload {
 export interface User extends DefaultDocFields {
   _id: ObjectId;
   member_id: string;
-  type: string;
+  google_id?: string;
   avatar_url?: string;
   legal_name: {
     first: string;

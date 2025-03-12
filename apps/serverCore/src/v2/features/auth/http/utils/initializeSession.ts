@@ -37,7 +37,9 @@ export default async function initializeSession(
       user = await userQuery.exec() as UserDoc;
       if (!user) return "Couldn't find the user while session initialization.";
 
-      clientUser = await populateUserDoc(userQuery.clone()).client().populate("friends");
+      clientUser = await populateUserDoc(userQuery.clone())
+        .client(identifier.by === "google_id")
+        .populate("friends");
       clientUser!.friends = ({ pending: {}, list: {} }) as UserFields["friends"];
     }
 
@@ -70,7 +72,7 @@ export default async function initializeSession(
       res.setHeader("x-xsrf-token", newCsrfToken);
     }
 
-    return (clientUser! as unknown) as UserCredentials || user;
+    return (clientUser! as unknown) as UserCredentials & { email?: string } || user;
   } catch (error: any) {
     throw handleHttpError(error, "initializeSession error.");
   }

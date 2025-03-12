@@ -14,3 +14,11 @@ declare module "@reduxjs/toolkit/query" {
     error?: string;
   };
 }
+
+declare module "react-router-dom" {
+  type To = string | Partial<{
+    pathname: string;
+    search: string | null;
+    hash: string | null;
+  }>;
+}

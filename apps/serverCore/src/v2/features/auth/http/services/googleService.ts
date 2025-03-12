@@ -3,13 +3,15 @@ import type { GoogleLoginRequestDto } from "@authFeatHttp/dtos/LoginRequestDto";
 import type { UserCredentials } from "@qc/typescript/typings/UserCredentials";
 import type { InitializeUser } from "@authFeat/typings/User";
 
-import querystring from "querystring";
+import { randomInt } from "crypto";
+import { stringify } from "querystring";
 
 import { logger } from "@qc/utils";
 import { handleHttpError, HttpError } from "@utils/handleError";
 import getCountriesMap from "@utils/getCountriesMap";
 import { registerUser } from "./httpAuthService";
 import initializeSession from "@authFeatHttp/utils/initializeSession";
+import { updateUserCredentials } from "@authFeat/services/authService";
 
 interface FetchAccessTokenSuccessDataDto {
   access_token: string;
@@ -30,6 +32,20 @@ interface FetchUserInfoSuccessDataDto {
   locale: string;
 }
 
+function generateUsername(email: string) {
+  const baseName = email.split("@")[0].replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+  return `${baseName}${randomInt(1000, 99999).toString()}`;
+}
+
+/**
+ * The country has to be defaulted. Since we don't have access to their country with Google, they would be 
+ * prompted to change this.
+ */
+async function randomizeCountry() {
+  const COUNTRIES = Array.from((await getCountriesMap().catch(() => new Map())));
+  return COUNTRIES.length ? COUNTRIES[Math.floor(Math.random() * COUNTRIES.length)][0] : "Canada";
+}
+
 /**
  * Authenticates a user using Google OAuth. Initializes the user session or registers them if
  * they don't already exist.
@@ -42,37 +58,48 @@ export async function loginWithGoogle(
     const { code, redirect_uri = "" } = req.body;
 
     const token = await fetchAccessTokenToken(code, redirect_uri),
-      userInfo = await fetchUserInfo(token),
-      { email, email_verified } = userInfo;
-
-    const COUNTRIES = Array.from((await getCountriesMap().catch(() => new Map())));
+      userInfo = await fetchUserInfo(token);
 
     const clientUser = await initializeSession(
       res,
-      { by: "email", value: email },
+      { by: "google_id", value: userInfo.sub },
       req.headers["x-xsrf-token"] as string
     );
     if (typeof clientUser === "string") {
       const regUser: InitializeUser = {
-        type: "google",
+        google_id: userInfo.sub,
         avatar_url: userInfo.picture,
         first_name: userInfo.given_name,
         last_name: userInfo.family_name,
-        username: userInfo.name,
-        email,
-        email_verified,
-        password: "",
-        country: COUNTRIES.length ? COUNTRIES[Math.floor(Math.random() * COUNTRIES.length)][0] : "Canada" // The country has to be defaulted. Since we don't have access to their country with Google, they would be prompted to change this.
+        username: generateUsername(userInfo.email),
+        email: userInfo.email,
+        email_verified: userInfo.email_verified,
+        password: "google provided",
+        country: await randomizeCountry()
       };
       await registerUser(regUser);
 
-      return (await initializeSession(
+      const clientUser = (await initializeSession(
         res,
-        { by: "email", value: email },
+        { by: "email", value: userInfo.email },
         req.headers["x-xsrf-token"] as string
       )) as UserCredentials;
+
+      return { isNew: true, clientUser };
     } else {
-      return clientUser;
+      if (userInfo.email !== clientUser.email) {
+        await updateUserCredentials(
+          { by: "google_id", value: userInfo.sub },
+          { $set: { email: userInfo.email } }
+        ).catch(() => {
+          throw new HttpError(
+            "Unexpectedly we couldn't find your profile after you changing your google account's email address.",
+            404
+          );
+        });
+      }
+
+      return { isNew: false, clientUser };
     }
   } catch (error: any) {
     throw handleHttpError(error, "loginWithGoogle service error.");
@@ -88,7 +115,7 @@ async function fetchAccessTokenToken(code: string, redirectUri: string) {
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
         },
-        body: querystring.stringify({
+        body: stringify({
           code,
           client_id: GOOGLE_OAUTH_CLIENT_ID,
           client_secret: GOOGLE_OAUTH_CLIENT_SECRET,

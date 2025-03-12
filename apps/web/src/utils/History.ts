@@ -20,7 +20,7 @@ class History {
 
   public push(target: To, options?: NavigateOptions) {
     const { pathname, search, hash } = preserveUrl(target, window.location);
-    this.navigate({ pathname, search, ...(hash && { hash }) }, { ...options })
+    this.navigate({ pathname, search, ...(hash && { hash }) }, { ...options });
   }
 
   public back(options?: NavigateOptions) {

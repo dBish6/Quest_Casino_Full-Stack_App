@@ -197,14 +197,10 @@ const userSchema = new Schema<UserDoc, Model<UserDoc>>(
       unique: true,
       default: () => randomUUID()
     },
-    type: {
+    google_id: { 
       type: String,
-      enum: {
-        values: ["standard", "google"],
-        message: "type field must be either standard or google."
-      },
       immutable: true,
-      required: true
+      unique: true
     },
     avatar_url: {
       type: String,

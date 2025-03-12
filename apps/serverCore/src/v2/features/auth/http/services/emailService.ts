@@ -80,7 +80,7 @@ export async function sendEmail(to: string, html: string) {
         user: SMTP_USER,
         pass: SMTP_PASSWORD
       },
-      ...(NODE_ENV === "development" && { debug: true }),
+      debug: NODE_ENV === "development",
       logger: true
     });
 

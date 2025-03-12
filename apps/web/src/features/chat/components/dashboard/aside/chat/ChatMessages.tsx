@@ -154,7 +154,9 @@ export default function ChatMessages({ user, asideState }: ChatMessagesProps) {
         }
 
         return () => {
-          [joinMutation, ...initialListenerMutations].forEach((mutation) => mutation?.abort());
+          [joinMutation, ...initialListenerMutations].forEach((mutation) => {
+            if (mutation) mutation.abort();
+          });
           window.removeEventListener("beforeunload", handleLastMessage.beforeunload);
         }
       }

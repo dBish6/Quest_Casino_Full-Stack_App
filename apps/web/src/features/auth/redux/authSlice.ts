@@ -39,6 +39,9 @@ const authSlice = createSlice({
         token: { csrf: action.payload.csrf } // Removes oState so a new one from the server can be added.
       };
     },
+    SET_OSTATE_TOKEN: (state, action: PayloadAction<StateUser["token"]["oState"]>) => {
+      state.user.token.oState = action.payload;
+    },
     /**
      * Use for updating base credentials.
      */
@@ -114,6 +117,7 @@ const authSlice = createSlice({
 export const { name: authName, reducer: authReducer } = authSlice,
   {
     INITIALIZE_SESSION,
+    SET_OSTATE_TOKEN,
     UPDATE_USER_CREDENTIALS,
     SET_USER_FAVOURITES,
     SET_USER_SETTINGS,
