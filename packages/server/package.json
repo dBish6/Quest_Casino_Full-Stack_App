@@ -3,6 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "license": "CC-BY-4.0",
+  "type": "module",
+  "main": "generateOStateToken.js",
   "dependencies": {
     "bcryptjs": "^3.0.2",
     "dotenv-cli": "^7.4.2",
