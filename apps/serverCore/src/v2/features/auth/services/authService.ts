@@ -27,7 +27,7 @@ type FriendsForClientOpt = boolean | FriendsProjectionOpt ;
 /**
  * Type `UserCredentials` (minus the friends because they get initialized elsewhere).
  */
-export const CLIENT_USER_FIELDS = `${CLIENT_COMMON_EXCLUDE} -email -password -limit_changes -friends -activity -notifications`;
+export const CLIENT_USER_FIELDS = `${CLIENT_COMMON_EXCLUDE} -google_id -email -password -limit_changes -friends -activity -notifications`;
 
 /**
  * Type `MinUserCredentials`.
