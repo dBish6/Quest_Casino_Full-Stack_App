@@ -72,7 +72,7 @@ const ModalTemplate = forwardRef<HTMLDivElement, ModalTemplateProps>(
       const toggle = !modal.show;
       if (toggle) {
         searchParams.set(queryKey, "true");
-      } else if (queryKey.startsWith("menu")) {
+      } else if (queryKey.startsWith(ModalQueryKey.MENU_MODAL)) {
         searchParams.delete(queryKey);
         // Deletes any of the slide keys.
         for (const slide of ["Leaderboard", "Quests", "Bonuses"]) {

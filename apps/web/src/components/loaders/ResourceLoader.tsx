@@ -26,7 +26,7 @@ export default function ResourceLoaderProvider({ children }: React.PropsWithChil
   const framerFeatureBundleRef = useRef<FeatureBundle>(),
     [progress, setProgress] = useState({
       loading: false, // I would love to show the loader initially but the portal in OverlayLoader breaks hydration.
-      message: "Loading animating magic..."
+      message: "Loading animation magic..."
     });
 
   const userToken = useAppSelector(selectUserCsrfToken),

@@ -99,8 +99,8 @@ export function populateUserDoc<TUserDoc = UserDoc>(query: Query<any, UserDoc>) 
         }, [] as any[])
       );
     },
-    client: (): Query<TUserDoc | null, UserDoc> =>
-      query.select(CLIENT_USER_FIELDS).populate([
+    client: (email?: boolean): Query<TUserDoc | null, UserDoc> =>
+      query.select(email === true ? CLIENT_USER_FIELDS.replace(" -email", "") : CLIENT_USER_FIELDS).populate([
         {
           path: "settings",
           populate: {
@@ -179,7 +179,7 @@ export async function getUser<
 
     let userQuery = User.findOne({ [by]: value, ...filters }, projection, restOpts);
     if (populate) userQuery.populate(populate as string);
-    else populateUserDoc(userQuery)[forClient ? "client" : "full"](projection);
+    else populateUserDoc(userQuery)[forClient ? "client" : "full"](projection as any);
 
     const user = await userQuery.exec();
     if (throwDefault404 && !user) throw new ApiError(USER_NOT_FOUND_MESSAGE, 404, "not found");

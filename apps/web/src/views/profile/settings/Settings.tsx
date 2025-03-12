@@ -100,7 +100,7 @@ export default function Settings() {
       window.removeEventListener("beforeunload", handlePatchPendingSettings);
       handlePatchPendingSettings();
     }
-  }, [user?.type]);
+  }, [user?.member_id]);
 
   return (
     <Main className={s.settings}>

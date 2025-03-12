@@ -89,7 +89,7 @@ export default function GamesActive({ games, user }: { games: (Game | undefined)
         handlePatchNewFavourites(); // They go to a different page.
       }
     }
-  }, [user?.type]); // user.type so it can run on login/logout and not credential updates.
+  }, [user?.member_id]); // user.member_id so it can run on login/logout and not credential updates.
   
   return (
     <>

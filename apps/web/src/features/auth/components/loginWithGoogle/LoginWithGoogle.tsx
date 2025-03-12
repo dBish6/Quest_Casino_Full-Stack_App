@@ -34,7 +34,8 @@ export default function LoginWithGoogle({
   setGoogleLoading,
   processing,
 }: LoginWithGoogleProps) {
-  const [searchParams] = useSearchParams();
+  const [searchParams] = useSearchParams(),
+    code = searchParams.get("code");
 
   const storedOState = useAppSelector(selectUserOStateToken),
     redirectUri = `${import.meta.env.VITE_APP_URL}/?${queryKey}=true`;
@@ -43,29 +44,36 @@ export default function LoginWithGoogle({
     const scope = "email profile",
       state = storedOState?.original;
 
+    if (!code) localStorage.setItem("qc:prev_path", window.location.pathname);
     return `https://accounts.google.com/o/oauth2/auth?client_id=${import.meta.env.VITE_GOOGLE_OAUTH_CLIENT_ID}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}&state=${state}`;
   };
 
-  const handleCallback = (code: string) => {
+  const handleCallback = () => {
     setGoogleLoading(true);
 
     const mutation = postLoginGoogle({
-      code: code,
+      code: code!,
       state: searchParams.get("state") || "",
       secret: storedOState?.secret,
-      redirect_uri: redirectUri,
-    })
+      redirect_uri: redirectUri
+    });
     mutation.finally(() => setGoogleLoading(false));
     return mutation;
   };
 
   useEffect(() => {
-    const code = searchParams.get("code");
     if (code) {
-      const mutation = handleCallback(code);
-      return () => mutation.abort();
+      let mutation: ReturnType<typeof handleCallback> | null = null;
+      const timeout = setTimeout(() => {
+        mutation = handleCallback();
+      }, 1000);
+
+      return () => {
+        clearTimeout(timeout);
+        if (mutation) mutation.abort();
+      };
     };
-  }, [searchParams.get("code")]);
+  }, [code]);
 
   return (
     <>

@@ -37,7 +37,7 @@ import { formatEmailTemplate, sendEmail } from "@authFeatHttp/services/emailServ
 import { GenerateUserJWT, revokeVerificationToken, clearAllSessions, JWTVerification  } from "@authFeat/services/jwtService";
 import { deleteCsrfToken, deleteAllCsrfTokens } from "@authFeatHttp/services/csrfService";
 
-const { AWS_REGION, AWS_S3_BUCKET } = process.env;
+const { AWS_S3_BUCKET } = process.env;
 const ALLOWED_PROFILE_UPDATE_FIELDS: ReadonlySet<string> = new Set(["avatar_url", "first_name", "last_name", "username", "bio", "email", "country", "region", "phone_number", "settings"]),
   ALLOWED_PROFILE_UPDATE_SETTINGS_FIELDS: ReadonlySet<string> = new Set(["notifications", "blocked_list", "visibility", "block_cookies"]);
 
@@ -50,8 +50,7 @@ export async function registerUser(user: InitializeUser) {
   const userId = new Types.ObjectId();
 
   try {
-    if (user.password && user.type === "standard") user.password = await hash(user.password, 12);
-    else user.password = `${user.type} provided`;
+    if (!user.google_id) user.password = await hash(user.password, 12);
 
     const session = await startSession();
 

@@ -7,6 +7,7 @@ import type RegisterBodyDto from "@qc/typescript/dtos/RegisterBodyDto";
 import type { LoginBodyDto, LoginGoogleBodyDto } from "@qc/typescript/dtos/LoginBodyDto";
 import type { GetNotificationsResponseDto, DeleteNotificationsBodyDto, Notification } from "@qc/typescript/dtos/NotificationsDto"
 import type { UpdateProfileBodyDto, UpdateProfileResponseDto, UpdateUserFavouritesBodyDto, SendConfirmPasswordEmailBodyDto } from "@qc/typescript/dtos/UpdateUserDto";
+import type { LogoutResponseDto } from "@authFeat/dtos/LogoutResponseDto";
 import type LogoutBodyDto from "@qc/typescript/dtos/LogoutBodyDto";
 import type { ManageFriendRequestEventDto } from "@qc/typescript/dtos/ManageFriendEventDto";
 import type FriendActivityEventDto from "@authFeat/dtos/FriendActivityEventDto";
@@ -16,6 +17,7 @@ import { AuthEvent } from "@qc/constants";
 import TOKEN_EXPIRED_MESSAGE from "@authFeat/constants/TOKEN_EXPIRED_MESSAGE";
 import GENERAL_UNAUTHORIZED_MESSAGE from "@authFeat/constants/GENERAL_UNAUTHORIZED_MESSAGE";
 import GENERAL_FORBIDDEN_MESSAGE from "@authFeat/constants/GENERAL_FORBIDDEN_MESSAGE";
+import { ANIMATION_DURATION, ModalQueryKey } from "@components/modals";
 
 import { logger } from "@qc/utils";
 import { history } from "@utils/History";
@@ -69,12 +71,15 @@ const authApi = injectEndpoints({
       onQueryStarted: async (_, { dispatch, queryFulfilled }) => {
         const { data, meta } = await queryFulfilled;
 
-        if (meta?.response?.ok)
-          handleLoginSuccess(
-            dispatch,
-            data.user,
-            meta.response.headers.get("x-xsrf-token")!
-          );
+        if (meta?.response?.ok) {
+          setTimeout(() => {
+            handleLoginSuccess(
+              dispatch,
+              data.user,
+              meta.response!.headers.get("x-xsrf-token")!
+            );
+          }, ANIMATION_DURATION / 2);
+        }
       },
       transformErrorResponse: (res, meta) => allow500ErrorsTransform(res, meta)
     }),
@@ -83,7 +88,7 @@ const authApi = injectEndpoints({
      * @request
      */
     loginGoogle: builder.mutation<
-      HttpResponse<{ user: UserCredentials }>,
+      HttpResponse<{ user: UserCredentials, new: boolean }>,
       LoginGoogleBodyDto
     >({
       query: (credentials) => ({
@@ -92,14 +97,39 @@ const authApi = injectEndpoints({
         body: credentials
       }),
       onQueryStarted: async (_, { dispatch, queryFulfilled }) => {
-        const { data, meta } = await queryFulfilled;
+        const params = new URLSearchParams(window.location.search);
+        let modalParam = "";
 
-        if (meta?.response?.ok)
-          handleLoginSuccess(
-            dispatch,
-            data.user,
-            meta.response.headers.get("x-xsrf-token")!
+        try {
+          history.push(localStorage.getItem("qc:prev_path") || "/about", { replace: true });
+
+          const { data, meta } = await queryFulfilled;
+
+          if (meta?.response?.ok) {
+            modalParam = params.get(ModalQueryKey.LOGIN_MODAL) ? ModalQueryKey.LOGIN_MODAL
+              : params.get(ModalQueryKey.REGISTER_MODAL) ? ModalQueryKey.REGISTER_MODAL
+              : ""; // Removes the param only on success.
+
+            handleLoginSuccess(
+              dispatch,
+              data.user,
+              meta.response!.headers.get("x-xsrf-token")!,
+              data.new
+            );
+          }
+        } finally {
+          // Removes the google params.
+          for (const key of ["state", "code", "scope", "authuser", "prompt", modalParam]) {
+            if (params.has(key)) params.delete(key);
+          }
+
+          const path = localStorage.getItem("qc:prev_path") || "/about";
+          history.push(
+            params.size ? `${path}?${params.toString()}` : { pathname: path, search: null },
+            { replace: true }
           );
+          localStorage.removeItem("qc:prev_path");
+        }
       },
       transformErrorResponse: (res, meta) => allow500ErrorsTransform(res, meta)
     }),
@@ -276,7 +306,7 @@ const authApi = injectEndpoints({
           })) as any;
   
           return res.error
-            ? { error: allow500 ? allow500ErrorsTransform(res.error!, res.meta) : res.error }
+            ? { error: allow500 ? allow500ErrorsTransform(res.error, res.meta) : res.error }
             : res;
         }
       },
@@ -336,7 +366,7 @@ const authApi = injectEndpoints({
               );
           }
         } catch (error: any) {
-          const resError = error.error
+          const resError = error.error;
           if (isFetchBaseQueryError(resError) && resError.data?.ERROR) {
             if (resError.status === 404 && resError.data.ERROR?.includes("to block")) {
               dispatch(
@@ -401,7 +431,7 @@ const authApi = injectEndpoints({
      * @request
      */
     resetPassword: builder.mutation<
-      HttpResponse,
+      HttpResponse<LogoutResponseDto>,
       { verification_token: string }
     >({
       query: (body) => ({
@@ -415,7 +445,7 @@ const authApi = injectEndpoints({
 
           if (meta?.response?.ok) {
             dispatch(ADD_TOAST({ message: data.message, intent: "success" }));
-            handleLogout(dispatch, socket);
+            handleLogout(dispatch, socket, data.oState);
           }
         } catch (error: any) {
           const resError = error.error;
@@ -554,17 +584,16 @@ const authApi = injectEndpoints({
      * Clears the user session.
      * @request
      */
-    logout: builder.mutation<HttpResponse, LogoutBodyDto>({
+    logout: builder.mutation<HttpResponse<LogoutResponseDto>, LogoutBodyDto>({
       query: (body) => ({
         url: "/auth/user/logout",
         method: "POST",
         body
       }),
       onQueryStarted: async (_, { dispatch, queryFulfilled }) => {
-        // FIXME: OState token? Need to refresh or something?
-        const { meta } = await queryFulfilled;
+        const { data, meta } = await queryFulfilled;
 
-        if (meta?.response?.ok) handleLogout(dispatch, socket);
+        if (meta?.response?.ok) handleLogout(dispatch, socket, data.oState);
       }
     }),
 
@@ -871,48 +900,45 @@ const authApi = injectEndpoints({
 function handleLoginSuccess(
   dispatch: ThunkDispatch<any, any, UnknownAction>,
   user: UserCredentials,
-  token: string
+  token: string,
+  googleNew?: boolean
 ) {
   try {
     dispatch(INITIALIZE_SESSION({ credentials: user, csrf: token }));
 
-    const params = new URLSearchParams(window.location.search);
-    // Removes the google params.
-    for (const key of Array.from(params.keys())) {
-      console.log("key", key);
-      // TODO:
-      if ([""].includes(key as any)) {
-        console.log("removed", key);
-        params.delete(key);
-      }
+    if (!user.email_verified) {
+      dispatch(
+        ADD_TOAST({
+          title: "Welcome Issue",
+          message: `Welcome${!googleNew ? " back" : ""} ${user.username}! We've noticed that your profile hasn't been verified yet, send verification email.`,
+          intent: "success",
+          options: {
+            button: {
+              sequence: "send verification email.",
+              onClick: () => handleSendVerifyEmail(dispatch)
+            }
+          }
+        })
+      );
+    } else {
+      dispatch(
+        ADD_TOAST({
+          title: "Welcome",
+          message: `Welcome${!googleNew ? " back" : ""} ${user.username}!`,
+          intent: "success",
+          duration: 6500
+        })
+      );
     }
 
-    if (!params.has("register")) {
-      if (!user.email_verified) {
-        dispatch(
-          ADD_TOAST({
-            title: "Welcome Issue",
-            message: `Welcome back ${user.username}! We've noticed that your profile hasn't been verified yet, send verification email.`,
-            intent: "success",
-            options: {
-              button: {
-                sequence: "send verification email.",
-                onClick: () => handleSendVerifyEmail(dispatch)
-              }
-            }
-          })
-        );
-      } else {
-        dispatch(
-          ADD_TOAST({
-            title: "Welcome",
-            message: `Welcome back ${user.username}!`,
-            intent: "success",
-            duration: 6500
-          })
-        );
-      }
-    }
+    if (googleNew)
+      dispatch(
+        ADD_TOAST({
+          title: "Country Required",
+          message: `Due to the limitations of Google's registration, we had to assign a random country to your profile. To ensure the best experience and so you can connect to the correct region, please update your country at "Edit Profile". Quest Casino takes privacy seriously, there is no location tracking or data collection beyond what is necessary for account functionality.`,
+          intent: "info"
+        })
+      );
   } catch (error: any) {
     logger.error("authApi handleLoginSuccess error:\n", error.message);
     dispatch(
