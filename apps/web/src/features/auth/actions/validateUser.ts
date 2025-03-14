@@ -1,6 +1,6 @@
 import type { ActionFunction } from "react-router-dom";
 
-import { json, redirect } from "react-router-dom";
+import { redirect } from "react-router-dom";
 import { AVATAR_FILE_EXTENSIONS } from "@qc/constants";
 import { logger, capitalize, validateEmail } from "@qc/utils";
 
@@ -14,11 +14,11 @@ const validateUserAction: ActionFunction = async ({ request }) => {
     const formData = await request.formData(),
       result = await validate(formData);
 
-    if (Object.keys(result.errors).length) return json({ errors: result.errors }, { status: 400 });
-    else return json({ reqBody: result.reqBody }, { status: 200 });
+    if (Object.keys(result.errors).length) return Response.json({ errors: result.errors }, { status: 400 });
+    else return Response.json({ reqBody: result.reqBody }, { status: 200 });
   } catch (error: any) {
     logger.error("validateUser error:\n", error.message);
-    return json({ ERROR: error.message }, { status: 500 });
+    return Response.json({ ERROR: error.message }, { status: 500 });
   }
 };
 export default validateUserAction;

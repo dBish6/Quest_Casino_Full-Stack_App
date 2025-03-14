@@ -37,15 +37,15 @@ export default function useForm<T = Partial<Record<string, string>>>() {
   const setErrors = (errors: Partial<TForm>) =>
     setForm((prev) => ({
       ...prev,
-      error: errors,
+      error: errors
     }));
   const setError = (key: keyof TForm, value: string) =>
     setForm((prev) => ({
       ...prev,
       error: {
         ...prev.error,
-        [key]: value,
-      },
+        [key]: value
+      }
     }));
 
   return { formRef, form, setLoading, setError, setErrors };

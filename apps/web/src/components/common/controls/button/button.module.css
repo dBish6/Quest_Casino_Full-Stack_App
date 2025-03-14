@@ -154,7 +154,7 @@
       border-radius: 50%;
       background-color: var(--c-purple-400);
       transition: 0.38s ease-in-out left; 
-    },
+    }
     &::after {
       content: "";
       position: absolute;
