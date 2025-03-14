@@ -1,0 +1,48 @@
+.policy,
+.terms {
+  & section,
+  & header {
+    margin-bottom: 2rem;
+
+    & .lastUpdated {
+      font: var(--h4);
+      font-size: var(--h4-clamp);
+      color: var(--c-heading-1);
+      margin-bottom: 0.5rem !important;
+    }
+
+    & h2 {
+      font: var(--h2);
+      font-size: var(--h2-clamp);
+      margin-bottom: 1rem;
+    }
+
+    & h3 {
+      font: var(--h3);
+      font-size: var(--h3-clamp);
+      margin-block: 0.75rem 0.5rem;
+    }
+
+    & h4 {
+      font: var(--h4);
+      font-size: var(--h4-clamp);
+      margin-block: 0.65rem 0.35rem;
+      color: var(--c-heading-2);
+    }
+
+    & p:not(:last-of-type):not(.ulTxt) {
+      margin-bottom: 0.25rem;
+    }
+
+    & ul {
+      list-style: disc;
+      padding-left: 17px;
+      & li:not(:last-child) {
+        margin-bottom: 0.25rem;
+      }
+    }
+    & ul.useData {
+      margin-bottom: 0.75rem;
+    }
+  }
+}

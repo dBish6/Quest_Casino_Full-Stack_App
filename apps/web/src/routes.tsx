@@ -10,8 +10,7 @@ import { LeaderboardProvider } from "@gameFeat/components/modals/menu/slides";
 import SocketListenersProvider from "@components/SetupSocketListeners";
 import { ModalsProvider } from "@components/modals";
 
-import { RestrictView, About, Home, Support } from "@views/index";
-import { Error } from "@views/errors";
+import { RestrictView, About, Home, Support, PrivacyPolicy, Terms, Error } from "@views/index";
 
 export const getCarouselContentLoader = async () => {
   try {
@@ -93,6 +92,14 @@ export const routes: RouteObject[] = [
       {
         path: "support",
         element: <Support />
+      },
+      {
+        path: "privacy-policy",
+        element: <PrivacyPolicy />
+      },
+      {
+        path: "terms",
+        element: <Terms />
       },
       {
         path: "error-401",
