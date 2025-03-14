@@ -1,0 +1,17 @@
+.support {
+  & p {
+    margin-bottom: 1rem;
+  }
+
+  & ul {
+    list-style: disc;
+    padding-left: 17px;
+    & li {
+      font: var(--para-large);
+      font-size: var(--para-large-clamp);
+    }
+    & li:not(:last-child) {
+      margin-bottom: 0.25rem;
+    }
+  }
+}

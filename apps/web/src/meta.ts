@@ -55,6 +55,21 @@ export const meta = {
     ]
   },
 
+  "/privacy-policy": {
+    title: `Privacy Policy ${titlePrefix}`,
+    tags: [
+      `<meta name="description" content="Read our Privacy Policy to learn how Quest Casino handles user data, security, and compliance with privacy regulations. We prioritize your privacy and ensure secure data handling.">`,
+      `<meta name="keywords" content="privacy policy, data protection, user privacy, security, compliance, GDPR, ${defaultKeywords}">`
+    ]
+  },
+  "/terms": {
+    title: `Terms of Service ${titlePrefix}`,
+    tags: [
+      `<meta name="description" content="Review Quest Casino's Terms of Service. Understand the rules, responsibilities, and rights when using our platform, including account usage, content ownership, and policies.">`,
+      `<meta name="keywords" content="terms of service, terms and conditions, user agreement, policies, account rules, ${defaultKeywords}">`
+    ]
+  },
+
   "/error-401": {
     title: `Error 401 ${titlePrefix}`,
     tags: [

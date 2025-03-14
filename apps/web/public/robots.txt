@@ -1,3 +1,11 @@
 # https://www.robotstxt.org/robotstxt.html
 User-agent: *
-Disallow:
+Disallow: /*?*
+Allow: /*?register=
+Allow: /*?login=
+Allow: /*?menu=
+Allow: /*?bank=
+Allow: /*?notif=
+Allow: /*?add=
+Allow: /*?aside=enlarged
+Allow: /*?phist=

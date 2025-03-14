@@ -60,7 +60,7 @@ export default function Nav({ viewport }: { viewport: BreakpointContextValues["v
         </div>
         <div>
           <Link to="/terms">Terms of Service</Link>
-          <Link to="/privacy-policy">Private Policy</Link>
+          <Link to="/privacy-policy">Privacy Policy</Link>
         </div>
       </nav>
     </div>
