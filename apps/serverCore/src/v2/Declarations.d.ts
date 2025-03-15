@@ -1,4 +1,3 @@
-import type { Request } from "express";
 import type { UserClaims, VerificationClaims } from "@authFeat/typings/User";
 
 declare module "express-serve-static-core" {

@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { logger } from "@qc/utils";
 import { ApiError } from "@utils/handleError";
 
-export default function apiErrorHandler(
+export default function httpErrorHandler(
   error: ApiError | Error,
   _: Request,
   res: Response,

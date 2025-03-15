@@ -7,4 +7,3 @@ import type { JobOptions } from "bree";
 
 /** Predefined jobs. */
 export const authJobs: JobOptions[] = [];
-
