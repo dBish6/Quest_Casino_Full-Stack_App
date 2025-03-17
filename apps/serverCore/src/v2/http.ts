@@ -23,7 +23,7 @@ import authRouter from "@authFeatHttp/routes/authRoute";
 import gameRouter from "@gameFeatHttp/routes/gameRoute"
 import paymentRouter from "@paymentFeatHttp/routes/paymentRoute"
 
-import apiErrorHandler from "@middleware/apiErrorHandler";
+import httpErrorHandler from "@middleware/httpErrorHandler";
 
 export default function initializeHttp(corsOptions: CorsOptions) {
   const app = express(),
@@ -69,7 +69,7 @@ export default function initializeHttp(corsOptions: CorsOptions) {
   });
 
   // *Error Handling Middleware*
-  app.use(apiErrorHandler);
+  app.use(httpErrorHandler);
 
   return app;
 };

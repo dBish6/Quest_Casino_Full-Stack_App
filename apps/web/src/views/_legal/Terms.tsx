@@ -396,7 +396,7 @@ export default function Terms() {
             <p>
               By visiting:{" "}
               <Link intent="primary" to="/support">
-                https://questcasino.org/support
+                {`${import.meta.env.VITE_APP_URL}/support`}
               </Link>
             </p>
           </li>

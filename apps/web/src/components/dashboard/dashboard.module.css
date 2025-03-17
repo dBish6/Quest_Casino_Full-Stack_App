@@ -109,9 +109,6 @@
         & .cash {
           gap: 1.5rem;
           margin-right: 2rem;
-          & > div:first-child > span {
-          }
-
           & a {
             width: 98.45px;
           }
@@ -174,8 +171,6 @@
         }
         & .cash {
           gap: 0.75rem;
-          & > div:first-child > span {
-          }
         }
         & .notif {
           display: none;

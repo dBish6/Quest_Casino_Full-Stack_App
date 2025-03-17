@@ -25,7 +25,6 @@ export interface LinkProps extends RouterLinkProps, VariantProps<typeof link> {
   nav?: boolean;
 }
 
-// prettier-ignore
 const Link = forwardRef<HTMLAnchorElement, LinkProps>(
   ({ children, to = "", className, intent, asChild, external, nav, ...props }, ref) => {
     const location = useLocation();
