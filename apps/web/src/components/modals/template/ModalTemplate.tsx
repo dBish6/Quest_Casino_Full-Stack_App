@@ -61,7 +61,7 @@ const modalPopInOut: Variants = {
   },
 };
 
-const ModalTemplate = forwardRef<HTMLDivElement, ModalTemplateProps>(
+export const ModalTemplate = forwardRef<HTMLDivElement, ModalTemplateProps>(
   ({ children, className, style, queryKey, width, ...props }, ref) => {
     const [searchParams, setSearchParams] = useSearchParams();
 
@@ -166,7 +166,6 @@ const ModalTemplate = forwardRef<HTMLDivElement, ModalTemplateProps>(
     );
   }
 );
-export default ModalTemplate;
 
 const RESTRICTED_MODALS: ReadonlySet<ModalQueryKeyValues> = new Set([
   ModalQueryKey.NOTIFICATIONS_MODAL,

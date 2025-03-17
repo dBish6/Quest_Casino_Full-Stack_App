@@ -23,7 +23,7 @@ export interface DashboardMainProps extends React.ComponentProps<"main"> {
   scrollable?: boolean | "horizontal";
 }
 
-export default function Dashboard() {
+export function Dashboard() {
   return (
     <div className={s.dashboard}>
       <Header />
@@ -35,7 +35,7 @@ export default function Dashboard() {
   );
 }
 
-export function Header() {;
+function Header() {
   const [_, setSearchParams] = useSearchParams(),
     location = useLocation();
 
