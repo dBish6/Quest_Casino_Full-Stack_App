@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import type Country from "@qc/typescript/typings/Country";
 
 import { fn } from "@storybook/test";
 import { useState } from "react";
@@ -79,7 +78,7 @@ export const CallingCode: Story = {
     size: "lrg"
   },
   render: (args) => {
-    const [data, setData] = useState<Country[] | null>(null);
+    const [data, setData] = useState<any[] | null>(null);
 
     return (
       <Select
@@ -90,16 +89,40 @@ export const CallingCode: Story = {
         onFocus={async () => {
           if (!data?.length) {
             setData([]);
-            const { COUNTRIES } = await import("@qc/constants");
             setTimeout(() => {
-              setData(COUNTRIES);
+              setData([
+                {
+                  abbr: "CA",
+                  callingCode: "+1"
+                },
+                {
+                  abbr: "CN",
+                  callingCode: "+86"
+                },
+                {
+                  abbr: "GB",
+                  callingCode: "+44"
+                },
+                {
+                  abbr: "US",
+                  callingCode: "+1"
+                },
+                {
+                  abbr: "DE",
+                  callingCode: "+49"
+                },
+                {
+                  abbr: "FR",
+                  callingCode: "+33"
+                }
+              ]);
             }, 1500);
           }
         }}
       >
         {data?.length &&
           data.map((country) => (
-            <option key={country.name} value={country.callingCode}>
+            <option key={country.abbr} value={country.callingCode}>
               {country.abbr} {country.callingCode}
             </option>
           ))}

@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import ModalTemplate from "./template/ModalTemplate";
+import { ModalTemplate } from "./template/ModalTemplate";
 
 import { RegisterModal } from "@authFeat/components/modals";
 

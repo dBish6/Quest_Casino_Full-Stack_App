@@ -49,6 +49,7 @@
     "tiny-throttle": "1.0.4"
   },
   "devDependencies": {
+    "@chromatic-com/storybook": "^3.2.6",
     "@qc/server-dev": "*",
     "@qc/typescript": "*",
     "@qc/vite-config": "*",
