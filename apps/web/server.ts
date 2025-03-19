@@ -22,7 +22,7 @@ import { meta } from "@meta";
 import { logger } from "@qc/utils";
 
 import { configureStore, nanoid } from "@reduxjs/toolkit";
-import { rootReducer } from "@redux/reducers";
+import { slicesReducer } from "@redux/reducers/slices";
 
 const { PROTOCOL, HOST, PORT: ENV_PORT } = process.env,
   PORT = Number(ENV_PORT) || 3000;
@@ -85,7 +85,7 @@ async function setupServer() {
         render = (await vite!.ssrLoadModule("./src/entry-server.tsx")).render; // Makes it compatible with vite ssr in dev and hmr, etc.
       } else {
         template = readFileSync(join(_dirname, "./public/index.html"), "utf-8");
-        render = (await import("./src/entry-server")).render; // Bundles entry-server.tsx with the server. No need to import from the build like in the examples, they are just bundled together for my use case.
+        render = (await import("./src/entry-server")).render; // Bundles entry-server.tsx with the server. No need to import from the build like in the vite examples, they are just bundled together for my use case.
       }
       // console.log("template", template);
       // console.log("render", render);
@@ -133,12 +133,11 @@ function redirect(req: ERequest, res: EResponse, error: any) {
   return false;
 }
 
-
 /**
  * Preloads the initial redux state for the client and also generates the initial oState token for the google login.
  */
 function getInitialReduxState() {
-  const store = configureStore({ reducer: rootReducer }),
+  const store = configureStore({ reducer: slicesReducer }),
     oStateToken = nanoid();
 
   const initialAuthState: AuthState = {
