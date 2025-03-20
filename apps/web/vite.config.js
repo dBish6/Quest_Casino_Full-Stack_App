@@ -21,10 +21,6 @@ export default defineConfig(({ mode, isSsrBuild }) => {
         })
       },
       define: {
-        // Temporary
-        "import.meta.env.VITE_USER_NODE_ENV": JSON.stringify(env.VITE_USER_NODE_ENV),
-        "import.meta.env.VITE_API_URL": JSON.stringify(env.VITE_API_URL),
-
         "import.meta.env.VITE_CDN_URL": JSON.stringify(env.VITE_CDN_URL)
       },
       css: {
@@ -38,7 +34,7 @@ export default defineConfig(({ mode, isSsrBuild }) => {
       },
       plugins: [react()],
       ssr: {
-        noExternal: ["react-router-dom"]
+        noExternal: ["react-router-dom"] // Really?
       },
       build: {
         outDir: isSsrBuild ? "build" : "build/public",
